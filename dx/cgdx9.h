@@ -1,0 +1,88 @@
+#ifndef CGDX9_H
+#define CGDX9_H
+
+#include <Tempest/AbstractShadingLang>
+#include <Tempest/AbstractAPI>
+#include <Tempest/Uniform>
+
+namespace Tempest {
+
+class VertexShader;
+class FragmentShader;
+
+class Matrix4x4;
+
+class CgDx9 : public AbstractShadingLang {
+  public:
+    CgDx9( AbstractAPI::DirectX9Device *dev );
+    ~CgDx9();
+
+    void bind( const Tempest::VertexShader& ) const;
+    void bind( const Tempest::FragmentShader& ) const;
+
+    void unBind( const Tempest::VertexShader& ) const;
+    void unBind( const Tempest::FragmentShader& ) const;
+
+
+    void setUniform( Tempest::VertexShader &s,
+                     const Uniform<double[2]> & u,
+                     Detail::ShInput & in ) const;
+
+    void setUniform( Tempest::VertexShader &s,
+                     const Uniform<double[3]> & u,
+                     Detail::ShInput & in ) const;
+
+    void setUniform( Tempest::VertexShader &s,
+                     const Matrix4x4& m,
+                     const char* name ) const;
+
+    void setUniform( Tempest::VertexShader &s,
+                     const double v[],
+                     int l,
+                     const char* name ) const;
+
+    void setUniform( Tempest::FragmentShader &s,
+                     const Uniform<double[2]> & u,
+                     Detail::ShInput & in ) const;
+
+    void setUniform( Tempest::FragmentShader &s,
+                     const Uniform<double[3]> & u,
+                     Detail::ShInput & in ) const;
+
+    void setUniform( Tempest::FragmentShader &s,
+                     const Uniform<Texture2d> & u,
+                     Detail::ShInput & in ) const;
+
+    void setUniform( Tempest::FragmentShader &s,
+                     const Matrix4x4& m,
+                     const char* name ) const;
+
+    void setUniform( Tempest::FragmentShader &s,
+                     const Texture2d& t,
+                     const char* name ) const;
+
+    void setUniform( Tempest::FragmentShader &s,
+                     const double v[],
+                     int l,
+                     const char* name ) const;
+
+    void* context() const;
+
+    VertexShader* createVertexShader( const std::string& fname ) const;
+    VertexShader* createVertexShaderFromSource( const std::string& src ) const;
+    void          deleteVertexShader( VertexShader* s ) const;
+
+    FragmentShader* createFragmentShader( const std::string& fname ) const;
+    FragmentShader* createFragmentShaderFromSource( const std::string& src ) const;
+    void            deleteFragmentShader( FragmentShader* s ) const;
+  private:
+    struct Data;
+    Data *data;
+
+    void setDevice() const;
+    static void setNullDevice();
+  };
+
+}
+
+#endif // CGDX9_H

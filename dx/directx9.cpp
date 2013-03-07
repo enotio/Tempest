@@ -1,0 +1,816 @@
+#include "directx9.h"
+
+#include <d3d9.h>
+
+#include <d3dx9.h>
+
+#include <Tempest/CgDx9>
+#include <Tempest/RenderState>
+
+#include <map>
+#include <set>
+#include <iostream>
+#include <Tempest/Pixmap>
+
+#include <cassert>
+
+using namespace Tempest;
+
+struct DirectX9::Data{
+  std::map< AbstractAPI::Device*, LPDIRECT3DSURFACE9> rtSurface;
+  std::set< void *> tex;
+  };
+
+DirectX9::DirectX9(){
+  impl   = (DirectX9Impl*)Direct3DCreate9( D3D_SDK_VERSION );
+  //data   = new Data();
+  }
+
+DirectX9::~DirectX9(){
+  LPDIRECT3D9 dev = LPDIRECT3D9(impl);
+  //delete data;
+  dev->Release();
+  }
+
+AbstractAPI::Device* DirectX9::createDevice(void *hwnd, const Options &opt) const {
+  LPDIRECT3D9 D3D = LPDIRECT3D9(impl);
+
+  D3DPRESENT_PARAMETERS d3dpp;
+  makePresentParams( &d3dpp, hwnd, opt );
+
+  LPDIRECT3DDEVICE9  dev;
+  D3D->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hwnd,
+                     D3DCREATE_HARDWARE_VERTEXPROCESSING,
+                     &d3dpp, &dev );
+
+  return (AbstractAPI::Device*)dev;
+  }
+
+void DirectX9::makePresentParams( void * p, void *hWnd,
+                                  const Options &opt ) const{
+  LPDIRECT3D9 D3D = LPDIRECT3D9(impl);
+
+  D3DDISPLAYMODE d3ddm;
+  D3D->GetAdapterDisplayMode( D3DADAPTER_DEFAULT, &d3ddm );
+
+  D3DPRESENT_PARAMETERS& d3dpp = *(reinterpret_cast<D3DPRESENT_PARAMETERS*>(p));
+  ZeroMemory( &d3dpp, sizeof(d3dpp) );
+
+  RECT rectWindow;
+  GetClientRect( HWND(hWnd), &rectWindow);
+//GetSystemMetrics
+  d3dpp.BackBufferWidth  = rectWindow.right  - rectWindow.left;
+  d3dpp.BackBufferHeight = rectWindow.bottom - rectWindow.top;
+
+  d3dpp.Windowed               = opt.windowed;
+  d3dpp.BackBufferFormat       = d3ddm.Format;
+  d3dpp.EnableAutoDepthStencil = TRUE;
+  d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
+
+  d3dpp.SwapEffect             = D3DSWAPEFFECT_COPY;
+
+  if( opt.vSync )
+    d3dpp.PresentationInterval   = D3DPRESENT_INTERVAL_ONE; else
+    d3dpp.PresentationInterval   = D3DPRESENT_INTERVAL_IMMEDIATE;
+
+
+  if( !d3dpp.Windowed ){
+    d3dpp.BackBufferWidth  = d3ddm.Width;
+    d3dpp.BackBufferHeight = d3ddm.Height;
+
+    d3dpp.FullScreen_RefreshRateInHz = d3ddm.RefreshRate;
+    }
+  }
+
+void DirectX9::deleteDevice(AbstractAPI::Device *d) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  if( dev )
+    dev->Release();
+  }
+
+void DirectX9::clear( AbstractAPI::Device *d,
+                      const Color& cl, double z, unsigned stencil ) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+
+  dev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
+              D3DCOLOR_COLORVALUE( cl.r(), cl.g(), cl.b(), cl.a() ),
+              z, stencil );
+  }
+
+void DirectX9::clear(AbstractAPI::Device *d, const Color &cl) const  {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+
+  dev->Clear( 0, 0, D3DCLEAR_TARGET,
+              D3DCOLOR_COLORVALUE( cl.r(), cl.g(), cl.b(), cl.a() ),
+              0, 0 );
+  }
+
+void DirectX9::clearZ( AbstractAPI::Device *d, double z ) const  {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+
+  dev->Clear( 0, 0, D3DCLEAR_ZBUFFER,
+              0,
+              z, 0 );
+  }
+
+void DirectX9::clearStencil( AbstractAPI::Device *d, unsigned s ) const  {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+
+  dev->Clear( 0, 0, D3DCLEAR_STENCIL,
+              0,
+              0, s );
+  }
+
+void DirectX9::clear( AbstractAPI::Device *d,
+                      double z, unsigned s ) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+
+  dev->Clear( 0, 0, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
+              0,
+              z, s );
+  }
+
+void DirectX9::clear( AbstractAPI::Device *d,  const Color& cl, double z ) const{
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+
+  dev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+              D3DCOLOR_COLORVALUE( cl.r(), cl.g(), cl.b(), cl.a() ),
+              z, 0 );
+  }
+
+void DirectX9::beginPaint( AbstractAPI::Device *d ) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+
+  dev->BeginScene();
+  }
+
+void DirectX9::endPaint  ( AbstractAPI::Device *d ) const{
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+
+  dev->EndScene();
+  }
+
+void DirectX9::setRenderTaget( AbstractAPI::Device *d,
+                               AbstractAPI::Texture   *t, int mip,
+                               int mrtSlot ) const {
+  LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DTEXTURE9 tex  = LPDIRECT3DTEXTURE9(t);
+
+  LPDIRECT3DSURFACE9 surf = 0;
+  tex->GetSurfaceLevel( mip, &surf);
+  //UINT c = surf->Release();
+
+  //for (int i=0; i<16; i++)
+    //dev->SetTexture(i, 0);
+
+  dev->SetRenderTarget(mrtSlot, surf);
+  tex->Release();
+  }
+
+void DirectX9::unsetRenderTagets( AbstractAPI::Device *d,
+                                  int count  ) const {
+  LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
+
+  IDirect3DSurface9* backBuf = 0;
+  dev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backBuf);
+  dev->SetRenderTarget( 0, backBuf );
+  backBuf->Release();
+
+  for( int i=1; i<count; ++i)
+    dev->SetRenderTarget( i, 0 );
+  }
+
+AbstractAPI::StdDSSurface *DirectX9::getDSSurfaceTaget( AbstractAPI::Device *d ) const {
+  LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DSURFACE9 surf = 0;
+
+  if( FAILED(dev->GetDepthStencilSurface(&surf)) )
+    return 0;
+
+  return (AbstractAPI::StdDSSurface*)(surf);
+  }
+
+void DirectX9::retDSSurfaceTaget( AbstractAPI::Device *d,
+                                  AbstractAPI::StdDSSurface *s ) const {
+  //LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DSURFACE9 surf = LPDIRECT3DSURFACE9(s);
+
+  if( surf )
+    surf->Release();
+  }
+
+void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
+                                  AbstractAPI::StdDSSurface *tx ) const {
+  LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
+
+
+  LPDIRECT3DSURFACE9 surf = LPDIRECT3DSURFACE9(tx);
+  //LPDIRECT3DTEXTURE9 tex  = LPDIRECT3DTEXTURE9(tx);
+  //tex->GetSurfaceLevel( 0, &surf );
+
+  dev->SetDepthStencilSurface( surf );
+
+  //surf->Release();
+  }
+
+void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
+                                  AbstractAPI::Texture *tx ) const {
+  LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
+
+  LPDIRECT3DSURFACE9 surf = 0;
+  LPDIRECT3DTEXTURE9 tex  = LPDIRECT3DTEXTURE9(tx);
+  tex->GetSurfaceLevel( 0, &surf );
+  dev->SetDepthStencilSurface( surf );
+
+  tex->Release();
+  }
+
+bool DirectX9::startRender( AbstractAPI::Device *d,
+                            bool isLost  ) const {
+
+  if( isLost ){
+    Sleep( 100 );
+
+    LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+    return (dev->TestCooperativeLevel() == D3DERR_DEVICENOTRESET);
+    }
+
+  return 1;
+  }
+
+bool DirectX9::present( AbstractAPI::Device *d ) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+
+  return ( D3DERR_DEVICELOST == dev->Present( NULL, NULL, NULL, NULL ) );
+  }
+
+bool DirectX9::reset( AbstractAPI::Device *d, void* hwnd,
+                      const Options &opt ) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+
+  D3DPRESENT_PARAMETERS d3dpp;
+  makePresentParams( &d3dpp, hwnd, opt );
+
+  //return 1;
+
+  HRESULT hr = dev->Reset( &d3dpp );
+
+  if( FAILED(hr ) )
+    return 0; else
+    return 1;
+  }
+
+AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
+                                               const Pixmap &p, bool mips) const {
+  if( p.width()==0 || p.height()==0 )
+    return 0;
+
+  D3DLOCKED_RECT lockedRect;
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DTEXTURE9 tex = 0;
+
+  D3DFORMAT format = D3DFMT_X8R8G8B8;
+  if( p.hasAlpha() )
+    format = D3DFMT_A8R8G8B8;
+
+  if (FAILED(dev->CreateTexture( p.width(), p.height(), 0,
+                                 D3DUSAGE_AUTOGENMIPMAP, format,
+                                 D3DPOOL_MANAGED,
+                                 &tex, NULL))) {
+    return 0;
+    }
+
+  if (FAILED( tex->LockRect(0, &lockedRect, 0, 0))) {
+    return 0;
+    }
+
+  unsigned char *dest = (unsigned char*) lockedRect.pBits;
+
+  for( int i=0; i<p.width(); ++i )
+    for( int r=0; r<p.height(); ++r ){
+      unsigned char * t = &dest[ 4*(i + r*p.width()) ];
+      const Pixmap::Pixel s = p.at(i,r);
+      t[2] = s.r;
+      t[1] = s.g;
+      t[0] = s.b;
+      t[3] = s.a;
+      }
+
+  tex->UnlockRect(0);
+
+  if( mips )
+    tex->GenerateMipSubLevels();
+
+  //data->tex.insert( tex );
+  return ((AbstractAPI::Texture*)tex);
+  }
+
+AbstractAPI::Texture *DirectX9::recreateTexture( AbstractAPI::Device *d,
+                                                 AbstractAPI::Texture *oldT,
+                                                 const Pixmap &p,
+                                                 bool mips) const {
+  if( oldT==0 )
+    return createTexture(d, p, mips);
+
+  D3DLOCKED_RECT lockedRect;
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DTEXTURE9 tex = 0;
+  LPDIRECT3DTEXTURE9 old = LPDIRECT3DTEXTURE9(oldT);
+
+  D3DFORMAT format = D3DFMT_X8R8G8B8;
+  if( p.hasAlpha() )
+    format = D3DFMT_A8R8G8B8;
+
+  D3DSURFACE_DESC desc;
+  if( FAILED( old->GetLevelDesc(0, &desc) ) ){
+    deleteTexture(d, oldT);
+    return 0;
+    }
+
+  if( int(desc.Width)==p.width() &&
+      int(desc.Height)==p.height() &&
+      desc.Format==format ){
+    tex = old;
+    } else {
+    deleteTexture(d, oldT);
+
+    if (FAILED(dev->CreateTexture( p.width(), p.height(), 0,
+                                   D3DUSAGE_AUTOGENMIPMAP, format,
+                                   D3DPOOL_MANAGED,
+                                   &tex, NULL))) {
+      return 0;
+      }
+    }
+
+  if (FAILED( tex->LockRect(0, &lockedRect, 0, 0))) {
+    return 0;
+    }
+
+  unsigned char *dest = (unsigned char*) lockedRect.pBits;
+
+  for( int i=0; i<p.width(); ++i )
+    for( int r=0; r<p.height(); ++r ){
+      unsigned char * t = &dest[ 4*(i + r*p.width()) ];
+      const Pixmap::Pixel s = p.at(i,r);
+      t[2] = s.r;
+      t[1] = s.g;
+      t[0] = s.b;
+      t[3] = s.a;
+      }
+
+  tex->UnlockRect(0);
+
+  if( mips )
+    tex->GenerateMipSubLevels();
+
+  //data->tex.insert( tex );
+  return ((AbstractAPI::Texture*)tex);
+  }
+
+AbstractAPI::Texture* DirectX9::createTexture( AbstractAPI::Device *d,
+                                               int w, int h,
+                                               int mips,
+                                               AbstractTexture::Format::Type f,
+                                               TextureUsage u  ) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DTEXTURE9 tex = 0;
+
+  static const DWORD usage[] = {
+    D3DUSAGE_RENDERTARGET,
+    D3DUSAGE_RENDERTARGET,
+    D3DUSAGE_DYNAMIC,
+    0
+    };
+
+  static const D3DFORMAT d3frm[] = {
+    D3DFMT_L16,  // Luminance,
+    D3DFMT_A4L4, // Luminance4,
+    D3DFMT_L8,   // Luminance8,
+    D3DFMT_L16,  // Luminance16,
+
+    D3DFMT_R8G8B8,   // RGB,
+    D3DFMT_X4R4G4B4, // RGB4,
+    D3DFMT_X1R5G5B5, // RGB5,
+    D3DFMT_A2B10G10R10, // RGB10,
+    D3DFMT_A2B10G10R10, // RGB12,
+    D3DFMT_A2B10G10R10, // RGB16,
+
+    D3DFMT_A8R8G8B8,     // RGBA,
+    D3DFMT_A8R8G8B8,     // RGBA8,
+    D3DFMT_A2B10G10R10,  // RGB10_A2,
+    D3DFMT_A2B10G10R10,  // RGBA12,
+    D3DFMT_A16B16G16R16, // RGBA16,
+
+    D3DFMT_DXT1, // RGB_DXT1,
+    D3DFMT_DXT3, // RGBA_DXT1,
+    D3DFMT_DXT3, // RGBA_DXT3,
+    D3DFMT_DXT5, // RGBA_DXT5,
+
+    D3DFMT_D16,   // Depth16,
+    D3DFMT_D24X8, // Depth24,
+    D3DFMT_D32,   // Depth32,
+    D3DFMT_G16R16,// RG16
+    D3DFMT_A8R8G8B8, //Count
+    };
+
+  if( f==Tempest::AbstractTexture::Format::Depth16 ||
+      f==Tempest::AbstractTexture::Format::Depth24 ||
+      f==Tempest::AbstractTexture::Format::Depth32 ){
+/*
+    LPDIRECT3DSURFACE9 surf = 0;
+
+    HRESULT hr = dev->CreateDepthStencilSurface( w, h, d3frm[f],
+                                                 D3DMULTISAMPLE_NONE,
+                                                 0, TRUE, &surf, NULL);
+    return ((AbstractAPI::Texture*)surf);*/
+
+    HRESULT hr = D3DXCreateTexture(  dev,
+                                     w,
+                                     h,
+                                     1,
+                                     D3DUSAGE_DEPTHSTENCIL,//usage[u],
+
+                                     d3frm[f],
+                                     D3DPOOL_DEFAULT,
+                                     &tex );
+
+    if( FAILED( hr ) ){
+      return 0;
+      }
+    return ((AbstractAPI::Texture*)tex);
+    //data->tex.insert( surf );
+    } else {
+    if( FAILED(
+      D3DXCreateTexture(  dev,
+                          w,
+                          h,
+                          mips,
+                          usage[u],
+
+                          d3frm[f],
+                          D3DPOOL_DEFAULT,
+                          &tex ) ) ){
+      return 0;
+      }
+
+    //data->tex.insert( tex );
+    return ((AbstractAPI::Texture*)tex);
+    }
+  }
+
+void DirectX9::deleteTexture( AbstractAPI::Device *,
+                              AbstractAPI::Texture *t ) const {
+  IUnknown *tex = (IUnknown*)(t);
+  if( tex ){
+    /*ULONG count = */tex->Release();
+    //std::cout << "DirectX9::deleteTexture " << count << std::endl;
+    }
+  }
+
+AbstractAPI::VertexBuffer*
+     DirectX9::createVertexbuffer( AbstractAPI::Device *d,
+                                   size_t size, size_t elSize ) const{
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DVERTEXBUFFER9 vbo = 0;
+
+  if( FAILED( dev->CreateVertexBuffer( size*elSize,
+                                       D3DUSAGE_WRITEONLY,
+                                       0,
+                                       D3DPOOL_DEFAULT,
+                                       &vbo,
+                                       0 ) ) )
+      return 0;
+
+  return ((AbstractAPI::VertexBuffer*)vbo);
+  }
+
+void DirectX9::deleteVertexBuffer( AbstractAPI::Device *,
+                                    AbstractAPI::VertexBuffer*v ) const{
+  LPDIRECT3DVERTEXBUFFER9 vbo = LPDIRECT3DVERTEXBUFFER9(v);
+  if( vbo )
+    vbo->Release();
+  }
+
+AbstractAPI::IndexBuffer*
+     DirectX9::createIndexbuffer( AbstractAPI::Device *d,
+                                  size_t size, size_t elSize ) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DINDEXBUFFER9 ibo = 0;
+
+  dev->CreateIndexBuffer(  size*elSize,
+                           D3DUSAGE_WRITEONLY,
+                           D3DFMT_INDEX16,
+                           D3DPOOL_DEFAULT,
+                           &ibo,
+                           0 );
+
+  return ((AbstractAPI::IndexBuffer*)ibo);
+  }
+
+void DirectX9::deleteIndexBuffer( AbstractAPI::Device *d,
+                                  AbstractAPI::IndexBuffer* b) const {
+  LPDIRECT3DINDEXBUFFER9 ibo = LPDIRECT3DINDEXBUFFER9(b);
+  if( ibo )
+    ibo->Release();
+  }
+
+void* DirectX9::lockBuffer( AbstractAPI::Device *d,
+                            AbstractAPI::VertexBuffer * v,
+                            unsigned offset, unsigned size) const {
+  LPDIRECT3DVERTEXBUFFER9 vbo = LPDIRECT3DVERTEXBUFFER9(v);
+
+  void* pVertices = 0;
+  vbo->Lock( offset, size, &pVertices, 0 );
+
+  return pVertices;
+  }
+
+void DirectX9::unlockBuffer( AbstractAPI::Device *,
+                             AbstractAPI::VertexBuffer* v) const {
+  LPDIRECT3DVERTEXBUFFER9 vbo = LPDIRECT3DVERTEXBUFFER9(v);
+
+  vbo->Unlock();
+  }
+
+void* DirectX9::lockBuffer( AbstractAPI::Device *d,
+                            AbstractAPI::IndexBuffer * v,
+                            unsigned offset, unsigned size) const {
+  LPDIRECT3DINDEXBUFFER9 ibo = LPDIRECT3DINDEXBUFFER9(v);
+
+  void* pVertices = 0;
+  ibo->Lock( offset, size, &pVertices, 0 );
+
+  return pVertices;
+  }
+
+void DirectX9::unlockBuffer( AbstractAPI::Device *,
+                             AbstractAPI::IndexBuffer* v) const {
+  LPDIRECT3DINDEXBUFFER9 ibo = LPDIRECT3DINDEXBUFFER9(v);
+
+  ibo->Unlock();
+  }
+
+const AbstractShadingLang*
+        DirectX9::createShadingLang( AbstractAPI::Device *d ) const {
+  AbstractAPI::DirectX9Device *dev =
+      reinterpret_cast<AbstractAPI::DirectX9Device*>(d);
+
+  return new CgDx9( dev );
+  }
+
+void DirectX9::deleteShadingLang( const AbstractShadingLang * l ) const {
+  delete l;
+  }
+
+AbstractAPI::VertexDecl *
+      DirectX9::createVertexDecl( AbstractAPI::Device *d,
+                                  const VertexDeclaration::Declarator &de ) const {
+  BYTE ct[] = {
+    D3DDECLTYPE_FLOAT1,
+    D3DDECLTYPE_FLOAT2,
+    D3DDECLTYPE_FLOAT3,
+    D3DDECLTYPE_FLOAT4,
+
+    D3DDECLTYPE_D3DCOLOR,
+
+    D3DDECLTYPE_SHORT2,
+    D3DDECLTYPE_SHORT4
+    };
+
+  BYTE usage[] = {
+    D3DDECLUSAGE_POSITION,
+    D3DDECLUSAGE_BLENDWEIGHT,   // 1
+    D3DDECLUSAGE_BLENDINDICES,  // 2
+    D3DDECLUSAGE_NORMAL,        // 3
+    D3DDECLUSAGE_PSIZE,         // 4
+    D3DDECLUSAGE_TEXCOORD,      // 5
+    D3DDECLUSAGE_TANGENT,       // 6
+    D3DDECLUSAGE_BINORMAL,      // 7
+    D3DDECLUSAGE_TESSFACTOR,    // 8
+    D3DDECLUSAGE_POSITIONT,     // 9
+    D3DDECLUSAGE_COLOR,         // 10
+    D3DDECLUSAGE_FOG,           // 11
+    D3DDECLUSAGE_DEPTH,         // 12
+    D3DDECLUSAGE_SAMPLE,        // 13
+    };
+  /*
+  D3DVERTEXELEMENT9 declaration[] =
+  {
+      { 0, 0,  D3DDECLTYPE_double3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+      { 0, 12, D3DDECLTYPE_double2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+      { 0, 20, D3DDECLTYPE_double3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },
+      D3DDECL_END()
+  };*/
+
+  std::vector<D3DVERTEXELEMENT9> decl;
+  for( int i=0; i<de.size(); ++i ){
+    D3DVERTEXELEMENT9 e;
+    e.Stream = 0;
+    e.Offset = 4*de[i].component;
+    e.Type   = ct[ de[i].component-1 ];
+
+    if( de[i].component==Tempest::Decl::color )
+      e.Offset = 4;
+
+    if( de[i].component==Tempest::Decl::short2 )
+      e.Offset = 4;
+
+    if( de[i].component==Tempest::Decl::short4 )
+      e.Offset = 8;
+
+    e.Method = D3DDECLMETHOD_DEFAULT;
+    e.Usage = usage[ de[i].usage ];
+    e.UsageIndex = de[i].index;
+
+    decl.push_back(e);
+    }
+
+  for( size_t i=1; i<decl.size(); ++i ){
+    decl[i].Offset += decl[i-1].Offset;
+    }
+
+  if( decl.size() ){
+    for( size_t i=decl.size()-1; i>=1; --i ){
+      decl[i].Offset = decl[i-1].Offset;
+      }
+
+    decl[0].Offset = 0;
+    }
+
+  D3DVERTEXELEMENT9 endEl = D3DDECL_END();
+  decl.push_back( endEl );
+
+  // cgD3D9ValidateVertexDeclaration( g_CGprogram_vertex, declaration );
+
+  LPDIRECT3DVERTEXDECLARATION9 ret = 0;
+
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  HRESULT hr = dev->CreateVertexDeclaration( decl.data(), &ret );
+
+  if( FAILED(hr) ){
+    assert(0);
+    }
+
+  return reinterpret_cast<AbstractAPI::VertexDecl*>(ret);
+  }
+
+void DirectX9::deleteVertexDecl( AbstractAPI::Device *,
+                                 AbstractAPI::VertexDecl* de ) const {
+  LPDIRECT3DVERTEXDECLARATION9  decl = LPDIRECT3DVERTEXDECLARATION9(de);
+  if( decl )
+    decl->Release();
+  }
+
+void DirectX9::setVertexDeclaration( AbstractAPI::Device *d,
+                                     AbstractAPI::VertexDecl* de ) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DVERTEXDECLARATION9  decl = LPDIRECT3DVERTEXDECLARATION9(de);
+
+  dev->SetFVF(0);
+  dev->SetVertexDeclaration( decl );
+  }
+
+void DirectX9::bindVertexBuffer( AbstractAPI::Device *d,
+                                 AbstractAPI::VertexBuffer* b,
+                                 int vsize ) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  dev->SetStreamSource( 0, LPDIRECT3DVERTEXBUFFER9(b),
+                        0, vsize );
+
+  }
+
+void DirectX9::bindIndexBuffer( AbstractAPI::Device * d,
+                                AbstractAPI::IndexBuffer * b ) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  dev->SetIndices( LPDIRECT3DINDEXBUFFER9(b) );
+  }
+
+void DirectX9::draw( AbstractAPI::Device *d,
+                     AbstractAPI::PrimitiveType t,
+                     int firstVertex, int pCount ) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9( d );
+
+  static const D3DPRIMITIVETYPE type[] = {
+    D3DPT_POINTLIST,//             = 1,
+    D3DPT_LINELIST,//              = 2,
+    D3DPT_LINESTRIP,//             = 3,
+    D3DPT_TRIANGLELIST,//          = 4,
+    D3DPT_TRIANGLESTRIP,//         = 5,
+    D3DPT_TRIANGLEFAN,//           = 6
+    };
+
+  dev->DrawPrimitive( type[ t-1 ], firstVertex, pCount );
+  }
+
+void DirectX9::drawIndexed(  AbstractAPI::Device *d,
+                             AbstractAPI::PrimitiveType t,
+                             int vboOffsetIndex,
+                             int minIndex,
+                             int vertexCount,
+                             int firstIndex,
+                             int pCount ) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9( d );
+
+  static const D3DPRIMITIVETYPE type[] = {
+    D3DPT_POINTLIST,//             = 1,
+    D3DPT_LINELIST,//              = 2,
+    D3DPT_LINESTRIP,//             = 3,
+    D3DPT_TRIANGLELIST,//          = 4,
+    D3DPT_TRIANGLESTRIP,//         = 5,
+    D3DPT_TRIANGLEFAN,//           = 6
+    };
+
+  dev->DrawIndexedPrimitive( type[ t-1 ],
+                             vboOffsetIndex,
+                             minIndex,
+                             vertexCount,
+                             firstIndex,
+                             pCount );
+  }
+
+void DirectX9::setRenderState( AbstractAPI::Device *d,
+                               const RenderState & r) const {
+  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9( d );
+
+  static const D3DCULL cull[] = {
+    D3DCULL_NONE,
+    D3DCULL_CW,
+    D3DCULL_CCW
+    };
+
+  static const D3DCMPFUNC cmp[] = {
+    D3DCMP_NEVER,
+
+    D3DCMP_GREATER,
+    D3DCMP_LESS,
+
+    D3DCMP_GREATEREQUAL,
+    D3DCMP_LESSEQUAL,
+
+    D3DCMP_NOTEQUAL,
+    D3DCMP_EQUAL,
+    D3DCMP_ALWAYS,
+    D3DCMP_ALWAYS
+    };
+
+  dev->SetRenderState( D3DRS_CULLMODE, cull[ r.cullFaceMode() ]);
+
+  //dev->SetRenderState( D3DRS_ZENABLE,      r.isZTest() );
+  D3DCMPFUNC f = cmp[ r.getZTestMode() ] ;
+  if( !r.isZTest() )
+    f = D3DCMP_ALWAYS;
+
+  dev->SetRenderState( D3DRS_ZFUNC,        f );
+  dev->SetRenderState( D3DRS_ZWRITEENABLE, r.isZWriting() );
+
+  if( r.alphaTestMode()!=Tempest::RenderState::AlphaTestMode::Always ){
+    dev->SetRenderState( D3DRS_ALPHATESTENABLE, TRUE );
+    dev->SetRenderState( D3DRS_ALPHAFUNC, cmp[ r.alphaTestMode() ] );
+    dev->SetRenderState( D3DRS_ALPHAREF, 255*r.alphaTestRef() );
+    } else {
+    dev->SetRenderState( D3DRS_ALPHATESTENABLE, FALSE );
+    }
+
+  static const D3DBLEND  blend[] = {
+    D3DBLEND_ZERO,         //zero,                 //GL_ZERO,
+    D3DBLEND_ONE,          //one,                  //GL_ONE,
+    D3DBLEND_SRCCOLOR,     //src_color,            //GL_SRC_COLOR,
+    D3DBLEND_INVSRCCOLOR,  //GL_ONE_MINUS_SRC_COLOR,
+    D3DBLEND_SRCALPHA,     //GL_SRC_ALPHA,
+    D3DBLEND_INVSRCALPHA,  //GL_ONE_MINUS_SRC_ALPHA,
+    D3DBLEND_DESTALPHA,    //GL_DST_ALPHA,
+    D3DBLEND_INVDESTALPHA, //GL_ONE_MINUS_DST_ALPHA,
+    D3DBLEND_DESTCOLOR,    //GL_DST_COLOR,
+    D3DBLEND_INVDESTCOLOR, //GL_ONE_MINUS_DST_COLOR,
+    D3DBLEND_SRCALPHASAT,  //GL_SRC_ALPHA_SATURATE,
+    D3DBLEND_ZERO
+    };
+
+  if( r.isBlend() ){
+    dev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+
+    dev->SetRenderState( D3DRS_SRCBLEND,  blend[ r.getBlendSFactor() ] );
+    dev->SetRenderState( D3DRS_DESTBLEND, blend[ r.getBlendDFactor() ] );
+    } else {
+    dev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
+    }
+
+  bool w[4];
+  r.getColorMask( w[0], w[1], w[2], w[3] );
+  /*
+  dev->SetRenderState( D3DRS_COLORWRITEENABLE1, w[0] );
+  dev->SetRenderState( D3DRS_COLORWRITEENABLE2, w[1] );
+  dev->SetRenderState( D3DRS_COLORWRITEENABLE3, w[2] );
+  */
+  DWORD flg = 0;
+  if( w[0] )
+    flg |= D3DCOLORWRITEENABLE_RED;
+  if( w[1] )
+    flg |= D3DCOLORWRITEENABLE_GREEN;
+  if( w[2] )
+    flg |= D3DCOLORWRITEENABLE_BLUE;
+  if( w[3] )
+    flg |= D3DCOLORWRITEENABLE_ALPHA;
+
+  dev->SetRenderState( D3DRS_COLORWRITEENABLE, flg );
+  }
