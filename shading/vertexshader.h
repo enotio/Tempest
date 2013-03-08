@@ -5,6 +5,8 @@
 #include <Tempest/CopyWhenNeedPtr>
 #include <Tempest/VertexShaderHolder>
 
+#include "shaderinput.h"
+
 namespace Tempest{
 
 class VertexShader {
@@ -18,12 +20,15 @@ class VertexShader {
     Detail::Ptr< AbstractShadingLang::VertexShader*,
                  VertexShaderHolder::ImplManip > data;
 
+    ShaderInput input;
+
   friend class AbstractShadingLang;
 
   template< class Data, class APIDescriptor >
   friend class AbstractHolderWithLoad;
 
   friend class VertexShaderHolder;
+  friend class Device;
   };
 
 }

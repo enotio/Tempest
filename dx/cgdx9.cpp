@@ -14,6 +14,8 @@
 #include "shading/uniformcash.h"
 #include <Tempest/Uniform>
 
+#include <Tempest/FragmentShader>
+
 #include <iostream>
 
 using namespace Tempest;
@@ -47,6 +49,9 @@ struct CgDx9::Data{
 
   CGprogram currentProgramVS, currentProgramFS;
   Detail::UniformCash<CGparameter> vsCash, fsCash;
+
+  const Tempest::VertexShader*   currentVS;
+  const Tempest::FragmentShader* currentFS;
   };
 
 LPDIRECT3DDEVICE9 CgDx9::Data::currentDev = 0;
@@ -59,6 +64,9 @@ CgDx9::CgDx9( AbstractAPI::DirectX9Device *dev ) {
   data = new Data();
   data->currentProgramVS = 0;
   data->currentProgramFS = 0;
+
+  data->currentVS = 0;
+  data->currentFS = 0;
 
   data->context = cgCreateContext();
   cgD3D9SetManageTextureParameters( data->context, CG_TRUE );
@@ -77,6 +85,43 @@ CgDx9::~CgDx9(){
 
   cgDestroyContext( data->context );
   delete data;
+  }
+
+void CgDx9::enable() const {
+  { const ShaderInput & in = inputOf( *data->currentFS );
+
+    for( size_t i=0; i<in.tex.names.size(); ++i ){
+      setUniform( *data->currentFS, *in.tex.values[i], in.tex.names[i].data() );
+      }
+
+    for( size_t i=0; i<in.mat.names.size(); ++i ){
+      setUniform( *data->currentFS, in.mat.values[i], in.mat.names[i].data() );
+      }
+
+    setUniforms( *data->currentFS, in.v1, 1 );
+    setUniforms( *data->currentFS, in.v2, 2 );
+    setUniforms( *data->currentFS, in.v3, 3 );
+    setUniforms( *data->currentFS, in.v4, 4 );
+    }
+
+  { const ShaderInput & in = inputOf( *data->currentVS );
+
+    for( size_t i=0; i<in.mat.names.size(); ++i ){
+      setUniform( *data->currentVS, in.mat.values[i], in.mat.names[i].data() );
+      }
+
+    setUniforms( *data->currentVS, in.v1, 1 );
+    setUniforms( *data->currentVS, in.v2, 2 );
+    setUniforms( *data->currentVS, in.v3, 3 );
+    setUniforms( *data->currentVS, in.v4, 4 );
+    }
+  }
+
+template< class Sh, class T >
+void CgDx9::setUniforms( const Sh & s, const T & vN, int c ) const{
+  for( size_t i=0; i<vN.names.size(); ++i ){
+    setUniform( s, vN.values[i].v, c, vN.names[i].data() );
+    }
   }
 
 void CgDx9::setDevice() const {
@@ -208,6 +253,8 @@ void CgDx9::deleteFragmentShader( FragmentShader* s ) const{
   }
 
 void CgDx9::bind( const Tempest::VertexShader& s ) const {
+  data->currentVS = &s;
+
   CGprogram prog = CGprogram( get(s) );
 
   if( data->currentProgramVS!=prog ){
@@ -220,6 +267,8 @@ void CgDx9::bind( const Tempest::VertexShader& s ) const {
   }
 
 void CgDx9::bind( const Tempest::FragmentShader& s ) const {
+  data->currentFS = &s;
+
   CGprogram prog = CGprogram( get(s) );
 
   if( data->currentProgramFS!=prog ){
@@ -247,39 +296,10 @@ void CgDx9::unBind( const Tempest::FragmentShader& s ) const {
   cgD3D9UnbindProgram( prog );
   }
 
-void CgDx9::setUniform( Tempest::VertexShader &s,
-                        const Uniform<float[2]> &u,
-                        Detail::ShInput & /*in*/ ) const {
-  CGprogram   prog = CGprogram( get(s) );
 
-  CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
-
-  const float v[4] = { u[0], u[1], 0, 0 };
-  if( prog != data->currentProgramVS || !data->vsCash.fetch(prm, v, 2) ){
-    Data::dbg(prm, data->context);
-    cgD3D9SetUniform( prm, v );
-    }
-
-  }
-
-void CgDx9::setUniform( Tempest::VertexShader &s,
-                        const Uniform<float[3]> &u,
-                        Detail::ShInput & /*in*/ ) const {
-  CGprogram   prog = CGprogram( get(s) );
-
-  CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
-
-  const float v[4] = { u[0], u[1], u[2], 0 };
-  if( prog != data->currentProgramVS || !data->vsCash.fetch(prm, v, 3) ){
-    Data::dbg(prm, data->context);
-    cgD3D9SetUniform( prm, v );
-    }
-
-  }
-
-void CgDx9::setUniform( Tempest::VertexShader &s,
-                     const Matrix4x4& mIn,
-                     const char *name  ) const{
+void CgDx9::setUniform( const Tempest::VertexShader &s,
+                        const Matrix4x4& mIn,
+                        const char *name  ) const{
   //setDevice();
   Matrix4x4 m = mIn;
   m.transpose();
@@ -299,9 +319,9 @@ void CgDx9::setUniform( Tempest::VertexShader &s,
     }
   }
 
-void CgDx9::setUniform(Tempest::VertexShader &s,
-                     const float v[],
-                     int l, const char *name ) const{
+void CgDx9::setUniform(const Tempest::VertexShader &s,
+                       const float v[],
+                       int l, const char *name ) const{
   CGprogram   prog = CGprogram( get(s) );
 
   CGparameter prm = cgGetNamedParameter( prog, name);
@@ -312,106 +332,10 @@ void CgDx9::setUniform(Tempest::VertexShader &s,
     }
   }
 
-void CgDx9::setUniform( Tempest::FragmentShader &s,
-                        const Uniform<float[2]> &u,
-                        Detail::ShInput & /*in*/ ) const {
-  CGprogram   prog = CGprogram( get(s) );
-
-  CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
-
-  const float v[4] = { u[0], u[1], 0, 0 };
-  if( prog != data->currentProgramFS || !data->fsCash.fetch(prm, v, 2) ){
-    Data::dbg(prm, data->context);
-    cgD3D9SetUniform( prm, v );
-    }
-
-  }
-
-void CgDx9::setUniform( Tempest::FragmentShader &s,
-                        const Uniform<float[3]> &u,
-                        Detail::ShInput & /*in*/ ) const {
-  CGprogram   prog = CGprogram( get(s) );
-
-  CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
-
-  const float v[4] = { u[0], u[1], u[2], 0 };
-  if( prog != data->currentProgramFS || !data->fsCash.fetch(prm, v, 3) ){
-    Data::dbg(prm, data->context);
-    cgD3D9SetUniform( prm, v );
-    }
-
-  }
-
-void CgDx9::setUniform( Tempest::FragmentShader &sh,
-                     const Uniform<Texture2d> &u,
-                     Detail::ShInput &in) const {
-  if( !u.value() )
-    return;
-
-  CGprogram   prog = CGprogram( get(sh) );
-  CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
-
-  const Texture2d::Sampler & s = u.value()->sampler();
-  Data::dbg(prm, data->context);
-
-  D3DTEXTUREADDRESS addR[] = {
-    D3DTADDRESS_CLAMP,
-    D3DTADDRESS_BORDER,
-    D3DTADDRESS_MIRRORONCE, //??
-    D3DTADDRESS_MIRROR,
-    D3DTADDRESS_WRAP,
-
-    D3DTADDRESS_WRAP
-    };
-
-  cgD3D9SetSamplerState( prm,
-                         D3DSAMP_ADDRESSU,
-                         addR[ s.uClamp ]);
-  cgD3D9SetSamplerState( prm,
-                         D3DSAMP_ADDRESSV,
-                         addR[ s.vClamp ] );
-
-  D3DTEXTUREFILTERTYPE filters[] = {
-    D3DTEXF_POINT,
-    D3DTEXF_LINEAR,
-    D3DTEXF_POINT
-    };
-
-  if( s.anisotropic ){
-    cgD3D9SetSamplerState( prm,
-                           D3DSAMP_MINFILTER,
-                           D3DTEXF_ANISOTROPIC );
-    cgD3D9SetSamplerState( prm,
-                           D3DSAMP_MAGFILTER,
-                           D3DTEXF_LINEAR );
-    } else {
-    cgD3D9SetSamplerState( prm,
-                           D3DSAMP_MINFILTER,
-                           filters[ s.minFilter ] );
-    cgD3D9SetSamplerState( prm,
-                           D3DSAMP_MAGFILTER,
-                           filters[ s.magFilter ]);
-    }
-  cgD3D9SetSamplerState(prm, D3DSAMP_MAXANISOTROPY, data->caps.MaxAnisotropy );
-
-  cgD3D9SetSamplerState( prm,
-                         D3DSAMP_MIPFILTER,
-                         D3DTEXF_LINEAR );
-                         //filters[ s.mipFilter ]);//D3DTEXF_NONE
-
-  cgD3D9SetTextureWrapMode(prm, 0);
-
-  if( prog != data->currentProgramFS ||
-      !data->fsCash.fetch(prm, u.value()->handle()) ){
-    cgD3D9SetTexture( prm,
-                      LPDIRECT3DTEXTURE9( get(*u.value()) ) );
-    }
-  }
-
-void CgDx9::setUniform(Tempest::FragmentShader &s,
-                     const float v[],
-                     int l,
-                     const char *name ) const{
+void CgDx9::setUniform( const Tempest::FragmentShader &s,
+                        const float v[],
+                        int l,
+                        const char *name ) const{
   CGprogram   prog = CGprogram( get(s) );
 
   CGparameter prm = cgGetNamedParameter( prog, name);
@@ -423,9 +347,9 @@ void CgDx9::setUniform(Tempest::FragmentShader &s,
 
   }
 
-void CgDx9::setUniform( Tempest::FragmentShader &s,
-                     const Matrix4x4& mIn,
-                     const char *name ) const {
+void CgDx9::setUniform( const Tempest::FragmentShader &s,
+                        const Matrix4x4& mIn,
+                        const char *name ) const {
   Matrix4x4 m = mIn;
   m.transpose();
 
@@ -444,9 +368,9 @@ void CgDx9::setUniform( Tempest::FragmentShader &s,
     }
   }
 
-void CgDx9::setUniform( Tempest::FragmentShader &sh,
-                     const Texture2d& texture,
-                     const char *name ) const{
+void CgDx9::setUniform( const Tempest::FragmentShader &sh,
+                        const Texture2d& texture,
+                        const char *name ) const{
   CGprogram   prog = CGprogram( get(sh) );
   CGparameter prm = cgGetNamedParameter( prog, name );
 

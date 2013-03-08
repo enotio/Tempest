@@ -108,7 +108,8 @@ SOURCES += \
     utils/tessobject.cpp \
     utils/postprocesshelper.cpp \
     utils/color.cpp \
-    ogl/glsl.cpp
+    ogl/glsl.cpp \
+    shading/shaderinput.cpp
 
 HEADERS += \
     window.h \
@@ -168,7 +169,8 @@ HEADERS += \
     utils/postprocesshelper.h \
     utils/cwnptr.h \
     utils/color.h \
-    ogl/glsl.h
+    ogl/glsl.h \
+    shading/shaderinput.h
 
 OTHER_FILES += \
     include/Tempest/Window \

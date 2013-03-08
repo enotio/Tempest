@@ -18,15 +18,15 @@ class IndexBufferHolder;
 
 
 struct DefaultVertex{
-  double x,y,z;
-  double u,v;
-  double normal[3];
+  float x,y,z;
+  float u,v;
+  float normal[3];
   };
 
 struct ModelBounds{
-  double min[3], max[3], mid[3];
-  double diameter() const;
-  double radius() const;
+  float min[3], max[3], mid[3];
+  float diameter() const;
+  float radius() const;
   };
 
 template< class V = DefaultVertex >
@@ -61,7 +61,7 @@ struct RawModel{
     std::copy( r.min, r.min+3, r.max );
 
     for( size_t i=0; i<vertex.size(); ++i ){
-      double v[3] = { vertex[i].x, vertex[i].y, vertex[i].z };
+      float v[3] = { vertex[i].x, vertex[i].y, vertex[i].z };
       for( int q=0; q<3; ++q ){
         r.min[q] = std::min( r.min[q], v[q] );
         r.max[q] = std::max( r.max[q], v[q] );

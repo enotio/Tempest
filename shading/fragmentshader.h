@@ -5,6 +5,8 @@
 #include <Tempest/CopyWhenNeedPtr>
 #include <Tempest/FragmentShaderHolder>
 
+#include "shaderinput.h"
+
 namespace Tempest{
 
 class FragmentShader {
@@ -16,6 +18,8 @@ class FragmentShader {
                                     AbstractShadingLang::FragmentShader >& h );
     Detail::Ptr< AbstractShadingLang::FragmentShader*,
                  FragmentShaderHolder::ImplManip > data;
+    ShaderInput input;
+
 
   friend class AbstractShadingLang;
 
@@ -23,6 +27,7 @@ class FragmentShader {
   friend class AbstractHolderWithLoad;
 
   friend class FragmentShaderHolder;
+  friend class Device;
   };
 
 }

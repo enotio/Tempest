@@ -203,7 +203,7 @@ Model::Bounds Model::Raw::computeBoundRect(const Model::Raw::VertexList &vertex)
   }
 */
 
-double ModelBounds::diameter() const {
+float ModelBounds::diameter() const {
   double s = 0;
   for( int i=0; i<3; ++i )
     s += (max[i]-min[i])*(max[i]-min[i]);
@@ -211,7 +211,7 @@ double ModelBounds::diameter() const {
   return sqrt(s);
   }
 
-double ModelBounds::radius() const {
+float ModelBounds::radius() const {
   double s = 0;
   for( int i=0; i<3; ++i )
     s += (max[i]-mid[i])*(max[i]-mid[i]);

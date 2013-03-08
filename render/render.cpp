@@ -8,8 +8,8 @@
 
 using namespace Tempest;
 
-Render::Render( Tempest::Device & d,
-                const VertexShader &vs, const FragmentShader &fs )
+Render::Render(Tempest::Device & d,
+                VertexShader &vs, FragmentShader &fs )
   :device(d), vsh(vs), fsh(fs) {
   device.beginPaint();
 
@@ -17,7 +17,7 @@ Render::Render( Tempest::Device & d,
   }
 
 Render::Render(Device &d, Texture2d &rt,
-               const VertexShader &vs, const FragmentShader &fs)
+               VertexShader &vs, FragmentShader &fs)
   : device(d), vsh(vs), fsh(fs){
   device.beginPaint( rt );
 
@@ -25,25 +25,25 @@ Render::Render(Device &d, Texture2d &rt,
   }
 
 Render::Render(Device &d, Texture2d &rt, Texture2d &depthStencil,
-               const VertexShader &vs, const FragmentShader &fs)
+               VertexShader &vs, FragmentShader &fs)
   : device(d), vsh(vs), fsh(fs) {
   device.beginPaint( rt, depthStencil );
 
   device.setRenderState( Tempest::RenderState() );
   }
 
-Render::Render( Tempest::Device & d, Texture2d rt[], int count,
-                const VertexShader &vs, const FragmentShader &fs )
+Render::Render(Tempest::Device & d, Texture2d rt[], int count,
+                VertexShader &vs, FragmentShader &fs )
   : device(d), vsh(vs), fsh(fs) {
   device.beginPaint(rt, count);
 
   device.setRenderState( Tempest::RenderState() );
   }
 
-Render::Render( Tempest::Device &d,
+Render::Render(Tempest::Device &d,
                 Texture2d rt[], int count,
                 Texture2d &tex,
-                const VertexShader &vs, const FragmentShader &fs)
+                VertexShader &vs, FragmentShader &fs)
   : device(d), vsh(vs), fsh(fs) {
   device.beginPaint(rt, count, tex);
 

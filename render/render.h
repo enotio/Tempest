@@ -24,30 +24,30 @@ class AbstractCamera;
 class Render {
   public:
     Render( Tempest::Device & d,
-            const Tempest::VertexShader   & vs,
-            const Tempest::FragmentShader & fs );
+            Tempest::VertexShader   & vs,
+            Tempest::FragmentShader & fs );
 
     Render( Tempest::Device & d,
             Texture2d &rt,
-            const Tempest::VertexShader   & vs,
-            const Tempest::FragmentShader & fs );
+            Tempest::VertexShader   & vs,
+            Tempest::FragmentShader & fs );
 
     Render( Tempest::Device & d,
             Texture2d &rt,
             Tempest::Texture2d & depthStencil,
-            const Tempest::VertexShader   & vs,
-            const Tempest::FragmentShader & fs );
+            Tempest::VertexShader   & vs,
+            Tempest::FragmentShader & fs );
 
     Render( Tempest::Device & d,
             Texture2d rt[], int count,
-            const Tempest::VertexShader   & vs,
-            const Tempest::FragmentShader & fs );
+            Tempest::VertexShader   & vs,
+            Tempest::FragmentShader & fs );
 
     Render( Tempest::Device & d,
             Texture2d rt[], int count,
             Tempest::Texture2d & tex,
-            const Tempest::VertexShader   & vs,
-            const Tempest::FragmentShader & fs );
+            Tempest::VertexShader   & vs,
+            Tempest::FragmentShader & fs );
     ~Render();
 
     void clear( const Tempest::Color & cl, double z );
@@ -93,8 +93,8 @@ class Render {
     Tempest::Device & device;
     Tempest::RenderState state;
 
-    Tempest::VertexShader   vsh;
-    Tempest::FragmentShader fsh;
+    Tempest::VertexShader   & vsh;
+    Tempest::FragmentShader & fsh;
 
   friend class UniformTable;
   };

@@ -10,11 +10,11 @@ Tempest::RawModel<> Tempest::TessObject::sphere( int passCount, double R ){
     0,0, {0,0,0}
     };
   Tempest::DefaultVertex v2 = {
-    cos(2*M_PI/3), sin(2*M_PI/3), -0.50,
+    (float)cos(2*M_PI/3), (float)sin(2*M_PI/3), -0.50,
     0,0, {0,0,0}
     };
   Tempest::DefaultVertex v3 = {
-    cos(2*M_PI/3), -sin(2*M_PI/3), -0.5,
+    (float)cos(2*M_PI/3), -(float)sin(2*M_PI/3), -0.5,
     0,0, {0,0,0}
     };
 
@@ -52,21 +52,21 @@ Tempest::RawModel<> Tempest::TessObject::sphere( int passCount, double R ){
     size_t maxI = r.size();
     for( size_t i=0; i<maxI; i+=3 ){
       Tempest::DefaultVertex x = {
-        0.5*(r[i].x+r[i+1].x),
-        0.5*(r[i].y+r[i+1].y),
-        0.5*(r[i].z+r[i+1].z),
+        0.5f*(r[i].x+r[i+1].x),
+        0.5f*(r[i].y+r[i+1].y),
+        0.5f*(r[i].z+r[i+1].z),
         0,0, {0,0,0}
         };
       Tempest::DefaultVertex y = {
-        0.5*(r[i+2].x+r[i+1].x),
-        0.5*(r[i+2].y+r[i+1].y),
-        0.5*(r[i+2].z+r[i+1].z),
+        0.5f*(r[i+2].x+r[i+1].x),
+        0.5f*(r[i+2].y+r[i+1].y),
+        0.5f*(r[i+2].z+r[i+1].z),
         0,0, {0,0,0}
         };
       Tempest::DefaultVertex z = {
-        0.5*(r[i].x+r[i+2].x),
-        0.5*(r[i].y+r[i+2].y),
-        0.5*(r[i].z+r[i+2].z),
+        0.5f*(r[i].x+r[i+2].x),
+        0.5f*(r[i].y+r[i+2].y),
+        0.5f*(r[i].z+r[i+2].z),
         0,0, {0,0,0}
         };
 

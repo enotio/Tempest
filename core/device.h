@@ -5,6 +5,8 @@
 #include <Tempest/AbstractShadingLang>
 
 //#include <Tempest/VertexBuffer>
+#include <Tempest/VertexShader>
+#include <Tempest/FragmentShader>
 
 #include <string>
 
@@ -71,68 +73,78 @@ class Device {
     void setUniform( Tempest::VertexShader &s,
                      const T t[], int l,
                      const std::string & name ){
-      shadingLang().setUniform(s, t, l, name);
+      s.input.set(name, t, l);
+      //shadingLang().setUniform(s, t, l, name);
       }
 
     template< class T >
     void setUniform( Tempest::VertexShader &s,
                      const T t[], int l,
                      const char* name ){
-      shadingLang().setUniform(s, t, l, name);
+      s.input.set(name, t, l);
+      //shadingLang().setUniform(s, t, l, name);
       }
 
     template< class T >
     void setUniform( Tempest::FragmentShader &s,
                      const T t[], int l,
                      const std::string & name ){
-      shadingLang().setUniform( s, t, l, name);
+      s.input.set(name.data(), t, l);
+      //shadingLang().setUniform( s, t, l, name);
       }
 
     template< class T >
     void setUniform( Tempest::FragmentShader &s,
                      const Uniform<T> & u ){
-      shadingLang().setUniform( s, u, u.sinput );
+      s.input.set( u );
+      //shadingLang().setUniform( s, u, u.sinput );
       }
 
     template< class T >
     void setUniform( Tempest::FragmentShader &s,
                      const T t[], int l,
                      const char* name ){
-      shadingLang().setUniform( s, t, l, name);
+      s.input.set(name, t, l);
+      //shadingLang().setUniform( s, t, l, name);
       }
 
     template< class T >
     void setUniform( Tempest::VertexShader &s,
                      const T& t,
                      const std::string & name ){
-      shadingLang().setUniform(s,t,name);
+      s.input.set( name.data(), t );
+      //shadingLang().setUniform(s,t,name);
       }
 
     template< class T >
     void setUniform( Tempest::VertexShader &s,
                      const Uniform<T>& u ){
-      shadingLang().setUniform( s, u, u.sinput );
+      s.input.set( u );
+      //shadingLang().setUniform( s, u, u.sinput );
       }
 
     template< class T >
     void setUniform( Tempest::VertexShader &s,
                      const T& t,
                      const char* name ){
-      shadingLang().setUniform(s,t,name);
+      s.input.set( name, t );
+      //shadingLang().setUniform(s,t,name);
       }
 
     template< class T >
     void setUniform( Tempest::FragmentShader &s,
                      const T& t,
                      const std::string& name ){
-      shadingLang().setUniform(s,t,name);
+      s.input.set( name.data(), t );
+      //shadingLang().setUniform(s,t,name);
       }
 
     template< class T >
     void setUniform( Tempest::FragmentShader &s,
                      const T& t,
                      const char* name ){
-      shadingLang().setUniform(s,t,name);
+      s.input.set( name, t );
+      //shadingLang().setUniform(s,t,name);
       }
 
     template< class T >
