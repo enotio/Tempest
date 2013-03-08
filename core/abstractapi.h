@@ -67,17 +67,17 @@ class AbstractAPI {
     virtual void    deleteDevice( Device* d )  const = 0;
 
     virtual void clear( AbstractAPI::Device *d,
-                        const Color& cl, double z, unsigned stencil ) const = 0;
+                        const Color& cl, float z, unsigned stencil ) const = 0;
 
     virtual void clear( AbstractAPI::Device *d,  const Color& cl )   const = 0;
 
     virtual void clear( AbstractAPI::Device *d,
-                        const Color& cl, double z ) const = 0;
+                        const Color& cl, float z ) const = 0;
     virtual void clear( AbstractAPI::Device *d,
-                        double z, unsigned stencil ) const = 0;
+                        float z, unsigned stencil ) const = 0;
 
     virtual void clearZ( AbstractAPI::Device *d,
-                         double z ) const = 0;
+                         float z ) const = 0;
     virtual void clearStencil( AbstractAPI::Device *d,
                                unsigned stencil ) const = 0;
 

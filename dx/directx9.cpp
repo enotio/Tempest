@@ -89,7 +89,8 @@ void DirectX9::deleteDevice(AbstractAPI::Device *d) const {
   }
 
 void DirectX9::clear( AbstractAPI::Device *d,
-                      const Color& cl, double z, unsigned stencil ) const {
+                      const Color& cl,
+                      float z, unsigned stencil ) const {
   LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
 
   dev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
@@ -105,7 +106,7 @@ void DirectX9::clear(AbstractAPI::Device *d, const Color &cl) const  {
               0, 0 );
   }
 
-void DirectX9::clearZ( AbstractAPI::Device *d, double z ) const  {
+void DirectX9::clearZ( AbstractAPI::Device *d, float z ) const  {
   LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
 
   dev->Clear( 0, 0, D3DCLEAR_ZBUFFER,
@@ -122,7 +123,7 @@ void DirectX9::clearStencil( AbstractAPI::Device *d, unsigned s ) const  {
   }
 
 void DirectX9::clear( AbstractAPI::Device *d,
-                      double z, unsigned s ) const {
+                      float z, unsigned s ) const {
   LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
 
   dev->Clear( 0, 0, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
@@ -130,7 +131,7 @@ void DirectX9::clear( AbstractAPI::Device *d,
               z, s );
   }
 
-void DirectX9::clear( AbstractAPI::Device *d,  const Color& cl, double z ) const{
+void DirectX9::clear( AbstractAPI::Device *d,  const Color& cl, float z ) const{
   LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
 
   dev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
@@ -413,9 +414,9 @@ AbstractAPI::Texture* DirectX9::createTexture( AbstractAPI::Device *d,
     D3DFMT_A8R8G8B8, //Count
     };
 
-  if( f==Tempest::AbstractTexture::Format::Depth16 ||
-      f==Tempest::AbstractTexture::Format::Depth24 ||
-      f==Tempest::AbstractTexture::Format::Depth32 ){
+  if( f==AbstractTexture::Format::Depth16 ||
+      f==AbstractTexture::Format::Depth24 ||
+      f==AbstractTexture::Format::Depth32 ){
 /*
     LPDIRECT3DSURFACE9 surf = 0;
 
@@ -596,9 +597,9 @@ AbstractAPI::VertexDecl *
   /*
   D3DVERTEXELEMENT9 declaration[] =
   {
-      { 0, 0,  D3DDECLTYPE_double3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-      { 0, 12, D3DDECLTYPE_double2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-      { 0, 20, D3DDECLTYPE_double3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },
+      { 0, 0,  D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+      { 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+      { 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },
       D3DDECL_END()
   };*/
 
@@ -609,13 +610,13 @@ AbstractAPI::VertexDecl *
     e.Offset = 4*de[i].component;
     e.Type   = ct[ de[i].component-1 ];
 
-    if( de[i].component==Tempest::Decl::color )
+    if( de[i].component==Decl::color )
       e.Offset = 4;
 
-    if( de[i].component==Tempest::Decl::short2 )
+    if( de[i].component==Decl::short2 )
       e.Offset = 4;
 
-    if( de[i].component==Tempest::Decl::short4 )
+    if( de[i].component==Decl::short4 )
       e.Offset = 8;
 
     e.Method = D3DDECLMETHOD_DEFAULT;
@@ -763,7 +764,7 @@ void DirectX9::setRenderState( AbstractAPI::Device *d,
   dev->SetRenderState( D3DRS_ZFUNC,        f );
   dev->SetRenderState( D3DRS_ZWRITEENABLE, r.isZWriting() );
 
-  if( r.alphaTestMode()!=Tempest::RenderState::AlphaTestMode::Always ){
+  if( r.alphaTestMode()!=RenderState::AlphaTestMode::Always ){
     dev->SetRenderState( D3DRS_ALPHATESTENABLE, TRUE );
     dev->SetRenderState( D3DRS_ALPHAFUNC, cmp[ r.alphaTestMode() ] );
     dev->SetRenderState( D3DRS_ALPHAREF, 255*r.alphaTestRef() );

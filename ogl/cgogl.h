@@ -78,6 +78,7 @@ class CgOGL : public AbstractShadingLang {
     FragmentShader* createFragmentShader( const std::string& fname ) const;
     FragmentShader* createFragmentShaderFromSource( const std::string& src ) const;
     void            deleteFragmentShader( FragmentShader* s ) const;
+
   private:
     struct Data;
     Data *data;

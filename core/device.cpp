@@ -79,7 +79,7 @@ Device::~Device(){
   api.deleteDevice( impl );
   }
 
-void Device::clear(const Color &cl, double z, unsigned s) {
+void Device::clear(const Color &cl, float z, unsigned s) {
   api.clear(impl, cl, z, s);
   }
 
@@ -87,15 +87,15 @@ void Device::clear( const Color& cl ) {
   api.clear(impl, cl );
   }
 
-void Device::clear( const Color& cl, double z ) {
+void Device::clear( const Color& cl, float z ) {
   api.clear(impl, cl, z);
   }
 
-void Device::clear( double z, unsigned s ) {
+void Device::clear(float z, unsigned s ) {
   api.clear(impl, z, s);
   }
 
-void Device::clearZ( double z ) {
+void Device::clearZ(float z ) {
   api.clearZ(impl, z);
   }
 

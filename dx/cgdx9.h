@@ -24,12 +24,12 @@ class CgDx9 : public AbstractShadingLang {
     void unBind( const Tempest::FragmentShader& ) const;
 
 
-    void setUniform( Tempest::VertexShader &s,
-                     const Uniform<double[2]> & u,
+    void setUniform(Tempest::VertexShader &s,
+                     const Uniform<float[2]> &u,
                      Detail::ShInput & in ) const;
 
     void setUniform( Tempest::VertexShader &s,
-                     const Uniform<double[3]> & u,
+                     const Uniform<float[3]> & u,
                      Detail::ShInput & in ) const;
 
     void setUniform( Tempest::VertexShader &s,
@@ -37,16 +37,16 @@ class CgDx9 : public AbstractShadingLang {
                      const char* name ) const;
 
     void setUniform( Tempest::VertexShader &s,
-                     const double v[],
+                     const float v[],
                      int l,
                      const char* name ) const;
 
     void setUniform( Tempest::FragmentShader &s,
-                     const Uniform<double[2]> & u,
+                     const Uniform<float[2]> & u,
                      Detail::ShInput & in ) const;
 
     void setUniform( Tempest::FragmentShader &s,
-                     const Uniform<double[3]> & u,
+                     const Uniform<float[3]> & u,
                      Detail::ShInput & in ) const;
 
     void setUniform( Tempest::FragmentShader &s,
@@ -62,7 +62,7 @@ class CgDx9 : public AbstractShadingLang {
                      const char* name ) const;
 
     void setUniform( Tempest::FragmentShader &s,
-                     const double v[],
+                     const float v[],
                      int l,
                      const char* name ) const;
 

@@ -2,7 +2,7 @@
 #define VERTEXBUFFERHOLDER_H
 
 #include <Tempest/AbstractHolder>
-//#include <MyGL/VertexBuffer>
+//#include <Tempest/VertexBuffer>
 
 namespace Tempest{
 

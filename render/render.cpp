@@ -61,10 +61,10 @@ void Render::clear( const Tempest::Color & cl, double z ){
 /*
 void Render::draw( const AbstractMaterial & mat,
                    const Model & model,
-                   const MyGL::Matrix4x4 & object,
+                   const Tempest::Matrix4x4 & object,
                    const AbstractCamera & camera ){
-  MyGL::UniformTable table( device, vsh, fsh );
-  MyGL::RenderState rs;
+  Tempest::UniformTable table( device, vsh, fsh );
+  Tempest::RenderState rs;
 
   if( mat.bind( rs, object, camera, table ) ){
     device.setRenderState(rs);

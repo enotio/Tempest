@@ -19,13 +19,13 @@ class DirectX9 : public AbstractAPI {
     void    deleteDevice( Device* d )  const;
 
     void clear( AbstractAPI::Device *d,
-                const Color& cl, double z, unsigned stencil ) const ;
+                const Color& cl, float z, unsigned stencil ) const ;
 
     void clear( AbstractAPI::Device *d,  const Color& cl ) const;
-    void clear( AbstractAPI::Device *d,  const Color& cl, double z ) const;
-    void clear( AbstractAPI::Device *d,  double z, unsigned stencil ) const;
+    void clear( AbstractAPI::Device *d,  const Color& cl, float z ) const;
+    void clear( AbstractAPI::Device *d,  float z, unsigned stencil ) const;
 
-    void clearZ( AbstractAPI::Device *d,  double z ) const;
+    void clearZ( AbstractAPI::Device *d,  float z ) const;
     void clearStencil( AbstractAPI::Device *d,  unsigned stencil ) const;
 
     void beginPaint( AbstractAPI::Device *d ) const;

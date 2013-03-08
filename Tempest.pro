@@ -1,9 +1,10 @@
 QT       -= core gui
 
-CONFIG += opengl
+CONFIG += directx
 
 TARGET = Tempest
 TEMPLATE = lib
+#CONFIG += staticlib
 
 #DEFINES += __ANDROID__
 INCLUDEPATH += math
@@ -106,7 +107,8 @@ SOURCES += \
     shading/abstractshadinglang.cpp \
     utils/tessobject.cpp \
     utils/postprocesshelper.cpp \
-    utils/color.cpp
+    utils/color.cpp \
+    ogl/glsl.cpp
 
 HEADERS += \
     window.h \
@@ -165,7 +167,8 @@ HEADERS += \
     utils/tessobject.h \
     utils/postprocesshelper.h \
     utils/cwnptr.h \
-    utils/color.h
+    utils/color.h \
+    ogl/glsl.h
 
 OTHER_FILES += \
     include/Tempest/Window \

@@ -47,15 +47,15 @@ class AbstractSceneObject {
       visible = v;
       }
 
-    virtual double x() const = 0;
-    virtual double y() const = 0;
-    virtual double z() const = 0;
+    virtual float x() const = 0;
+    virtual float y() const = 0;
+    virtual float z() const = 0;
 
-    virtual double sizeX() const = 0;
-    virtual double sizeY() const = 0;
-    virtual double sizeZ() const = 0;
+    virtual float sizeX() const = 0;
+    virtual float sizeY() const = 0;
+    virtual float sizeZ() const = 0;
 
-    virtual double radius() const = 0;
+    virtual float radius() const = 0;
   protected:
     virtual void render( const Tempest::AbstractMaterial & mat,
                          Tempest::Render & r,

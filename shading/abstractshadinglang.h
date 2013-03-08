@@ -5,6 +5,8 @@
 #include <Tempest/AbstractAPI>
 #include <Tempest/Uniform>
 
+#include <map>
+
 namespace Tempest{
 
 class VertexShader;
@@ -23,6 +25,9 @@ class AbstractShadingLang {
     virtual void beginPaint() const {}
     virtual void endPaint()   const {}
 
+    virtual void enable()  const {}
+    virtual void disable() const {}
+
     virtual void bind( const Tempest::VertexShader& ) const = 0;
     virtual void bind( const Tempest::FragmentShader& ) const = 0;
 
@@ -31,11 +36,11 @@ class AbstractShadingLang {
 
 
     virtual void setUniform( Tempest::VertexShader &s,
-                             const Uniform<double[2]> & u,
+                             const Uniform<float[2]> & u,
                              Detail::ShInput & in ) const = 0;
 
     virtual void setUniform( Tempest::VertexShader &s,
-                             const Uniform<double[3]> & u,
+                             const Uniform<float[3]> & u,
                              Detail::ShInput & in ) const = 0;
 
     virtual void setUniform( Tempest::VertexShader &s,
@@ -43,15 +48,15 @@ class AbstractShadingLang {
                              const char* name) const = 0;
 
     virtual void setUniform( Tempest::VertexShader &s,
-                             const double v[], int l,
+                             const float v[], int l,
                              const char* name ) const = 0;
 
     virtual void setUniform( Tempest::FragmentShader &s,
-                             const Uniform<double[2]> & u,
+                             const Uniform<float[2]> & u,
                              Detail::ShInput & in ) const = 0;
 
     virtual void setUniform( Tempest::FragmentShader &s,
-                             const Uniform<double[3]> & u,
+                             const Uniform<float[3]> & u,
                              Detail::ShInput & in ) const = 0;
 
     virtual void setUniform( Tempest::FragmentShader &s,
@@ -67,7 +72,7 @@ class AbstractShadingLang {
                              const char* name ) const = 0;
 
     virtual void setUniform( Tempest::FragmentShader &s,
-                             const double v[], int l,
+                             const float v[], int l,
                              const char* name ) const = 0;
 
     class VertexShader;
@@ -90,6 +95,18 @@ class AbstractShadingLang {
     static VertexShader*   get( const Tempest::VertexShader   & s );
     static FragmentShader* get( const Tempest::FragmentShader & s );
     static AbstractAPI::Texture* get( const Tempest::Texture2d & s );
+
+    template< int s >
+    struct Vec{
+      float data[s];
+      };
+
+    struct UniformBlock{
+      std::map<std::string, Vec<1> > v1;
+      std::map<std::string, Vec<2> > v2;
+      std::map<std::string, Vec<3> > v3;
+      std::map<std::string, Vec<4> > v4;
+      };
   };
 
 }

@@ -23,35 +23,35 @@ const Model::Bounds &Model::bounds() const {
   }
 */
 /*
-MyGL::AbstractAPI::PrimitiveType Model::primitiveType() const {
-  return MyGL::AbstractAPI::Triangle;
+Tempest::AbstractAPI::PrimitiveType Model::primitiveType() const {
+  return Tempest::AbstractAPI::Triangle;
   }
 
 const VertexBuffer<Model::Vertex> &Model::vertexes() const {
   return vbo;
   }
 
-const MyGL::VertexDeclaration& Model::declaration() const {
+const Tempest::VertexDeclaration& Model::declaration() const {
   return vdecl;
   }
 
-void Model::load( MyGL::VertexBufferHolder &vboHolder,
-                  MyGL::IndexBufferHolder  &iboHolder,
+void Model::load( Tempest::VertexBufferHolder &vboHolder,
+                  Tempest::IndexBufferHolder  &iboHolder,
                   const std::string &fname ){
   Model::Raw r = loadRawData( fname );
 
   load( vboHolder, iboHolder, r.vertex );
   }
 
-void Model::load ( MyGL::VertexBufferHolder & vboHolder,
-                   MyGL::IndexBufferHolder  & iboHolder,
+void Model::load ( Tempest::VertexBufferHolder & vboHolder,
+                   Tempest::IndexBufferHolder  & iboHolder,
                    const std::vector<Vertex>& buf ){
-  MyGL::VertexDeclaration::Declarator decl;
-  decl.add( MyGL::Decl::double3, MyGL::Usage::Position )
-      .add( MyGL::Decl::double2, MyGL::Usage::TexCoord )
-      .add( MyGL::Decl::double3, MyGL::Usage::Normal   );
+  Tempest::VertexDeclaration::Declarator decl;
+  decl.add( Tempest::Decl::double3, Tempest::Usage::Position )
+      .add( Tempest::Decl::double2, Tempest::Usage::TexCoord )
+      .add( Tempest::Decl::double3, Tempest::Usage::Normal   );
 
-  vdecl = MyGL::VertexDeclaration( vboHolder.device(), decl );
+  vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
 
   m_size = buf.size();
   vbo = vboHolder.load( buf.data(), buf.size() );
@@ -62,26 +62,26 @@ void Model::load ( MyGL::VertexBufferHolder & vboHolder,
 void Model::load( VertexBufferHolder &vboHolder,
                   IndexBufferHolder  &iboHolder,
                   const Model::Raw   &data ) {
-  MyGL::VertexDeclaration::Declarator decl;
-  decl.add( MyGL::Decl::double3, MyGL::Usage::Position )
-      .add( MyGL::Decl::double2, MyGL::Usage::TexCoord )
-      .add( MyGL::Decl::double3, MyGL::Usage::Normal   );
+  Tempest::VertexDeclaration::Declarator decl;
+  decl.add( Tempest::Decl::double3, Tempest::Usage::Position )
+      .add( Tempest::Decl::double2, Tempest::Usage::TexCoord )
+      .add( Tempest::Decl::double3, Tempest::Usage::Normal   );
 
   int vsize = 3+2+3;
-  size_t csize[ MyGL::Usage::Count ] = {};
+  size_t csize[ Tempest::Usage::Count ] = {};
 
-  for( int i=MyGL::Usage::Position; i<MyGL::Usage::Count; ++i ){
-    if( i!=MyGL::Usage::Position &&
-        i!=MyGL::Usage::TexCoord &&
-        i!=MyGL::Usage::Normal   ){
+  for( int i=Tempest::Usage::Position; i<Tempest::Usage::Count; ++i ){
+    if( i!=Tempest::Usage::Position &&
+        i!=Tempest::Usage::TexCoord &&
+        i!=Tempest::Usage::Normal   ){
       csize[i] = data.udata[i].size()/data.vertex.size();
-      decl.add( MyGL::Decl::ComponentType(MyGL::Decl::double0+csize[i]),
-                MyGL::Usage::UsageType(i) );
+      decl.add( Tempest::Decl::ComponentType(Tempest::Decl::double0+csize[i]),
+                Tempest::Usage::UsageType(i) );
       vsize += csize[i];
       }
     }
 
-  vdecl = MyGL::VertexDeclaration( vboHolder.device(), decl );
+  vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
 
   m_size = data.vertex.size();
   std::vector<double> pack;
@@ -103,7 +103,7 @@ void Model::load( VertexBufferHolder &vboHolder,
     v[7] = vstd.normal[2];
 
     v += 8;
-    for( int u=MyGL::Usage::Position; u<MyGL::Usage::Count; ++u ){
+    for( int u=Tempest::Usage::Position; u<Tempest::Usage::Count; ++u ){
       for( size_t r=0; r<csize[u]; ++r ){
         v[r] = data.udata[u][ n*csize[u]+r ];
         }

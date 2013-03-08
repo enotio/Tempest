@@ -10,8 +10,8 @@ PostProcessHelper::PostProcessHelper( Tempest::VertexBufferHolder&  vb,
   :vbo(vb), ibo(ib) {
 
   Tempest::VertexDeclaration::Declarator decl;
-  decl.add( Tempest::Decl::double2, Tempest::Usage::Position )
-      .add( Tempest::Decl::double2, Tempest::Usage::TexCoord );
+  decl.add( Tempest::Decl::float2, Tempest::Usage::Position )
+      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord );
 
   vdecl = Tempest::VertexDeclaration( vbo.device(), decl );
 

@@ -4,7 +4,7 @@
 #include <Tempest/AbstractAPI>
 #include <Tempest/AbstractShadingLang>
 
-//#include <MyGL/VertexBuffer>
+//#include <Tempest/VertexBuffer>
 
 #include <string>
 
@@ -43,13 +43,13 @@ class Device {
             void * windowHwnd );
     ~Device();
 
-    void clear( const Color& cl, double z, unsigned stemcil );
+    void clear(const Color& cl, float z, unsigned stemcil );
 
     void clear( const Color& cl );
-    void clear( const Color& cl, double z );
-    void clear( double z, unsigned stencil );
+    void clear( const Color& cl, float z );
+    void clear( float z, unsigned stencil );
 
-    void clearZ( double z );
+    void clearZ( float z );
     void clearStencil( unsigned stencil );
 
     void beginPaint();
@@ -149,10 +149,13 @@ class Device {
       bind(vs);
       bind(fs);
       bind(decl);
+
+      shadingLang().enable();
       bind( vbo.data.const_value(), sizeof(T) );
 
       draw( t, firstVertex + vbo.m_first, pCount );
 
+      shadingLang().disable();
       //unBind(vs);
       //unBind(fs);
       }
@@ -173,12 +176,14 @@ class Device {
       bind( vbo.data.const_value(), sizeof(T) );
       bind( ibo.data.const_value() );
 
+      shadingLang().enable();
       drawIndexedPrimitive(  t,
                              vboOffsetIndex + vbo.m_first,
                              minIndex,
                              vertexCount,
                              firstIndex,
                              pCount );
+      shadingLang().disable();
 
       //unBind(vs);
       //unBind(fs);

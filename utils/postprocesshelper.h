@@ -26,8 +26,8 @@ class PostProcessHelper {
     Tempest::IndexBufferHolder &  ibo;
 
     struct Vertex{
-      double x,y;
-      double u,v;
+      float x,y;
+      float u,v;
       };
 
     Tempest::VertexBuffer<Vertex> quad;

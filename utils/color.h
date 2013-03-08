@@ -3,33 +3,31 @@
 
 namespace Tempest{
 
-
 	//! Цвет, rgba, [0..1], одинарная точность.
 	class Color{
-		public:
-		//! Тип, используемый для хранения канала.
-		typedef double ChanelType;
-
+    public:
 			//! Констуктор. Эквивалентно Color(1.0).
 			Color();
+
 			//! Тоже конструктор. Всем каналам будет задано значение rgba.
-			Color( ChanelType rgba );
+      Color( float rgba );
+
 			//! Конструктор.
-			Color( ChanelType r, ChanelType g,
-             ChanelType b, ChanelType a = 1.0 );
+      Color( float r, float g,
+             float b, float a = 1.0 );
 
 
 			//! Задание всех каналов явно.
-			void set(ChanelType r,
-							 ChanelType g,
-							 ChanelType b,
-							 ChanelType a);
+      void set(float r,
+               float g,
+               float b,
+               float a);
 			//! Перегруженная функция, введена для удобства.
-			void set( ChanelType rgba );
+      void set( float rgba );
 
 			//! Получить 4х элементный массив,
 			//! элементы которого являются значениями каналов.
-			const ChanelType * data() const;
+      const float * data() const;
 
 			//! Присваивание.
 			Color& operator = ( const Color & other);
@@ -45,15 +43,15 @@ namespace Tempest{
 			void operator -= ( const Color & other);
 
 			//! Канал red.
-			ChanelType r() const;
+      float r() const;
 			//! Канал green.
-			ChanelType g() const;
+      float g() const;
 			//! Канал blue.
-			ChanelType b() const;
+      float b() const;
 			//! alpha канал.
-			ChanelType a() const;
+      float a() const;
 		private:
-			ChanelType cdata[4];
+      float cdata[4];
 	};
 
 }

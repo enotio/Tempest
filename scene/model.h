@@ -169,9 +169,9 @@ class Model {
                const std::string&        fname ){
       Model::Raw r = loadRawData( fname );
       Tempest::VertexDeclaration::Declarator decl;
-      decl.add( Tempest::Decl::double3, Tempest::Usage::Position )
-          .add( Tempest::Decl::double2, Tempest::Usage::TexCoord )
-          .add( Tempest::Decl::double3, Tempest::Usage::Normal   );
+      decl.add( Tempest::Decl::float3, Tempest::Usage::Position )
+          .add( Tempest::Decl::float2, Tempest::Usage::TexCoord )
+          .add( Tempest::Decl::float3, Tempest::Usage::Normal   );
 
       load( vboHolder, iboHolder, r.vertex, decl );
       }

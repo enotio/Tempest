@@ -38,12 +38,12 @@ class Uniform<float[2]> {
       return mname;
       }
 
-    void set( double x, double y ){
+    void set( float x, float y ){
       data[0] = x;
       data[1] = y;
       }
 
-    void set( const double x[2] ){
+    void set( const float x[2] ){
       data[0] = x[0];
       data[1] = x[1];
       }
@@ -72,13 +72,13 @@ class Uniform<float[3]> {
       return mname;
       }
 
-    void set( double x, double y, double z ){
+    void set( float x, float y, float z ){
       data[0] = x;
       data[1] = y;
       data[2] = z;
       }
 
-    void set( const double x[3] ){
+    void set( const float x[3] ){
       data[0] = x[0];
       data[1] = x[1];
       data[2] = x[2];

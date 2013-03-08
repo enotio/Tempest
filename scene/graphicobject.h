@@ -157,39 +157,39 @@ class GraphicObject : public AbstractGraphicObject<Material> {
       updateMat();
       }
 
-    virtual double x() const {
+    virtual float x() const {
       return pos[0];
       }
 
-    virtual double y() const {
+    virtual float y() const {
       return pos[1];
       }
 
-    virtual double z() const {
+    virtual float z() const {
       return pos[2];
       }
 
-    virtual double sizeX() const {
+    virtual float sizeX() const {
       return size[0];
       }
 
-    virtual double sizeY() const {
+    virtual float sizeY() const {
       return size[1];
       }
 
-    virtual double sizeZ() const {
+    virtual float sizeZ() const {
       return size[2];
       }
 
-    virtual double angleX() const {
+    virtual float angleX() const {
       return rx;
       }
 
-    virtual double angleZ() const{
+    virtual float angleZ() const{
       return rz;
       }
 
-    virtual double radius() const {
+    virtual float radius() const {
       return radi;
       }
   private:

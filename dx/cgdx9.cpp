@@ -248,13 +248,13 @@ void CgDx9::unBind( const Tempest::FragmentShader& s ) const {
   }
 
 void CgDx9::setUniform( Tempest::VertexShader &s,
-                     const Uniform<double[2]> &u,
-                     Detail::ShInput & /*in*/ ) const {
+                        const Uniform<float[2]> &u,
+                        Detail::ShInput & /*in*/ ) const {
   CGprogram   prog = CGprogram( get(s) );
 
   CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
 
-  const double v[4] = { u[0], u[1], 0, 0 };
+  const float v[4] = { u[0], u[1], 0, 0 };
   if( prog != data->currentProgramVS || !data->vsCash.fetch(prm, v, 2) ){
     Data::dbg(prm, data->context);
     cgD3D9SetUniform( prm, v );
@@ -263,13 +263,13 @@ void CgDx9::setUniform( Tempest::VertexShader &s,
   }
 
 void CgDx9::setUniform( Tempest::VertexShader &s,
-                     const Uniform<double[3]> &u,
-                     Detail::ShInput & /*in*/ ) const {
+                        const Uniform<float[3]> &u,
+                        Detail::ShInput & /*in*/ ) const {
   CGprogram   prog = CGprogram( get(s) );
 
   CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
 
-  const double v[4] = { u[0], u[1], u[2], 0 };
+  const float v[4] = { u[0], u[1], u[2], 0 };
   if( prog != data->currentProgramVS || !data->vsCash.fetch(prm, v, 3) ){
     Data::dbg(prm, data->context);
     cgD3D9SetUniform( prm, v );
@@ -299,8 +299,8 @@ void CgDx9::setUniform( Tempest::VertexShader &s,
     }
   }
 
-void CgDx9::setUniform( Tempest::VertexShader &s,
-                     const double v[],
+void CgDx9::setUniform(Tempest::VertexShader &s,
+                     const float v[],
                      int l, const char *name ) const{
   CGprogram   prog = CGprogram( get(s) );
 
@@ -313,13 +313,13 @@ void CgDx9::setUniform( Tempest::VertexShader &s,
   }
 
 void CgDx9::setUniform( Tempest::FragmentShader &s,
-                     const Uniform<double[2]> &u,
-                     Detail::ShInput & /*in*/ ) const {
+                        const Uniform<float[2]> &u,
+                        Detail::ShInput & /*in*/ ) const {
   CGprogram   prog = CGprogram( get(s) );
 
   CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
 
-  const double v[4] = { u[0], u[1], 0, 0 };
+  const float v[4] = { u[0], u[1], 0, 0 };
   if( prog != data->currentProgramFS || !data->fsCash.fetch(prm, v, 2) ){
     Data::dbg(prm, data->context);
     cgD3D9SetUniform( prm, v );
@@ -328,13 +328,13 @@ void CgDx9::setUniform( Tempest::FragmentShader &s,
   }
 
 void CgDx9::setUniform( Tempest::FragmentShader &s,
-                     const Uniform<double[3]> &u,
-                     Detail::ShInput & /*in*/ ) const {
+                        const Uniform<float[3]> &u,
+                        Detail::ShInput & /*in*/ ) const {
   CGprogram   prog = CGprogram( get(s) );
 
   CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
 
-  const double v[4] = { u[0], u[1], u[2], 0 };
+  const float v[4] = { u[0], u[1], u[2], 0 };
   if( prog != data->currentProgramFS || !data->fsCash.fetch(prm, v, 3) ){
     Data::dbg(prm, data->context);
     cgD3D9SetUniform( prm, v );
@@ -408,8 +408,8 @@ void CgDx9::setUniform( Tempest::FragmentShader &sh,
     }
   }
 
-void CgDx9::setUniform( Tempest::FragmentShader &s,
-                     const double v[],
+void CgDx9::setUniform(Tempest::FragmentShader &s,
+                     const float v[],
                      int l,
                      const char *name ) const{
   CGprogram   prog = CGprogram( get(s) );

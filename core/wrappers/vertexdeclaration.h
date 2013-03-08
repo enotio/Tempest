@@ -11,11 +11,11 @@ class Device;
 namespace Decl{
 
 enum ComponentType{
-  double0 = 0, // just trick
-  double1 = 1,
-  double2 = 2,
-  double3 = 3,
-  double4 = 4,
+  float0 = 0, // just trick
+  float1 = 1,
+  float2 = 2,
+  float3 = 3,
+  float4 = 4,
 
   color  = 5,
   short2 = 6,

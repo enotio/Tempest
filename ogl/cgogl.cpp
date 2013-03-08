@@ -1,6 +1,6 @@
 #include "CgOGL.h"
 
-#include <gl/gl.h>
+#include <GL/gl.h>
 #include <Cg/Cg.h>
 #include <Cg/cgGL.h>
 

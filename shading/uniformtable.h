@@ -4,6 +4,8 @@
 #include <Tempest/Texture2d>
 #include <Tempest/Matrix4x4>
 
+#include <Tempest/Device>
+
 #include <string>
 #include <utility>
 
@@ -52,7 +54,6 @@ class UniformTable {
       }
 
   private:
-
     void addImpl( const Tempest::Texture2d& t,
                   const char* name,
                   Taget taget );
@@ -61,14 +62,26 @@ class UniformTable {
                   const char* name,
                   Taget taget );
 
-    void addImpl( double t,
+    void addImpl( float v,
                   const char* name,
-                  Taget taget );
+                  Taget t ){
+      if( t==Vertex ){
+        device.setUniform( vs, &v, 1, name );
+        } else {
+        device.setUniform( fs, &v, 1, name );
+        }
+      }
 
-    void addImpl( const double t[],
+    void addImpl( const float v[],
                   int sz,
                   const char* name,
-                  Taget taget );
+                  Taget t ) {
+      if( t==Vertex ){
+        device.setUniform( vs, v, sz, name );
+        } else {
+        device.setUniform( fs, v, sz, name );
+        }
+      }
 
     Device & device;
     Tempest::VertexShader &   vs;
