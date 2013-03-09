@@ -1,6 +1,13 @@
 #include "pixmap.h"
 
+#ifndef __ANDROID__
 #include <IL/il.h>
+#endif
+
+#ifdef __ANDROID__
+#include <SDL.h>
+#endif
+
 #include <iostream>
 
 #include "core/wrappers/atomic.h"
@@ -77,6 +84,33 @@ Pixmap &Pixmap::operator =(const Pixmap &p) {
   }
 
 bool Pixmap::load( const std::string &f ) {
+#ifdef __ANDROID__
+   int n_colours = 0;
+
+   SDL_Surface* surface = SDL_LoadBMP( f.data() );
+   if(!surface)
+     return 0;
+
+   n_colours = surface->format->BytesPerPixel;
+   if( n_colours!=3 && n_colours!=4 ) {
+     return 0;
+     }
+
+   int ix[] = {0,1,2,3};
+   Data * image = new Data();
+   initRawData<unsigned char,   1>( *image, surface->pixels, n_colours, ix );
+ /*
+   glGenTextures(1, &texture);
+   glBindTexture(GL_TEXTURE_2D, texture);
+
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+   glTexImage2D(GL_TEXTURE_2D, 0, format, surface->w, surface->h, 0,
+                format, GL_UNSIGNED_BYTE, surface->pixels);*/
+
+   SDL_FreeSurface(surface);
+#else
   initImgLib();
   bool ok = true;
 
@@ -139,6 +173,7 @@ bool Pixmap::load( const std::string &f ) {
   ilDeleteImages( 1, &id );
 
   return ok;
+#endif
   }
 /*
 int Pixmap::width() const {
@@ -188,6 +223,7 @@ void Pixmap::addAlpha() {
   }
 
 void Pixmap::initImgLib() {
+#ifndef __ANDROID__
   Tempest::Detail::Atomic::begin();
 
   static bool wasInit = false;
@@ -198,6 +234,7 @@ void Pixmap::initImgLib() {
   wasInit = true;
 
   Tempest::Detail::Atomic::end();
+#endif
   }
 
 template< class ChanelType, int mul >
@@ -221,7 +258,7 @@ bool Pixmap::save( const std::string &f ) {
     return false;
 
   initImgLib();
-
+#ifndef __ANDROID__
   Tempest::Detail::Atomic::begin();
   ILuint	id;
   ilGenImages ( 1, &id );
@@ -250,6 +287,8 @@ bool Pixmap::save( const std::string &f ) {
   Tempest::Detail::Atomic::end();
 
   return ok;
+#endif
+  return 0;
   }
 
 

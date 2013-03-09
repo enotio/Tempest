@@ -152,8 +152,9 @@ class Opengl2x : public AbstractAPI {
 
     ShaderLang shaderLang;
 
-    struct Data;
     struct Device;
+    struct Texture;
+    struct Buffer;
     //Data  *data;
 
     mutable Device * dev;

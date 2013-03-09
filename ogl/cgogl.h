@@ -1,6 +1,8 @@
 #ifndef CGOGL_H
 #define CGOGL_H
 
+#ifndef __ANDROID__
+
 #include <Tempest/AbstractShadingLang>
 #include <Tempest/AbstractAPI>
 #include <Tempest/Uniform>
@@ -73,5 +75,6 @@ class CgOGL : public AbstractShadingLang {
 
 }
 
+#endif
 
 #endif // CGOGL_H

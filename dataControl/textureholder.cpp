@@ -182,5 +182,7 @@ AbstractAPI::Texture* TextureHolder::restore( AbstractAPI::Texture* t ){
   }
 
 AbstractAPI::Texture* TextureHolder::copy( AbstractAPI::Texture* ){
+#ifndef __ANDROID__
   throw std::runtime_error("TextureHolder::copy not implemented yet");
+#endif
   }

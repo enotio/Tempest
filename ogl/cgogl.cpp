@@ -1,5 +1,6 @@
 #include "CgOGL.h"
 
+#ifndef __ANDROID__
 #include <GL/gl.h>
 #include <Cg/Cg.h>
 #include <Cg/cgGL.h>
@@ -429,3 +430,5 @@ void CgOGL::setUniform( const Tempest::FragmentShader &sh,
       }
     }
 }
+
+#endif

@@ -1,7 +1,12 @@
 #include "glsl.h"
 
+
+#ifdef __ANDROID__
+#include <GLES2/gl2.h>
+#else
 #include <GL/glew.h>
 #include <GL/gl.h>
+#endif
 
 #include <cassert>
 
@@ -106,7 +111,7 @@ struct GLSL::Data{
 
     // std::cout << n.data() << std::endl;
 
-    return glGetUniformLocation( prog, n.data() );
+    return glGetUniformLocation( prog, &n[0] );
     }
 
   struct ShProgram{
@@ -336,7 +341,7 @@ void GLSL::enable() const {
     setUniforms( program, in.v4, 4 );
     }
 
-  //glUseProgram( 0 ); //FIXME!!!
+  glUseProgram( 0 ); //FIXME!!!
   }
 
 template< class T >

@@ -119,7 +119,7 @@ void LocalVertexBufferHolder::createObject( AbstractAPI::VertexBuffer*& t,
   std::copy( src, src+size*vsize, tmp.begin() );
   std::fill( tmp.begin()+size*vsize, tmp.end(), 0 );
 
-  Tempest::VertexBufferHolder::createObject( t, tmp.data(), d.memSize, 1 );
+  Tempest::VertexBufferHolder::createObject( t, &tmp[0], d.memSize, 1 );
 
   if( !t )
     return;
