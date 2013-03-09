@@ -10,20 +10,26 @@ namespace Tempest{
 
 class Opengl2x : public AbstractAPI {
   public:
-    Opengl2x();
+    enum ShaderLang{
+      Cg,
+      GLSL,
+      GLSL_cgc_gen
+      };
+
+    Opengl2x( ShaderLang s = Cg );
     ~Opengl2x();
 
     Device* createDevice( void * hwnd, const Options & opt ) const;
     void    deleteDevice( Device* d )  const;
 
     void clear( AbstractAPI::Device *d,
-                const Color& cl, double z, unsigned stencil ) const ;
+                const Color& cl, float z, unsigned stencil ) const ;
 
     void clear( AbstractAPI::Device *d,  const Color& cl ) const;
-    void clear( AbstractAPI::Device *d,  const Color& cl, double z ) const;
-    void clear( AbstractAPI::Device *d,  double z, unsigned stencil ) const;
+    void clear( AbstractAPI::Device *d,  const Color& cl, float z ) const;
+    void clear( AbstractAPI::Device *d,  float z, unsigned stencil ) const;
 
-    void clearZ( AbstractAPI::Device *d,  double z ) const;
+    void clearZ( AbstractAPI::Device *d,  float z ) const;
     void clearStencil( AbstractAPI::Device *d,  unsigned stencil ) const;
 
     void beginPaint( AbstractAPI::Device *d ) const;
@@ -143,6 +149,8 @@ class Opengl2x : public AbstractAPI {
   private:
     class Opengl2xImpl;
     Opengl2xImpl* impl;
+
+    ShaderLang shaderLang;
 
     struct Data;
     struct Device;

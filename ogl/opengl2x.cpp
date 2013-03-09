@@ -6,6 +6,7 @@
 #include <GL/gl.h>
 
 #include <Tempest/CgOGL>
+#include <Tempest/GLSL>
 #include <Tempest/RenderState>
 
 #include <map>
@@ -44,7 +45,8 @@ void Opengl2x::errCk() const {
     }
   }
 
-Opengl2x::Opengl2x():impl(0){
+Opengl2x::Opengl2x( ShaderLang sl ):impl(0){
+  shaderLang = sl;
   // impl   = (Opengl2xImpl*)Direct3DCreate9( D3D_SDK_VERSION );
   // data   = new Data();
   }
@@ -141,8 +143,8 @@ void Opengl2x::setDevice( AbstractAPI::Device * d ) const {
   dev = (Device*)d;
   }
 
-void Opengl2x::clear( AbstractAPI::Device *d,
-                      const Color& cl, double z, unsigned stencil ) const {
+void Opengl2x::clear(AbstractAPI::Device *d,
+                      const Color& cl, float z, unsigned stencil ) const {
   setDevice(d);
 
   glClearColor( cl.r(), cl.g(), cl.b(), cl.a() );
@@ -158,7 +160,7 @@ void Opengl2x::clear(AbstractAPI::Device *d, const Color &cl) const  {
   glClear( GL_COLOR_BUFFER_BIT );
   }
 
-void Opengl2x::clearZ( AbstractAPI::Device *d, double z ) const  {
+void Opengl2x::clearZ(AbstractAPI::Device *d, float z ) const  {
   setDevice(d);
 
   glClearDepth( z );
@@ -172,8 +174,8 @@ void Opengl2x::clearStencil( AbstractAPI::Device *d, unsigned s ) const  {
   glClear( GL_STENCIL_BUFFER_BIT );
   }
 
-void Opengl2x::clear( AbstractAPI::Device *d,
-                      double z, unsigned s ) const {
+void Opengl2x::clear(AbstractAPI::Device *d,
+                      float z, unsigned s ) const {
   setDevice(d);
 
   glClearDepth( z );
@@ -182,7 +184,7 @@ void Opengl2x::clear( AbstractAPI::Device *d,
   glClear( GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
   }
 
-void Opengl2x::clear( AbstractAPI::Device *d,  const Color& cl, double z ) const{
+void Opengl2x::clear(AbstractAPI::Device *d,  const Color& cl, float z ) const{
   setDevice(d);
 
   glClearColor( cl.r(), cl.g(), cl.b(), cl.a() );
@@ -582,7 +584,16 @@ const AbstractShadingLang*
   AbstractAPI::OpenGL2xDevice *dev =
       reinterpret_cast<AbstractAPI::OpenGL2xDevice*>(d);
 
-  return new CgOGL( dev );
+  if( shaderLang==Cg )
+    return new CgOGL( dev );
+
+  if( shaderLang==GLSL )
+    return new Tempest::GLSL( dev, false );
+
+  if( shaderLang==GLSL_cgc_gen )
+    return new Tempest::GLSL( dev, true );
+
+  throw std::logic_error("invalid shaders lang");
   }
 
 void Opengl2x::deleteShadingLang( const AbstractShadingLang * l ) const {

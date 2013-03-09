@@ -20,54 +20,13 @@ class CgOGL : public AbstractShadingLang {
     void beginPaint() const;
     void endPaint()   const;
 
+    void enable() const;
+
     void bind( const Tempest::VertexShader& ) const;
     void bind( const Tempest::FragmentShader& ) const;
 
     void unBind( const Tempest::VertexShader& ) const;
     void unBind( const Tempest::FragmentShader& ) const;
-
-
-    void setUniform( Tempest::VertexShader &s,
-                     const Uniform<float[2]> & u,
-                     Detail::ShInput & in ) const;
-
-    void setUniform( Tempest::VertexShader &s,
-                     const Uniform<float[3]> & u,
-                     Detail::ShInput & in ) const;
-
-    void setUniform( Tempest::VertexShader &s,
-                     const Matrix4x4& m,
-                     const char* name ) const;
-
-    void setUniform( Tempest::VertexShader &s,
-                     const float v[],
-                     int l,
-                     const char* name ) const;
-
-    void setUniform( Tempest::FragmentShader &s,
-                     const Uniform<float[2]> & u,
-                     Detail::ShInput & in ) const;
-
-    void setUniform( Tempest::FragmentShader &s,
-                     const Uniform<float[3]> & u,
-                     Detail::ShInput & in ) const;
-
-    void setUniform( Tempest::FragmentShader &s,
-                     const Uniform<Texture2d> & u,
-                     Detail::ShInput & in ) const;
-
-    void setUniform( Tempest::FragmentShader &s,
-                     const Matrix4x4& m,
-                     const char* name ) const;
-
-    void setUniform( Tempest::FragmentShader &s,
-                     const Texture2d& t,
-                     const char* name ) const;
-
-    void setUniform( Tempest::FragmentShader &s,
-                     const float v[],
-                     int l,
-                     const char* name ) const;
 
     void* context() const;
 
@@ -84,7 +43,32 @@ class CgOGL : public AbstractShadingLang {
     Data *data;
 
     void setDevice() const;
-    static void setNullDevice();
+
+    void setUniform( const Tempest::VertexShader &s,
+                     const Matrix4x4& m,
+                     const char* name ) const;
+
+    void setUniform( const Tempest::VertexShader &s,
+                     const float v[],
+                     int l,
+                     const char* name ) const;
+
+
+    void setUniform( const Tempest::FragmentShader &s,
+                     const Matrix4x4& m,
+                     const char* name ) const;
+
+    void setUniform( const Tempest::FragmentShader &s,
+                     const Texture2d& t,
+                     const char* name ) const;
+
+    void setUniform( const Tempest::FragmentShader &s,
+                     const float v[],
+                     int l,
+                     const char* name ) const;
+
+    template< class Sh, class T >
+    void setUniforms( const Sh & s, const T & vN, int c ) const;
   };
 
 }

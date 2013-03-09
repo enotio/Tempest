@@ -1,5 +1,5 @@
 #include "glsl.h"
-/*
+
 #include <GL/glew.h>
 #include <GL/gl.h>
 
@@ -14,6 +14,8 @@
 
 #include <iostream>
 #include <fstream>
+
+#include <cstring>
 
 using namespace Tempest;
 
@@ -32,7 +34,9 @@ struct GLSL::Data{
 
     }
 
-  GLuint currentProgramVS, currentProgramFS;
+  const Tempest::VertexShader*   currentVS;
+  const Tempest::FragmentShader* currentFS;
+
   Detail::UniformCash<GLuint> vsCash, fsCash;
 
   std::string readFile( const char* f ){
@@ -43,13 +47,14 @@ struct GLSL::Data{
     int length = is.tellg();
     is.seekg (0, is.beg);
 
-    char * buffer = new char [length];
-    is.read (buffer,length);
+    std::string src;
+    src.resize( length );
+    is.read ( &src[0], length );
 
     assert(is);
     is.close();
 
-    return buffer;
+    return src;
     }
 
   GLuint loadShader( GLenum shaderType, const char* pSource) {
@@ -84,23 +89,51 @@ struct GLSL::Data{
     return shader;
     }
 
+  GLint location( GLuint prog, const char* name ){
+    if( !cgcgen )
+      return glGetUniformLocation( prog, name );
+
+    static std::vector<char> n;
+    size_t sz = strlen(name)+1;
+
+    if( n.size() <= sz )
+      n.resize( sz+2 );
+
+    n[0] = '_';
+    memcpy( &n[1], name, sz );
+    n[sz  ] = '1';
+    n[sz+1] = '\0';
+
+    // std::cout << n.data() << std::endl;
+
+    return glGetUniformLocation( prog, n.data() );
+    }
+
+  struct ShProgram{
+    const Tempest::VertexShader*   vs;
+    const Tempest::FragmentShader* fs;
+
+    GLuint linked;
+    };
+
+  std::vector<ShProgram> prog;
+  bool cgcgen;
   };
-//LPDIRECT3DDEVICE9 GLSL::Data::currentDev = 0;
 
 void* GLSL::context() const{
   return data->context;
   }
 
-GLSL::GLSL( AbstractAPI::OpenGL2xDevice * dev ) {
+GLSL::GLSL(AbstractAPI::OpenGL2xDevice * dev , bool cgcgen) {
   data = new Data();
-  data->currentProgramVS = 0;
-  data->currentProgramFS = 0;
+  data->currentVS = 0;
+  data->currentFS = 0;
 
   data->context = dev;
+  data->cgcgen  = cgcgen;
   }
 
 GLSL::~GLSL(){
-  setNullDevice();
   delete data;
   }
 
@@ -109,11 +142,13 @@ void Tempest::GLSL::beginPaint() const {
   }
 
 void Tempest::GLSL::endPaint() const {
-  data->currentProgramVS = 0;
+  glUseProgram( 0 );
+
+  data->currentVS = 0;
   data->vsCash.reset();
   //cgGLDisableProfile( data->vertexProfile );
 
-  data->currentProgramFS = 0;
+  data->currentFS = 0;
   data->fsCash.reset();
   //cgGLDisableProfile( data->pixelProfile );
   }
@@ -122,13 +157,10 @@ void GLSL::setDevice() const {
 
   }
 
-void GLSL::setNullDevice(){
-
-  }
-
 AbstractShadingLang::VertexShader*
     GLSL::createVertexShader( const std::string& fname ) const {
-  return createVertexShaderFromSource( data->readFile(fname.data()) );
+  std::string src = data->readFile(fname.data());
+  return createVertexShaderFromSource( src );
   }
 
 AbstractShadingLang::VertexShader*
@@ -148,11 +180,21 @@ void GLSL::deleteVertexShader( VertexShader* s ) const {
   //setNullDevice();
   GLuint* prog = (GLuint*)(s);
   glDeleteShader( *prog );
+
+  for( size_t i=0; i<data->prog.size();  ){
+    if( get( *data->prog[i].vs ) == s ){
+      glDeleteProgram( data->prog[i].linked );
+      data->prog[i] = data->prog.back();
+      data->prog.pop_back();
+      } else
+      ++i;
+    }
   }
 
 AbstractShadingLang::FragmentShader*
     GLSL::createFragmentShader( const std::string& fname ) const{
-  return createFragmentShaderFromSource( data->readFile(fname.data()) );
+  std::string src = data->readFile(fname.data());
+  return createFragmentShaderFromSource( src );
   }
 
 AbstractShadingLang::FragmentShader *
@@ -171,35 +213,36 @@ AbstractShadingLang::FragmentShader *
 void GLSL::deleteFragmentShader( FragmentShader* s ) const{
   GLuint* prog = (GLuint*)(s);
   glDeleteShader( *prog );
+
+  for( size_t i=0; i<data->prog.size();  ){
+    if( get( *data->prog[i].fs ) == s ){
+      glDeleteProgram( data->prog[i].linked );
+      data->prog[i] = data->prog.back();
+      data->prog.pop_back();
+      } else
+      ++i;
+    }
   }
 
 void GLSL::bind( const Tempest::VertexShader& s ) const {
-  CGprogram prog = CGprogram( get(s) );
+  if( data->currentVS == &s )
+    return;
 
-  if( data->currentProgramVS!=prog ){
-    data->currentProgramVS = prog;
-    cgGLBindProgram( prog );
-    cgGLEnableProfile( data->vertexProfile );
-    }
-
-  //setDevice();
+  data->currentVS = &s;
+  data->vsCash.reset();
   }
 
 void GLSL::bind( const Tempest::FragmentShader& s ) const {
-  CGprogram prog = CGprogram( get(s) );
+  if( data->currentFS == &s )
+    return;
 
-  if( data->currentProgramFS!=prog ){
-    data->currentProgramFS = prog;
-    cgGLBindProgram( prog );
-    cgGLEnableProfile( data->pixelProfile );
-    }
-
-  //setDevice();
+  data->currentFS = &s;
+  data->fsCash.reset();
   }
 
 void GLSL::unBind( const Tempest::VertexShader& s ) const {
   //CGprogram prog = CGprogram( get(s) );
-  data->currentProgramVS = 0;
+  data->currentVS = 0;
   data->vsCash.reset();
 
   //setDevice();
@@ -207,185 +250,208 @@ void GLSL::unBind( const Tempest::VertexShader& s ) const {
 
 void GLSL::unBind( const Tempest::FragmentShader& s ) const {
   //CGprogram prog = CGprogram( get(s) );
-  data->currentProgramFS = 0;
+  data->currentFS = 0;
   data->fsCash.reset();
 
   //setDevice();
   }
 
-void GLSL::setUniform( Tempest::VertexShader &s,
-                        const Uniform<float[2]> &u,
-                        Detail::ShInput &  ) const {
-  GLuint   prog = GLuint( get(s) );
+void GLSL::enable() const {
+  GLuint vertexShader = *(GLuint*)get( *data->currentVS );
+  GLuint pixelShader  = *(GLuint*)get( *data->currentFS );
+  GLuint program = 0;
 
-  GLuint prm = glUniformL ( prog, u.name().data() );
+  for( size_t i=0; i<data->prog.size(); ++i )
+    if( data->prog[i].vs==data->currentVS &&
+        data->prog[i].fs==data->currentFS ){
+      program = data->prog[i].linked;
+      }
 
-  const float v[4] = { u[0], u[1], 0, 0 };
-  if( prog != data->currentProgramVS || !data->vsCash.fetch(prm, v, 2) ){
-    Data::dbg(prm, data->context);
-    glUniform2fv( prm, v );
+  if( program==0 ){
+    program = glCreateProgram();
+    assert( program );
+
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, pixelShader);
+    glLinkProgram (program);
+
+    GLint linkStatus = GL_FALSE;
+    glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
+
+    if (linkStatus != GL_TRUE) {
+      GLint bufLength = 0;
+      glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
+
+      if (bufLength) {
+        char* buf = new char[bufLength];
+        if (buf) {
+          //glGetProgramInfoLog(program, bufLength, NULL, buf);
+          std::cerr << buf;
+          delete[] (buf);
+          assert(0);
+        }
+      }
+
+      glDeleteProgram(program);
+      program = 0;
+      }
+
+    Data::ShProgram s;
+    s.vs = data->currentVS;
+    s.fs = data->currentFS;
+    s.linked = program;
+    data->prog.push_back( s );
+
+    GLint vl = glGetAttribLocation ( program, "cg_Vertex");
+    GLint cl = glGetAttribLocation ( program, "COLOR");
+    std::cout << vl;
     }
 
-  }
+  glUseProgram( program );
+  { const ShaderInput & in = inputOf( *data->currentFS );
 
-void GLSL::setUniform( Tempest::VertexShader &s,
-                        const Uniform<float[3]> &u,
-                        Detail::ShInput &  ) const {
-  CGprogram   prog = CGprogram( get(s) );
+    for( size_t i=0; i<in.tex.names.size(); ++i ){
+      setUniform( program, *in.tex.values[i], in.tex.names[i].data(), i );
+      }
 
-  CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
+    for( size_t i=0; i<in.mat.names.size(); ++i ){
+      setUniform( program, in.mat.values[i], in.mat.names[i].data() );
+      }
 
-  const float v[4] = { u[0], u[1], u[2], 0 };
-  if( prog != data->currentProgramVS || !data->vsCash.fetch(prm, v, 3) ){
-    Data::dbg(prm, data->context);
-    cgGLSetParameter3fv( prm, v );
+    setUniforms( program, in.v1, 1 );
+    setUniforms( program, in.v2, 2 );
+    setUniforms( program, in.v3, 3 );
+    setUniforms( program, in.v4, 4 );
     }
 
+  { const ShaderInput & in = inputOf( *data->currentVS );
+
+    for( size_t i=0; i<in.mat.names.size(); ++i ){
+      setUniform( program, in.mat.values[i], in.mat.names[i].data() );
+      }
+
+    setUniforms( program, in.v1, 1 );
+    setUniforms( program, in.v2, 2 );
+    setUniforms( program, in.v3, 3 );
+    setUniforms( program, in.v4, 4 );
+    }
+
+  //glUseProgram( 0 ); //FIXME!!!
   }
 
-void GLSL::setUniform( Tempest::VertexShader &s,
-                        const Matrix4x4& mIn,
-                        const char *name  ) const{
+template< class T >
+void GLSL::setUniforms( unsigned int s, const T & vN, int c ) const{
+  for( size_t i=0; i<vN.names.size(); ++i ){
+    setUniform( s, vN.values[i].v, c, vN.names[i].data() );
+    }
+  }
+
+void GLSL::setUniform( unsigned int s,
+                       const Matrix4x4& mIn,
+                       const char *name  ) const{
   //setDevice();
   Matrix4x4 m = mIn;
 
-  CGprogram   prog = CGprogram( get(s) );
+  GLuint   prog = s;
+  GLint    prm = data->location( prog, name );
 
-  CGparameter prm = cgGetNamedParameter( prog, name );
-
-  if( prog != data->currentProgramVS || !data->vsCash.fetch(prm, m) ){
+  if( !data->vsCash.fetch(prm, m) ){
     float r[16] = {};
     std::copy( m.data(), m.data()+16, r );
-    cgGLSetMatrixParameterfr( prm, r );
+    //glUniformMatrix4fv( prm, 1, false, r );
+    glUniform4fv( prm, 4, r );
     }
   }
 
-void GLSL::setUniform( Tempest::VertexShader &s,
-                        const float v[],
-                        int l,
-                        const char *name ) const{
-  CGprogram   prog = CGprogram( get(s) );
+void GLSL::setUniform( unsigned int s,
+                       const float v[],
+                       int l,
+                       const char *name ) const{
+  GLuint    prog = s;
+  GLint     prm = data->location( prog, name );
 
-  CGparameter prm = cgGetNamedParameter( prog, name);
-
-  if( prog != data->currentProgramVS || !data->vsCash.fetch(prm, v, l) ){
-    Data::dbg(prm, data->context);
+  if( !data->vsCash.fetch(prm, v, l) ){
+    //Data::dbg(prm, data->context);
 
     switch(l){
-      case 1: cgGLSetParameter1fv( prm, v ); break;
-      case 2: cgGLSetParameter2fv( prm, v ); break;
-      case 3: cgGLSetParameter3fv( prm, v ); break;
-      case 4: cgGLSetParameter4fv( prm, v ); break;
+      case 1: glUniform1fv( prm, 1, v ); break;
+      case 2: glUniform2fv( prm, 1, v ); break;
+      case 3: glUniform3fv( prm, 1, v ); break;
+      case 4: glUniform4fv( prm, 1, v ); break;
       }
     }
   }
 
-void GLSL::setUniform( Tempest::FragmentShader &s,
-                        const Uniform<float[2]> &u,
-                        Detail::ShInput & ) const {
-  CGprogram   prog = CGprogram( get(s) );
-
-  CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
-
-  const float v[4] = { u[0], u[1], 0, 0 };
-  if( prog != data->currentProgramFS || !data->fsCash.fetch(prm, v, 2) ){
-    Data::dbg(prm, data->context);
-    cgGLSetParameter2fv( prm, v );
-    }
-
-  }
-
-void GLSL::setUniform( Tempest::FragmentShader &s,
-                        const Uniform<float[3]> &u,
-                        Detail::ShInput & ) const {
-  CGprogram   prog = CGprogram( get(s) );
-
-  CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
-
-  const float v[4] = { u[0], u[1], u[2], 0 };
-  if( prog != data->currentProgramFS || !data->fsCash.fetch(prm, v, 3) ){
-    Data::dbg(prm, data->context);
-    cgGLSetParameter3fv( prm, v );
-    }
-
-  }
-
-void GLSL::setUniform( Tempest::FragmentShader &s,
-                        const float v[],
-                        int l,
-                        const char *name ) const{
-  CGprogram   prog = CGprogram( get(s) );
-
-  CGparameter prm = cgGetNamedParameter( prog, name);
-
-  if( prog != data->currentProgramFS || !data->fsCash.fetch(prm, v, l) ){
-    Data::dbg(prm, data->context);
-
-    switch(l){
-      case 1: cgGLSetParameter1fv( prm, v ); break;
-      case 2: cgGLSetParameter2fv( prm, v ); break;
-      case 3: cgGLSetParameter3fv( prm, v ); break;
-      case 4: cgGLSetParameter4fv( prm, v ); break;
-      }
-    }
-
-  }
-
-void GLSL::setUniform( Tempest::FragmentShader &s,
-                        const Matrix4x4& mIn,
-                        const char *name ) const {
-  Matrix4x4 m = mIn;
-
-  CGprogram   prog = CGprogram( get(s) );
-  CGparameter prm = cgGetNamedParameter( prog, name );
-
-  if( prog != data->currentProgramFS || !data->fsCash.fetch(prm, m) ){
-    float r[16] = {};
-    std::copy( m.data(), m.data()+16, r );
-
-    Data::dbg(prm, data->context);
-    cgGLSetMatrixParameterfr( prm, r );
-    }
-  }
-
-void GLSL::setUniform( Tempest::FragmentShader &sh,
-                        const Uniform<Texture2d> &u,
-                        Detail::ShInput &in ) const {
-  if( !u.value() )
-    return;
-
-  CGprogram   prog = CGprogram( get(sh) );
-  CGparameter prm = cgGetNamedParameter( prog, u.name().data() );
-
-  const Texture2d::Sampler & s = u.value()->sampler();
-  Data::dbg(prm, data->context);
-
-  if( prog != data->currentProgramFS ||
-      !data->fsCash.fetch(prm, u.value()->handle()) ){
-    GLuint* tx = (GLuint*)get(*u.value());
-
-    cgGLSetTextureParameter   ( prm, *tx);
-    cgGLEnableTextureParameter( prm );
-    }
-  }
-
-void GLSL::setUniform( Tempest::FragmentShader &sh,
-                        const Texture2d& u,
-                        const char *name ) const{
-  CGprogram   prog = CGprogram( get(sh) );
-  CGparameter prm = cgGetNamedParameter( prog, name );
+void GLSL::setUniform( unsigned int sh,
+                       const Texture2d& u,
+                       const char *name,
+                       int slot ) const{
+  GLuint    prog = sh;
+  GLint     prm = data->location( prog, name );
 
   const Texture2d::Sampler & s = u.sampler();
-  Data::dbg(prm, data->context);
+  //Data::dbg(prm, data->context);
 
-  if( prog != data->currentProgramFS ||
-      !data->fsCash.fetch(prm, u.handle()) ){
+  /*
+  D3DTEXTUREADDRESS addR[] = {
+    D3DTADDRESS_CLAMP,
+    D3DTADDRESS_BORDER,
+    D3DTADDRESS_MIRRORONCE, //??
+    D3DTADDRESS_MIRROR,
+    D3DTADDRESS_WRAP,
+
+    D3DTADDRESS_WRAP
+    };
+
+  cgD3D9SetSamplerState( prm,
+                         D3DSAMP_ADDRESSU,
+                         addR[ s.uClamp ]);
+  cgD3D9SetSamplerState( prm,
+                         D3DSAMP_ADDRESSV,
+                         addR[ s.vClamp ] );
+
+  D3DTEXTUREFILTERTYPE filters[] = {
+    D3DTEXF_POINT,
+    D3DTEXF_LINEAR,
+    D3DTEXF_POINT
+    };
+
+  if( s.anisotropic ){
+    cgD3D9SetSamplerState( prm,
+                           D3DSAMP_MINFILTER,
+                           D3DTEXF_ANISOTROPIC );
+    cgD3D9SetSamplerState( prm,
+                           D3DSAMP_MAGFILTER,
+                           D3DTEXF_LINEAR );
+    } else {
+    cgD3D9SetSamplerState( prm,
+                           D3DSAMP_MINFILTER,
+                           filters[ s.minFilter ] );
+    cgD3D9SetSamplerState( prm,
+                           D3DSAMP_MAGFILTER,
+                           filters[ s.magFilter ]);
+    }
+  cgD3D9SetSamplerState(prm, D3DSAMP_MAXANISOTROPY, data->caps.MaxAnisotropy );
+
+  cgD3D9SetSamplerState( prm,
+                         D3DSAMP_MIPFILTER,
+                         D3DTEXF_LINEAR );
+                         //filters[ s.mipFilter ]);//D3DTEXF_NONE
+
+  cgD3D9SetTextureWrapMode(prm, 0);
+  */
+
+  if( !data->fsCash.fetch(prm, u.handle()) ){
     GLuint* tx = (GLuint*)get(u);
 
     if( tx ){
-      cgGLSetTextureParameter   ( prm, *tx);
-      cgGLEnableTextureParameter( prm );
+      //cgGLSetTextureParameter   ( prm, *tx);
+      //cgGLEnableTextureParameter( prm );
+      glActiveTexture( GL_TEXTURE0 + slot );
+      glBindTexture( GL_TEXTURE_2D, *tx );
+      glUniform1i( prm, slot );
+
+      glActiveTexture( GL_TEXTURE0 );
       }
     }
-  }
-*/
+}

@@ -1,6 +1,6 @@
 QT       -= core gui
 
-CONFIG += directx
+CONFIG += opengl
 
 TARGET = Tempest
 TEMPLATE = lib

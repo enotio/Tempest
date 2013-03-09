@@ -13,60 +13,19 @@ namespace Tempest {
 
   class GLSL: public AbstractShadingLang {
     public:
-      GLSL( AbstractAPI::OpenGL2xDevice *dev );
+      GLSL( AbstractAPI::OpenGL2xDevice *dev, bool cgcgen );
       ~GLSL();
 
       void beginPaint() const;
       void endPaint()   const;
+
+      void enable() const;
 
       void bind( const Tempest::VertexShader& ) const;
       void bind( const Tempest::FragmentShader& ) const;
 
       void unBind( const Tempest::VertexShader& ) const;
       void unBind( const Tempest::FragmentShader& ) const;
-
-
-      void setUniform( Tempest::VertexShader &s,
-                       const Uniform<float[2]> & u,
-                       Detail::ShInput & in ) const;
-
-      void setUniform( Tempest::VertexShader &s,
-                       const Uniform<float[3]> & u,
-                       Detail::ShInput & in ) const;
-
-      void setUniform( Tempest::VertexShader &s,
-                       const Matrix4x4& m,
-                       const char* name ) const;
-
-      void setUniform( Tempest::VertexShader &s,
-                       const float v[],
-                       int l,
-                       const char* name ) const;
-
-      void setUniform( Tempest::FragmentShader &s,
-                       const Uniform<float[2]> & u,
-                       Detail::ShInput & in ) const;
-
-      void setUniform( Tempest::FragmentShader &s,
-                       const Uniform<float[3]> & u,
-                       Detail::ShInput & in ) const;
-
-      void setUniform( Tempest::FragmentShader &s,
-                       const Uniform<Texture2d> & u,
-                       Detail::ShInput & in ) const;
-
-      void setUniform( Tempest::FragmentShader &s,
-                       const Matrix4x4& m,
-                       const char* name ) const;
-
-      void setUniform( Tempest::FragmentShader &s,
-                       const Texture2d& t,
-                       const char* name ) const;
-
-      void setUniform( Tempest::FragmentShader &s,
-                       const float v[],
-                       int l,
-                       const char* name ) const;
 
       void* context() const;
 
@@ -82,7 +41,23 @@ namespace Tempest {
       Data *data;
 
       void setDevice() const;
-      static void setNullDevice();
+
+      void setUniform( unsigned int s,
+                       const Matrix4x4& m,
+                       const char* name ) const;
+
+      void setUniform( unsigned int s,
+                       const float v[],
+                       int l,
+                       const char* name ) const;
+
+      void setUniform( unsigned int s,
+                       const Texture2d& t,
+                       const char* name,
+                       int slot ) const;
+
+      template< class T >
+      void setUniforms( unsigned int s, const T & vN, int c ) const;
     };
   }
 
