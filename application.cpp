@@ -11,7 +11,7 @@ Application::Application() {
 
 Application::~Application() {
   AbstractSystemAPI::instance().endApplication();
-  }
+  } 
 
 int Application::exec() {
   bool quit = 0;

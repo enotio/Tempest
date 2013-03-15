@@ -5,11 +5,9 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := Tempest
 LOCAL_CFLAGS := -std=gnu++11
 
-SDL_PATH     := C:/Users/Try/Home/Programming/android/android-project/jni/SDL
 Tempest_PATH := C:/Users/Try/Home/Programming/Tempest/Tempest
 
-LOCAL_C_INCLUDES := $(SDL_PATH)/include \
-                    $(Tempest_PATH)/include\
+LOCAL_C_INCLUDES := $(Tempest_PATH)/include\
                     $(Tempest_PATH)/math
 
 LOCAL_CFLAGS := -std=gnu++11
@@ -27,9 +25,7 @@ LOCAL_SRC_FILES := \
   $(wildcard $(LOCAL_PATH)/utils/*.cpp) \
   $(wildcard $(LOCAL_PATH)/*.cpp) )
 
-
-LOCAL_SHARED_LIBRARIES := SDL2
-
 LOCAL_LDLIBS    := -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics
 
 include $(BUILD_SHARED_LIBRARY)
+

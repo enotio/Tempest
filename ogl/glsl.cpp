@@ -3,6 +3,7 @@
 
 #ifdef __ANDROID__
 #include <GLES2/gl2.h>
+// #include <SDL.h>
 #else
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -45,6 +46,30 @@ struct GLSL::Data{
   Detail::UniformCash<GLuint> vsCash, fsCash;
 
   std::string readFile( const char* f ){
+#ifdef __ANDROID__
+    /*
+    SDL_RWops *rw=SDL_RWFromFile( f,"r" );
+
+    if(rw==NULL) {
+      return "";
+      }
+
+    SDL_RWseek(rw,0,RW_SEEK_END);
+    int pos2 = SDL_RWtell(rw);
+
+    SDL_RWseek(rw,0,RW_SEEK_SET);
+    int pos1 = SDL_RWtell(rw);
+
+    std::string data;
+    data.resize( pos2-pos1 );
+
+    SDL_RWread( rw, &data[0], 1, data.size() );
+
+    SDL_RWclose(rw);
+
+    return data;*/
+    return  "";
+#else
     std::ifstream is( f, std::ifstream::binary );
     assert(is);
 
@@ -60,6 +85,7 @@ struct GLSL::Data{
     is.close();
 
     return src;
+#endif
     }
 
   GLuint loadShader( GLenum shaderType, const char* pSource) {

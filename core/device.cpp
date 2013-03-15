@@ -332,7 +332,7 @@ void Device::bind( const Tempest::VertexDeclaration & d ){
 
   api.setVertexDeclaration( impl, decl );
   }
-
+ 
 void Device::bind( AbstractAPI::VertexBuffer* b, int vsize ){
   if( data->cash.vbo!=b || data->cash.vboSize!=vsize ){
     api.bindVertexBuffer( impl, b, vsize );

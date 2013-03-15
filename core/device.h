@@ -164,7 +164,7 @@ class Device {
 
       shadingLang().enable();
       bind( vbo.data.const_value(), sizeof(T) );
-
+ 
       draw( t, firstVertex + vbo.m_first, pCount );
 
       shadingLang().disable();

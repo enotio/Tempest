@@ -1,9 +1,11 @@
 #include "opengl2x.h"
 
 #ifdef __ANDROID__
+#include <EGL/egl.h>
 #include <GLES/gl.h>
 #include <GLES2/gl2.h>
-#include <SDL.h>
+// #include <SDL.h>
+#include <android/log.h>
 #else
 #include <windows.h>
 
@@ -45,13 +47,16 @@ struct Opengl2x::Device{
   };
 
 void Opengl2x::errCk() const {
-#ifndef __ANDROID__
   GLenum err = glGetError();
   while( err!=GL_NO_ERROR ){
+#ifndef __ANDROID__
     std::cout << "[OpenGL]: " << glewGetErrorString(err) << std::endl;
+#else
+    int ierr = err;
+    __android_log_print(ANDROID_LOG_DEBUG, "OpenGL error %#d", "OpenGL", ierr);
+#endif
     err = glGetError();
     }
-#endif
   }
 
 struct Opengl2x::Texture{
@@ -79,6 +84,7 @@ Opengl2x::~Opengl2x(){
   }
 
 AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) const {
+  Device * dev = new Device();
 #ifdef __ANDROID__
 
 #else
@@ -93,8 +99,6 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   pfd.iPixelType = PFD_TYPE_RGBA;
   pfd.cColorBits = 32;
   pfd.cDepthBits = 24;
-
-  Device * dev = new Device();
 
   HDC hDC = GetDC( (HWND)hwnd );
   PixelFormat = ChoosePixelFormat( hDC, &pfd );
@@ -114,8 +118,8 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  reset( (AbstractAPI::Device*)dev, hwnd, opt );
-  setRenderState( (AbstractAPI::Device*)dev, Tempest::RenderState() );
+  //reset( (AbstractAPI::Device*)dev, hwnd, opt );
+  //setRenderState( (AbstractAPI::Device*)dev, Tempest::RenderState() );
   return (AbstractAPI::Device*)dev;
   }
 
@@ -334,8 +338,8 @@ void Opengl2x::setDSSurfaceTaget( AbstractAPI::Device *d,
                                   AbstractAPI::Texture *tx ) const {
   }
 
-bool Opengl2x::startRender( AbstractAPI::Device *d,
-                            bool isLost  ) const {
+bool Opengl2x::startRender( AbstractAPI::Device *,
+                            bool   ) const {
   return 1;
   }
 
@@ -343,6 +347,11 @@ bool Opengl2x::present( AbstractAPI::Device *d ) const {
 #ifndef __ANDROID__
   Device* dev = (Device*)d;
   SwapBuffers( dev->hDC );
+#else
+  EGLDisplay disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+  EGLSurface s    = eglGetCurrentSurface(EGL_DRAW);
+
+  eglSwapBuffers(disp, s);
 #endif
   return 0;
   }
