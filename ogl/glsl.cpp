@@ -385,8 +385,8 @@ void GLSL::setUniform( unsigned int s,
   if( !data->vsCash.fetch(prm, m) ){
     float r[16] = {};
     std::copy( m.data(), m.data()+16, r );
-    //glUniformMatrix4fv( prm, 1, false, r );
-    glUniform4fv( prm, 4, r );
+    glUniformMatrix4fv( prm, 1, false, r );
+    //glUniform4fv( prm, 4, r );
     }
   }
 
