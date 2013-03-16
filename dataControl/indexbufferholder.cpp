@@ -74,6 +74,10 @@ void IndexBufferHolder::deleteObject( AbstractAPI::IndexBuffer* t ){
   }
 
 void IndexBufferHolder::reset( AbstractAPI::IndexBuffer* t ){
+  Data::Iterator i = data->ibos.find(t);
+  data->restore[t] = i->second;
+
+  data->ibos.erase(i);
   device().deleteIndexBuffer(t);
   }
 

@@ -589,14 +589,12 @@ AbstractAPI::VertexBuffer*
                 GL_STATIC_DRAW );
   errCk();
 
-  std::cerr << "Opengl2x::createVertexbuffer " << vbo << std::endl;
   return (AbstractAPI::VertexBuffer*)vbo;
   }
 
 void Opengl2x::deleteVertexBuffer(  AbstractAPI::Device *d,
                                     AbstractAPI::VertexBuffer*v ) const{
   setDevice(d);
-  std::cerr << "Opengl2x::deleteVertexBuffer " << v << std::endl;
 
   Buffer *vbo = (Buffer*)v;
   glDeleteBuffers( 1, &vbo->id );
@@ -833,7 +831,10 @@ void Opengl2x::setupBuffers( int vboOffsetIndex ) const {
       glColorPointer( count, frm, dev->vertexSize, (void*)stride );
       }*/
     glEnableVertexAttribArray(i);
-    glVertexAttribPointer( i, count, frm, GL_FALSE, dev->vertexSize, (void*)stride );
+    if( e.component==Decl::color )
+      glVertexAttribPointer( i, count, frm, GL_TRUE,  dev->vertexSize, (void*)stride );
+    else
+      glVertexAttribPointer( i, count, frm, GL_FALSE, dev->vertexSize, (void*)stride );
 
     stride += strides[e.component];
     }
