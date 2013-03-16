@@ -21,10 +21,6 @@ struct Device::Data{
 
   Declarations declarations;
 
-  typedef std::set< RenderTaget* > RT;
-  typedef RT::iterator RTIterator;
-
-  RT renderTagets;
   RenderTaget* currentRT;
   Tempest::AbstractAPI::StdDSSurface* depthStencil;
 
@@ -367,14 +363,6 @@ void Device::drawIndexedPrimitive( AbstractAPI::PrimitiveType t,
                    vertexCount,
                    firstIndex,
                    pCount );
-  }
-
-void Device::addRenderTaget( RenderTaget& h ){
-  data->renderTagets.insert( &h );
-  }
-
-void Device::delRenderTaget( RenderTaget& h ){
-  data->renderTagets.erase ( &h );
   }
 
 void Device::addHolder( AbstractHolderBase& h ){

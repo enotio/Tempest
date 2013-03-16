@@ -589,12 +589,14 @@ AbstractAPI::VertexBuffer*
                 GL_STATIC_DRAW );
   errCk();
 
+  std::cerr << "Opengl2x::createVertexbuffer " << vbo << std::endl;
   return (AbstractAPI::VertexBuffer*)vbo;
   }
 
 void Opengl2x::deleteVertexBuffer(  AbstractAPI::Device *d,
                                     AbstractAPI::VertexBuffer*v ) const{
   setDevice(d);
+  std::cerr << "Opengl2x::deleteVertexBuffer " << v << std::endl;
 
   Buffer *vbo = (Buffer*)v;
   glDeleteBuffers( 1, &vbo->id );
@@ -712,10 +714,7 @@ const AbstractShadingLang*
 #endif
 
   if( shaderLang==GLSL )
-    return new Tempest::GLSL( dev, false );
-
-  if( shaderLang==GLSL_cgc_gen )
-    return new Tempest::GLSL( dev, true );
+    return new Tempest::GLSL( dev );
 
 #ifndef __ANDROID__
   throw std::logic_error("invalid shaders lang");
@@ -816,6 +815,7 @@ void Opengl2x::setupBuffers( int vboOffsetIndex ) const {
     int count  = counts[e.component];
     GLenum frm =   vfrm[e.component];
 
+    /*
     if( e.usage == Tempest::Usage::Position ||
         e.usage == Tempest::Usage::PositionT ){
       glEnableClientState(GL_VERTEX_ARRAY);
@@ -831,7 +831,9 @@ void Opengl2x::setupBuffers( int vboOffsetIndex ) const {
     if( e.usage == Tempest::Usage::Color  ){
       glEnableClientState(GL_COLOR_ARRAY);
       glColorPointer( count, frm, dev->vertexSize, (void*)stride );
-      }
+      }*/
+    glEnableVertexAttribArray(i);
+    glVertexAttribPointer( i, count, frm, GL_FALSE, dev->vertexSize, (void*)stride );
 
     stride += strides[e.component];
     }

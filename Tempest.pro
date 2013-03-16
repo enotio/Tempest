@@ -26,11 +26,13 @@ opengl:{
 
   HEADERS +=\
     ogl/opengl2x.h \
-    ogl/cgogl.h
+    ogl/cgogl.h \
+    ogl/glsl.h
 
   SOURCES += \
     ogl/opengl2x.cpp \
-    ogl/cgogl.cpp
+    ogl/cgogl.cpp \
+    ogl/glsl.cpp
 
   TARGET = Tempest_gl
   }
@@ -108,7 +110,6 @@ SOURCES += \
     utils/tessobject.cpp \
     utils/postprocesshelper.cpp \
     utils/color.cpp \
-    ogl/glsl.cpp \
     shading/shaderinput.cpp
 
 HEADERS += \
@@ -169,7 +170,6 @@ HEADERS += \
     utils/postprocesshelper.h \
     utils/cwnptr.h \
     utils/color.h \
-    ogl/glsl.h \
     shading/shaderinput.h
 
 OTHER_FILES += \

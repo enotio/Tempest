@@ -12,8 +12,7 @@ class Opengl2x : public AbstractAPI {
   public:
     enum ShaderLang{
       Cg,
-      GLSL,
-      GLSL_cgc_gen
+      GLSL
       };
 
     Opengl2x( ShaderLang s = Cg );

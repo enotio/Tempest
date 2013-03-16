@@ -8,6 +8,7 @@
 #include <Tempest/Matrix4x4>
 
 #include <Tempest/Uniform>
+#include <Tempest/VertexDeclaration>
 
 namespace Tempest{
 
@@ -26,6 +27,7 @@ class ShaderInput {
     void set( const Uniform<float[2]> & u );
     void set( const Uniform<float[3]> & u );
     void set( const Uniform<Texture2d> & u );
+
   //private:
     template< int s >
     struct Vec{

@@ -6,6 +6,8 @@
 #include <Tempest/Window>
 #include <Tempest/Event>
 #include <unordered_map>
+#include <fstream>
+#include <cassert>
 
 using namespace Tempest;
 
@@ -103,6 +105,24 @@ void WindowsAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
 
 void WindowsAPI::bind( Window *w, Tempest::Window *wx ) {
   wndWx[w] = wx;
+  }
+
+std::string WindowsAPI::loadTextImpl(const char *file) {
+  std::ifstream is( file, std::ifstream::binary );
+  assert(is);
+
+  is.seekg (0, is.end);
+  int length = is.tellg();
+  is.seekg (0, is.beg);
+
+  std::string src;
+  src.resize( length );
+  is.read ( &src[0], length );
+
+  assert(is);
+  is.close();
+
+  return src;
   }
 
 static Event::MouseButton toButton( UINT msg ){

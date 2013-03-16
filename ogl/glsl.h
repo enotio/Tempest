@@ -13,7 +13,7 @@ namespace Tempest {
 
   class GLSL: public AbstractShadingLang {
     public:
-      GLSL( AbstractAPI::OpenGL2xDevice *dev, bool cgcgen );
+      GLSL(AbstractAPI::OpenGL2xDevice *dev);
       ~GLSL();
 
       void beginPaint() const;
@@ -26,6 +26,8 @@ namespace Tempest {
 
       void unBind( const Tempest::VertexShader& ) const;
       void unBind( const Tempest::FragmentShader& ) const;
+
+      void setVertexDecl( const Tempest::AbstractAPI::VertexDecl*  ) const;
 
       void* context() const;
 

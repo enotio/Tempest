@@ -23,6 +23,7 @@ class AndroidAPI:public AbstractSystemAPI {
     void setGeometry( Window*, int x, int y , int w, int h );
     void bind(Window*, Tempest::Window * );
 
+    std::string loadTextImpl( const char* file );
   public:
   friend class AbstractSystemAPI;
   };

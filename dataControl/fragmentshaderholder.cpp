@@ -13,6 +13,9 @@ struct FragmentShaderHolder::Data {
 
   typedef std::map< AbstractShadingLang::FragmentShader*, std::string >::iterator
           iterator;
+
+  std::map< AbstractShadingLang::FragmentShader*, std::string > restore;
+  std::map< AbstractShadingLang::FragmentShader*, std::string > restoreSrc;
   };
 
 
@@ -53,22 +56,32 @@ void FragmentShaderHolder::deleteObject( AbstractShadingLang::FragmentShader* t 
   }
 
 void FragmentShaderHolder::reset( AbstractShadingLang::FragmentShader* t ){
+  Data::iterator i = data->shaders.find(t);
+
+  if( i!=data->shaders.end() ){
+    data->restore[t] = i->second;
+    data->shaders.erase(i);
+    } else {
+    data->restoreSrc[t] = data->shadersSrc[t];
+    data->shadersSrc.erase(t);
+    }
+
   device().shadingLang().deleteFragmentShader(t);
   }
 
 AbstractShadingLang::FragmentShader*
       FragmentShaderHolder::restore( AbstractShadingLang::FragmentShader* t ){
-  Data::iterator i = data->shaders.find(t);
+  Data::iterator i = data->restore.find(t);
 
-  if( i!=data->shaders.end() ){
-    std::string fname = data->shaders[t];
-    data->shaders.erase(t);
+  if( i!=data->restore.end() ){
+    std::string fname = data->restore[t];
+    data->restore.erase(i);
 
     createObject( t, fname );
     return t;
     } else {
-    std::string src = data->shadersSrc[t];
-    data->shadersSrc.erase(t);
+    std::string src = data->restoreSrc[t];
+    data->restoreSrc.erase(t);
 
     createObjectFromSrc( t, src );
     return t;

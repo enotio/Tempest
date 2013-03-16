@@ -17,6 +17,7 @@
 
 #include "shading/uniformcash.h"
 #include <Tempest/Uniform>
+#include <Tempest/AbstractSystemAPI>
 
 #include <iostream>
 #include <fstream>
@@ -44,48 +45,10 @@ struct GLSL::Data{
   const Tempest::FragmentShader* currentFS;
 
   Detail::UniformCash<GLuint> vsCash, fsCash;
+  const AbstractAPI::VertexDecl* vdecl;
 
   std::string readFile( const char* f ){
-#ifdef __ANDROID__
-    /*
-    SDL_RWops *rw=SDL_RWFromFile( f,"r" );
-
-    if(rw==NULL) {
-      return "";
-      }
-
-    SDL_RWseek(rw,0,RW_SEEK_END);
-    int pos2 = SDL_RWtell(rw);
-
-    SDL_RWseek(rw,0,RW_SEEK_SET);
-    int pos1 = SDL_RWtell(rw);
-
-    std::string data;
-    data.resize( pos2-pos1 );
-
-    SDL_RWread( rw, &data[0], 1, data.size() );
-
-    SDL_RWclose(rw);
-
-    return data;*/
-    return  "";
-#else
-    std::ifstream is( f, std::ifstream::binary );
-    assert(is);
-
-    is.seekg (0, is.end);
-    int length = is.tellg();
-    is.seekg (0, is.beg);
-
-    std::string src;
-    src.resize( length );
-    is.read ( &src[0], length );
-
-    assert(is);
-    is.close();
-
-    return src;
-#endif
+    return AbstractSystemAPI::loadText(f).data();
     }
 
   GLuint loadShader( GLenum shaderType, const char* pSource) {
@@ -155,13 +118,15 @@ void* GLSL::context() const{
   return data->context;
   }
 
-GLSL::GLSL(AbstractAPI::OpenGL2xDevice * dev , bool cgcgen) {
+GLSL::GLSL( AbstractAPI::OpenGL2xDevice * dev ) {
   data = new Data();
+  data->context = dev;
+
   data->currentVS = 0;
   data->currentFS = 0;
 
   data->context = dev;
-  data->cgcgen  = cgcgen;
+  data->cgcgen  = false;
   }
 
 GLSL::~GLSL(){
@@ -287,6 +252,10 @@ void GLSL::unBind( const Tempest::FragmentShader& s ) const {
   //setDevice();
   }
 
+void GLSL::setVertexDecl(const AbstractAPI::VertexDecl *v ) const {
+  data->vdecl = v;
+  }
+
 void GLSL::enable() const {
   GLuint vertexShader = *(GLuint*)get( *data->currentVS );
   GLuint pixelShader  = *(GLuint*)get( *data->currentFS );
@@ -304,6 +273,32 @@ void GLSL::enable() const {
 
     glAttachShader(program, vertexShader);
     glAttachShader(program, pixelShader);
+
+    static const char* uType[] = {
+      "Position",
+      "BlendWeight",   // 1
+      "BlendIndices",  // 2
+      "Normal",        // 3
+      "PSize",         // 4
+      "TexCoord",      // 5
+      "Tangent",       // 6
+      "BiNormal",      // 7
+      "TessFactor",    // 8
+      "PositionT",     // 9
+      "Color",         // 10
+      "Fog",           // 11
+      "Depth",         // 12
+      "Sample",        // 13
+      ""
+      };
+
+    const Tempest::VertexDeclaration::Declarator& vd
+        = *(const Tempest::VertexDeclaration::Declarator*)data->vdecl;
+    for( int i=0; i<vd.size(); ++i ){
+      glBindAttribLocation( program, i, uType[vd[i].usage] );
+      }
+
+    //glBindAttribLocation( program, 0, "vPosition" );
     glLinkProgram (program);
 
     GLint linkStatus = GL_FALSE;
@@ -316,12 +311,12 @@ void GLSL::enable() const {
       if (bufLength) {
         char* buf = new char[bufLength];
         if (buf) {
-          //glGetProgramInfoLog(program, bufLength, NULL, buf);
+          glGetProgramInfoLog(program, bufLength, NULL, buf);
           std::cerr << buf;
           delete[] (buf);
           assert(0);
+          }
         }
-      }
 
       glDeleteProgram(program);
       program = 0;
@@ -333,9 +328,10 @@ void GLSL::enable() const {
     s.linked = program;
     data->prog.push_back( s );
 
-    GLint vl = glGetAttribLocation ( program, "cg_Vertex");
+    /*
+    GLint vl = glGetAttribLocation ( program, "Position");
     GLint cl = glGetAttribLocation ( program, "COLOR");
-    std::cout << vl;
+    std::cout << vl;*/
     }
 
   glUseProgram( program );
@@ -367,7 +363,7 @@ void GLSL::enable() const {
     setUniforms( program, in.v4, 4 );
     }
 
-  glUseProgram( 0 ); //FIXME!!!
+  //glUseProgram( 0 ); //FIXME!!!
   }
 
 template< class T >

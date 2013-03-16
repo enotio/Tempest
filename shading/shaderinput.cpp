@@ -67,3 +67,4 @@ void ShaderInput::set( const Uniform<float[3]> &u ) {
 void ShaderInput::set( const Uniform<Texture2d> &u ) {
   set(u.name().data(), *u.value());
   }
+

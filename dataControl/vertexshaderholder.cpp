@@ -8,8 +8,8 @@
 using namespace Tempest;
 
 struct VertexShaderHolder::Data {
-  std::map< AbstractShadingLang::VertexShader*, std::string > shaders;
-  std::map< AbstractShadingLang::VertexShader*, std::string > shadersSrc;
+  std::map< AbstractShadingLang::VertexShader*, std::string > shaders,    restore;
+  std::map< AbstractShadingLang::VertexShader*, std::string > shadersSrc, restoreSrc;
 
   typedef std::map< AbstractShadingLang::VertexShader*, std::string >::iterator
           iterator;
@@ -52,22 +52,32 @@ void VertexShaderHolder::deleteObject( AbstractShadingLang::VertexShader* t ){
   }
 
 void VertexShaderHolder::reset( AbstractShadingLang::VertexShader* t ){
+  Data::iterator i = data->shaders.find(t);
+
+  if( i!=data->shaders.end() ){
+    data->restore[t] = i->second;
+    data->shaders.erase(i);
+    } else {
+    data->restoreSrc[t] = data->shadersSrc[t];
+    data->shadersSrc.erase(t);
+    }
+
   device().shadingLang().deleteVertexShader(t);
   }
 
 AbstractShadingLang::VertexShader*
       VertexShaderHolder::restore( AbstractShadingLang::VertexShader* t ){
-  Data::iterator i = data->shaders.find(t);
+  Data::iterator i = data->restore.find(t);
 
-  if( i!=data->shaders.end() ){
-    std::string fname = data->shaders[t];
-    data->shaders.erase(t);
+  if( i!=data->restore.end() ){
+    std::string fname = data->restore[t];
+    data->restore.erase(i);
 
     createObject( t, fname );
     return t;
     } else {
-    std::string src = data->shadersSrc[t];
-    data->shadersSrc.erase(t);
+    std::string src = data->restoreSrc[t];
+    data->restoreSrc.erase(t);
 
     createObjectFromSrc( t, src );
     return t;

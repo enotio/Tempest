@@ -19,6 +19,10 @@ AbstractSystemAPI &AbstractSystemAPI::instance() {
   return api;
   }
 
+std::string AbstractSystemAPI::loadText(const char *file) {
+  return instance().loadTextImpl(file);
+  }
+
 void AbstractSystemAPI::mkMouseEvent( Tempest::Window *w, MouseEvent &e , int type ) {
   if( type==0 ){
     //++w->pressedC;

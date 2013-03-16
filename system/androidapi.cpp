@@ -11,14 +11,16 @@ using namespace Tempest;
 #include <Tempest/Event>
 #include <map>
 #include <queue>
+#include <cassert>
 
 #include <GLES/gl.h>
 #include <pthread.h>
 #include <android/log.h>
 #include <unistd.h>
 
-#include <dlfcn.h>
 #include <jni.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 
 template< class ... Args >
 void LOGI( Args& ... args ){
@@ -40,6 +42,7 @@ static JavaVM *jvm = 0;
 static jclass    libClass = 0;
 static jmethodID callMain = 0; 
 static jmethodID loadImg  = 0; 
+static jobject   assets   = 0;
 
 static void* start( void* ){  
   JNIEnv * env = 0;
@@ -48,22 +51,6 @@ static void* start( void* ){
   env->CallStaticVoidMethod( libClass, callMain );
   return 0;
   } 
-/*
-struct Api{
-  Api(){
-    }
-
-  ~Api(){
-    pthread_join( mainThread, NULL );
-    pthread_mutex_destroy( &appMutex );
-    }
-
-  };
-
-Api& api(){
-  static Api a;
-  return a;
-  }*/
 
 struct AEvent {
   enum Type{
@@ -103,6 +90,8 @@ extern "C" {
   JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_initTempest(JNIEnv * env, jobject obj);
   JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_init(JNIEnv * env, jobject obj,  jint width, jint height);
   JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_run (JNIEnv * env, jobject obj);
+
+  JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_setupAManager(JNIEnv * env, jobject obj, jobject am);
 
   JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_mouseDownEvent(JNIEnv * env, jobject obj,  jint x, jint y);
   JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_mouseUpEvent  (JNIEnv * env, jobject obj,  jint x, jint y);
@@ -161,8 +150,12 @@ JNIEXPORT void Java_com_android_gl2jni_GL2JNILib_initTempest(JNIEnv * env, jobje
   loadImg  = env->GetStaticMethodID(libClass, "loadImage", "(Ljava/lang/String;)V");
 
   LOGI("Tempest native init end");
+  }
 
-  //pthread_create( &mainThread, NULL, start, NULL );
+JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_setupAManager( JNIEnv * env,  
+                                                                        jobject obj, 
+                                                                        jobject am ){
+  assets = env->NewGlobalRef(am);
   }
 
 JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_init( JNIEnv * env, 
@@ -242,11 +235,34 @@ AndroidAPI::~AndroidAPI() {
   }
 
 void AndroidAPI::startApplication( ApplicationInitArgs * ) {
- 
   }
 
 void AndroidAPI::endApplication() {
- 
+  
+  }
+
+std::string AndroidAPI::loadTextImpl( const char* file ){
+  JNIEnv * env = 0;
+  jvm->AttachCurrentThread( &env, NULL);
+
+  AAssetManager* mgr = AAssetManager_fromJava(env, assets);
+  AAsset* asset = AAssetManager_open(mgr, file, AASSET_MODE_UNKNOWN);
+
+  assert( asset );
+  /*
+  if (NULL == asset) {
+    __android_log_print(ANDROID_LOG_ERROR, "Tempest", "_ASSET_NOT_FOUND_");
+    return "";
+    }*/
+
+  long size = AAsset_getLength(asset);
+  std::string str;
+  str.resize( size );
+  AAsset_read (asset, &str[0], size);
+  //__android_log_print(ANDROID_LOG_ERROR, "Tempest", buffer);
+  AAsset_close(asset);
+
+  return str;
   }
 
 int AndroidAPI::nextEvent(bool &quit) {

@@ -162,6 +162,7 @@ class Device {
       bind(fs);
       bind(decl);
 
+      shadingLang().setVertexDecl( (AbstractAPI::VertexDecl*)(decl.decl->impl) );
       shadingLang().enable();
       bind( vbo.data.const_value(), sizeof(T) );
  
@@ -188,6 +189,7 @@ class Device {
       bind( vbo.data.const_value(), sizeof(T) );
       bind( ibo.data.const_value() );
 
+      shadingLang().setVertexDecl( (AbstractAPI::VertexDecl*)(decl.decl->impl) );
       shadingLang().enable();
       drawIndexedPrimitive(  t,
                              vboOffsetIndex + vbo.m_first,
@@ -220,10 +222,6 @@ class Device {
                                int vertexCount,
                                int firstIndex,
                                int pCount );
-
-    void addRenderTaget( RenderTaget& h );
-    void delRenderTaget( RenderTaget& h );
-
     void addHolder( AbstractHolderBase& h );
     void delHolder( AbstractHolderBase& h );
 

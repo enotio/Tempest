@@ -36,6 +36,8 @@ class AbstractShadingLang {
     virtual void unBind( const Tempest::VertexShader& ) const = 0;
     virtual void unBind( const Tempest::FragmentShader& ) const = 0;
 
+    virtual void setVertexDecl( const Tempest::AbstractAPI::VertexDecl*  ) const{}
+
     class VertexShader;
     class FragmentShader;
 
