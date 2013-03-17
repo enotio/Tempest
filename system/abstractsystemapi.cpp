@@ -23,6 +23,20 @@ std::string AbstractSystemAPI::loadText(const char *file) {
   return instance().loadTextImpl(file);
   }
 
+bool AbstractSystemAPI::loadImage(const char *file,
+                                   int &w, int &h,
+                                   int &bpp,
+                                   std::vector<unsigned char> &out ) {
+  return instance().loadImageImpl( file, w, h, bpp, out );
+  }
+
+bool AbstractSystemAPI::saveImage( const char *file,
+                                   int &w, int &h,
+                                   int &bpp,
+                                   std::vector<unsigned char> &in ) {
+  return instance().saveImageImpl( file, w, h, bpp, in );
+  }
+
 void AbstractSystemAPI::mkMouseEvent( Tempest::Window *w, MouseEvent &e , int type ) {
   if( type==0 ){
     //++w->pressedC;

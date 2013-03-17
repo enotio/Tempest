@@ -52,8 +52,8 @@ void Opengl2x::errCk() const {
 #ifndef __ANDROID__
     std::cout << "[OpenGL]: " << glewGetErrorString(err) << std::endl;
 #else
-    int ierr = err;
-    __android_log_print(ANDROID_LOG_DEBUG, "OpenGL error %#d", "OpenGL", ierr);
+    void* ierr = (void*)err;
+    __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "error %p", ierr);
 #endif
     err = glGetError();
     }
@@ -118,8 +118,8 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  //reset( (AbstractAPI::Device*)dev, hwnd, opt );
-  //setRenderState( (AbstractAPI::Device*)dev, Tempest::RenderState() );
+  reset( (AbstractAPI::Device*)dev, hwnd, opt );
+  setRenderState( (AbstractAPI::Device*)dev, Tempest::RenderState() );
   return (AbstractAPI::Device*)dev;
   }
 
@@ -172,6 +172,7 @@ void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
 
 void Opengl2x::setDevice( AbstractAPI::Device * d ) const {
   dev = (Device*)d;
+  errCk();
   }
 
 void Opengl2x::clear(AbstractAPI::Device *d,
@@ -257,15 +258,11 @@ void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
   GLint w = tex->w,
         h = tex->h;
 
-  glBindTexture(GL_TEXTURE_2D, *(GLuint*)t );
+  //glBindTexture(GL_TEXTURE_2D, *(GLuint*)t );
   glBindTexture(GL_TEXTURE_2D, 0 );
   errCk();
-
-
-  glGenFramebuffers (1, &dev->fboId);
-  glGenRenderbuffers(1, &dev->rboId);
-  errCk();
-
+  
+  glGenRenderbuffers( 1, &dev->rboId );
   glBindRenderbuffer( GL_RENDERBUFFER, dev->rboId);
   glRenderbufferStorage( GL_RENDERBUFFER,
                        #ifndef __ANDROID__
@@ -275,9 +272,11 @@ void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
                        #endif
                          w, h );
 
-  glBindRenderbuffer( GL_RENDERBUFFER, 0);
-  GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
-  assert( status==GL_FRAMEBUFFER_COMPLETE );
+  glGenFramebuffers (1, &dev->fboId);
+  errCk();
+  
+  //glBindRenderbuffer( GL_RENDERBUFFER, 0);
+  assert( glCheckFramebufferStatus( GL_FRAMEBUFFER )==GL_FRAMEBUFFER_COMPLETE );
 
   errCk();
 
@@ -289,13 +288,12 @@ void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
                           mip );
 
   glFramebufferRenderbuffer( GL_FRAMEBUFFER,
-                           #ifndef __ANDROID__
-                             GL_DEPTH_STENCIL_ATTACHMENT,
-                           #else
                              GL_DEPTH_ATTACHMENT,
-                           #endif
                              GL_RENDERBUFFER,
                              dev->rboId );
+
+  int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+  assert( status==0 || status==GL_FRAMEBUFFER_COMPLETE );
   errCk();
 
   glViewport( 0, 0, w, h );
@@ -306,11 +304,7 @@ void Opengl2x::unsetRenderTagets( AbstractAPI::Device *d,
                                   int /*count*/  ) const {
   setDevice(d);
   glFramebufferRenderbuffer( GL_FRAMEBUFFER,
-                           #ifndef __ANDROID__
-                             GL_DEPTH_STENCIL_ATTACHMENT,
-                           #else
                              GL_DEPTH_ATTACHMENT,
-                           #endif
                              GL_RENDERBUFFER,
                              0 );
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -359,9 +353,9 @@ bool Opengl2x::present( AbstractAPI::Device *d ) const {
 bool Opengl2x::reset( AbstractAPI::Device *d,
                       void* hwnd,
                       const Options &opt ) const {
-#ifndef __ANDROID__
   setDevice(d);
 
+#ifndef __ANDROID__
   RECT rectWindow;
   GetClientRect( HWND(hwnd), &rectWindow);
 
@@ -371,6 +365,18 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   dev->scrW = w;
   dev->scrH = h;
   glViewport(0,0, w,h);
+#else
+  EGLDisplay disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+  EGLSurface s    = eglGetCurrentSurface(EGL_DRAW);
+
+  EGLint w;
+  EGLint h;
+  eglQuerySurface( disp, s, EGL_WIDTH,  &w );
+  eglQuerySurface( disp, s, EGL_HEIGHT, &h );
+  
+  dev->scrW = w;
+  dev->scrH = h;
+  glViewport(0,0,w,h);
 #endif
   return 1;
   }
@@ -550,14 +556,16 @@ AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
     GL_RGBA
     };
 #endif
-
+  
+  errCk();
   tex->w = w;
   tex->h = h;
 
   glTexImage2D( GL_TEXTURE_2D, 0,
                 format[f], w, h, 0,
-                GL_RGBA,
+                format[f],
                 GL_UNSIGNED_BYTE, 0 );
+  errCk();
 
   glTexParameteri( GL_TEXTURE_2D,
                    GL_TEXTURE_MIN_FILTER,
@@ -565,7 +573,8 @@ AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
 
   if( mips!=0 )
     glGenerateMipmap(GL_TEXTURE_2D);
-
+  
+  errCk();
   return (AbstractAPI::Texture*)tex;
   }
 
@@ -574,6 +583,8 @@ void Opengl2x::deleteTexture( AbstractAPI::Device *d,
   setDevice(d);
   Texture* tex = (Texture*)t;
   glDeleteTextures( 1, &tex->id );
+  
+  errCk();
   }
 
 AbstractAPI::VertexBuffer*
@@ -958,12 +969,17 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
     glDisable( GL_DEPTH_TEST );
 
   glDepthMask( r.isZWriting() );
+  
+#ifdef __ANDROID__
+  //a-test not supported
+#else
   if( r.alphaTestMode()!=Tempest::RenderState::AlphaTestMode::Always ){
     glEnable( GL_ALPHA_TEST );
     glAlphaFunc( cmp[ r.alphaTestMode() ], r.alphaTestRef() );
     } else {
     glDisable( GL_ALPHA_TEST );
     }
+#endif
 
   GLenum  blend[] = {
     GL_ZERO,
@@ -990,4 +1006,6 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
   bool w[4];
   r.getColorMask( w[0], w[1], w[2], w[3] );
   glColorMask( w[0], w[1], w[2], w[3] );
+
+  errCk();
   }

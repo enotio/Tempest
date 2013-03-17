@@ -95,11 +95,6 @@ class Pixmap {
     Detail::Ptr<Data*, DbgManip> data;
     const unsigned char * rawPtr;
     unsigned char * mrawPtr;
-
-    static void initImgLib();
-
-    template< class ChanelType, int  >
-    void initRawData( Data & d, void * img, int bpp, int * ix );
   };
 
 class PixEditor{

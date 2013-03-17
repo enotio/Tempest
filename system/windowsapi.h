@@ -24,8 +24,30 @@ class WindowsAPI:public AbstractSystemAPI {
     void bind(Window*, Tempest::Window * );
 
     std::string loadTextImpl( const char* file );
+
+    bool loadImageImpl( const char* file,
+                        int &w,
+                        int &h,
+                        int &bpp,
+                        std::vector<unsigned char>& out );
+
+    bool saveImageImpl( const char* file,
+                        int &w,
+                        int &h,
+                        int &bpp,
+                        std::vector<unsigned char>& in );
   private:
     struct Wnd;
+
+    template< class ChanelType, int  >
+    void initRawData( std::vector<unsigned char> &d,
+                      void * input,
+                      int pixSize,
+                      int w,
+                      int h,
+                      int * ix );
+
+    static void initImgLib();
 
   friend class AbstractSystemAPI;
   };

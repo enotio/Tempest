@@ -24,6 +24,18 @@ class AndroidAPI:public AbstractSystemAPI {
     void bind(Window*, Tempest::Window * );
 
     std::string loadTextImpl( const char* file );
+    
+    bool loadImageImpl( const char* file,
+                        int &w,
+                        int &h,
+                        int &bpp,
+                        std::vector<unsigned char>& out );
+
+    bool saveImageImpl( const char* file,
+                        int &w,
+                        int &h,
+                        int &bpp,
+                        std::vector<unsigned char>& in );
   public:
   friend class AbstractSystemAPI;
   };

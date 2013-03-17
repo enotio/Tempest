@@ -1,15 +1,7 @@
 #include "pixmap.h"
 
-#ifndef __ANDROID__
-#include <IL/il.h>
-#endif
-
-#ifdef __ANDROID__
-//#include <SDL.h>
-#endif
-
+#include <Tempest/AbstractSystemAPI>
 #include <iostream>
-
 #include "core/wrappers/atomic.h"
 
 using namespace Tempest;
@@ -84,96 +76,27 @@ Pixmap &Pixmap::operator =(const Pixmap &p) {
   }
 
 bool Pixmap::load( const std::string &f ) {
-#ifdef __ANDROID__
-   
-#else
-  initImgLib();
-  bool ok = true;
+  int w = 0, h = 0, bpp = 0;
 
-  ILuint	id;
-  ilGenImages ( 1, &id );
-  ilBindImage ( id );
+  Data * image = new Data();
+  bool ok = AbstractSystemAPI::loadImage( f.data(), w, h, bpp, image->bytes );
 
-  if( ilLoadImage ( f.data() ) ){
-    int format = ilGetInteger( IL_IMAGE_FORMAT );
-
-    int size_of_pixel = 1;
-    bpp = 3;
-
-    int idx[5][4] = {
-      { 0, 1, 2, 3 }, //IL_RGB, IL_RGBA
-      { 0, 0, 0, 0 }, //IL_ALPHA
-      { 2, 1, 0, 3 },
-      { 2, 1, 0, 3 },
-      { 0, 0, 0, 1 }
-      };
-    int *ix = idx[0];
-
-
-    switch( format ){
-      case IL_RGB:   size_of_pixel = 3; break;
-      case IL_RGBA:  size_of_pixel = 4; bpp = 4; break;
-      case IL_ALPHA: size_of_pixel = 1; ix = idx[1]; break;
-
-      case IL_BGR:   size_of_pixel = 3; ix = idx[2]; break;
-      case IL_BGRA:  size_of_pixel = 4; ix = idx[3]; break;
-      case IL_LUMINANCE_ALPHA:
-        size_of_pixel = 4; ix = idx[4];
-        break;
-      default: ok = false;
-      }
-
-    if( ok ){
-      ILubyte * data = ilGetData();
-      Data * image = new Data();
-
-      w = ilGetInteger ( IL_IMAGE_WIDTH      );
-      h = ilGetInteger ( IL_IMAGE_HEIGHT     );
-
-      if( ilGetInteger ( IL_IMAGE_TYPE ) == IL_UNSIGNED_BYTE )
-        initRawData<ILubyte,   1>( *image, data, size_of_pixel, ix ); else
-        initRawData<ILdouble, 255>( *image, data, size_of_pixel, ix );
-
-      this->data.value() = image;
-
-      if( w>0 && h>0 )
-        rawPtr = &this->data.const_value()->bytes[0]; else
-        rawPtr = 0;
-      mrawPtr = 0;
-      }
-    } else {
-    ok = false;
-    //ilGetError();
+  if( !ok ){
+    delete image;
+    return false;
     }
+  this->w   = w;
+  this->h   = h;
+  this->bpp = bpp;
 
-  ilDeleteImages( 1, &id );
+  this->data.value() = image;
 
-  return ok;
-#endif
+  if( w>0 && h>0 )
+    rawPtr = &this->data.const_value()->bytes[0]; else
+    rawPtr = 0;
+  mrawPtr = 0;
+  return true;
   }
-/*
-int Pixmap::width() const {
-  return w;
-  }
-
-int Pixmap::height() const {
-  return h;
-  }
-
-Pixmap::Pixel Pixmap::at(int x, int y) const {
-  unsigned char * p = &data.const_value()->bytes[ (x + y*w)*bpp ];
-  Pixel r;
-
-  r.r = p[0];
-  r.g = p[1];
-  r.b = p[2];
-
-  if( bpp==4 )
-    r.a = p[3]; else
-    r.a = 255;
-
-  return r;
-  }*/
 
 bool Pixmap::hasAlpha() const {
   return bpp==4;
@@ -198,73 +121,16 @@ void Pixmap::addAlpha() {
   mrawPtr = 0;
   }
 
-void Pixmap::initImgLib() {
-#ifndef __ANDROID__
-  Tempest::Detail::Atomic::begin();
-
-  static bool wasInit = false;
-  if( !wasInit )
-    ilInit();
-  ilEnable(IL_FILE_OVERWRITE);
-
-  wasInit = true;
-
-  Tempest::Detail::Atomic::end();
-#endif
-  }
-
-template< class ChanelType, int mul >
-void Pixmap::initRawData( Data & d, void * input, int pixSize, int * ix ){
-  ChanelType * img = reinterpret_cast<ChanelType*>(input);
-
-  d.bytes.resize( bpp*w*h );
-
-  for( int i=0; i<w; ++i )
-    for( int r=0; r<h; ++r ){
-      ChanelType * raw = &img[ pixSize*(i+r*w) ];
-      for( int q=0; q<bpp; ++q ){
-        d.bytes[ bpp*(i+r*w)+q ] = ( raw[ ix[q] ]*mul );
-        }
-
-      }
-  }
-
 bool Pixmap::save( const std::string &f ) {
   if( data.const_value()==0 )
     return false;
 
-  initImgLib();
-#ifndef __ANDROID__
   Tempest::Detail::Atomic::begin();
-  ILuint	id;
-  ilGenImages ( 1, &id );
-  ilBindImage ( id );
-
-  ilTexImage( w, h, 1,
-              bpp,
-              hasAlpha() ? IL_RGBA : IL_RGB,
-              IL_UNSIGNED_BYTE,
-              data.const_value()->bytes.data() );
-
-  ILubyte * img = ilGetData();
-
-  int h2 = h/2;
-  for( int i=0; i<w; ++i )
-    for( int r=0; r<h2; ++r ){
-      ILubyte * raw1 = &img[ bpp*(i+r*w) ];
-      ILubyte * raw2 = &img[ bpp*(i+(h-r-1)*w) ];
-
-      for( int q=0; q<bpp; ++q )
-        std::swap( raw1[q], raw2[q] );
-      }
-
-  bool ok = ilSaveImage( f.data() );
-  ilDeleteImages( 1, &id );
+  bool ok = AbstractSystemAPI::saveImage( f.data(),
+                                          w, h, bpp,
+                                          data.const_value()->bytes );
   Tempest::Detail::Atomic::end();
-
   return ok;
-#endif
-  return 0;
   }
 
 

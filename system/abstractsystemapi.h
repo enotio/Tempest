@@ -2,6 +2,7 @@
 #define ABSTRACTSYSTEMAPI_H
 
 #include <string>
+#include <vector>
 
 namespace Tempest{
 
@@ -27,6 +28,16 @@ class AbstractSystemAPI {
     virtual int  nextEvent(bool &qiut) = 0;
 
     static std::string loadText( const char* file );
+    static bool loadImage( const char* file,
+                           int &w,
+                           int &h,
+                           int &bpp,
+                           std::vector<unsigned char>& out );
+    static bool saveImage( const char* file,
+                           int &w,
+                           int &h,
+                           int &bpp,
+                           std::vector<unsigned char>& in );
 
     static void mkMouseEvent( Tempest::Window *w,
                               MouseEvent& e,
@@ -35,6 +46,16 @@ class AbstractSystemAPI {
     AbstractSystemAPI(){}
 
     virtual std::string loadTextImpl( const char* file ) = 0;
+    virtual bool loadImageImpl( const char* file,
+                                int &w,
+                                int &h,
+                                int &bpp,
+                                std::vector<unsigned char>& out ) = 0;
+    virtual bool saveImageImpl( const char* file,
+                                int &w,
+                                int &h,
+                                int &bpp,
+                                std::vector<unsigned char>& out ) = 0;
 
   private:
     AbstractSystemAPI( const AbstractSystemAPI& ){}
