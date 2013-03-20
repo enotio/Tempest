@@ -72,15 +72,99 @@ int WindowsAPI::nextEvent(bool &quit) {
   }
 
 WindowsAPI::Window *WindowsAPI::createWindow(int w, int h) {
+  DWORD wflags = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+  RECT r = {0,0,w,h};
+
+  AdjustWindowRect(&r, wflags, false);
+
   HWND hwnd = CreateWindowEx( NULL,
                               L"Tempest_Window_Class",
                               L"Tempest_Window_Class",
-                              WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-                              0, 0, w, h, NULL, NULL,
+                              wflags,
+                              0, 0,
+                              r.right-r.left,
+                              r.bottom-r.top,
+                              NULL, NULL,
                               GetModuleHandle(0), NULL );
-  //SetWindowLong( hwnd, DWL_USER, this );
 
   return (Window*)hwnd;
+  }
+
+AbstractSystemAPI::Window *WindowsAPI::createWindowMaximized() {
+  int w = GetSystemMetrics(SM_CXFULLSCREEN),
+      h = GetSystemMetrics(SM_CYFULLSCREEN);
+  DEVMODE mode;
+  EnumDisplaySettings( 0, ENUM_CURRENT_SETTINGS, &mode );
+  w = mode.dmPelsWidth;
+  h = mode.dmPelsHeight;
+
+  DWORD wflags = WS_OVERLAPPEDWINDOW | WS_POPUP | WS_VISIBLE;
+  HWND hwnd = CreateWindowEx( NULL,
+                              L"Tempest_Window_Class",
+                              L"Tempest_Window_Class",
+                              wflags,
+                              0, 0,
+                              w, h,
+                              NULL, NULL,
+                              GetModuleHandle(0), NULL );
+
+  ShowWindow( hwnd, SW_MAXIMIZE );
+  UpdateWindow( hwnd );
+  return (Window*)hwnd;
+  }
+
+AbstractSystemAPI::Window *WindowsAPI::createWindowMinimized() {
+  int w = GetSystemMetrics(SM_CXFULLSCREEN),
+      h = GetSystemMetrics(SM_CYFULLSCREEN);
+  DEVMODE mode;
+  EnumDisplaySettings( 0, ENUM_CURRENT_SETTINGS, &mode );
+  w = mode.dmPelsWidth;
+  h = mode.dmPelsHeight;
+
+  DWORD wflags = WS_OVERLAPPEDWINDOW | WS_POPUP | WS_VISIBLE;
+  HWND hwnd = CreateWindowEx( NULL,
+                              L"Tempest_Window_Class",
+                              L"Tempest_Window_Class",
+                              wflags,
+                              0, 0,
+                              w, h,
+                              NULL, NULL,
+                              GetModuleHandle(0), NULL );
+
+  return (Window*)hwnd;
+  }
+
+AbstractSystemAPI::Window *WindowsAPI::createWindowFullScr() {
+  int w = GetSystemMetrics(SM_CXFULLSCREEN),
+      h = GetSystemMetrics(SM_CYFULLSCREEN);
+  DEVMODE mode;
+  EnumDisplaySettings( 0, ENUM_CURRENT_SETTINGS, &mode );
+  w = mode.dmPelsWidth;
+  h = mode.dmPelsHeight;
+
+  DWORD wflags = WS_POPUP;
+  HWND hwnd = CreateWindowEx( NULL,
+                              L"Tempest_Window_Class",
+                              L"Tempest_Window_Class",
+                              wflags,
+                              0, 0,
+                              w, h,
+                              NULL, NULL,
+                              GetModuleHandle(0),
+                              NULL );
+
+  ShowWindow( hwnd, SW_NORMAL );
+  UpdateWindow( hwnd );
+  return (Window*)hwnd;
+  }
+
+Size WindowsAPI::windowClientRect( AbstractSystemAPI::Window * hWnd ) {
+  RECT rectWindow;
+  GetClientRect( HWND(hWnd), &rectWindow);
+  int cW = rectWindow.right  - rectWindow.left;
+  int cH = rectWindow.bottom - rectWindow.top;
+
+  return Size(cW,cH);
   }
 
 void WindowsAPI::deleteWindow( Window *w ) {
@@ -88,14 +172,45 @@ void WindowsAPI::deleteWindow( Window *w ) {
   wndWx.erase(w);
   }
 
-void WindowsAPI::show(Window *w) {
-  HWND hwnd = (HWND)w;
+void WindowsAPI::show(Window *hWnd) {
+  Tempest::Window* w = 0;
+  std::unordered_map<WindowsAPI::Window*, Tempest::Window*>::iterator i
+      = wndWx.find( (WindowsAPI::Window*)hWnd );
 
-  ShowWindow( hwnd, SW_SHOW );
+  if( i!= wndWx.end() )
+    w = i->second;
+
+  if( !w )
+    return;
+
+  if( w->showMode()==Tempest::Window::FullScreen )
+    return;
+
+  HWND hwnd = (HWND)hWnd;
+
+  switch( w->showMode() ){
+    case Tempest::Window::Normal:
+    case Tempest::Window::FullScreen:
+      ShowWindow( hwnd, SW_NORMAL );
+      break;
+
+    case Tempest::Window::Minimized:
+      ShowWindow( hwnd, SW_MINIMIZE );
+      break;
+
+    default:
+      ShowWindow( hwnd, SW_MAXIMIZE );
+      break;
+    }
+
   UpdateWindow( hwnd );
   }
 
 void WindowsAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
+  DWORD wflags = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+  RECT r = {0,0,w,h};
+  AdjustWindowRect(&r, wflags, false);
+
   LONG lStyles = GetWindowLong( (HWND)hw, GWL_STYLE );
 
   if( lStyles & WS_MINIMIZE )
@@ -104,7 +219,12 @@ void WindowsAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
   if( lStyles & WS_MAXIMIZE )
     return;
 
-  MoveWindow( (HWND)hw, x, y, w, h, false );
+  MoveWindow( (HWND)hw,
+              x,
+              y,
+              r.right-r.left,
+              r.bottom-r.top,
+              false );
   }
 
 void WindowsAPI::bind( Window *w, Tempest::Window *wx ) {
@@ -275,6 +395,42 @@ static Event::MouseButton toButton( UINT msg ){
   return Event::ButtonNone;
   }
 
+static Tempest::KeyEvent makeKeyEvent( WPARAM k,
+                                       bool scut = false ){
+  Tempest::KeyEvent::KeyType e = Tempest::KeyEvent::K_NoKey;
+
+  if( k==VK_ESCAPE )
+    e = Tempest::KeyEvent::K_ESCAPE;//PostQuitMessage(0);
+
+  if( k==VK_BACK ){
+    e = Tempest::KeyEvent::K_Back;
+    }
+
+  if( k==VK_DELETE ){
+    e = Tempest::KeyEvent::K_Delete;
+    }
+
+  if( k==VK_RETURN ){
+    e = Tempest::KeyEvent::K_Return;
+    }
+
+  if( k>=VK_LEFT && k<=VK_DOWN )
+    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_Left) + size_t(k) - VK_LEFT );
+
+  if( k>=VK_F1 && k<= VK_F24 )
+    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_F1) + size_t(k) - VK_F1 );
+
+  if( scut ){
+    if( k>=0x41 && k<=0x5A )
+      e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_A) + size_t(k) - 0x41 );
+
+    if( k>=0x30 && k<=0x39 )
+      e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_0) + size_t(k) - 0x30 );
+    }
+
+  return Tempest::KeyEvent(e);
+  }
+
 LRESULT CALLBACK WindowProc( HWND   hWnd,
                              UINT   msg,
                              WPARAM wParam,
@@ -288,7 +444,52 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
     if( i!= wndWx.end() )
       w = i->second;
 
+    if( !w )
+      return DefWindowProc( hWnd, msg, wParam, lParam );
+
     switch( msg ) {
+      case WM_CHAR:
+      {
+         Tempest::KeyEvent e = Tempest::KeyEvent( uint16_t(wParam) );
+
+         DWORD wrd[3] = {
+           VK_RETURN,
+           VK_BACK,
+           0
+           };
+
+         if( 0 == *std::find( wrd, wrd+2, wParam) ){
+           w->keyDownEvent( e );
+           w->keyUpEvent( e );
+           }
+         //std::cout << "wParaam = " << wParam << std::endl;
+      }
+      break;
+
+      case WM_KEYDOWN:
+      {
+         Tempest::KeyEvent sce =  makeKeyEvent(wParam, true);
+         //w->scutEvent(sce);
+         sce.ignore();
+         w->shortcutEvent(sce);
+
+         if( !sce.isAccepted() ){
+           Tempest::KeyEvent e =  makeKeyEvent(wParam);
+           if( e.key!=Tempest::KeyEvent::K_NoKey )
+             w->keyDownEvent( e );
+           }
+         //std::cout << "wParaam = " << wParam << std::endl;
+      }
+      break;
+
+      case WM_KEYUP:
+      {
+         Tempest::KeyEvent e =  makeKeyEvent(wParam);
+         w->keyUpEvent( e );
+      }
+      break;
+
+
       case WM_LBUTTONDOWN:
       case WM_MBUTTONDOWN:
       case WM_RBUTTONDOWN: {
@@ -319,29 +520,42 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         }
         break;
 
-      case WM_KEYDOWN:
-        {
-            switch( wParam )
-            {
-                case VK_ESCAPE:
-                    PostQuitMessage(0);
-                    break;
-            }
-        }
-        break;
+       case WM_MOUSEWHEEL:{
+          POINT p;
+          p.x = LOWORD (lParam);
+          p.y = HIWORD (lParam);
 
-        ////////////////////////////////////////
-      case WM_SIZE:{
-          RECT rectWindow;
-          GetWindowRect( HWND(hWnd), &rectWindow);
-          int ww = rectWindow.right-rectWindow.left;
-          int hw = rectWindow.bottom-rectWindow.left;
+          ScreenToClient(hWnd, &p);
 
-          if( w && !(w->w()==ww && w->h()==hw) ){
-            w->resize( LOWORD(lParam), HIWORD(lParam) );
-            }
+          Tempest::MouseEvent e( p.x, p.y,
+                                  Tempest::Event::ButtonNone,
+                                  GET_WHEEL_DELTA_WPARAM(wParam) );
+          w->mouseWheelEvent(e);
           }
         break;
+
+      case WM_SIZE:{
+          RECT rectWindow;
+          GetClientRect( HWND(hWnd), &rectWindow);
+          int cW = rectWindow.right-rectWindow.left;
+          int cH = rectWindow.bottom-rectWindow.top;
+
+          if( w )
+            AbstractSystemAPI::sizeEvent( w,
+                                          LOWORD(lParam), HIWORD(lParam),
+                                          cW, cH );
+          }
+        break;
+
+      case WM_ACTIVATEAPP:
+      {
+          bool a = (wParam==TRUE);
+          AbstractSystemAPI::activateEvent(w,a);
+
+          if( !a && w->isFullScreenMode() )
+            ShowWindow( hWnd, SW_MINIMIZE );
+      }
+      break;
 
       case WM_CLOSE:
       case WM_DESTROY: {
@@ -355,6 +569,6 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       }
 
     return 0;
-    }
+  }
 
 #endif

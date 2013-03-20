@@ -52,13 +52,41 @@ void AbstractSystemAPI::mkMouseEvent( Tempest::Window *w, MouseEvent &e , int ty
 
   if( type==2 ){
     //--w->pressedC;
-    if( w->pressedC )
+    if( w->pressedC ){
       w->mouseDragEvent(e);
 
-    if( e.isAccepted() )
-      return;
+      if( e.isAccepted() )
+        return;
+      }
 
-    w->mouseUpEvent(e);
+    w->mouseMoveEvent(e);
     }
   //if( w-> )
+  }
+
+void AbstractSystemAPI::sizeEvent( Tempest::Window *w,
+                                   int winW, int winH,
+                                   int   cW, int   cH ) {
+  if( w->winW==cW &&
+      w->winH==cH )
+    return;
+
+  w->winW = cW;
+  w->winH = cH;
+
+  if( w->isAppActive ){
+    if( cW * cH ){
+      w->resize( cW, cH );
+
+      //SizeEvent e( cW, cH, winW, winH );
+      //w->resizeEvent( e );
+      w->resizeIntent = false;
+      }
+    } else {
+    w->resizeIntent = true;
+    }
+  }
+
+void AbstractSystemAPI::activateEvent(Tempest::Window *w, bool a) {
+  w->isAppActive = a;
   }

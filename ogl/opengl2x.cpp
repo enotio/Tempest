@@ -62,6 +62,7 @@ void Opengl2x::errCk() const {
 struct Opengl2x::Texture{
   GLuint id;
   int w,h;
+  GLenum format;
   };
 
 struct Opengl2x::Buffer{
@@ -293,6 +294,11 @@ void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
                              dev->rboId );
 
   int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+
+  if( !(status==0 || status==GL_FRAMEBUFFER_COMPLETE) ){
+    std::cout << std::hex << status << std::dec << std::endl;
+    }
+
   assert( status==0 || status==GL_FRAMEBUFFER_COMPLETE );
   errCk();
 
@@ -389,15 +395,19 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
 
   setDevice(d);
 
-  GLuint* tex = new GLuint;
-  glGenTextures(1, tex);
-  glBindTexture(GL_TEXTURE_2D, *tex);
+  Texture* tex = new Texture;
+  glGenTextures(1, &tex->id);
+  glBindTexture(GL_TEXTURE_2D, tex->id);
+
+  tex->w = p.width();
+  tex->h = p.height();
 
   if( p.hasAlpha() )
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, p.width(), p.height(), 0,GL_RGBA,
-                  GL_UNSIGNED_BYTE, p.const_data() ); else
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, p.width(), p.height(), 0,GL_RGB,
-                  GL_UNSIGNED_BYTE, p.const_data() );
+    tex->format = GL_RGBA; else
+    tex->format = GL_RGB;
+
+  glTexImage2D( GL_TEXTURE_2D, 0, tex->format, p.width(), p.height(), 0,tex->format,
+                GL_UNSIGNED_BYTE, p.const_data() );
 
   glTexParameteri( GL_TEXTURE_2D,
                    GL_TEXTURE_MIN_FILTER,
@@ -413,65 +423,38 @@ AbstractAPI::Texture *Opengl2x::recreateTexture( AbstractAPI::Device *d,
                                                  AbstractAPI::Texture *oldT,
                                                  const Pixmap &p,
                                                  bool mips) const {
-  assert(0);
-
   if( oldT==0 )
     return createTexture(d, p, mips);
-/*
-  D3DLOCKED_RECT lockedRect;
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
-  LPDIRECT3DTEXTURE9 tex = 0;
-  LPDIRECT3DTEXTURE9 old = LPDIRECT3DTEXTURE9(oldT);
 
-  D3DFORMAT format = D3DFMT_X8R8G8B8;
+  setDevice(d);
+  Texture* tex = 0;
+  Texture* old = (Texture*)(oldT);
+
+  GLenum format = GL_RGB;
   if( p.hasAlpha() )
-    format = D3DFMT_A8R8G8B8;
+    format = GL_RGBA;
 
-  D3DSURFACE_DESC desc;
-  if( FAILED( old->GetLevelDesc(0, &desc) ) ){
-    deleteTexture(d, oldT);
-    return 0;
-    }
-
-  if( int(desc.Width)==p.width() &&
-      int(desc.Height)==p.height() &&
-      desc.Format==format ){
+  if( int(old->w)==p.width() &&
+      int(old->h)==p.height() &&
+      old->format==format ){
     tex = old;
     } else {
     deleteTexture(d, oldT);
-
-    if (FAILED(dev->CreateTexture( p.width(), p.height(), 0,
-                                   D3DUSAGE_AUTOGENMIPMAP, format,
-                                   D3DPOOL_MANAGED,
-                                   &tex, NULL))) {
-      return 0;
-      }
+    return createTexture( d, p, mips );
     }
 
-  if (FAILED( tex->LockRect(0, &lockedRect, 0, 0))) {
-    return 0;
-    }
+  glBindTexture(GL_TEXTURE_2D, tex->id);
+  glTexImage2D( GL_TEXTURE_2D, 0, tex->format, p.width(), p.height(), 0, tex->format,
+                GL_UNSIGNED_BYTE, p.const_data() );
 
-  unsigned char *dest = (unsigned char*) lockedRect.pBits;
-
-  for( int i=0; i<p.width(); ++i )
-    for( int r=0; r<p.height(); ++r ){
-      unsigned char * t = &dest[ 4*(i + r*p.width()) ];
-      const Pixmap::Pixel s = p.at(i,r);
-      t[2] = s.r;
-      t[1] = s.g;
-      t[0] = s.b;
-      t[3] = s.a;
-      }
-
-  tex->UnlockRect(0);
+  glTexParameteri( GL_TEXTURE_2D,
+                   GL_TEXTURE_MIN_FILTER,
+                   GL_LINEAR );
 
   if( mips )
-    tex->GenerateMipSubLevels();
+    glGenerateMipmap( GL_TEXTURE_2D );
 
-  //data->tex.insert( tex );
-  return ((AbstractAPI::Texture*)tex);
-  */
+  return (AbstractAPI::Texture*)tex;
   }
 
 AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
@@ -514,9 +497,9 @@ AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
     GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
     GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
 
-    GL_DEPTH_COMPONENT16,
-    GL_DEPTH_COMPONENT24,
-    GL_DEPTH_COMPONENT32,
+    GL_DEPTH_COMPONENT, //16
+    GL_DEPTH_COMPONENT, //24
+    GL_DEPTH_COMPONENT, //32
     GL_DEPTH_STENCIL,
 
     GL_RG16,
@@ -556,15 +539,57 @@ AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
     GL_RGBA
     };
 #endif
+
+
+  static const GLenum inputFormat[] = {
+    GL_LUMINANCE,
+    GL_LUMINANCE_ALPHA,
+    GL_LUMINANCE,
+    GL_LUMINANCE,
+
+    GL_RGB,
+    GL_RGB,
+    GL_RGB,
+    GL_RGB,
+    GL_RGB,
+    GL_RGB,
+
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+
+    GL_RGB,
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+
+    GL_DEPTH_COMPONENT, //d
+    GL_DEPTH_COMPONENT, //d
+    GL_DEPTH_COMPONENT, //d
+    GL_DEPTH_COMPONENT, //ds
+
+    GL_RGB,
+    GL_RGBA
+    };
   
   errCk();
   tex->w = w;
   tex->h = h;
+  tex->format = format[f];
 
+#ifdef __ANDROID__
   glTexImage2D( GL_TEXTURE_2D, 0,
                 format[f], w, h, 0,
                 format[f],
                 GL_UNSIGNED_BYTE, 0 );
+#else
+  glTexImage2D( GL_TEXTURE_2D, 0,
+                format[f], w, h, 0,
+                inputFormat[f],
+                GL_UNSIGNED_BYTE, 0 );
+#endif
   errCk();
 
   glTexParameteri( GL_TEXTURE_2D,
@@ -580,9 +605,13 @@ AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
 
 void Opengl2x::deleteTexture( AbstractAPI::Device *d,
                               AbstractAPI::Texture *t ) const {
+  if( !t )
+    return;
+
   setDevice(d);
   Texture* tex = (Texture*)t;
   glDeleteTextures( 1, &tex->id );
+  delete tex;
   
   errCk();
   }
@@ -771,7 +800,7 @@ void Opengl2x::bindIndexBuffer( AbstractAPI::Device * d,
   dev->ibo = *(GLuint*)b;
   }
 
-void Opengl2x::setupBuffers( int vboOffsetIndex ) const {
+void Opengl2x::setupBuffers(int vboOffsetIndex , bool on) const {
   if( !dev->vbo )
     return;
 
@@ -815,40 +844,57 @@ void Opengl2x::setupBuffers( int vboOffsetIndex ) const {
     0, 4*1, 4*2, 4*3, 4*4, 4, 2*2, 2*4
     };
 
-  const VertexDeclaration::Declarator & d = *dev->decl;
+  //const VertexDeclaration::Declarator & vd = *dev->decl;
 
   size_t stride = vboOffsetIndex;
 
+  const Tempest::VertexDeclaration::Declarator& vd
+      = *(const Tempest::VertexDeclaration::Declarator*)dev->decl;
+  for( int i=0; i<vd.size(); ++i ){
+    const VertexDeclaration::Declarator::Element & e = vd[i];
+
+    int loc = i;
+    if( vd[i].usage==Usage::TexCoord ){
+      loc = vd.size()+vd[i].index;
+      }
+
+    int count  = counts[e.component];
+    GLenum frm =   vfrm[e.component];
+    if( on ){
+      glEnableVertexAttribArray(loc);
+      if( e.component==Decl::color )
+        glVertexAttribPointer( loc, count, frm, GL_TRUE,
+                               dev->vertexSize, (void*)stride );
+      else
+        glVertexAttribPointer( loc, count, frm, GL_FALSE,
+                               dev->vertexSize, (void*)stride );
+
+      } else {
+      glDisableVertexAttribArray(loc);
+      }
+
+    stride += strides[e.component];
+    }
+/*
   for( int i=0; i<d.size(); ++i ){
     const VertexDeclaration::Declarator::Element & e = d[i];
     int count  = counts[e.component];
     GLenum frm =   vfrm[e.component];
 
-    /*
-    if( e.usage == Tempest::Usage::Position ||
-        e.usage == Tempest::Usage::PositionT ){
-      glEnableClientState(GL_VERTEX_ARRAY);
-      glVertexPointer( count, frm, dev->vertexSize, (void*)stride );
+    if( on ){
+      glEnableVertexAttribArray(i);
+      if( e.component==Decl::color )
+        glVertexAttribPointer( i, count, frm, GL_TRUE,
+                               dev->vertexSize, (void*)stride );
+      else
+        glVertexAttribPointer( i, count, frm, GL_FALSE,
+                               dev->vertexSize, (void*)stride );
+
+      } else {
+      glDisableVertexAttribArray(i);
       }
-
-    if( e.usage == Tempest::Usage::TexCoord  ){
-      glClientActiveTexture( GL_TEXTURE0 + e.index );
-      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      glTexCoordPointer( count, frm, dev->vertexSize, (void*)stride );
-      }
-
-    if( e.usage == Tempest::Usage::Color  ){
-      glEnableClientState(GL_COLOR_ARRAY);
-      glColorPointer( count, frm, dev->vertexSize, (void*)stride );
-      }*/
-    glEnableVertexAttribArray(i);
-    if( e.component==Decl::color )
-      glVertexAttribPointer( i, count, frm, GL_TRUE,  dev->vertexSize, (void*)stride );
-    else
-      glVertexAttribPointer( i, count, frm, GL_FALSE, dev->vertexSize, (void*)stride );
-
     stride += strides[e.component];
-    }
+    }*/
 
   errCk();
   }
@@ -857,7 +903,7 @@ void Opengl2x::draw( AbstractAPI::Device *de,
                      AbstractAPI::PrimitiveType t,
                      int firstVertex, int pCount ) const {
   setDevice(de);
-  setupBuffers(0);
+  setupBuffers(0, true);
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 
   static const GLenum type[] = {
@@ -881,6 +927,7 @@ void Opengl2x::draw( AbstractAPI::Device *de,
     vpCount = pCount+2;
 
   glDrawArrays( type[ t-1 ], firstVertex, vpCount );
+  setupBuffers(0, false);
   errCk();
   }
 
@@ -896,7 +943,7 @@ void Opengl2x::drawIndexed(  AbstractAPI::Device *de,
   if( !dev->ibo )
     return;
 
-  setupBuffers( firstIndex );
+  setupBuffers( firstIndex, true );
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, dev->ibo );
 
   static const GLenum type[] = {
@@ -933,6 +980,7 @@ void Opengl2x::drawIndexed(  AbstractAPI::Device *de,
 #endif
     }
 
+  setupBuffers( firstIndex, false );
   errCk();
   }
 

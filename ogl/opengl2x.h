@@ -15,7 +15,7 @@ class Opengl2x : public AbstractAPI {
       GLSL
       };
 
-    Opengl2x( ShaderLang s = Cg );
+    Opengl2x( ShaderLang s = GLSL );
     ~Opengl2x();
 
     Device* createDevice( void * hwnd, const Options & opt ) const;
@@ -164,7 +164,7 @@ class Opengl2x : public AbstractAPI {
     void setDevice(  AbstractAPI::Device *d ) const;
     void makePresentParams( void * p, void *hwnd, const Options &opt ) const;
 
-    void setupBuffers(int vboOffsetIndex) const;
+    void setupBuffers(int vboOffsetIndex, bool on ) const;
 
     void errCk() const;
   };

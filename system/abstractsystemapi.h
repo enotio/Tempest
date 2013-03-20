@@ -4,10 +4,13 @@
 #include <string>
 #include <vector>
 
+#include <Tempest/Utility>
+
 namespace Tempest{
 
 class Window;
 class MouseEvent;
+class SizeEvent;
 
 class AbstractSystemAPI {
   public:
@@ -15,6 +18,12 @@ class AbstractSystemAPI {
 
     struct Window;
     virtual Window* createWindow( int w, int h ) = 0;
+    virtual Window* createWindowMaximized() = 0;
+    virtual Window* createWindowMinimized() = 0;
+    virtual Window* createWindowFullScr()   = 0;
+
+    virtual Size    windowClientRect( Window* )   = 0;
+
     virtual void deleteWindow( Window* ) = 0;
     virtual void setGeometry( Window*, int x, int y, int w, int h ) = 0;
     virtual void show( Window* ) = 0;
@@ -42,6 +51,10 @@ class AbstractSystemAPI {
     static void mkMouseEvent( Tempest::Window *w,
                               MouseEvent& e,
                               int type );
+
+    static void sizeEvent(Tempest::Window *w,
+                           int winW , int winH, int cW, int cH);
+    static void activateEvent( Tempest::Window*w, bool a );
   protected:
     AbstractSystemAPI(){}
 

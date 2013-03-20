@@ -18,6 +18,12 @@ class WindowsAPI:public AbstractSystemAPI {
     int  nextEvent(bool &qiut);
 
     Window* createWindow(int w, int h);
+    Window* createWindowMaximized();
+    Window* createWindowMinimized();
+    Window* createWindowFullScr();
+
+    Size windowClientRect( Window* );
+
     void deleteWindow( Window* );
     void show( Window* );
     void setGeometry( Window*, int x, int y , int w, int h );

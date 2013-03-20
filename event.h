@@ -126,9 +126,11 @@ class MouseEvent : public Event {
 
 class SizeEvent : public Event {
   public:
-    SizeEvent( int w, int h ): w(w), h(h){}
+    SizeEvent( int w, int h ): w(w), h(h), winW(w), winH(h){}
+    SizeEvent( int w,  int h,
+               int ww, int wh): w(w), h(h), winW(ww), winH(wh){}
 
-    const int w, h;
+    const int w, h, winW, winH;
 
     Size size() const;
   };

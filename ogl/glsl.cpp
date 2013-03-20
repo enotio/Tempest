@@ -292,10 +292,19 @@ void GLSL::enable() const {
       ""
       };
 
+    std::string tc = "TexCoord*";
     const Tempest::VertexDeclaration::Declarator& vd
         = *(const Tempest::VertexDeclaration::Declarator*)data->vdecl;
     for( int i=0; i<vd.size(); ++i ){
-      glBindAttribLocation( program, i, uType[vd[i].usage] );
+      if( vd[i].usage!=Usage::TexCoord ){
+        glBindAttribLocation( program, i, uType[vd[i].usage] );
+        } else {
+        tc[ tc.size()-1 ] = vd[i].index+'0';
+        glBindAttribLocation( program, vd.size()+vd[i].index, tc.data() );
+
+        if( vd[i].index==0 )
+          glBindAttribLocation( program, vd.size()+vd[i].index, "TexCoord" );
+        }
       }
 
     //glBindAttribLocation( program, 0, "vPosition" );
