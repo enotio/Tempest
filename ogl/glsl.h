@@ -60,6 +60,8 @@ namespace Tempest {
 
       template< class T >
       void setUniforms( unsigned int s, const T & vN, int c ) const;
+
+      struct Texture;
     };
   }
 

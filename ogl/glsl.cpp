@@ -28,6 +28,7 @@ using namespace Tempest;
 
 struct GLSL::Data{
   AbstractAPI::OpenGL2xDevice * context;
+  float maxAnisotropy;
 
   static void dbgOut( GLuint context ){
 
@@ -114,6 +115,15 @@ struct GLSL::Data{
   bool cgcgen;
   };
 
+struct GLSL::Texture{
+  GLuint id;
+  GLenum min, mag;
+  bool mips;
+
+  int w,h;
+  GLenum format;
+  };
+
 void* GLSL::context() const{
   return data->context;
   }
@@ -127,6 +137,8 @@ GLSL::GLSL( AbstractAPI::OpenGL2xDevice * dev ) {
 
   data->context = dev;
   data->cgcgen  = false;
+
+  glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &data->maxAnisotropy );
   }
 
 GLSL::~GLSL(){
@@ -428,63 +440,56 @@ void GLSL::setUniform( unsigned int sh,
   const Texture2d::Sampler & s = u.sampler();
   //Data::dbg(prm, data->context);
 
-  /*
-  D3DTEXTUREADDRESS addR[] = {
-    D3DTADDRESS_CLAMP,
-    D3DTADDRESS_BORDER,
-    D3DTADDRESS_MIRRORONCE, //??
-    D3DTADDRESS_MIRROR,
-    D3DTADDRESS_WRAP,
-
-    D3DTADDRESS_WRAP
+  static const GLenum magFilter[] = {
+    GL_NEAREST,
+    GL_LINEAR,
+    GL_NEAREST
     };
 
-  cgD3D9SetSamplerState( prm,
-                         D3DSAMP_ADDRESSU,
-                         addR[ s.uClamp ]);
-  cgD3D9SetSamplerState( prm,
-                         D3DSAMP_ADDRESSV,
-                         addR[ s.vClamp ] );
-
-  D3DTEXTUREFILTERTYPE filters[] = {
-    D3DTEXF_POINT,
-    D3DTEXF_LINEAR,
-    D3DTEXF_POINT
+  static const GLenum filter[3][3] = {
+    {GL_NEAREST, GL_NEAREST_MIPMAP_LINEAR, GL_NEAREST },
+    {GL_LINEAR,  GL_LINEAR_MIPMAP_LINEAR,  GL_LINEAR },
+    {GL_NEAREST, GL_NEAREST, GL_NEAREST}
     };
-
-  if( s.anisotropic ){
-    cgD3D9SetSamplerState( prm,
-                           D3DSAMP_MINFILTER,
-                           D3DTEXF_ANISOTROPIC );
-    cgD3D9SetSamplerState( prm,
-                           D3DSAMP_MAGFILTER,
-                           D3DTEXF_LINEAR );
-    } else {
-    cgD3D9SetSamplerState( prm,
-                           D3DSAMP_MINFILTER,
-                           filters[ s.minFilter ] );
-    cgD3D9SetSamplerState( prm,
-                           D3DSAMP_MAGFILTER,
-                           filters[ s.magFilter ]);
-    }
-  cgD3D9SetSamplerState(prm, D3DSAMP_MAXANISOTROPY, data->caps.MaxAnisotropy );
-
-  cgD3D9SetSamplerState( prm,
-                         D3DSAMP_MIPFILTER,
-                         D3DTEXF_LINEAR );
-                         //filters[ s.mipFilter ]);//D3DTEXF_NONE
-
-  cgD3D9SetTextureWrapMode(prm, 0);
-  */
 
   if( !data->fsCash.fetch(prm, u.handle()) ){
-    GLuint* tx = (GLuint*)get(u);
+    Texture* tx = (Texture*)get(u);
 
-    if( tx ){
+    if( tx && tx->id ){
       //cgGLSetTextureParameter   ( prm, *tx);
       //cgGLEnableTextureParameter( prm );
       glActiveTexture( GL_TEXTURE0 + slot );
-      glBindTexture( GL_TEXTURE_2D, *tx );
+      glBindTexture( GL_TEXTURE_2D, tx->id );
+
+
+      if( tx->mips ){
+        if( tx->min!=filter[ s.minFilter ][s.mipFilter] ){
+          glTexParameteri( GL_TEXTURE_2D,
+                           GL_TEXTURE_MIN_FILTER,
+                           filter[ s.minFilter ][s.mipFilter] );
+          tx->min = filter[ s.minFilter ][s.mipFilter];
+          }
+        } else {
+        if( tx->min!=filter[ s.minFilter ][0] ){
+          glTexParameteri( GL_TEXTURE_2D,
+                           GL_TEXTURE_MIN_FILTER,
+                           filter[ s.minFilter ][0] );
+          tx->min = filter[ s.minFilter ][0];
+          }
+        }
+
+      if( tx->mag!=magFilter[ s.magFilter ] ){
+        glTexParameteri( GL_TEXTURE_2D,
+                         GL_TEXTURE_MAG_FILTER,
+                         magFilter[ s.magFilter ] );
+        tx->mag = magFilter[ s.magFilter ];
+        }
+      if( s.anisotropic )
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                        data->maxAnisotropy); else
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                         0 );
+
       glUniform1i( prm, slot );
 
       glActiveTexture( GL_TEXTURE0 );

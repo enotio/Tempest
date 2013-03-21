@@ -61,6 +61,9 @@ void Opengl2x::errCk() const {
 
 struct Opengl2x::Texture{
   GLuint id;
+  GLenum min, mag;
+  bool mips;
+
   int w,h;
   GLenum format;
   };
@@ -259,6 +262,8 @@ void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
   GLint w = tex->w,
         h = tex->h;
 
+  tex->mips = false;
+
   //glBindTexture(GL_TEXTURE_2D, *(GLuint*)t );
   glBindTexture(GL_TEXTURE_2D, 0 );
   errCk();
@@ -399,6 +404,9 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
   glGenTextures(1, &tex->id);
   glBindTexture(GL_TEXTURE_2D, tex->id);
 
+  tex->min = tex->mag = GL_NEAREST;
+  tex->mips = mips;
+
   tex->w = p.width();
   tex->h = p.height();
 
@@ -411,7 +419,10 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
 
   glTexParameteri( GL_TEXTURE_2D,
                    GL_TEXTURE_MIN_FILTER,
-                   GL_LINEAR );
+                   GL_NEAREST );
+  glTexParameteri( GL_TEXTURE_2D,
+                   GL_TEXTURE_MAG_FILTER,
+                   GL_NEAREST );
 
   if( mips )
     glGenerateMipmap( GL_TEXTURE_2D );
@@ -436,7 +447,8 @@ AbstractAPI::Texture *Opengl2x::recreateTexture( AbstractAPI::Device *d,
 
   if( int(old->w)==p.width() &&
       int(old->h)==p.height() &&
-      old->format==format ){
+      old->format==format &&
+      old->mips  ==mips ){
     tex = old;
     } else {
     deleteTexture(d, oldT);
@@ -446,10 +458,6 @@ AbstractAPI::Texture *Opengl2x::recreateTexture( AbstractAPI::Device *d,
   glBindTexture(GL_TEXTURE_2D, tex->id);
   glTexImage2D( GL_TEXTURE_2D, 0, tex->format, p.width(), p.height(), 0, tex->format,
                 GL_UNSIGNED_BYTE, p.const_data() );
-
-  glTexParameteri( GL_TEXTURE_2D,
-                   GL_TEXTURE_MIN_FILTER,
-                   GL_LINEAR );
 
   if( mips )
     glGenerateMipmap( GL_TEXTURE_2D );
@@ -575,6 +583,10 @@ AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
     };
   
   errCk();
+
+  tex->min = tex->mag = GL_NEAREST;
+  tex->mips = mips;
+
   tex->w = w;
   tex->h = h;
   tex->format = format[f];
@@ -594,7 +606,10 @@ AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
 
   glTexParameteri( GL_TEXTURE_2D,
                    GL_TEXTURE_MIN_FILTER,
-                   GL_LINEAR );
+                   GL_NEAREST );
+  glTexParameteri( GL_TEXTURE_2D,
+                   GL_TEXTURE_MAG_FILTER,
+                   GL_NEAREST );
 
   if( mips!=0 )
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -743,6 +758,7 @@ void Opengl2x::unlockBuffer( AbstractAPI::Device *d,
 
 const AbstractShadingLang*
         Opengl2x::createShadingLang( AbstractAPI::Device *d ) const {
+  setDevice(d);
   AbstractAPI::OpenGL2xDevice *dev =
       reinterpret_cast<AbstractAPI::OpenGL2xDevice*>(d);
 
