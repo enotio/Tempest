@@ -152,21 +152,17 @@ class Opengl2x : public AbstractAPI {
     ShaderLang shaderLang;
 
     struct Device;
-    struct Texture;
-    struct Buffer;
-    //Data  *data;
-
     mutable Device * dev;
 
     Opengl2x( const Opengl2x& ){}
     void operator = ( const Opengl2x& ){}
 
     void setDevice(  AbstractAPI::Device *d ) const;
-    void makePresentParams( void * p, void *hwnd, const Options &opt ) const;
-
-    void setupBuffers(int vboOffsetIndex, bool on ) const;
+    void setupBuffers(int vboOffsetIndex, bool on , bool enable, bool bind) const;
 
     void errCk() const;
+
+    void setupFBO() const;
   };
 
 }

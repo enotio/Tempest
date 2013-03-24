@@ -23,6 +23,10 @@ std::string AbstractSystemAPI::loadText(const char *file) {
   return instance().loadTextImpl(file);
   }
 
+std::vector<char> AbstractSystemAPI::loadBytes(const char *file) {
+  return instance().loadBytesImpl(file);
+  }
+
 bool AbstractSystemAPI::loadImage(const char *file,
                                    int &w, int &h,
                                    int &bpp,

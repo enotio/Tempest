@@ -37,6 +37,7 @@ class AbstractSystemAPI {
     virtual int  nextEvent(bool &qiut) = 0;
 
     static std::string loadText( const char* file );
+    static std::vector<char> loadBytes( const char* file );
     static bool loadImage( const char* file,
                            int &w,
                            int &h,
@@ -58,7 +59,9 @@ class AbstractSystemAPI {
   protected:
     AbstractSystemAPI(){}
 
-    virtual std::string loadTextImpl( const char* file ) = 0;
+    virtual std::string       loadTextImpl(  const char* file ) = 0;
+    virtual std::vector<char> loadBytesImpl( const char* file ) = 0;
+
     virtual bool loadImageImpl( const char* file,
                                 int &w,
                                 int &h,

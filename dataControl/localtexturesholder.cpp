@@ -88,7 +88,7 @@ void LocalTexturesHolder::createObject( Tempest::AbstractAPI::Texture *&t,
     d.handle = nonFreed[i].data.handle;
 
     NonFreedData& x = nonFreed[i].data;
-    if( memcmp( &x, &d, sizeof(d) )==0 ){
+    if( x.cmp(d) ){
       dynTextures.push_back( nonFreed[i] );
       nonFreed[i] = nonFreed.back();
       nonFreed.pop_back();

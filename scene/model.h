@@ -152,7 +152,7 @@ class Model {
       vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
 
       m_size = buf.size();
-      vbo = vboHolder.load( buf.data(), buf.size() );
+      vbo = vboHolder.load( &buf[0], buf.size() );
 
       bds = Raw::computeBoundRect( buf );
       }

@@ -23,12 +23,12 @@ using namespace Tempest;
 #include <android/asset_manager_jni.h>
 
 template< class ... Args >
-void LOGI( Args& ... args ){
+void LOGI( const Args& ... args ){
   __android_log_print( ANDROID_LOG_INFO, "game", args... );
   }
 
 template< class ... Args >
-void LOGE( Args& ... args ){
+void LOGE( const Args& ... args ){
   __android_log_print( ANDROID_LOG_ERROR, "game", args... );
   }
 
@@ -251,14 +251,39 @@ std::string AndroidAPI::loadTextImpl( const char* file ){
   return str;
   }
 
+std::vector<char> AndroidAPI::loadBytesImpl( const char* file ){
+  JNIEnv * env = 0;
+  jvm->AttachCurrentThread( &env, NULL);
+
+  AAssetManager* mgr = AAssetManager_fromJava(env, assets);
+  AAsset* asset = AAssetManager_open(mgr, file, AASSET_MODE_UNKNOWN);
+
+  assert( asset );
+  /*
+  if (NULL == asset) {
+    __android_log_print(ANDROID_LOG_ERROR, "Tempest", "_ASSET_NOT_FOUND_");
+    return "";
+    }*/
+
+  long size = AAsset_getLength(asset);
+  std::vector<char> str;
+  str.resize( size );
+  AAsset_read(asset, &str[0], size);
+  //__android_log_print(ANDROID_LOG_ERROR, "Tempest", buffer);
+  AAsset_close(asset);
+
+  return str;
+  }
+
 int AndroidAPI::nextEvent(bool &quit) {
   AEvent e;
   e.type = AEvent::NoEvent;
 
   pthread_mutex_lock( &appMutex );
   if( events.size() ){
-    e = events.back();
+    e = events.front();
     events.pop();
+    LOGI( "events.size() = %d", events.size() );
     }
   pthread_mutex_unlock( &appMutex );
   
@@ -287,14 +312,31 @@ int AndroidAPI::nextEvent(bool &quit) {
     if( !ex.isAccepted() )
       wnd->mouseMoveEvent(ex);
     }
-
-  wnd->render();
-  sleep(0);
+  else{
+    wnd->render();
+    sleep(0);
+    }
   return 0;
   }
 
 AndroidAPI::Window *AndroidAPI::createWindow(int w, int h) {
   return 0;
+  }
+
+AndroidAPI::Window* AndroidAPI::createWindowMaximized(){
+  return 0;
+  }
+
+AndroidAPI::Window* AndroidAPI::createWindowMinimized(){
+  return 0;
+  }
+
+AndroidAPI::Window* AndroidAPI::createWindowFullScr(){
+  return 0;
+  }
+
+Size AndroidAPI::windowClientRect( Window* ){
+  return Size(window_w, window_h);
   }
 
 void AndroidAPI::deleteWindow( Window *w ) {
@@ -333,7 +375,7 @@ JNIEXPORT bool JNICALL Java_com_android_gl2jni_GL2JNILib_loadImg( JNIEnv * env, 
   
     AndroidBitmap_lockPixels(env, bitmap, reinterpret_cast<void **>(&pixels));
     memcpy( &(*tmpImage.data)[0], pixels, tmpImage.data->size() );
-    AndroidBitmap_lockPixels(env, bitmap, reinterpret_cast<void **>(&pixels));
+    AndroidBitmap_unlockPixels(env, bitmap);
 
     return true;
     }
@@ -361,7 +403,7 @@ JNIEXPORT bool JNICALL Java_com_android_gl2jni_GL2JNILib_loadImg( JNIEnv * env, 
       v[2] = blue_value  << 3;
       }
 
-    AndroidBitmap_lockPixels(env, bitmap, reinterpret_cast<void **>(&pixels));  
+    AndroidBitmap_unlockPixels(env, bitmap);
     return true;
     }
 
@@ -369,10 +411,6 @@ JNIEXPORT bool JNICALL Java_com_android_gl2jni_GL2JNILib_loadImg( JNIEnv * env, 
     LOGE("Bitmap format is not RGBA_8888!");
     return false;
     }
-
-  AndroidBitmap_lockPixels(env, bitmap, reinterpret_cast<void **>(&pixels));
-
-  AndroidBitmap_unlockPixels(env, bitmap);
 
   return true;
   }

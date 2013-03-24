@@ -30,6 +30,7 @@ class WindowsAPI:public AbstractSystemAPI {
     void bind(Window*, Tempest::Window * );
 
     std::string loadTextImpl( const char* file );
+    std::vector<char> loadBytesImpl( const char* file );
 
     bool loadImageImpl( const char* file,
                         int &w,

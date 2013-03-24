@@ -249,6 +249,24 @@ std::string WindowsAPI::loadTextImpl(const char *file) {
   return src;
   }
 
+std::vector<char> WindowsAPI::loadBytesImpl(const char *file) {
+  std::ifstream is( file, std::ifstream::binary );
+  assert(is);
+
+  is.seekg (0, is.end);
+  int length = is.tellg();
+  is.seekg (0, is.beg);
+
+  std::vector<char> src;
+  src.resize( length );
+  is.read ( &src[0], length );
+
+  assert(is);
+  is.close();
+
+  return src;
+  }
+
 void WindowsAPI::initImgLib() {
   Tempest::Detail::Atomic::begin();
 

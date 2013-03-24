@@ -18,6 +18,7 @@
 #include "shading/uniformcash.h"
 #include <Tempest/Uniform>
 #include <Tempest/AbstractSystemAPI>
+#include "gltypes.h"
 
 #include <iostream>
 #include <fstream>
@@ -115,15 +116,6 @@ struct GLSL::Data{
   bool cgcgen;
   };
 
-struct GLSL::Texture{
-  GLuint id;
-  GLenum min, mag;
-  bool mips;
-
-  int w,h;
-  GLenum format;
-  };
-
 void* GLSL::context() const{
   return data->context;
   }
@@ -138,7 +130,9 @@ GLSL::GLSL( AbstractAPI::OpenGL2xDevice * dev ) {
   data->context = dev;
   data->cgcgen  = false;
 
+#ifndef __ANDROID__
   glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &data->maxAnisotropy );
+#endif
   }
 
 GLSL::~GLSL(){
@@ -453,7 +447,7 @@ void GLSL::setUniform( unsigned int sh,
     };
 
   if( !data->fsCash.fetch(prm, u.handle()) ){
-    Texture* tx = (Texture*)get(u);
+    Detail::GLTexture* tx = (Detail::GLTexture*)get(u);
 
     if( tx && tx->id ){
       //cgGLSetTextureParameter   ( prm, *tx);
@@ -484,11 +478,14 @@ void GLSL::setUniform( unsigned int sh,
                          magFilter[ s.magFilter ] );
         tx->mag = magFilter[ s.magFilter ];
         }
+      
+#ifndef __ANDROID__
       if( s.anisotropic )
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
                         data->maxAnisotropy); else
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                         0 );
+                         1 );
+#endif
 
       glUniform1i( prm, slot );
 

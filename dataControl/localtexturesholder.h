@@ -20,6 +20,15 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
       Tempest::TextureUsage usage;
 
       bool dynamic, restoreIntent;
+
+      bool cmp( const NonFreedData& b ) const{
+        return w==b.w &&
+               h==b.h &&
+               mip==b.mip &&
+               format==b.format &&
+               usage==b.usage &&
+               dynamic == b.dynamic;
+        }
       };
 
     struct NonFreed{

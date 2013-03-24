@@ -27,12 +27,14 @@ opengl:{
   HEADERS +=\
     ogl/opengl2x.h \
     ogl/cgogl.h \
-    ogl/glsl.h
+    ogl/glsl.h \
+    ogl/gltypes.h
 
   SOURCES += \
     ogl/opengl2x.cpp \
     ogl/cgogl.cpp \
-    ogl/glsl.cpp
+    ogl/glsl.cpp \
+    ogl/gltypes.cpp
 
   TARGET = Tempest_gl
   }

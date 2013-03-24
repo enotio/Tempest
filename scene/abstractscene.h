@@ -10,7 +10,7 @@
 #include <Tempest/LightCollection>
 #include <Tempest/ViewTester>
 
-#include <typeinfo>
+#include <cstddef>
 #include <algorithm>
 
 namespace Tempest{
@@ -79,7 +79,7 @@ class AbstractScene {
   private:
     template< class T, class A >
     static void pSet( T *& tg, const A & a ){
-      if( tg==0 || typeid(*tg)!=typeid(A) ){
+      if( tg==0 || typeEQ(tg, &a) ){
         delete tg;
         tg = new A(a);
         } else {
@@ -97,6 +97,10 @@ class AbstractScene {
 
     void delObject( Item* x ){
       onObjectRemoved(x);
+      }
+
+    static bool typeEQ( const void* a, const void* b ){
+      return *((void**)a) == *((void**)b);
       }
 
     AbstractCamera* m_camera;
