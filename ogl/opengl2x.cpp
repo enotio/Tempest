@@ -45,7 +45,7 @@ struct Opengl2x::Device{
 
   int vertexSize, curVboOffsetIndex;
 
-  GLuint fboId, rboId;
+  GLuint fboId;//, rboId;
   bool    isPainting;
 
   Detail::RenderTg target;
@@ -221,6 +221,46 @@ void Opengl2x::endPaint  ( AbstractAPI::Device * d ) const{
   dev->curVboOffsetIndex = 0;
   }
 
+AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
+                                                    int w, int h,
+                                                    AbstractTexture::Format::Type f)
+  const {
+  setDevice(d);
+
+#ifdef __ANDROID__
+  GLenum format[] = {
+    GL_DEPTH_COMPONENT16,
+    GL_DEPTH_COMPONENT16,
+    GL_DEPTH_COMPONENT16
+    };
+#else
+  GLenum format[] = {
+    GL_DEPTH_COMPONENT16,
+    GL_DEPTH_COMPONENT24,
+    GL_DEPTH_COMPONENT32
+    };
+#endif
+
+  Detail::GLTexture * tex = new Detail::GLTexture;
+  tex->w  = w;
+  tex->h  = h;
+  tex->id = 0;
+
+  glGenRenderbuffers( 1, &tex->depthId );
+  glBindRenderbuffer( GL_RENDERBUFFER, tex->depthId);
+  glRenderbufferStorage( GL_RENDERBUFFER,
+                       #ifndef __ANDROID__
+                         //GL_DEPTH_STENCIL,
+                         format[ f-AbstractTexture::Format::Depth16 ],
+                       #else
+                         GL_DEPTH_COMPONENT16,
+                       #endif
+                         w, h );
+  glBindRenderbuffer( GL_RENDERBUFFER, 0);
+
+  return (AbstractAPI::Texture*)tex;
+  }
+
 void Opengl2x::setupFBO() const {
   const int maxMRT = Detail::RenderTg::maxMRT;
     
@@ -238,6 +278,7 @@ void Opengl2x::setupFBO() const {
     }
 
   if( !dev->target.depth ){
+    /*
     glGenRenderbuffers( 1, &dev->rboId );
     glBindRenderbuffer( GL_RENDERBUFFER, dev->rboId);
     glRenderbufferStorage( GL_RENDERBUFFER,
@@ -247,7 +288,7 @@ void Opengl2x::setupFBO() const {
                            GL_DEPTH_COMPONENT16,
                          #endif
                            w, h );
-    glBindRenderbuffer( GL_RENDERBUFFER, 0);
+    glBindRenderbuffer( GL_RENDERBUFFER, 0);*/
     }
 
   //assert( glCheckFramebufferStatus( GL_FRAMEBUFFER )==GL_FRAMEBUFFER_COMPLETE );
@@ -256,6 +297,7 @@ void Opengl2x::setupFBO() const {
   glBindFramebuffer(GL_FRAMEBUFFER, dev->fboId);
   for( int i=0; i<maxMRT; ++i ){
     if( dev->target.color[i] ){
+      // NVidia old driver bug issue
       glBindTexture( GL_TEXTURE_2D, dev->target.color[i]->id );
       dev->target.color[i]->min = dev->target.color[i]->mag = GL_NEAREST;
       glTexParameteri( GL_TEXTURE_2D,
@@ -265,6 +307,7 @@ void Opengl2x::setupFBO() const {
                        GL_TEXTURE_MAG_FILTER,
                        GL_NEAREST );
       glBindTexture( GL_TEXTURE_2D, 0 );
+      //*****
 
       glFramebufferTexture2D( GL_FRAMEBUFFER,
                               GL_COLOR_ATTACHMENT0+i,
@@ -276,27 +319,15 @@ void Opengl2x::setupFBO() const {
     }
 
   if( dev->target.depth ){
-    glBindTexture( GL_TEXTURE_2D, dev->target.depth->id );
-    dev->target.depth->min = dev->target.depth->mag = GL_NEAREST;
-    dev->target.depth->mips = false;
-    glTexParameteri( GL_TEXTURE_2D,
-                     GL_TEXTURE_MIN_FILTER,
-                     GL_NEAREST );
-    glTexParameteri( GL_TEXTURE_2D,
-                     GL_TEXTURE_MAG_FILTER,
-                     GL_NEAREST );
-    glBindTexture( GL_TEXTURE_2D, 0 );
-
-    glFramebufferTexture2D( GL_FRAMEBUFFER,
-                            GL_DEPTH_ATTACHMENT,
-                            GL_TEXTURE_2D,
-                            dev->target.depth->id,
-                            dev->target.depthMip );
+    glFramebufferRenderbuffer( GL_FRAMEBUFFER,
+                               GL_DEPTH_ATTACHMENT,
+                               GL_RENDERBUFFER,
+                               dev->target.depth->depthId );
     } else {
     glFramebufferRenderbuffer( GL_FRAMEBUFFER,
                                GL_DEPTH_ATTACHMENT,
                                GL_RENDERBUFFER,
-                               0*dev->rboId );
+                               0 );
     }
 
   int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
@@ -327,14 +358,12 @@ void Opengl2x::unsetRenderTagets( AbstractAPI::Device *d,
   setDevice(d);
   memset( &dev->target, 0, sizeof(dev->target) );
 
-  glFramebufferRenderbuffer( GL_FRAMEBUFFER,
-                             GL_DEPTH_ATTACHMENT,
-                             GL_RENDERBUFFER,
-                             0 );
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+  /*
   if( dev->rboId )
     glDeleteRenderbuffers(1, &dev->rboId);
+    */
   //glDeleteFramebuffers (1, &dev->fboId);
 
   glViewport( 0, 0, dev->scrW, dev->scrH );
@@ -499,6 +528,12 @@ AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
   (void)u;
   setDevice(d);
 
+  if( f==AbstractTexture::Format::Depth16 ||
+      f==AbstractTexture::Format::Depth24 ||
+      f==AbstractTexture::Format::Depth32 ){
+    return createDepthStorage(d,w,h,f);
+    }
+
   Detail::GLTexture* tex = new Detail::GLTexture;
   glGenTextures(1, &tex->id);
   glBindTexture(GL_TEXTURE_2D, tex->id);
@@ -596,10 +631,10 @@ AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
     GL_RGBA,
     GL_RGBA,
 
-    GL_LUMINANCE, //d
-    GL_LUMINANCE, //d
-    GL_LUMINANCE, //d
-    GL_LUMINANCE, //ds
+    GL_DEPTH_COMPONENT, //d
+    GL_DEPTH_COMPONENT, //d
+    GL_DEPTH_COMPONENT, //d
+    GL_DEPTH_COMPONENT, //ds
 
     GL_RGB,
     GL_RGBA

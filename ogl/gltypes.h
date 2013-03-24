@@ -14,7 +14,11 @@ namespace Tempest{
 
 namespace Detail{
   struct GLTexture{
+    GLTexture();
+
     GLuint id;
+    GLuint depthId;
+
     GLenum min, mag;
     bool mips;
 

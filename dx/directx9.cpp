@@ -218,12 +218,16 @@ void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
                                   AbstractAPI::Texture *tx ) const {
   LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
 
-  LPDIRECT3DSURFACE9 surf = 0;
-  LPDIRECT3DTEXTURE9 tex  = LPDIRECT3DTEXTURE9(tx);
-  tex->GetSurfaceLevel( 0, &surf );
-  dev->SetDepthStencilSurface( surf );
+  if( tx ){
+    LPDIRECT3DSURFACE9 surf = 0;
+    LPDIRECT3DTEXTURE9 tex  = LPDIRECT3DTEXTURE9(tx);
+    tex->GetSurfaceLevel( 0, &surf );
+    dev->SetDepthStencilSurface( surf );
 
-  tex->Release();
+    tex->Release();
+    } else {
+    dev->SetDepthStencilSurface(0);
+    }
   }
 
 bool DirectX9::startRender( AbstractAPI::Device *d,

@@ -179,6 +179,9 @@ JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_mouseUpEvent( JNIEnv * 
   
   
   pthread_mutex_lock( &appMutex );
+  e.type = AEvent::MouseMoveEvent;
+  events.push(e);
+  e.type = AEvent::MouseUpEvent;
   events.push(e);
   pthread_mutex_unlock( &appMutex );
   }

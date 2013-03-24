@@ -108,6 +108,7 @@ void Device::beginPaint( Texture2d &rt ) {
   data->currentRT = 0;
   data->mrtSize   = 1;
 
+  api.setDSSurfaceTaget( impl, (AbstractAPI::Texture*)0 );
   api.setRenderTaget( impl, rt.data.value(), 0,
                       0 );
 
@@ -131,6 +132,7 @@ void Device::beginPaint( Texture2d rt[], int count ){
   data->currentRT = 0;
   data->mrtSize   = count;
 
+  api.setDSSurfaceTaget( impl, (AbstractAPI::Texture*)0 );
   for( int i=0; i<count; ++i )
     api.setRenderTaget( impl,
                         rt[i].data.value(), 0,
