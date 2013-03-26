@@ -1,6 +1,6 @@
 QT       -= core gui
 
-CONFIG += directx
+CONFIG += opengl
 
 TARGET = Tempest
 TEMPLATE = lib
@@ -8,6 +8,7 @@ TEMPLATE = lib
 
 #DEFINES += __ANDROID__
 INCLUDEPATH += math
+INCLUDEPATH += squish
 INCLUDEPATH += "./include"
 DESTDIR = ../lib
 
@@ -112,7 +113,17 @@ SOURCES += \
     utils/tessobject.cpp \
     utils/postprocesshelper.cpp \
     utils/color.cpp \
-    shading/shaderinput.cpp
+    shading/shaderinput.cpp \
+    squish/squish.cpp \
+    squish/singlecolourlookup.inl \
+    squish/singlecolourfit.cpp \
+    squish/rangefit.cpp \
+    squish/maths.cpp \
+    squish/colourset.cpp \
+    squish/colourfit.cpp \
+    squish/colourblock.cpp \
+    squish/clusterfit.cpp \
+    squish/alpha.cpp
 
 HEADERS += \
     window.h \
@@ -172,7 +183,21 @@ HEADERS += \
     utils/postprocesshelper.h \
     utils/cwnptr.h \
     utils/color.h \
-    shading/shaderinput.h
+    shading/shaderinput.h \
+    squish/squish.h \
+    squish/singlecolourfit.h \
+    squish/simd_ve.h \
+    squish/simd_sse.h \
+    squish/simd_float.h \
+    squish/simd.h \
+    squish/rangefit.h \
+    squish/maths.h \
+    squish/config.h \
+    squish/colourset.h \
+    squish/colourfit.h \
+    squish/colourblock.h \
+    squish/clusterfit.h \
+    squish/alpha.h
 
 OTHER_FILES += \
     include/Tempest/Window \

@@ -114,11 +114,13 @@ class AbstractAPI {
 
     virtual AbstractAPI::Texture* createTexture( AbstractAPI::Device *d,
                                                  const Pixmap& p,
-                                                 bool mips ) const = 0;
+                                                 bool mips,
+                                                 bool compress ) const = 0;
     virtual AbstractAPI::Texture* recreateTexture( AbstractAPI::Device * d,
                                                    AbstractAPI::Texture* t,
                                                    const Pixmap& p,
-                                                   bool mips ) const = 0;
+                                                   bool mips,
+                                                   bool compress ) const = 0;
 
     virtual AbstractAPI::Texture*
                  createTexture( AbstractAPI::Device *d,
@@ -198,6 +200,8 @@ class AbstractAPI {
                                int vertexCount,
                                int firstIndex,
                                int pCount ) const = 0;
+
+    virtual bool hasManagedStorge() const{ return false; }
   };
 
 }

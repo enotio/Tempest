@@ -229,14 +229,21 @@ void Device::present(){
   data->isLost = api.present( impl );
   }
 
-AbstractAPI::Texture *Device::createTexture( const Pixmap &p, bool mips ) {
-  return api.createTexture( impl, p, mips);
+bool Device::hasManagedStorge() const {
+  return api.hasManagedStorge();
+  }
+
+AbstractAPI::Texture *Device::createTexture( const Pixmap &p,
+                                             bool mips,
+                                             bool compress ) {
+  return api.createTexture( impl, p, mips, compress );
   }
 
 AbstractAPI::Texture *Device::recreateTexture( AbstractAPI::Texture *t,
                                                const Pixmap &p,
-                                               bool mips) {
-  return api.recreateTexture(impl, t,p,mips);
+                                               bool mips,
+                                               bool compress ) {
+  return api.recreateTexture(impl, t,p,mips, compress);
   }
 
 AbstractAPI::Texture* Device::createTexture( int w, int h,

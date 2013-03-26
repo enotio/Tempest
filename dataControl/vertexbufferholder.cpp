@@ -54,51 +54,64 @@ void VertexBufferHolder::createObject( AbstractAPI::VertexBuffer*& t,
     device().unlockBuffer( t );
     }
 
-  Data::LDData *d = new Data::LDData();
-  d->vsize = vsize;
-  d->size  = size;
-  d->lockBegin = 0;
-  d->lockSize  = 0;
-  //d.data  = src;
+  if( 1 || !device().hasManagedStorge() ){
+    Data::LDData *d = new Data::LDData();
+    d->vsize = vsize;
+    d->size  = size;
+    d->lockBegin = 0;
+    d->lockSize  = 0;
+    //d.data  = src;
 
-  d->data.resize( size*vsize );
-  std::copy( src, src + size*vsize, d->data.begin() );
+    d->data.resize( size*vsize );
+    std::copy( src, src + size*vsize, d->data.begin() );
 
-  data->vbos[t] = d;
+    data->vbos[t] = d;
+    }
   }
 
 void VertexBufferHolder::deleteObject( AbstractAPI::VertexBuffer* t ){
-  Data::Iterator i = data->vbos.find(t);
-  delete i->second;
+  if( 1 || !device().hasManagedStorge() ){
+    Data::Iterator i = data->vbos.find(t);
+    delete i->second;
 
-  data->vbos.erase(i);
+    data->vbos.erase(i);
+    }
+
   device().deleteVertexBuffer(t);
   }
 
 void VertexBufferHolder::reset( AbstractAPI::VertexBuffer* t ){
-  Data::Iterator i = data->vbos.find(t);
-  data->restore[t] = i->second;
+  if( 1 || !device().hasManagedStorge() ){
+    Data::Iterator i = data->vbos.find(t);
+    data->restore[t] = i->second;
 
-  data->vbos.erase(i);
-  device().deleteVertexBuffer(t);
+    data->vbos.erase(i);
+    device().deleteVertexBuffer(t);
+    }
   }
 
 AbstractAPI::VertexBuffer* VertexBufferHolder::restore( AbstractAPI::VertexBuffer* t ){
-  Data::LDData* ld = data->restore[t];
-  data->restore.erase(t);
+  if( 1 || !device().hasManagedStorge() ){
+    Data::LDData* ld = data->restore[t];
+    data->restore.erase(t);
 
-  createObject( t, &ld->data[0], ld->size, ld->vsize );
-  delete ld;
+    createObject( t, &ld->data[0], ld->size, ld->vsize );
+    delete ld;
+    }
 
   return t;
   }
 
 AbstractAPI::VertexBuffer* VertexBufferHolder::copy( AbstractAPI::VertexBuffer* t ){
-  Data::LDData& ld = *data->vbos[t];
+  if( 0 && device().hasManagedStorge() ){
 
-  AbstractAPI::VertexBuffer* ret = 0;
-  createObject( ret, &ld.data[0], ld.size, ld.vsize );
-  return ret;
+    } else {
+    Data::LDData& ld = *data->vbos[t];
+
+    AbstractAPI::VertexBuffer* ret = 0;
+    createObject( ret, &ld.data[0], ld.size, ld.vsize );
+    return ret;
+    }
   }
 
 char *VertexBufferHolder::lockBuffer( AbstractAPI::VertexBuffer *t,

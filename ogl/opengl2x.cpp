@@ -26,6 +26,7 @@
 #include <stdexcept>
 
 #include "gltypes.h"
+#include <squish.h>
 
 using namespace Tempest;
 
@@ -36,6 +37,7 @@ struct Opengl2x::Device{
   HDC   hDC;
   HGLRC hRC;
 #endif
+  bool hasS3tcTextures;
 
   int scrW, scrH;
 
@@ -49,13 +51,41 @@ struct Opengl2x::Device{
   bool    isPainting;
 
   Detail::RenderTg target;
+  std::vector<squish::u8> compressBuffer;
+
+  static void toU8( squish::u8 * out, const Pixmap::Pixel & c ){
+    out[0] = c.r;
+    out[1] = c.g;
+    out[2] = c.b;
+    out[3] = c.a;
+    }
+
+  void compress( const Pixmap & p ){
+    squish::u8 px[4][4][4];
+
+    std::vector<squish::u8>& data = compressBuffer;
+    data.resize( p.width()*p.height()/2 );
+
+    for( int i=0; i<p.width(); i+=4 )
+      for( int r=0; r<p.height(); r+=4 ){
+        for( int x=0; x<4; ++x )
+          for( int y=0; y<4; ++y ){
+            Device::toU8( px[y][x], p.at(i+x,r+y) );
+            }
+
+        int pos = ((i/4) + (r/4)*p.width()/4)*8;
+        squish::Compress( (squish::u8*)px,
+                          &data[pos], squish::kDxt1 );
+        }
+    }
   };
 
 void Opengl2x::errCk() const {
   GLenum err = glGetError();
   while( err!=GL_NO_ERROR ){
 #ifndef __ANDROID__
-    std::cout << "[OpenGL]: " << glewGetErrorString(err) << std::endl;
+    std::cout << "[OpenGL]: " << glewGetErrorString(err) <<" 0x"
+              << std::hex << err << std::dec << std::endl;
 #else
     void* ierr = (void*)err;
     __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "error %p", ierr);
@@ -80,6 +110,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   Device * dev = new Device();
   dev->isPainting = false;
   memset( &dev->target, 0, sizeof(dev->target) );
+  dev->compressBuffer.reserve(512*512*2);
 
 #ifndef __ANDROID__
   GLuint PixelFormat;
@@ -108,6 +139,15 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
     if( glewInit()!=GLEW_OK || !GLEW_VERSION_2_1) {
       return 0;
       }
+#endif
+
+  const char * ext = (const char*)glGetString(GL_EXTENSIONS);
+  dev->hasS3tcTextures =
+      (strstr(ext, "GL_OES_texture_compression_S3TC")!=0) ||
+      (strstr(ext, "GL_EXT_texture_compression_s3tc")!=0);
+
+#ifdef __ANDROID__
+  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "extensions = %s", ext );
 #endif
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -212,6 +252,7 @@ void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
 void Opengl2x::endPaint  ( AbstractAPI::Device * d ) const{
   setDevice(d);
 
+  dev->decl = 0;
   dev->isPainting = false;
   setupBuffers( 0, false, true, false );
   dev->vbo    = 0;
@@ -383,17 +424,17 @@ void Opengl2x::retDSSurfaceTaget( AbstractAPI::Device *d,
 void Opengl2x::setDSSurfaceTaget( AbstractAPI::Device *d,
                                   AbstractAPI::StdDSSurface *tx ) const {
   setDevice(d);
-#ifndef __ANDROID__
+//#ifndef __ANDROID__
   dev->target.depth = (Detail::GLTexture*)tx;
-#endif
+//#endif
   }
 
 void Opengl2x::setDSSurfaceTaget( AbstractAPI::Device *d,
                                   AbstractAPI::Texture *tx ) const {
   setDevice(d);
-#ifndef __ANDROID__
+//#ifndef __ANDROID__
   dev->target.depth = (Detail::GLTexture*)tx;
-#endif
+//#endif
   }
 
 bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
@@ -446,7 +487,8 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
 
 AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
                                                const Pixmap &p,
-                                               bool mips ) const {
+                                               bool  mips,
+                                               bool  compress ) const {
   if( p.width()==0 || p.height()==0 )
     return 0;
 
@@ -456,8 +498,9 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
   glGenTextures(1, &tex->id);
   glBindTexture(GL_TEXTURE_2D, tex->id);
 
-  tex->min = tex->mag = GL_NEAREST;
-  tex->mips = mips;
+  tex->min      = tex->mag = GL_NEAREST;
+  tex->mips     = mips;
+  tex->compress = compress;
 
   tex->w = p.width();
   tex->h = p.height();
@@ -466,8 +509,20 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
     tex->format = GL_RGBA; else
     tex->format = GL_RGB;
 
-  glTexImage2D( GL_TEXTURE_2D, 0, tex->format, p.width(), p.height(), 0,tex->format,
-                GL_UNSIGNED_BYTE, p.const_data() );
+  if( !compress || (!( p.width()%4==0 && p.height()%4==0 )) ){
+    glTexImage2D( GL_TEXTURE_2D, 0, tex->format, p.width(), p.height(), 0,tex->format,
+                  GL_UNSIGNED_BYTE, p.const_data() );
+    } else {
+    dev->compress(p);
+    glCompressedTexImage2D( GL_TEXTURE_2D, 0,
+                            0x83F1,//tex->format,
+                            p.width(),
+                            p.height(),
+                            0,
+                            dev->compressBuffer.size(),
+                            &dev->compressBuffer[0] );
+    errCk();
+    }
 
   glTexParameteri( GL_TEXTURE_2D,
                    GL_TEXTURE_MIN_FILTER,
@@ -479,15 +534,17 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
   if( mips )
     glGenerateMipmap( GL_TEXTURE_2D );
 
+  errCk();
   return ((AbstractAPI::Texture*)tex);
   }
 
-AbstractAPI::Texture *Opengl2x::recreateTexture( AbstractAPI::Device *d,
+AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
                                                  AbstractAPI::Texture *oldT,
                                                  const Pixmap &p,
-                                                 bool mips) const {
+                                                 bool mips,
+                                                bool compress) const {
   if( oldT==0 )
-    return createTexture(d, p, mips);
+    return createTexture(d, p, mips, compress);
 
   setDevice(d);
   Detail::GLTexture* tex = 0;
@@ -497,19 +554,34 @@ AbstractAPI::Texture *Opengl2x::recreateTexture( AbstractAPI::Device *d,
   if( p.hasAlpha() )
     format = GL_RGBA;
 
-  if( int(old->w)==p.width() &&
-      int(old->h)==p.height() &&
-      old->format==format &&
-      old->mips  ==mips ){
+  if( int(old->w)  == p.width() &&
+      int(old->h)  == p.height() &&
+      old->format  == format &&
+      old->mips    == mips   &&
+      old->compress== compress ){
     tex = old;
     } else {
     deleteTexture(d, oldT);
-    return createTexture( d, p, mips );
+    return createTexture( d, p, mips, compress );
     }
 
   glBindTexture(GL_TEXTURE_2D, tex->id);
-  glTexImage2D( GL_TEXTURE_2D, 0, tex->format, p.width(), p.height(), 0, tex->format,
-                GL_UNSIGNED_BYTE, p.const_data() );
+
+  if( !compress || (!( p.width()%4==0 && p.height()%4==0 )) ){
+    glTexImage2D( GL_TEXTURE_2D, 0, tex->format,
+                  p.width(), p.height(), 0, tex->format,
+                  GL_UNSIGNED_BYTE, p.const_data() );
+    } else {
+    dev->compress(p);
+    glCompressedTexImage2D( GL_TEXTURE_2D, 0,
+                            0x83F1,//tex->format,
+                            p.width(),
+                            p.height(),
+                            0,
+                            dev->compressBuffer.size(),
+                            &dev->compressBuffer[0] );
+    errCk();
+    }
 
   if( mips )
     glGenerateMipmap( GL_TEXTURE_2D );
@@ -683,7 +755,13 @@ void Opengl2x::deleteTexture( AbstractAPI::Device *d,
 
   setDevice(d);
   Detail::GLTexture* tex = (Detail::GLTexture*)t;
-  glDeleteTextures( 1, &tex->id );
+
+  if( tex->id )
+    glDeleteTextures( 1, &tex->id );
+
+  if( tex->depthId )
+    glDeleteRenderbuffers( 1, &tex->depthId );
+
   delete tex;
   
   errCk();
@@ -1054,6 +1132,10 @@ void Opengl2x::drawIndexed(  AbstractAPI::Device *de,
 
   //setupBuffers( firstIndex, false, false );
   errCk();
+  }
+
+bool Opengl2x::hasManagedStorge() const {
+  return true;
   }
 
 void Opengl2x::setRenderState( AbstractAPI::Device *d,

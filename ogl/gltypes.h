@@ -20,7 +20,7 @@ namespace Detail{
     GLuint depthId;
 
     GLenum min, mag;
-    bool mips;
+    bool mips, compress;
 
     int w,h;
     GLenum format;

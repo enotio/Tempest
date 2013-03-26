@@ -266,7 +266,9 @@ bool DirectX9::reset( AbstractAPI::Device *d, void* hwnd,
   }
 
 AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
-                                               const Pixmap &p, bool mips) const {
+                                               const Pixmap &p,
+                                               bool mips,
+                                               bool compress) const {
   if( p.width()==0 || p.height()==0 )
     return 0;
 
@@ -313,7 +315,8 @@ AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
 AbstractAPI::Texture *DirectX9::recreateTexture( AbstractAPI::Device *d,
                                                  AbstractAPI::Texture *oldT,
                                                  const Pixmap &p,
-                                                 bool mips) const {
+                                                 bool mips,
+                                                 bool compress ) const {
   if( oldT==0 )
     return createTexture(d, p, mips);
 

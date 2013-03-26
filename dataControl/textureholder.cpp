@@ -22,7 +22,7 @@ struct TextureHolder::Data {
 
   struct PixmapTexture{
     Pixmap pm;
-    bool mip;
+    bool mip, compress;
     AbstractAPI::Texture* owner;
     };
 
@@ -44,8 +44,8 @@ TextureHolder::TextureHolder( const TextureHolder& h):BaseType( h.device() ) {
 
 
 Tempest::Texture2d TextureHolder::create( int w, int h,
-                                       AbstractTexture::Format::Type f,
-                                       TextureUsage u ){
+                                          AbstractTexture::Format::Type f,
+                                          TextureUsage u ){
   Tempest::Texture2d obj( *this );
 
   createObject( obj.data.value(), w, h, 1, f, u );
@@ -55,10 +55,10 @@ Tempest::Texture2d TextureHolder::create( int w, int h,
   return obj;
   }
 
-Texture2d TextureHolder::create( const Pixmap &p, bool mips ) {
+Texture2d TextureHolder::create( const Pixmap &p, bool mips, bool compress ) {
   Tempest::Texture2d obj( *this );
 
-  createObject( obj.data.value(), p, mips );
+  createObject( obj.data.value(), p, mips, compress );
   obj.w = p.width();
   obj.h = p.height();
 
@@ -81,7 +81,7 @@ void TextureHolder::createObject( AbstractAPI::Texture*& t,
                                   const std::string &fname ){
   Pixmap p;
   p.load(fname);
-  createObject( t, p, 1 );
+  createObject( t, p, true, true );
   }
 
 void TextureHolder::createObject( AbstractAPI::Texture*& t,
@@ -100,65 +100,83 @@ void TextureHolder::createObject( AbstractAPI::Texture*& t,
   d.usage  = u;
   d.format = f;
 
-  data->dynamic_textures[t] = d;
+  if( !device().hasManagedStorge() )
+    data->dynamic_textures[t] = d;
   }
 
 void TextureHolder::createObject( AbstractAPI::Texture *&t,
-                                  const Pixmap &p, bool mips){
+                                  const Pixmap &p,
+                                  bool mips,
+                                  bool compress ){
   Data::PixmapTexture px;
   px.pm = p;
   px.mip = mips;
+  px.compress = compress;
 
-  t = device().createTexture( p, mips );
+  t = device().createTexture( p, mips, compress );
   // assert(t);
 
   px.owner = t;
   //data->pixmap_textures[t] = px;
-  data->pixmap_textures.push_back(px);
+  if( !device().hasManagedStorge() )
+    data->pixmap_textures.push_back(px);
   }
 
 void TextureHolder::recreateObject( AbstractAPI::Texture *&t,
                                     AbstractAPI::Texture * old,
-                                    const Pixmap &p, bool mips) {
-  if( data->dynamic_textures.find(old) != data->dynamic_textures.end() )
-    data->dynamic_textures.erase(old);
+                                    const Pixmap &p,
+                                    bool mips,
+                                    bool compress ) {
+  if( !device().hasManagedStorge() ){
+    if( data->dynamic_textures.find(old) != data->dynamic_textures.end() )
+      data->dynamic_textures.erase(old);
 
-  for( size_t i=0; i<data->pixmap_textures.size(); ++i )
-    if( data->pixmap_textures[i].owner==old ){
-      data->pixmap_textures[i] = data->pixmap_textures.back();
-      data->pixmap_textures.pop_back();
-      i = -1;
-      }
+    for( size_t i=0; i<data->pixmap_textures.size(); ++i )
+      if( data->pixmap_textures[i].owner==old ){
+        data->pixmap_textures[i] = data->pixmap_textures.back();
+        data->pixmap_textures.pop_back();
+        i = -1;
+        }
+    }
 
   Data::PixmapTexture px;
   px.pm = p;
   px.mip = mips;
+  px.compress = compress;
 
-  t = device().recreateTexture( old, p, mips );
+  t = device().recreateTexture( old, p, mips, compress );
   px.owner = t;
   //data->pixmap_textures[t] = px;
-  data->pixmap_textures.push_back(px);
+  if( !device().hasManagedStorge() )
+    data->pixmap_textures.push_back(px);
   }
 
 void TextureHolder::deleteObject( AbstractAPI::Texture* t ){
-  if( data->dynamic_textures.find(t) != data->dynamic_textures.end() )
-    data->dynamic_textures.erase(t);
+  if( !device().hasManagedStorge() ){
+    if( data->dynamic_textures.find(t) != data->dynamic_textures.end() )
+      data->dynamic_textures.erase(t);
 
-  for( size_t i=0; i<data->pixmap_textures.size(); ++i )
-    if( data->pixmap_textures[i].owner==t ){
-      data->pixmap_textures[i] = data->pixmap_textures.back();
-      data->pixmap_textures.pop_back();
-      i = -1;
-      }
+    for( size_t i=0; i<data->pixmap_textures.size(); ++i )
+      if( data->pixmap_textures[i].owner==t ){
+        data->pixmap_textures[i] = data->pixmap_textures.back();
+        data->pixmap_textures.pop_back();
+        i = -1;
+        }
+    }
 
-  reset(t);
-  }
-
-void TextureHolder::reset( AbstractAPI::Texture* t ){
   device().deleteTexture(t);
   }
 
+void TextureHolder::reset( AbstractAPI::Texture* t ){
+  if( !device().hasManagedStorge() )
+    device().deleteTexture(t);
+  }
+
 AbstractAPI::Texture* TextureHolder::restore( AbstractAPI::Texture* t ){
+  if( device().hasManagedStorge() ){
+    return t;
+    }
+
   if( data->dynamic_textures.find(t)!=data->dynamic_textures.end() ){
     Data::DynTexture d = data->dynamic_textures[t];
     data->dynamic_textures.erase(t);
@@ -174,7 +192,7 @@ AbstractAPI::Texture* TextureHolder::restore( AbstractAPI::Texture* t ){
       data->pixmap_textures[i] = data->pixmap_textures.back();
       data->pixmap_textures.pop_back();
 
-      createObject( t, d.pm, d.mip );
+      createObject( t, d.pm, d.mip, d.compress );
       return t;
       }
 

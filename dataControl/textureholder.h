@@ -20,7 +20,9 @@ class TextureHolder : public AbstractHolderWithLoad
 
     using BaseType::load;
 
-    virtual Tempest::Texture2d create( const Pixmap & p, bool mips = true );
+    virtual Tempest::Texture2d create( const Pixmap & p,
+                                       bool mips = true,
+                                       bool compress = true );
 
     virtual Tempest::Texture2d create( int w, int h,
                                     AbstractTexture::Format::Type format
@@ -39,11 +41,11 @@ class TextureHolder : public AbstractHolderWithLoad
                                AbstractTexture::Format::Type f,
                                TextureUsage u );
 
-    virtual void createObject( AbstractAPI::Texture*& t,
-                               const Pixmap & p, bool mips );
+    virtual void createObject(AbstractAPI::Texture*& t,
+                               const Pixmap & p, bool mips , bool compress);
 
     virtual void recreateObject(AbstractAPI::Texture*& t, AbstractAPI::Texture *old,
-                                 const Pixmap & p, bool mips );
+                                 const Pixmap & p, bool mips , bool compress);
 
     virtual void deleteObject( AbstractAPI::Texture* t );
 

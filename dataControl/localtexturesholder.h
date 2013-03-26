@@ -16,6 +16,8 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
       Tempest::AbstractAPI::Texture* handle;
 
       int w,h,mip;
+      bool compress;
+
       Tempest::AbstractTexture::Format::Type format;
       Tempest::TextureUsage usage;
 
@@ -27,7 +29,8 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
                mip==b.mip &&
                format==b.format &&
                usage==b.usage &&
-               dynamic == b.dynamic;
+               dynamic == b.dynamic &&
+               compress == b.compress;
         }
       };
 
@@ -53,8 +56,8 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
                        Tempest::AbstractTexture::Format::Type f,
                        Tempest::TextureUsage u );
 
-    void createObject( AbstractAPI::Texture*& t,
-                       const Pixmap & p, bool mips );
+    void createObject(AbstractAPI::Texture*& t,
+                       const Pixmap & p, bool mips , bool compress);
 
     void deleteObject( Tempest::AbstractAPI::Texture* t );
 

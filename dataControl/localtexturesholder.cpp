@@ -115,33 +115,35 @@ void LocalTexturesHolder::createObject( Tempest::AbstractAPI::Texture *&t,
 
 void LocalTexturesHolder::createObject( AbstractAPI::Texture *&t,
                                         const Pixmap &p,
-                                        bool mips ) {
+                                        bool mips,
+                                        bool compress ) {
   NonFreedData d;
-  d.w       = p.width();
-  d.h       = p.height();
-  d.mip     = mips ? 1:0;
-  d.usage   = Tempest::TU_Dynamic;
-  d.format  = p.hasAlpha() ? Tempest::AbstractTexture::Format::RGBA : Tempest::AbstractTexture::Format::RGB;
-  d.dynamic = false;
+  d.w        = p.width();
+  d.h        = p.height();
+  d.mip      = mips ? 1:0;
+  d.compress = compress;
+  d.usage    = Tempest::TU_Dynamic;
+  d.format   = p.hasAlpha() ? Tempest::AbstractTexture::Format::RGBA : Tempest::AbstractTexture::Format::RGB;
+  d.dynamic  = false;
   d.restoreIntent = false;
 
   for( size_t i=0; i<nonFreed.size(); ++i ){
     d.handle = nonFreed[i].data.handle;
 
     NonFreedData& x = nonFreed[i].data;
-    if( memcmp( &x, &d, sizeof(d) )==0 ){
+    if( x.cmp(d) ){
       dynTextures.push_back( nonFreed[i] );
       nonFreed[i] = nonFreed.back();
       nonFreed.pop_back();
 
       AbstractAPI::Texture * old = dynTextures.back().data.handle;
 
-      Tempest::TextureHolder::recreateObject(t, old, p, mips);
+      Tempest::TextureHolder::recreateObject(t, old, p, mips, compress);
       return;
       }
     }
 
-  Tempest::TextureHolder::createObject(t,p,mips);
+  Tempest::TextureHolder::createObject(t,p,mips,compress);
 
   if( !t )
     return;

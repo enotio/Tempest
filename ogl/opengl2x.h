@@ -63,12 +63,14 @@ class Opengl2x : public AbstractAPI {
 
     AbstractAPI::Texture* createTexture( AbstractAPI::Device *d,
                                          const Pixmap& p,
-                                         bool mips ) const;
+                                         bool mips,
+                                         bool compress ) const;
 
     AbstractAPI::Texture* recreateTexture( AbstractAPI::Device * d,
                                            AbstractAPI::Texture* t,
                                            const Pixmap& p,
-                                           bool mips ) const;
+                                           bool mips,
+                                           bool compress ) const;
 
     AbstractAPI::Texture* createTexture( AbstractAPI::Device *d,
                                          int w, int h, int mips,
@@ -145,6 +147,9 @@ class Opengl2x : public AbstractAPI {
                        int vertexCount,
                        int firstIndex,
                        int pCount ) const;
+
+
+    virtual bool hasManagedStorge() const;
   private:
     class Opengl2xImpl;
     Opengl2xImpl* impl;

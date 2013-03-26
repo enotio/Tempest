@@ -69,6 +69,8 @@ class Device {
     bool reset( const Options &opt = Options() );
     void present();
 
+    bool hasManagedStorge() const;
+
     template< class T >
     void setUniform( Tempest::VertexShader &s,
                      const T t[], int l,
@@ -228,8 +230,15 @@ class Device {
     void addVertexDeclaration( VertexDeclaration& h );
     void delVertexDeclaration( VertexDeclaration& h );
 
-    AbstractAPI::Texture* createTexture( const Pixmap& p, bool mips = true );
-    AbstractAPI::Texture* recreateTexture( AbstractAPI::Texture*, const Pixmap& p, bool mips = true );
+    AbstractAPI::Texture* createTexture( const Pixmap& p,
+                                         bool mips     = true,
+                                         bool compress = true );
+
+    AbstractAPI::Texture* recreateTexture(AbstractAPI::Texture*,
+                                          const Pixmap& p,
+                                          bool mips = true,
+                                          bool compress = true );
+
     AbstractAPI::Texture* createTexture( int w, int h,
                                          int mips,
                                          AbstractTexture::Format::Type f,

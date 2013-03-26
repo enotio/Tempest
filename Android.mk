@@ -8,7 +8,8 @@ LOCAL_CFLAGS := -std=gnu++11
 Tempest_PATH := C:/Users/Try/Home/Programming/Tempest/Tempest
 
 LOCAL_C_INCLUDES := $(Tempest_PATH)/include\
-                    $(Tempest_PATH)/math
+                    $(Tempest_PATH)/math\
+                    $(Tempest_PATH)/squish
 
 LOCAL_CFLAGS := -std=gnu++11
 LOCAL_SRC_FILES := \
@@ -21,6 +22,7 @@ LOCAL_SRC_FILES := \
   $(wildcard $(LOCAL_PATH)/render/*.cpp) \
   $(wildcard $(LOCAL_PATH)/scene/*.cpp) \
   $(wildcard $(LOCAL_PATH)/shading/*.cpp) \
+  $(wildcard $(LOCAL_PATH)/squish/*.cpp) \
   $(wildcard $(LOCAL_PATH)/system/*.cpp) \
   $(wildcard $(LOCAL_PATH)/utils/*.cpp) \
   $(wildcard $(LOCAL_PATH)/*.cpp) )
