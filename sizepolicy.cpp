@@ -7,7 +7,8 @@ SizePolicy::SizePolicy():typeH(Preferred), typeV(Preferred) {
   }
 
 Size SizePolicy::maxWidgetSize() {
-  return Size( 1<<16, 1<<16 );
+  static Size s = Size( 1<<16, 1<<16 );
+  return s;
   }
 
 int Margin::xMargin() const {

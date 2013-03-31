@@ -286,7 +286,8 @@ int AndroidAPI::nextEvent(bool &quit) {
   if( events.size() ){
     e = events.front();
     events.pop();
-    LOGI( "events.size() = %d", events.size() );
+    if( events.size() )
+      LOGI( "events.size() = %d", events.size() );
     }
   pthread_mutex_unlock( &appMutex );
   

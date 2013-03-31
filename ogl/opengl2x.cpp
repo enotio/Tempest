@@ -43,9 +43,9 @@ struct Opengl2x::Device{
 
   VertexDeclaration::Declarator * decl;
   GLuint vbo, curVBO;
-  GLuint ibo;
+  GLuint ibo, curIBO;
 
-  int vertexSize, curVboOffsetIndex;
+  int vertexSize, curVboOffsetIndex, curIboOffsetIndex;
 
   GLuint fboId;//, rboId;
   bool    isPainting;
@@ -53,11 +53,19 @@ struct Opengl2x::Device{
   Detail::RenderTg target;
   std::vector<squish::u8> compressBuffer;
 
+  std::vector<char> tmpLockBuffer;
+  bool lbUseed;
+
   static void toU8( squish::u8 * out, const Pixmap::Pixel & c ){
     out[0] = c.r;
     out[1] = c.g;
     out[2] = c.b;
     out[3] = c.a;
+    }
+
+  bool canCompress( const Pixmap & p ){
+    return false;
+    return p.width()%4==0 && p.height()%4==0 && p.width()>=4 && p.height()>=4;
     }
 
   void compress( const Pixmap & p ){
@@ -111,6 +119,8 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->isPainting = false;
   memset( &dev->target, 0, sizeof(dev->target) );
   dev->compressBuffer.reserve(512*512*2);
+  dev->lbUseed = false;
+  dev->tmpLockBuffer.reserve( 8096*32 );
 
 #ifndef __ANDROID__
   GLuint PixelFormat;
@@ -149,6 +159,10 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 #ifdef __ANDROID__
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "extensions = %s", ext );
 #endif
+
+  glEnable( GL_DEPTH_TEST );
+  glEnable( GL_CULL_FACE );
+  glFrontFace( GL_CCW );
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glGenFramebuffers(1, &dev->fboId);
@@ -245,7 +259,9 @@ void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
 
   assert( !dev->isPainting );
   dev->isPainting = true;
+
   setupBuffers( 0, true, true, false );
+  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
   setupFBO();
   }
 
@@ -258,8 +274,10 @@ void Opengl2x::endPaint  ( AbstractAPI::Device * d ) const{
   dev->vbo    = 0;
   dev->ibo    = 0;
   dev->curVBO = 0;
+  dev->curIBO = 0;
 
   dev->curVboOffsetIndex = 0;
+  dev->curIboOffsetIndex = 0;
   }
 
 AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
@@ -347,6 +365,14 @@ void Opengl2x::setupFBO() const {
       glTexParameteri( GL_TEXTURE_2D,
                        GL_TEXTURE_MAG_FILTER,
                        GL_NEAREST );
+      //*****
+      glTexParameteri( GL_TEXTURE_2D,
+                       GL_TEXTURE_WRAP_S, 
+                       GL_CLAMP_TO_EDGE );
+      glTexParameteri( GL_TEXTURE_2D,
+                       GL_TEXTURE_WRAP_T,
+                       GL_CLAMP_TO_EDGE );
+
       glBindTexture( GL_TEXTURE_2D, 0 );
       //*****
 
@@ -400,12 +426,6 @@ void Opengl2x::unsetRenderTagets( AbstractAPI::Device *d,
   memset( &dev->target, 0, sizeof(dev->target) );
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  /*
-  if( dev->rboId )
-    glDeleteRenderbuffers(1, &dev->rboId);
-    */
-  //glDeleteFramebuffers (1, &dev->fboId);
 
   glViewport( 0, 0, dev->scrW, dev->scrH );
   errCk();
@@ -509,7 +529,7 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
     tex->format = GL_RGBA; else
     tex->format = GL_RGB;
 
-  if( !compress || (!( p.width()%4==0 && p.height()%4==0 )) ){
+  if( !compress || !dev->canCompress(p) ){
     glTexImage2D( GL_TEXTURE_2D, 0, tex->format, p.width(), p.height(), 0,tex->format,
                   GL_UNSIGNED_BYTE, p.const_data() );
     } else {
@@ -567,7 +587,7 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
 
   glBindTexture(GL_TEXTURE_2D, tex->id);
 
-  if( !compress || (!( p.width()%4==0 && p.height()%4==0 )) ){
+  if( !compress || !dev->canCompress(p)){
     glTexImage2D( GL_TEXTURE_2D, 0, tex->format,
                   p.width(), p.height(), 0, tex->format,
                   GL_UNSIGNED_BYTE, p.const_data() );
@@ -825,15 +845,21 @@ void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
                             AbstractAPI::VertexBuffer * v,
                             unsigned offset,
                             unsigned size ) const {
-  (void)size;
-
   setDevice(d);
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
 
   //glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
   //vbo->mappedData = (char*)glMapBuffer( GL_ARRAY_BUFFER, GL_READ_WRITE );
-  vbo->mappedData = new char[size];
+
+  if( !dev->lbUseed ){
+    dev->lbUseed = true;
+    dev->tmpLockBuffer.resize( size );
+    vbo->mappedData = &dev->tmpLockBuffer[0];
+    } else {
+    vbo->mappedData = new char[size];
+    }
+
   vbo->offset = offset;
   vbo->size   = size;
 
@@ -850,7 +876,12 @@ void Opengl2x::unlockBuffer( AbstractAPI::Device *d,
   glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
   glBufferSubData( GL_ARRAY_BUFFER, vbo->offset, vbo->size, vbo->mappedData );
 
-  delete[] vbo->mappedData;
+  if( vbo->mappedData == &dev->tmpLockBuffer[0] ){
+    dev->lbUseed = false;
+    dev->tmpLockBuffer.clear();
+    } else {
+    delete[] vbo->mappedData;
+    }
   vbo->mappedData = 0;
 
   //glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
@@ -1054,7 +1085,11 @@ void Opengl2x::draw( AbstractAPI::Device *de,
                      int firstVertex, int pCount ) const {
   setDevice(de);
   setupBuffers( 0, false, false, true );
-  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+
+  if( dev->curIBO!=0 ){
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+    dev->curIBO = 0;
+    }
 
   static const GLenum type[] = {
   #ifdef __ANDROID__
@@ -1082,19 +1117,25 @@ void Opengl2x::draw( AbstractAPI::Device *de,
   }
 
 //unstable
-void Opengl2x::drawIndexed(  AbstractAPI::Device *de,
-                             AbstractAPI::PrimitiveType t,
-                             int vboOffsetIndex,
-                             int minIndex,
-                             int vertexCount,
-                             int firstIndex,
-                             int pCount ) const {
+void Opengl2x::drawIndexed( AbstractAPI::Device *de,
+                            AbstractAPI::PrimitiveType t,
+                            int vboOffsetIndex,
+                            int iboOffsetIndex,
+                            int pCount ) const {
   setDevice(de);
   if( !dev->ibo )
     return;
 
+  bool rebind = !(dev->curIBO == dev->vbo && dev->curIboOffsetIndex==iboOffsetIndex );
+  //int pCount;
+
   setupBuffers( vboOffsetIndex*dev->vertexSize, false, false, true );
-  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, dev->ibo );
+
+  if( rebind ){
+    dev->curIBO = dev->ibo;
+    dev->curIboOffsetIndex = iboOffsetIndex;
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, dev->ibo );
+    }
 
   static const GLenum type[] = {
   #ifdef __ANDROID__
@@ -1116,19 +1157,10 @@ void Opengl2x::drawIndexed(  AbstractAPI::Device *de,
       t==AbstractAPI::LinesStrip  )
     vpCount = pCount+2;
 
-  if( firstIndex==0 ){
-    glDrawElements( type[ t-1 ], vpCount, GL_UNSIGNED_SHORT,
-                    (void*)(firstIndex*sizeof(short)) );
-    } else {
-#ifndef __ANDROID__
-    glDrawRangeElements( type[ t-1 ],
-                         firstIndex,
-                         firstIndex+vertexCount,
-                         vpCount,
-                         GL_UNSIGNED_SHORT,
-                         0 );
-#endif
-    }
+  glDrawElements( type[ t-1 ],
+                  vpCount,
+                  GL_UNSIGNED_SHORT,
+                  ((void*)(iboOffsetIndex*sizeof(uint16_t))) );
 
   //setupBuffers( firstIndex, false, false );
   errCk();
@@ -1164,12 +1196,19 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
     };
 
   glCullFace( cull[ r.cullFaceMode() ] );
-  glDepthFunc( cmp[ r.getZTestMode() ] );
 
+  if( r.isZTest() ){
+    glDepthFunc( cmp[ r.getZTestMode() ] );
+    } else {
+    glDepthFunc( GL_ALWAYS );
+    }
+
+  /*
   if( r.isZTest() )
     glEnable ( GL_DEPTH_TEST ); else
     glDisable( GL_DEPTH_TEST );
 
+  */
   glDepthMask( r.isZWriting() );
   
 #ifdef __ANDROID__

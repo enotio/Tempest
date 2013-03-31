@@ -79,13 +79,23 @@ class Render {
 
     template< class V >
     void draw ( const Model<V> & model ){
-      device.drawPrimitive( model.primitiveType(),
+      if( model.indexes().size() )
+        device.drawIndexed( model.primitiveType(),
                             vsh,
                             fsh,
                             model.declaration(),
                             model.vertexes(),
+                            model.indexes(),
                             0,
-                            model.size() );
+                            0,
+                            model.size() ); else
+        device.drawPrimitive( model.primitiveType(),
+                              vsh,
+                              fsh,
+                              model.declaration(),
+                              model.vertexes(),
+                              0,
+                              model.size() );
       }
 
     void setRenderState( const RenderState& s );

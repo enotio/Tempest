@@ -25,6 +25,11 @@
 
 #include <cstring>
 
+#ifdef __ANDROID__
+#define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE
+#define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
+#endif
+
 using namespace Tempest;
 
 struct GLSL::Data{
@@ -114,6 +119,7 @@ struct GLSL::Data{
 
   std::vector<ShProgram> prog;
   bool cgcgen;
+  bool hasAnisotropic;
   };
 
 void* GLSL::context() const{
@@ -130,9 +136,14 @@ GLSL::GLSL( AbstractAPI::OpenGL2xDevice * dev ) {
   data->context = dev;
   data->cgcgen  = false;
 
-#ifndef __ANDROID__
-  glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &data->maxAnisotropy );
-#endif
+  const char * ext = (const char*)glGetString(GL_EXTENSIONS);
+  data->hasAnisotropic =
+      (strstr(ext, "GL_EXT_texture_filter_anisotropic")!=0);
+
+//#ifndef __ANDROID__
+  if( data->hasAnisotropic )
+    glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &data->maxAnisotropy );
+//#endif
   }
 
 GLSL::~GLSL(){
@@ -378,7 +389,6 @@ void GLSL::enable() const {
     setUniforms( program, in.v4, 4 );
     }
 
-  //glUseProgram( 0 ); //FIXME!!!
   }
 
 template< class T >
@@ -479,13 +489,19 @@ void GLSL::setUniform( unsigned int sh,
         tx->mag = magFilter[ s.magFilter ];
         }
       
-#ifndef __ANDROID__
-      if( s.anisotropic )
+//#ifndef __ANDROID__
+      if( s.anisotropic && data->hasAnisotropic &&
+          ((tx->w &(tx->w-1))==0) &&
+          ((tx->h &(tx->h-1))==0) ){
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                        data->maxAnisotropy); else
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                         1 );
-#endif
+                        data->maxAnisotropy);
+        } else {
+        if( data->hasAnisotropic )
+          glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                           1 );
+        }
+
+//#endif
 
       glUniform1i( prm, slot );
 

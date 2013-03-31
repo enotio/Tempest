@@ -193,13 +193,11 @@ class AbstractAPI {
                        AbstractAPI::PrimitiveType t,
                        int firstVertex, int pCount ) const = 0;
 
-    virtual void drawIndexed(  AbstractAPI::Device *d,
-                               AbstractAPI::PrimitiveType t,
-                               int vboOffsetIndex,
-                               int minIndex,
-                               int vertexCount,
-                               int firstIndex,
-                               int pCount ) const = 0;
+    virtual void drawIndexed( AbstractAPI::Device *d,
+                              AbstractAPI::PrimitiveType t,
+                              int vboOffsetIndex,
+                              int iboOffsetIndex,
+                              int pCount ) const = 0;
 
     virtual bool hasManagedStorge() const{ return false; }
   };

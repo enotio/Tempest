@@ -137,18 +137,18 @@ class DirectX9 : public AbstractAPI {
                AbstractAPI::PrimitiveType t,
                int firstVertex, int pCount ) const;
 
-    void drawIndexed(  AbstractAPI::Device *d,
-                       AbstractAPI::PrimitiveType t,
-                       int vboOffsetIndex,
-                       int minIndex,
-                       int vertexCount,
-                       int firstIndex,
-                       int pCount ) const;
+    void drawIndexed(AbstractAPI::Device *d,
+                      AbstractAPI::PrimitiveType t,
+                      int vboOffsetIndex,
+                      int iboOffsetIndex,
+                      int vertexCount) const;
   private:
     class DirectX9Impl;
     DirectX9Impl* impl;
 
     struct Data;
+    struct IBO;
+    struct Device;
     //Data  *data;
 
     DirectX9( const DirectX9& ){}

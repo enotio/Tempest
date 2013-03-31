@@ -5,8 +5,11 @@
 #include <vector>
 
 #include <Tempest/VertexBuffer>
+#include <Tempest/IndexBuffer>
+
 #include <Tempest/VertexDeclaration>
 #include <Tempest/VertexBufferHolder>
+#include <Tempest/IndexBufferHolder>
 
 #include <stdint.h>
 #include <fstream>
@@ -39,7 +42,7 @@ struct RawModel{
   VertexList vertex;
 
   bool hasIndex;
-  typedef  std::vector<uint32_t> IndexList;
+  typedef  std::vector<uint16_t> IndexList;
   IndexList index;
 
   ModelBounds computeBoundRect() const{
@@ -152,7 +155,21 @@ class Model {
       vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
 
       m_size = buf.size();
-      vbo = vboHolder.load( &buf[0], buf.size() );
+      vbo = vboHolder.load( buf   );
+
+      bds = Raw::computeBoundRect( buf );
+      }
+
+    void load( Tempest::VertexBufferHolder & vboHolder,
+               Tempest::IndexBufferHolder  & iboHolder,
+               const std::vector<Vertex>&   buf,
+               const std::vector<uint16_t>& index,
+               const Tempest::VertexDeclaration::Declarator& decl ){
+      vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
+
+      m_size = index.size();
+      vbo = vboHolder.load( buf   );
+      ibo = iboHolder.load( index );
 
       bds = Raw::computeBoundRect( buf );
       }
@@ -161,7 +178,9 @@ class Model {
                Tempest::IndexBufferHolder  & iboHolder,
                const Raw& data,
                const Tempest::VertexDeclaration::Declarator& decl ){
-      load( vboHolder, iboHolder, data.vertex, decl );
+      if( data.hasIndex )
+        load( vboHolder, iboHolder, data.vertex, data.index, decl ); else
+        load( vboHolder, iboHolder, data.vertex, decl );
       }
 
     void load( Tempest::VertexBufferHolder & vboHolder,
@@ -176,11 +195,35 @@ class Model {
       load( vboHolder, iboHolder, r.vertex, decl );
       }
 
+    void load( Tempest::VertexBuffer<ModelVertex> & v,
+               Tempest::IndexBuffer<uint16_t>     & i,
+               const Tempest::VertexDeclaration   & d ){
+      if( i.size() )
+        m_size = i.size(); else
+        m_size = v.size();
+
+      vbo   = v;
+      ibo   = i;
+      vdecl = d;
+      }
+
+    void load( Tempest::VertexBuffer<ModelVertex> & v,
+               const Tempest::VertexDeclaration   & d ){
+      m_size = v.size();
+      vbo   = v;
+      ibo   = IndexBuffer<uint16_t>();
+      vdecl = d;
+      }
+
     const VertexBuffer<Vertex> &vertexes() const{
       return vbo;
       }
 
-    const Tempest::VertexDeclaration&   declaration() const{
+    const IndexBuffer<uint16_t> &indexes() const{
+      return ibo;
+      }
+
+    const Tempest::VertexDeclaration& declaration() const{
       return vdecl;
       }
 
@@ -202,24 +245,26 @@ class Model {
 
     Model<ModelVertex> slice( int first, int size ) const {
       Model<ModelVertex> m = *this;
-      m.vbo = m.vbo.slice( first, size );
-      m.m_size = m.vbo.size();
+
+      if( m.ibo.size() )
+        m.ibo = m.ibo.slice( first, size ); else
+        m.vbo = m.vbo.slice( first, size );
+
+      m.m_size = size;
 
       // TODO bsd recalc
       return m;
       }
 
     Model<ModelVertex> slice( int first ) const {
-      Model<ModelVertex> m = *this;
-      m.vbo = m.vbo.slice( first );
-      m.m_size = m.vbo.size();
-
-      // TODO bsd recalc
-      return m;
+      int sz = m_size-first;
+      return slice(first, sz);
       }
 
   private:
     Tempest::VertexBuffer<Vertex>   vbo;
+    Tempest::IndexBuffer<uint16_t>  ibo;
+
     Tempest::VertexDeclaration    vdecl;
     ModelBounds bds;
 

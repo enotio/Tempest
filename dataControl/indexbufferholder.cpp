@@ -12,6 +12,9 @@ using namespace Tempest;
 struct IndexBufferHolder::Data {
   struct LDData{
     int vsize, size;
+
+    int lockBegin, lockSize;
+    size_t minID;
     std::vector< char > data;
     // const void * data;
     };
@@ -97,4 +100,25 @@ AbstractAPI::IndexBuffer* IndexBufferHolder::copy( AbstractAPI::IndexBuffer* t )
   AbstractAPI::IndexBuffer* ret = 0;
   createObject( ret, &ld.data[0], ld.size, ld.vsize );
   return ret;
+  }
+
+char *IndexBufferHolder::lockBuffer( AbstractAPI::IndexBuffer *t,
+                                     int b, int sz ) {
+  Data::LDData & ld = *data->ibos[t];
+  ld.lockBegin = b;
+  ld.lockSize  = sz;
+
+  return &ld.data[0];//(char*)device().lockBuffer( t, b, sz);
+  }
+
+void IndexBufferHolder::unlockBuffer(AbstractAPI::IndexBuffer *t) {
+  Data::LDData & ld = *data->ibos[t];
+
+  char *v = (char*)device().lockBuffer( t, ld.lockBegin, ld.lockSize );
+  memcpy( v, (&ld.data[0])+ld.lockBegin, ld.lockSize );
+  device().unlockBuffer(t);
+  }
+
+void IndexBufferHolder::unlockNWBuffer(AbstractAPI::IndexBuffer *t) {
+
   }

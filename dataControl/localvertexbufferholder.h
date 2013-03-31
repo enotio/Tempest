@@ -2,21 +2,43 @@
 #define LOCALVERTEXBUFFERHOLDER_H
 
 #include <Tempest/VertexBufferHolder>
+#include <Tempest/IndexBufferHolder>
 #include <vector>
+#include <cstring>
 
 namespace Tempest {
 
-class LocalVertexBufferHolder : public Tempest::VertexBufferHolder {
+template< class Holder >
+class LocalBufferHolder : public Holder {
   public:
-    LocalVertexBufferHolder( Tempest::Device &d );
-    ~LocalVertexBufferHolder();
+    LocalBufferHolder( Tempest::Device &d )
+      :Holder(d){
+      nonFreed.reserve(128);
+      dynVBOs .reserve(128);
 
-    void setReserveSize( int sz );
+      setReserveSize( 32*8092 );
+      maxReserved = -1;
+
+      needToRestore = false;
+      }
+
+    ~LocalBufferHolder(){
+      reset();
+      }
+
+    void setReserveSize( int sz ){
+      reserveSize = sz;
+      }
+
+    void setMaxReservedCount( int s ) {
+      maxReserved = s;
+      }
+
   protected:
-    int reserveSize;
+    int reserveSize, maxReserved;
 
     struct NonFreedData {
-      Tempest::AbstractAPI::VertexBuffer* handle;
+      typename Holder::DescriptorType* handle;
       int memSize;
       bool restoreIntent;
       };
@@ -27,30 +49,162 @@ class LocalVertexBufferHolder : public Tempest::VertexBufferHolder {
       void * userPtr;
       };
 
-    virtual void reset();
-    virtual bool restore();
+    virtual void reset(){
+      needToRestore = true;
 
-    using VertexBufferHolder::reset;
-    using VertexBufferHolder::restore;
+      for( size_t i=0; i<nonFreed.size(); ++i )
+        deleteObject( nonFreed[i] );
 
-    virtual void presentEvent();
-    virtual void collect( std::vector< NonFreed >& nonFreed );
+      nonFreed.clear();
+      //dynVBOs .clear();
+      //for( size_t i=0; i<dynVBOs.size(); ++i )
+        //reset( dynVBOs[i].data.handle );
 
-    void deleteObject( NonFreed& obj );
+      Holder::BaseType::reset();
+      }
+
+    virtual bool restore() {
+      for( size_t i=0; i<dynVBOs.size(); ++i )
+        dynVBOs[i].data.restoreIntent = true;
+
+      bool ok = Holder::BaseType::restore();
+      needToRestore = false;
+      return ok;
+      }
+
+    using Holder::reset;
+    using Holder::restore;
+
+    virtual void presentEvent() {
+      collect( nonFreed );
+      }
+
+    virtual void collect( std::vector< NonFreed >& nonFreed ) {
+      for( size_t i=0; i<nonFreed.size(); ){
+        ++nonFreed[i].collectIteration;
+
+        if( nonFreed[i].collectIteration > 3 ){
+          deleteObject( nonFreed[i] );
+          nonFreed[i] = nonFreed.back();
+          nonFreed.pop_back();
+          } else {
+          ++i;
+          }
+
+        }
+      }
+
+    void deleteObject( NonFreed& obj ) {
+      Holder::deleteObject( obj.data.handle );
+      }
+
   private:
-    void createObject( AbstractAPI::VertexBuffer*& t,
+    void createObject( typename Holder::DescriptorType*& t,
                        const char *src,
-                       int size, int vsize );
+                       int size, int vsize ) {
+      if( needToRestore ){
+        typename Holder::DescriptorType* old = t;
+        Holder::createObject(t, src, size, vsize );
 
-    void deleteObject( Tempest::AbstractAPI::VertexBuffer* t );
+        for( size_t i=0; i<dynVBOs.size(); ++i )
+          if( dynVBOs[i].data.handle==old &&
+              dynVBOs[i].data.restoreIntent ){
+            dynVBOs[i].data.handle = t;
+            dynVBOs[i].data.restoreIntent = false;
+            return;
+            }
+        return;
+        }
+
+      NonFreedData d;
+      d.memSize       = nearPOT( size*vsize );
+      d.restoreIntent = false;
+
+      for( size_t i=0; i<nonFreed.size(); ++i ){
+        d.handle = nonFreed[i].data.handle;
+
+        NonFreedData& x = nonFreed[i].data;
+        if( d.memSize   <= x.memSize &&
+            d.memSize*4 >= x.memSize ){
+          dynVBOs.push_back( nonFreed[i] );
+          nonFreed[i] = nonFreed.back();
+          nonFreed.pop_back();
+
+          t = dynVBOs.back().data.handle;
+          {
+            int sz = dynVBOs.back().data.memSize;
+            char *pVertices = this->lockBuffer( t, 0, sz);
+            memcpy( pVertices, src, size*vsize );
+
+            std::fill( pVertices+size*vsize, pVertices+sz, 0 );
+            this->unlockBuffer( t );
+            }
+
+          return;
+          }
+        }
+
+      std::vector<char> tmp( d.memSize );
+      std::copy( src, src+size*vsize, tmp.begin() );
+      std::fill( tmp.begin()+size*vsize, tmp.end(), 0 );
+
+      Holder::createObject( t, &tmp[0], d.memSize, 1 );
+
+      if( !t )
+        return;
+
+      d.handle = t;
+
+      NonFreed nf;
+      nf.data = d;
+      nf.collectIteration = 0;
+      nf.userPtr = 0;
+
+      dynVBOs.push_back( nf );
+      }
+
+    void deleteObject( typename Holder::DescriptorType* t ) {
+      for( size_t i=0; i<dynVBOs.size(); ++i )
+        if( dynVBOs[i].data.handle==t ){
+          dynVBOs[i].collectIteration = 0;
+          nonFreed.push_back( dynVBOs[i] );
+
+          dynVBOs[i] = dynVBOs.back();
+          dynVBOs.pop_back();
+
+          if( maxReserved>=0 && int(nonFreed.size())>maxReserved ){
+            collect(nonFreed);
+            }
+
+          return;
+          }
+
+      Holder::deleteObject(t);
+      }
 
     std::vector< NonFreed > nonFreed, dynVBOs;
 
-    int nearPOT( int i );
+    int nearPOT( int x ) {
+      int r = 1;
+      for( int i=0; r<=reserveSize; ++i ){
+        if( r>=x )
+          return r;
+        r *= 2;
+        }
+
+      return x;
+      }
 
     bool needToRestore;
   };
 
+struct LocalVertexBufferHolder: LocalBufferHolder< Tempest::VertexBufferHolder > {
+  LocalVertexBufferHolder( Tempest::Device &d ):LocalBufferHolder< Tempest::VertexBufferHolder >(d){}
+  };
+
+struct LocalIndexBufferHolder: LocalBufferHolder< Tempest::IndexBufferHolder  > {
+  LocalIndexBufferHolder( Tempest::Device &d ):LocalBufferHolder< Tempest::IndexBufferHolder >(d){}
+  };
 }
 
 #endif // LOCALVERTEXBUFFERHOLDER_H

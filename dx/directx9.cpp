@@ -10,15 +10,32 @@
 #include <map>
 #include <set>
 #include <iostream>
+#include <algorithm>
 #include <Tempest/Pixmap>
 
 #include <cassert>
 
 using namespace Tempest;
 
+struct DirectX9::Device{
+  LPDIRECT3DDEVICE9 dev;
+  DirectX9::IBO * curIBO;
+  };
+
+struct DirectX9::IBO{
+  LPDIRECT3DINDEXBUFFER9 index;
+  std::vector<uint16_t> pbuf;
+
+  struct Min{
+    uint16_t val, begin, size;
+    };
+  std::vector<Min> min;
+  };
+
 struct DirectX9::Data{
-  std::map< AbstractAPI::Device*, LPDIRECT3DSURFACE9> rtSurface;
-  std::set< void *> tex;
+  static LPDIRECT3DDEVICE9 dev( AbstractAPI::Device* d ){
+    return ((DirectX9::Device*)(d))->dev;
+    }
   };
 
 DirectX9::DirectX9(){
@@ -38,10 +55,11 @@ AbstractAPI::Device* DirectX9::createDevice(void *hwnd, const Options &opt) cons
   D3DPRESENT_PARAMETERS d3dpp;
   makePresentParams( &d3dpp, hwnd, opt );
 
-  LPDIRECT3DDEVICE9  dev;
+  Device* dev = new Device;
+  //LPDIRECT3DDEVICE9  dev;
   D3D->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hwnd,
                      D3DCREATE_HARDWARE_VERTEXPROCESSING,
-                     &d3dpp, &dev );
+                     &d3dpp, &dev->dev );
 
   return (AbstractAPI::Device*)dev;
   }
@@ -83,15 +101,18 @@ void DirectX9::makePresentParams( void * p, void *hWnd,
   }
 
 void DirectX9::deleteDevice(AbstractAPI::Device *d) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
   if( dev )
     dev->Release();
+
+  Device* de = (Device*)(d);
+  delete de;
   }
 
 void DirectX9::clear( AbstractAPI::Device *d,
                       const Color& cl,
                       float z, unsigned stencil ) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   dev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
               D3DCOLOR_COLORVALUE( cl.r(), cl.g(), cl.b(), cl.a() ),
@@ -99,7 +120,7 @@ void DirectX9::clear( AbstractAPI::Device *d,
   }
 
 void DirectX9::clear(AbstractAPI::Device *d, const Color &cl) const  {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   dev->Clear( 0, 0, D3DCLEAR_TARGET,
               D3DCOLOR_COLORVALUE( cl.r(), cl.g(), cl.b(), cl.a() ),
@@ -107,7 +128,7 @@ void DirectX9::clear(AbstractAPI::Device *d, const Color &cl) const  {
   }
 
 void DirectX9::clearZ( AbstractAPI::Device *d, float z ) const  {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   dev->Clear( 0, 0, D3DCLEAR_ZBUFFER,
               0,
@@ -115,7 +136,7 @@ void DirectX9::clearZ( AbstractAPI::Device *d, float z ) const  {
   }
 
 void DirectX9::clearStencil( AbstractAPI::Device *d, unsigned s ) const  {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   dev->Clear( 0, 0, D3DCLEAR_STENCIL,
               0,
@@ -124,7 +145,7 @@ void DirectX9::clearStencil( AbstractAPI::Device *d, unsigned s ) const  {
 
 void DirectX9::clear( AbstractAPI::Device *d,
                       float z, unsigned s ) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   dev->Clear( 0, 0, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
               0,
@@ -132,7 +153,7 @@ void DirectX9::clear( AbstractAPI::Device *d,
   }
 
 void DirectX9::clear( AbstractAPI::Device *d,  const Color& cl, float z ) const{
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   dev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
               D3DCOLOR_COLORVALUE( cl.r(), cl.g(), cl.b(), cl.a() ),
@@ -140,13 +161,13 @@ void DirectX9::clear( AbstractAPI::Device *d,  const Color& cl, float z ) const{
   }
 
 void DirectX9::beginPaint( AbstractAPI::Device *d ) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   dev->BeginScene();
   }
 
 void DirectX9::endPaint  ( AbstractAPI::Device *d ) const{
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   dev->EndScene();
   }
@@ -154,7 +175,7 @@ void DirectX9::endPaint  ( AbstractAPI::Device *d ) const{
 void DirectX9::setRenderTaget( AbstractAPI::Device *d,
                                AbstractAPI::Texture   *t, int mip,
                                int mrtSlot ) const {
-  LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9  dev  = Data::dev(d);
   LPDIRECT3DTEXTURE9 tex  = LPDIRECT3DTEXTURE9(t);
 
   LPDIRECT3DSURFACE9 surf = 0;
@@ -170,7 +191,7 @@ void DirectX9::setRenderTaget( AbstractAPI::Device *d,
 
 void DirectX9::unsetRenderTagets( AbstractAPI::Device *d,
                                   int count  ) const {
-  LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9  dev  = Data::dev(d);
 
   IDirect3DSurface9* backBuf = 0;
   dev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backBuf);
@@ -182,7 +203,7 @@ void DirectX9::unsetRenderTagets( AbstractAPI::Device *d,
   }
 
 AbstractAPI::StdDSSurface *DirectX9::getDSSurfaceTaget( AbstractAPI::Device *d ) const {
-  LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9  dev  = Data::dev(d);
   LPDIRECT3DSURFACE9 surf = 0;
 
   if( FAILED(dev->GetDepthStencilSurface(&surf)) )
@@ -202,7 +223,7 @@ void DirectX9::retDSSurfaceTaget( AbstractAPI::Device *d,
 
 void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
                                   AbstractAPI::StdDSSurface *tx ) const {
-  LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9  dev  = Data::dev(d);
 
 
   LPDIRECT3DSURFACE9 surf = LPDIRECT3DSURFACE9(tx);
@@ -216,7 +237,7 @@ void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
 
 void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
                                   AbstractAPI::Texture *tx ) const {
-  LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9  dev  = Data::dev(d);
 
   if( tx ){
     LPDIRECT3DSURFACE9 surf = 0;
@@ -236,7 +257,7 @@ bool DirectX9::startRender( AbstractAPI::Device *d,
   if( isLost ){
     Sleep( 100 );
 
-    LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+    LPDIRECT3DDEVICE9 dev = Data::dev(d);
     return (dev->TestCooperativeLevel() == D3DERR_DEVICENOTRESET);
     }
 
@@ -244,14 +265,14 @@ bool DirectX9::startRender( AbstractAPI::Device *d,
   }
 
 bool DirectX9::present( AbstractAPI::Device *d ) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   return ( D3DERR_DEVICELOST == dev->Present( NULL, NULL, NULL, NULL ) );
   }
 
 bool DirectX9::reset( AbstractAPI::Device *d, void* hwnd,
                       const Options &opt ) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   D3DPRESENT_PARAMETERS d3dpp;
   makePresentParams( &d3dpp, hwnd, opt );
@@ -273,7 +294,7 @@ AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
     return 0;
 
   D3DLOCKED_RECT lockedRect;
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
   LPDIRECT3DTEXTURE9 tex = 0;
 
   D3DFORMAT format = D3DFMT_X8R8G8B8;
@@ -318,10 +339,10 @@ AbstractAPI::Texture *DirectX9::recreateTexture( AbstractAPI::Device *d,
                                                  bool mips,
                                                  bool compress ) const {
   if( oldT==0 )
-    return createTexture(d, p, mips);
+    return createTexture(d, p, mips, compress);
 
   D3DLOCKED_RECT lockedRect;
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev  = Data::dev(d);
   LPDIRECT3DTEXTURE9 tex = 0;
   LPDIRECT3DTEXTURE9 old = LPDIRECT3DTEXTURE9(oldT);
 
@@ -380,7 +401,7 @@ AbstractAPI::Texture* DirectX9::createTexture( AbstractAPI::Device *d,
                                                int mips,
                                                AbstractTexture::Format::Type f,
                                                TextureUsage u  ) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev  = Data::dev(d);
   LPDIRECT3DTEXTURE9 tex = 0;
 
   static const DWORD usage[] = {
@@ -478,7 +499,7 @@ void DirectX9::deleteTexture( AbstractAPI::Device *,
 AbstractAPI::VertexBuffer*
      DirectX9::createVertexbuffer( AbstractAPI::Device *d,
                                    size_t size, size_t elSize ) const{
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
   LPDIRECT3DVERTEXBUFFER9 vbo = 0;
 
   if( FAILED( dev->CreateVertexBuffer( size*elSize,
@@ -502,14 +523,17 @@ void DirectX9::deleteVertexBuffer( AbstractAPI::Device *,
 AbstractAPI::IndexBuffer*
      DirectX9::createIndexbuffer( AbstractAPI::Device *d,
                                   size_t size, size_t elSize ) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
-  LPDIRECT3DINDEXBUFFER9 ibo = 0;
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
+  IBO * ibo = new IBO();
+
+  ibo->pbuf.reserve( size );
+  ibo->pbuf.resize( size );
 
   dev->CreateIndexBuffer(  size*elSize,
                            D3DUSAGE_WRITEONLY,
                            D3DFMT_INDEX16,
                            D3DPOOL_DEFAULT,
-                           &ibo,
+                           &ibo->index,
                            0 );
 
   return ((AbstractAPI::IndexBuffer*)ibo);
@@ -517,9 +541,11 @@ AbstractAPI::IndexBuffer*
 
 void DirectX9::deleteIndexBuffer( AbstractAPI::Device *d,
                                   AbstractAPI::IndexBuffer* b) const {
-  LPDIRECT3DINDEXBUFFER9 ibo = LPDIRECT3DINDEXBUFFER9(b);
-  if( ibo )
-    ibo->Release();
+  IBO* ibo = (IBO*)(b);
+  if( ibo && ibo->index )
+    ibo->index->Release();
+
+  delete ibo;
   }
 
 void* DirectX9::lockBuffer( AbstractAPI::Device *d,
@@ -543,25 +569,28 @@ void DirectX9::unlockBuffer( AbstractAPI::Device *,
 void* DirectX9::lockBuffer( AbstractAPI::Device *d,
                             AbstractAPI::IndexBuffer * v,
                             unsigned offset, unsigned size) const {
-  LPDIRECT3DINDEXBUFFER9 ibo = LPDIRECT3DINDEXBUFFER9(v);
+  IBO* ibo = (IBO*)(v);
 
-  void* pVertices = 0;
-  ibo->Lock( offset, size, &pVertices, 0 );
-
-  return pVertices;
+  return ((char*)ibo->pbuf.data())+offset;
   }
 
 void DirectX9::unlockBuffer( AbstractAPI::Device *,
                              AbstractAPI::IndexBuffer* v) const {
-  LPDIRECT3DINDEXBUFFER9 ibo = LPDIRECT3DINDEXBUFFER9(v);
+  IBO* ibo = (IBO*)(v);
+  void *pIBO = 0;
 
-  ibo->Unlock();
+  ibo->index->Lock( 0, ibo->pbuf.size()*sizeof(ibo->pbuf[0]), (void**)&pIBO, 0 );
+  memcpy(pIBO, &ibo->pbuf[0], ibo->pbuf.size()*sizeof(ibo->pbuf[0]) );
+  ibo->index->Unlock();
   }
 
 const AbstractShadingLang*
         DirectX9::createShadingLang( AbstractAPI::Device *d ) const {
-  AbstractAPI::DirectX9Device *dev =
-      reinterpret_cast<AbstractAPI::DirectX9Device*>(d);
+  struct Dev{
+    AbstractAPI::DirectX9Device *dev;
+    };
+
+  AbstractAPI::DirectX9Device *dev = reinterpret_cast<Dev*>(d)->dev;
 
   return new CgDx9( dev );
   }
@@ -652,7 +681,7 @@ AbstractAPI::VertexDecl *
 
   LPDIRECT3DVERTEXDECLARATION9 ret = 0;
 
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
   HRESULT hr = dev->CreateVertexDeclaration( decl.data(), &ret );
 
   if( FAILED(hr) ){
@@ -671,7 +700,7 @@ void DirectX9::deleteVertexDecl( AbstractAPI::Device *,
 
 void DirectX9::setVertexDeclaration( AbstractAPI::Device *d,
                                      AbstractAPI::VertexDecl* de ) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
   LPDIRECT3DVERTEXDECLARATION9  decl = LPDIRECT3DVERTEXDECLARATION9(de);
 
   dev->SetFVF(0);
@@ -681,7 +710,7 @@ void DirectX9::setVertexDeclaration( AbstractAPI::Device *d,
 void DirectX9::bindVertexBuffer( AbstractAPI::Device *d,
                                  AbstractAPI::VertexBuffer* b,
                                  int vsize ) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
   dev->SetStreamSource( 0, LPDIRECT3DVERTEXBUFFER9(b),
                         0, vsize );
 
@@ -689,14 +718,16 @@ void DirectX9::bindVertexBuffer( AbstractAPI::Device *d,
 
 void DirectX9::bindIndexBuffer( AbstractAPI::Device * d,
                                 AbstractAPI::IndexBuffer * b ) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9(d);
-  dev->SetIndices( LPDIRECT3DINDEXBUFFER9(b) );
+  LPDIRECT3DDEVICE9 dev = Data::dev(d);
+  dev->SetIndices( ((IBO*)(b))->index );
+
+  ((Device*)d)->curIBO = (IBO*)(b);
   }
 
 void DirectX9::draw( AbstractAPI::Device *d,
                      AbstractAPI::PrimitiveType t,
                      int firstVertex, int pCount ) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9( d );
+  LPDIRECT3DDEVICE9 dev = Data::dev( d );
 
   static const D3DPRIMITIVETYPE type[] = {
     D3DPT_POINTLIST,//             = 1,
@@ -710,14 +741,12 @@ void DirectX9::draw( AbstractAPI::Device *d,
   dev->DrawPrimitive( type[ t-1 ], firstVertex, pCount );
   }
 
-void DirectX9::drawIndexed(  AbstractAPI::Device *d,
-                             AbstractAPI::PrimitiveType t,
-                             int vboOffsetIndex,
-                             int minIndex,
-                             int vertexCount,
-                             int firstIndex,
-                             int pCount ) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9( d );
+void DirectX9::drawIndexed( AbstractAPI::Device *d,
+                            AbstractAPI::PrimitiveType t,
+                            int vboOffsetIndex,
+                            int iboOffsetIndex,
+                            int pCount ) const {
+  Device *dev = (Device*)( d );
 
   static const D3DPRIMITIVETYPE type[] = {
     D3DPT_POINTLIST,//             = 1,
@@ -728,17 +757,40 @@ void DirectX9::drawIndexed(  AbstractAPI::Device *d,
     D3DPT_TRIANGLEFAN,//           = 6
     };
 
-  dev->DrawIndexedPrimitive( type[ t-1 ],
-                             vboOffsetIndex,
-                             minIndex,
-                             vertexCount,
-                             firstIndex,
-                             pCount );
+  int vpCount = pCount*3;
+  if( t==AbstractAPI::TriangleStrip ||
+      t==AbstractAPI::TriangleFan ||
+      t==AbstractAPI::LinesStrip  )
+    vpCount = pCount+2;
+
+  uint16_t minID = -1;
+  for( size_t i=0; i<dev->curIBO->min.size(); ++i ){
+    IBO::Min& m = dev->curIBO->min[i];
+    if( m.begin==iboOffsetIndex && m.size==vpCount )
+      minID = m.val;
+    }
+
+  if( minID == uint16_t(-1) ){
+    IBO::Min m;
+    m.begin = iboOffsetIndex;
+    m.size  = vpCount;
+    m.val   = *std::min_element( dev->curIBO->pbuf.begin()+iboOffsetIndex,
+                                 dev->curIBO->pbuf.begin()+iboOffsetIndex+vpCount );
+    minID = m.val;
+    dev->curIBO->min.push_back(m);
+    }
+
+  dev->dev->DrawIndexedPrimitive( type[ t-1 ],
+                                  vboOffsetIndex,
+                                  minID,
+                                  vpCount,
+                                  iboOffsetIndex,
+                                  pCount );
   }
 
 void DirectX9::setRenderState( AbstractAPI::Device *d,
                                const RenderState & r) const {
-  LPDIRECT3DDEVICE9 dev = LPDIRECT3DDEVICE9( d );
+  LPDIRECT3DDEVICE9 dev = Data::dev( d );
 
   static const D3DCULL cull[] = {
     D3DCULL_NONE,

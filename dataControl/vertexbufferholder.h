@@ -33,7 +33,14 @@ class VertexBufferHolder : public AbstractHolder
       return obj;
       }
 
+    template< class Vertex >
+    VertexBuffer<Vertex> load( const std::vector<Vertex>& v ){
+      return this->load( &v[0], v.size() );
+      }
+
   protected:
+    typedef AbstractAPI::VertexBuffer DescriptorType;
+
     virtual void createObject( AbstractAPI::VertexBuffer*& t,
                                const char *src,
                                int size, int vsize );

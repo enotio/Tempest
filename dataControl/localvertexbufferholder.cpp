@@ -5,13 +5,14 @@
 #include <Tempest/Device>
 
 using namespace Tempest;
-
+/*
 LocalVertexBufferHolder::LocalVertexBufferHolder( Tempest::Device &d )
                         :Tempest::VertexBufferHolder(d) {
   nonFreed.reserve(128);
   dynVBOs .reserve(128);
 
   setReserveSize( 32*8092 );
+  maxReserved = -1;
 
   needToRestore = false;
   }
@@ -22,6 +23,10 @@ LocalVertexBufferHolder::~LocalVertexBufferHolder() {
 
 void LocalVertexBufferHolder::setReserveSize(int sz) {
   reserveSize = sz;
+  }
+
+void LocalVertexBufferHolder::setMaxReservedCount(int s) {
+  maxReserved = s;
   }
 
 void LocalVertexBufferHolder::reset() {
@@ -143,6 +148,10 @@ void LocalVertexBufferHolder::deleteObject(AbstractAPI::VertexBuffer *t ) {
       dynVBOs[i] = dynVBOs.back();
       dynVBOs.pop_back();
 
+      if( maxReserved>=0 && int(nonFreed.size())>maxReserved ){
+        collect(nonFreed);
+        }
+
       return;
       }
 
@@ -159,3 +168,4 @@ int LocalVertexBufferHolder::nearPOT(int x) {
 
   return x;
   }
+*/

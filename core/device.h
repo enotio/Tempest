@@ -182,9 +182,9 @@ class Device {
                        const Tempest::VertexDeclaration &decl,
                        const Tempest::VertexBuffer<T> & vbo,
                        const Tempest::IndexBuffer<I>  & ibo,
-                       int vboOffsetIndex, int minIndex,
-                       int vertexCount,
-                       int firstIndex, int pCount ){
+                       int vboOffsetIndex,
+                       int iboOffsetIndex,
+                       int pCount ){
       bind(vs);
       bind(fs);
       bind(decl);
@@ -193,12 +193,10 @@ class Device {
 
       shadingLang().setVertexDecl( (AbstractAPI::VertexDecl*)(decl.decl->impl) );
       shadingLang().enable();
-      drawIndexedPrimitive(  t,
-                             vboOffsetIndex + vbo.m_first,
-                             minIndex,
-                             vertexCount,
-                             firstIndex,
-                             pCount );
+      drawIndexedPrimitive( t,
+                            vboOffsetIndex + vbo.m_first,
+                            iboOffsetIndex + ibo.m_first,
+                            pCount  );
       shadingLang().disable();
 
       //unBind(vs);
@@ -218,12 +216,9 @@ class Device {
 
     void draw( AbstractAPI::PrimitiveType t,
                int firstVertex, int pCount );
-    void drawIndexedPrimitive( AbstractAPI::PrimitiveType t,
-                               int vboOffsetIndex,
-                               int minIndex,
-                               int vertexCount,
-                               int firstIndex,
-                               int pCount );
+    void drawIndexedPrimitive(AbstractAPI::PrimitiveType t,
+                               int vboOffsetIndex, int iboOffsetIndex,
+                               int pCount);
     void addHolder( AbstractHolderBase& h );
     void delHolder( AbstractHolderBase& h );
 

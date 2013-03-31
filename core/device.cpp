@@ -361,16 +361,12 @@ void Device::draw( AbstractAPI::PrimitiveType t,
 
 void Device::drawIndexedPrimitive( AbstractAPI::PrimitiveType t,
                                    int vboOffsetIndex,
-                                   int minIndex,
-                                   int vertexCount,
-                                   int firstIndex,
+                                   int iboOffsetIndex,
                                    int pCount ) {
   api.drawIndexed( impl,
                    t,
                    vboOffsetIndex,
-                   minIndex,
-                   vertexCount,
-                   firstIndex,
+                   iboOffsetIndex,
                    pCount );
   }
 
