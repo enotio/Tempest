@@ -32,7 +32,8 @@ using namespace Tempest;
 
 struct Opengl2x::Device{
 #ifdef __ANDROID__
-
+  EGLDisplay disp;
+  EGLSurface s;
 #else
   HDC   hDC;
   HGLRC hRC;
@@ -44,6 +45,8 @@ struct Opengl2x::Device{
   VertexDeclaration::Declarator * decl;
   GLuint vbo, curVBO;
   GLuint ibo, curIBO;
+
+  std::vector<bool> vAttrLoc;
 
   int vertexSize, curVboOffsetIndex, curIboOffsetIndex;
 
@@ -149,6 +152,9 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
     if( glewInit()!=GLEW_OK || !GLEW_VERSION_2_1) {
       return 0;
       }
+#else
+  dev->disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+  dev->s    = eglGetCurrentSurface(EGL_DRAW);
 #endif
 
   const char * ext = (const char*)glGetString(GL_EXTENSIONS);
@@ -162,7 +168,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 
   glEnable( GL_DEPTH_TEST );
   glEnable( GL_CULL_FACE );
-  glFrontFace( GL_CCW );
+  glFrontFace( GL_CW );
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glGenFramebuffers(1, &dev->fboId);
@@ -173,15 +179,17 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   }
 
 void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
-  setDevice(d);
-#ifndef __ANDROID__
   Device* dev = (Device*)d;
-
+  setDevice(d);
   glDeleteFramebuffers (1, &dev->fboId);
+
+#ifndef __ANDROID__
 
   wglMakeCurrent( NULL, NULL );
   wglDeleteContext( dev->hRC );
 #endif
+
+  delete dev;
   }
 
 void Opengl2x::setDevice( AbstractAPI::Device * d ) const {
@@ -324,11 +332,16 @@ void Opengl2x::setupFBO() const {
   const int maxMRT = Detail::RenderTg::maxMRT;
     
   GLint w = 0, h = 0;
+  GLuint *fbo = 0;
+  Detail::GLTexture * tex = 0;
+
   for( int i=0; i<maxMRT; ++i ){
     if( dev->target.color[i] ){
-      Detail::GLTexture *tex = dev->target.color[i];
+      tex = dev->target.color[i];
       w = tex->w;
       h = tex->h;
+      fbo = &tex->fbo;
+      break;
       }
     }
 
@@ -336,29 +349,29 @@ void Opengl2x::setupFBO() const {
     return;
     }
 
-  if( !dev->target.depth ){
-    /*
-    glGenRenderbuffers( 1, &dev->rboId );
-    glBindRenderbuffer( GL_RENDERBUFFER, dev->rboId);
-    glRenderbufferStorage( GL_RENDERBUFFER,
-                         #ifndef __ANDROID__
-                           GL_DEPTH_STENCIL,
-                         #else
-                           GL_DEPTH_COMPONENT16,
-                         #endif
-                           w, h );
-    glBindRenderbuffer( GL_RENDERBUFFER, 0);*/
-    }
-
   //assert( glCheckFramebufferStatus( GL_FRAMEBUFFER )==GL_FRAMEBUFFER_COMPLETE );
   errCk();
 
-  glBindFramebuffer(GL_FRAMEBUFFER, dev->fboId);
+  if( fbo ){
+    if( *fbo==0 )
+      glGenFramebuffers(1, fbo);
+    } else {
+    fbo = &dev->fboId;
+    }
+
+  if( tex->fboTg==0 ){
+    tex->fboTg = new Detail::RenderTg();
+    memset( tex->fboTg, 0, sizeof(Detail::RenderTg) );
+    }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, *fbo);
   for( int i=0; i<maxMRT; ++i ){
     if( dev->target.color[i] ){
       // NVidia old driver bug issue
       glBindTexture( GL_TEXTURE_2D, dev->target.color[i]->id );
-      dev->target.color[i]->min = dev->target.color[i]->mag = GL_NEAREST;
+      dev->target.color[i]->min  = dev->target.color[i]->mag = GL_NEAREST;
+      dev->target.color[i]->mips = false;
+
       glTexParameteri( GL_TEXTURE_2D,
                        GL_TEXTURE_MIN_FILTER,
                        GL_NEAREST );
@@ -376,25 +389,32 @@ void Opengl2x::setupFBO() const {
       glBindTexture( GL_TEXTURE_2D, 0 );
       //*****
 
-      glFramebufferTexture2D( GL_FRAMEBUFFER,
-                              GL_COLOR_ATTACHMENT0+i,
-                              GL_TEXTURE_2D,
-                              dev->target.color[i]->id,
-                              dev->target.mip[i] );
+      if( tex->fboTg->color[i]!=dev->target.color[i] ){
+        glFramebufferTexture2D( GL_FRAMEBUFFER,
+                                GL_COLOR_ATTACHMENT0+i,
+                                GL_TEXTURE_2D,
+                                dev->target.color[i]->id,
+                                dev->target.mip[i] );
+        tex->fboTg->color[i] = dev->target.color[i];
+        }
       dev->target.color[i]->mips = false;
       }
     }
 
-  if( dev->target.depth ){
-    glFramebufferRenderbuffer( GL_FRAMEBUFFER,
-                               GL_DEPTH_ATTACHMENT,
-                               GL_RENDERBUFFER,
-                               dev->target.depth->depthId );
-    } else {
-    glFramebufferRenderbuffer( GL_FRAMEBUFFER,
-                               GL_DEPTH_ATTACHMENT,
-                               GL_RENDERBUFFER,
-                               0 );
+  if( tex->fboTg->depth!=dev->target.depth ){
+    tex->fboTg->depth = dev->target.depth;
+
+    if( dev->target.depth ){
+      glFramebufferRenderbuffer( GL_FRAMEBUFFER,
+                                 GL_DEPTH_ATTACHMENT,
+                                 GL_RENDERBUFFER,
+                                 dev->target.depth->depthId );
+      } else {
+      glFramebufferRenderbuffer( GL_FRAMEBUFFER,
+                                 GL_DEPTH_ATTACHMENT,
+                                 GL_RENDERBUFFER,
+                                 0 );
+      }
     }
 
   int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
@@ -423,9 +443,9 @@ void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
 void Opengl2x::unsetRenderTagets( AbstractAPI::Device *d,
                                   int /*count*/  ) const {
   setDevice(d);
-  memset( &dev->target, 0, sizeof(dev->target) );
-
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  memset( &dev->target, 0, sizeof(dev->target) );
 
   glViewport( 0, 0, dev->scrW, dev->scrH );
   errCk();
@@ -462,14 +482,11 @@ bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
   }
 
 bool Opengl2x::present( AbstractAPI::Device *d ) const {
-#ifndef __ANDROID__
   Device* dev = (Device*)d;
+#ifndef __ANDROID__
   SwapBuffers( dev->hDC );
 #else
-  EGLDisplay disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-  EGLSurface s    = eglGetCurrentSurface(EGL_DRAW);
-
-  eglSwapBuffers(disp, s);
+  eglSwapBuffers( dev->disp, dev->s);
 #endif
   return 0;
   }
@@ -782,13 +799,17 @@ void Opengl2x::deleteTexture( AbstractAPI::Device *d,
   if( tex->depthId )
     glDeleteRenderbuffers( 1, &tex->depthId );
 
+  if( tex->fbo )
+    glDeleteFramebuffers( 1, &tex->fbo );
+
+  delete tex->fboTg;
   delete tex;
   
   errCk();
   }
 
 AbstractAPI::VertexBuffer*
-     Opengl2x::createVertexbuffer( AbstractAPI::Device *d,
+     Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
                                    size_t size, size_t elSize ) const{
   setDevice(d);
 
@@ -815,7 +836,7 @@ void Opengl2x::deleteVertexBuffer(  AbstractAPI::Device *d,
   }
 
 AbstractAPI::IndexBuffer*
-     Opengl2x::createIndexbuffer( AbstractAPI::Device *d,
+     Opengl2x::createIndexBuffer( AbstractAPI::Device *d,
                                   size_t size, size_t elSize ) const {
   setDevice(d);
 
@@ -1038,10 +1059,16 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
     GLenum frm =   vfrm[e.component];
 
     if( enable ){
-      if( on ){
-        glEnableVertexAttribArray(loc);
-        } else {
-        glDisableVertexAttribArray(loc);
+      if( int(dev->vAttrLoc.size()) <= loc )
+        dev->vAttrLoc.resize(loc+1, false);
+
+      if( dev->vAttrLoc[loc]!=on ){
+        dev->vAttrLoc[loc] = on;
+        if( on ){
+          glEnableVertexAttribArray(loc);
+          } else {
+          glDisableVertexAttribArray(loc);
+          }
         }
       }
 
@@ -1056,26 +1083,6 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
 
     stride += strides[e.component];
     }
-/*
-  for( int i=0; i<d.size(); ++i ){
-    const VertexDeclaration::Declarator::Element & e = d[i];
-    int count  = counts[e.component];
-    GLenum frm =   vfrm[e.component];
-
-    if( on ){
-      glEnableVertexAttribArray(i);
-      if( e.component==Decl::color )
-        glVertexAttribPointer( i, count, frm, GL_TRUE,
-                               dev->vertexSize, (void*)stride );
-      else
-        glVertexAttribPointer( i, count, frm, GL_FALSE,
-                               dev->vertexSize, (void*)stride );
-
-      } else {
-      glDisableVertexAttribArray(i);
-      }
-    stride += strides[e.component];
-    }*/
 
   errCk();
   }
@@ -1249,5 +1256,15 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
   r.getColorMask( w[0], w[1], w[2], w[3] );
   glColorMask( w[0], w[1], w[2], w[3] );
 
+#ifndef __ANDROID__
+  GLenum rmode[] = {
+    GL_FILL,
+    GL_LINE,
+    GL_POINT
+    };
+
+  glPolygonMode( GL_FRONT, rmode[r.frontPolygonRenderMode()] );
+  glPolygonMode( GL_BACK,  rmode[r.backPolygonRenderMode()] );
+#endif
   errCk();
   }

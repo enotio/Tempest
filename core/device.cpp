@@ -268,7 +268,12 @@ void Device::deleteRenderTaget( AbstractAPI::RenderTagetSurface t) const {
   }*/
 
 AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el ){
-  return api.createVertexbuffer( impl, size, el );
+  return api.createVertexBuffer( impl, size, el );
+  }
+
+AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el,
+                                                       const void* src ){
+  return api.createVertexBuffer( impl, size, el, src );
   }
 
 void Device::deleteVertexBuffer( AbstractAPI::VertexBuffer* vbo ){
@@ -277,7 +282,13 @@ void Device::deleteVertexBuffer( AbstractAPI::VertexBuffer* vbo ){
 
 AbstractAPI::IndexBuffer* Device::createIndexBuffer( size_t size,
                                                      size_t elSize ){
-  return api.createIndexbuffer( impl, size, elSize );
+  return api.createIndexBuffer( impl, size, elSize );
+  }
+
+AbstractAPI::IndexBuffer *Device::createIndexBuffer( size_t size,
+                                                     size_t elSize,
+                                                     const void *src ) {
+  return api.createIndexBuffer( impl, size, elSize, src );
   }
 
 void Device::deleteIndexBuffer( AbstractAPI::IndexBuffer* b ){

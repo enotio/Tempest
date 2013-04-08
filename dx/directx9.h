@@ -86,13 +86,13 @@ class DirectX9 : public AbstractAPI {
                             AbstractAPI::RenderTagetSurface t ) const;*/
 
     AbstractAPI::VertexBuffer*
-         createVertexbuffer( AbstractAPI::Device *d,
+         createVertexBuffer( AbstractAPI::Device *d,
                              size_t size, size_t elSize ) const;
     void deleteVertexBuffer( AbstractAPI::Device *d,
                              AbstractAPI::VertexBuffer* ) const;
 
     AbstractAPI::IndexBuffer*
-         createIndexbuffer( AbstractAPI::Device *d,
+         createIndexBuffer( AbstractAPI::Device *d,
                             size_t size, size_t elSize ) const;
 
     void deleteIndexBuffer( AbstractAPI::Device *d,

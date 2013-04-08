@@ -29,6 +29,8 @@ void RenderState::init() {
 
   zTestType = ZTestMode::Less;
   setCullFaceMode( CullMode::back );
+  setPolygonRenderMode( PolyRenderMode::Fill,
+                        PolyRenderMode::Fill );
   }
 
 double RenderState::alphaTestRef()  const{
@@ -69,6 +71,24 @@ void RenderState::getColorMask(bool& r, bool& g, bool& b, bool& a) const{
     b = clMask[2];
 
     a = clMask[3];
+    }
+
+void RenderState::setPolygonRenderMode( RenderState::PolyRenderMode::Type front,
+                                        RenderState::PolyRenderMode::Type back ) {
+    prenderMode[0] = front;
+    prenderMode[1] =  back;
+    }
+
+void RenderState::setPolygonRenderMode( RenderState::PolyRenderMode::Type f ) {
+    setPolygonRenderMode(f,f);
+    }
+
+RenderState::PolyRenderMode::Type RenderState::frontPolygonRenderMode() const {
+    return prenderMode[0];
+    }
+
+RenderState::PolyRenderMode::Type RenderState::backPolygonRenderMode() const {
+    return prenderMode[1];
     }
 
 bool RenderState::isZTest()  const{

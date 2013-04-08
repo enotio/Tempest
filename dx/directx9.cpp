@@ -497,18 +497,23 @@ void DirectX9::deleteTexture( AbstractAPI::Device *,
   }
 
 AbstractAPI::VertexBuffer*
-     DirectX9::createVertexbuffer( AbstractAPI::Device *d,
+     DirectX9::createVertexBuffer( AbstractAPI::Device *d,
                                    size_t size, size_t elSize ) const{
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
   LPDIRECT3DVERTEXBUFFER9 vbo = 0;
 
-  if( FAILED( dev->CreateVertexBuffer( size*elSize,
-                                       D3DUSAGE_WRITEONLY,
-                                       0,
-                                       D3DPOOL_DEFAULT,
-                                       &vbo,
-                                       0 ) ) )
-      return 0;
+  int c = 100;
+  // avoid false out of memory alarm
+  while( !vbo && c>0 ){
+    if( FAILED( dev->CreateVertexBuffer( size*elSize,
+                                         D3DUSAGE_WRITEONLY,
+                                         0,
+                                         D3DPOOL_DEFAULT,
+                                         &vbo,
+                                         0 ) ) )
+        vbo = 0;
+    --c;
+    }
 
   return ((AbstractAPI::VertexBuffer*)vbo);
   }
@@ -521,20 +526,32 @@ void DirectX9::deleteVertexBuffer( AbstractAPI::Device *,
   }
 
 AbstractAPI::IndexBuffer*
-     DirectX9::createIndexbuffer( AbstractAPI::Device *d,
+     DirectX9::createIndexBuffer( AbstractAPI::Device *d,
                                   size_t size, size_t elSize ) const {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
+  LPDIRECT3DINDEXBUFFER9 index = 0;
+
+  int c = 100;
+  // avoid false out of memory alarm
+  while( !index && c>0 ){
+    if( FAILED( dev->CreateIndexBuffer(  size*elSize,
+                                         D3DUSAGE_WRITEONLY,
+                                         D3DFMT_INDEX16,
+                                         D3DPOOL_DEFAULT,
+                                         &index,
+                                         0 ) ) )
+        index = 0;
+    --c;
+    }
+
+  if( index==0 )
+    return 0;
+
   IBO * ibo = new IBO();
 
   ibo->pbuf.reserve( size );
   ibo->pbuf.resize( size );
-
-  dev->CreateIndexBuffer(  size*elSize,
-                           D3DUSAGE_WRITEONLY,
-                           D3DFMT_INDEX16,
-                           D3DPOOL_DEFAULT,
-                           &ibo->index,
-                           0 );
+  ibo->index = index;
 
   return ((AbstractAPI::IndexBuffer*)ibo);
   }
@@ -548,7 +565,7 @@ void DirectX9::deleteIndexBuffer( AbstractAPI::Device *d,
   delete ibo;
   }
 
-void* DirectX9::lockBuffer( AbstractAPI::Device *d,
+void* DirectX9::lockBuffer( AbstractAPI::Device *,
                             AbstractAPI::VertexBuffer * v,
                             unsigned offset, unsigned size) const {
   LPDIRECT3DVERTEXBUFFER9 vbo = LPDIRECT3DVERTEXBUFFER9(v);
@@ -568,7 +585,7 @@ void DirectX9::unlockBuffer( AbstractAPI::Device *,
 
 void* DirectX9::lockBuffer( AbstractAPI::Device *d,
                             AbstractAPI::IndexBuffer * v,
-                            unsigned offset, unsigned size) const {
+                            unsigned offset, unsigned /*size*/) const {
   IBO* ibo = (IBO*)(v);
 
   return ((char*)ibo->pbuf.data())+offset;
@@ -579,9 +596,12 @@ void DirectX9::unlockBuffer( AbstractAPI::Device *,
   IBO* ibo = (IBO*)(v);
   void *pIBO = 0;
 
-  ibo->index->Lock( 0, ibo->pbuf.size()*sizeof(ibo->pbuf[0]), (void**)&pIBO, 0 );
-  memcpy(pIBO, &ibo->pbuf[0], ibo->pbuf.size()*sizeof(ibo->pbuf[0]) );
+  size_t byteSize = ibo->pbuf.size()*sizeof(ibo->pbuf[0]);
+  ibo->index->Lock( 0, byteSize, (void**)&pIBO, 0 );
+  memcpy(pIBO, &ibo->pbuf[0], byteSize );
   ibo->index->Unlock();
+
+  ibo->min.clear();
   }
 
 const AbstractShadingLang*
@@ -873,4 +893,12 @@ void DirectX9::setRenderState( AbstractAPI::Device *d,
     flg |= D3DCOLORWRITEENABLE_ALPHA;
 
   dev->SetRenderState( D3DRS_COLORWRITEENABLE, flg );
+
+  D3DFILLMODE fm[3] = {
+    D3DFILL_SOLID,
+    D3DFILL_WIREFRAME,
+    D3DFILL_POINT
+    };
+
+  dev->SetRenderState( D3DRS_FILLMODE, fm[ r.frontPolygonRenderMode() ] );
   }

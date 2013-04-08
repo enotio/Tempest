@@ -47,10 +47,15 @@ Tempest::Texture2d TextureHolder::create( int w, int h,
                                           AbstractTexture::Format::Type f,
                                           TextureUsage u ){
   Tempest::Texture2d obj( *this );
+  w = std::max(w,0);
+  h = std::max(h,0);
 
-  createObject( obj.data.value(), w, h, 1, f, u );
-  obj.w = w;
-  obj.h = h;
+  if( !(w==0 || h==0) )
+    createObject( obj.data.value(), w, h, 1, f, u ); else
+    obj.data.value() = 0;
+  obj.w   = w;
+  obj.h   = h;
+  obj.frm = f;
 
   return obj;
   }
@@ -58,9 +63,16 @@ Tempest::Texture2d TextureHolder::create( int w, int h,
 Texture2d TextureHolder::create( const Pixmap &p, bool mips, bool compress ) {
   Tempest::Texture2d obj( *this );
 
-  createObject( obj.data.value(), p, mips, compress );
+  if( !(p.width()==0 || p.height()==0) )
+    createObject( obj.data.value(), p, mips, compress ); else
+    obj.data.value() = 0;
+
   obj.w = p.width();
   obj.h = p.height();
+
+  if( p.hasAlpha() )
+    obj.frm = Texture2d::Format::RGBA; else
+    obj.frm = Texture2d::Format::RGB;
 
   return obj;
   }

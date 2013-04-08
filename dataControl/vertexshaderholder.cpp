@@ -47,11 +47,17 @@ void VertexShaderHolder::createObject( AbstractShadingLang::VertexShader*& t,
   }
 
 void VertexShaderHolder::deleteObject( AbstractShadingLang::VertexShader* t ){
+  if( t==0 )
+    return;
+
   data->shaders.erase(t);
   reset(t);
   }
 
 void VertexShaderHolder::reset( AbstractShadingLang::VertexShader* t ){
+  if( t==0 )
+    return;
+
   Data::iterator i = data->shaders.find(t);
 
   if( i!=data->shaders.end() ){
@@ -67,6 +73,9 @@ void VertexShaderHolder::reset( AbstractShadingLang::VertexShader* t ){
 
 AbstractShadingLang::VertexShader*
       VertexShaderHolder::restore( AbstractShadingLang::VertexShader* t ){
+  if( t==0 )
+    return 0;
+
   Data::iterator i = data->restore.find(t);
 
   if( i!=data->restore.end() ){
@@ -86,6 +95,9 @@ AbstractShadingLang::VertexShader*
 
 AbstractShadingLang::VertexShader*
       VertexShaderHolder::copy( AbstractShadingLang::VertexShader* t ){
+  if( t==0 )
+    return 0;
+
   Data::iterator i = data->shaders.find(t);
   AbstractShadingLang::VertexShader* ret = 0;
 

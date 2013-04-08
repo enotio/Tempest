@@ -205,6 +205,8 @@ class Model {
       vbo   = v;
       ibo   = i;
       vdecl = d;
+
+      bds = Raw::computeBoundRect( v );
       }
 
     void load( Tempest::VertexBuffer<ModelVertex> & v,
@@ -213,6 +215,8 @@ class Model {
       vbo   = v;
       ibo   = IndexBuffer<uint16_t>();
       vdecl = d;
+
+      bds = Raw::computeBoundRect( v );
       }
 
     const VertexBuffer<Vertex> &vertexes() const{
@@ -252,7 +256,7 @@ class Model {
 
       m.m_size = size;
 
-      // TODO bsd recalc
+      // TODO bds recalc
       return m;
       }
 

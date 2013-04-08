@@ -79,6 +79,8 @@ class AbstractScene {
   private:
     template< class T, class A >
     static void pSet( T *& tg, const A & a ){
+      (void)((const T&)a);
+
       if( tg==0 || typeEQ(tg, &a) ){
         delete tg;
         tg = new A(a);

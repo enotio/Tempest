@@ -16,13 +16,15 @@ Texture2d::Sampler::Sampler(){
   anisotropic = true;
   }
 
-Texture2d::Texture2d():data( TextureHolder::ImplManip(0) ), w(0), h(0){
+Texture2d::Texture2d():data( TextureHolder::ImplManip(0) ),
+  w(0), h(0),
+  frm(Format::Count) {
 
   }
 
 Texture2d::Texture2d( AbstractHolderWithLoad< Tempest::Texture2d,
                                               AbstractAPI::Texture >& h )
-  :data( h.makeManip() ), w(0), h(0) {
+  :data( h.makeManip() ), w(0), h(0), frm(Format::Count) {
 
   }
 
@@ -48,4 +50,8 @@ int Texture2d::height() const {
 
 bool Texture2d::isEmpty() const {
   return w==0||0==h;
+  }
+
+AbstractTexture::Format::Type Texture2d::format() const {
+  return frm;
   }

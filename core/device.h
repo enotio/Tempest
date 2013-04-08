@@ -241,9 +241,13 @@ class Device {
     void deleteTexture( AbstractAPI::Texture* & t );
 
     AbstractAPI::VertexBuffer* createVertexbuffer( size_t size, size_t elSize );
+    AbstractAPI::VertexBuffer* createVertexbuffer(size_t size, size_t elSize,
+                                                   const void *src );
     void deleteVertexBuffer( AbstractAPI::VertexBuffer* );
 
     AbstractAPI::IndexBuffer* createIndexBuffer( size_t size, size_t elSize );
+    AbstractAPI::IndexBuffer* createIndexBuffer( size_t size, size_t elSize,
+                                                 const void* src );
     void deleteIndexBuffer( AbstractAPI::IndexBuffer* );
 
     void* lockBuffer( AbstractAPI::VertexBuffer*,

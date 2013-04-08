@@ -2,6 +2,7 @@
 #define VERTEXSHADERHOLDER_H
 
 #include <Tempest/AbstractHolder>
+
 #include <Tempest/AbstractShadingLang>
 
 namespace Tempest{

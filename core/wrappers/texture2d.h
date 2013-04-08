@@ -32,10 +32,14 @@ namespace Tempest{
       int height() const;
 
       bool isEmpty() const;
+
+      Format::Type format() const;
     private:
       Detail::Ptr<AbstractAPI::Texture*, TextureHolder::ImplManip> data;
       Sampler m_sampler;
       int w,h;
+
+      Format::Type frm;
 
     friend class AbstractShadingLang;
 

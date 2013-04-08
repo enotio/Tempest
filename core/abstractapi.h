@@ -140,15 +140,25 @@ class AbstractAPI {
                                     AbstractAPI::RenderTagetSurface t) const = 0;*/
 
     virtual AbstractAPI::VertexBuffer*
-                createVertexbuffer( AbstractAPI::Device *d,
+                createVertexBuffer( AbstractAPI::Device *d,
                                     size_t size, size_t elSize ) const = 0;
+
+    virtual AbstractAPI::VertexBuffer* createVertexBuffer(AbstractAPI::Device *d,
+                                                           size_t size,
+                                                           size_t elSize,
+                                                           const void *src ) const;
 
     virtual void deleteVertexBuffer( AbstractAPI::Device *d,
                                      AbstractAPI::VertexBuffer* ) const = 0;
 
     virtual AbstractAPI::IndexBuffer*
-                createIndexbuffer( AbstractAPI::Device *d,
+                createIndexBuffer( AbstractAPI::Device *d,
                                    size_t size, size_t elSize ) const = 0;
+
+    virtual AbstractAPI::IndexBuffer*
+                createIndexBuffer( AbstractAPI::Device *d,
+                                   size_t size, size_t elSize,
+                                   const void* src ) const;
 
     virtual void deleteIndexBuffer( AbstractAPI::Device *d,
                                     AbstractAPI::IndexBuffer* ) const = 0;

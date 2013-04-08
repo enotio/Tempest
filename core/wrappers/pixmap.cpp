@@ -4,6 +4,8 @@
 #include <iostream>
 #include "core/wrappers/atomic.h"
 
+#include <cassert>
+
 using namespace Tempest;
 
 
@@ -32,6 +34,8 @@ Tempest::Pixmap::Pixmap(const std::string &p) {
   bpp = 3;
 
   load(p);
+
+  assert( sizeof(Pixel)==4 );
   }
 
 

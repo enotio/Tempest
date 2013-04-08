@@ -77,6 +77,14 @@ namespace Tempest{
           };
         };
 
+      struct PolyRenderMode{
+        enum Type{
+          Fill,
+          Line,
+          Point,
+          };
+        };
+
       double alphaTestRef() const;
       void  setAlphaTestRef(double v);
 
@@ -114,16 +122,25 @@ namespace Tempest{
       void setColorMask(bool  r, bool  g, bool  b, bool  a);
       void getColorMask(bool& r, bool& g, bool& b, bool& a) const;
 
+      void setPolygonRenderMode(PolyRenderMode::Type front_and_back );
+      PolyRenderMode::Type frontPolygonRenderMode() const;
+      PolyRenderMode::Type backPolygonRenderMode()  const;
+
+      //opengl only
+      void setPolygonRenderMode(PolyRenderMode::Type front, PolyRenderMode::Type back);
   private:
       double atest;
       AlphaTestMode::Type atestType;
       ZTestMode::Type     zTestType;
       CullMode::Type      cullMode;
 
+      PolyRenderMode::Type prenderMode[2];
+
       bool zWriting, zTest, blend, alphaCoverage;
       AlphaBlendMode::Type sfactor, dfactor;
 
       bool clMask[4];
+
 
       void init();
     };

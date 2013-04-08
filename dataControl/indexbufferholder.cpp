@@ -14,7 +14,6 @@ struct IndexBufferHolder::Data {
     int vsize, size;
 
     int lockBegin, lockSize;
-    size_t minID;
     std::vector< char > data;
     // const void * data;
     };
@@ -36,23 +35,13 @@ IndexBufferHolder::IndexBufferHolder( const IndexBufferHolder& h)
   }
 
 void IndexBufferHolder::createObject( AbstractAPI::IndexBuffer*& t,
-                                       const char * src,
-                                       int size, int vsize ){
-  int c = 100;
-  t = 0;
-  while( !t && c>0 ){
-    t = device().createIndexBuffer( size, vsize );
-    --c;
-    }
+                                      const char * src,
+                                      int size,
+                                      int vsize ){
+  t = device().createIndexBuffer( size, vsize, src );
 
   if( !t )
     return;
-
-  {
-    void *pVertices = device().lockBuffer( t, 0, size*vsize );
-    memcpy( pVertices, src, size*vsize );
-    device().unlockBuffer( t );
-    }
 
   Data::LDData *d = new Data::LDData;
   d->vsize = vsize;
@@ -66,44 +55,54 @@ void IndexBufferHolder::createObject( AbstractAPI::IndexBuffer*& t,
   }
 
 void IndexBufferHolder::deleteObject( AbstractAPI::IndexBuffer* t ){
-  Data::Iterator i = data->ibos.find(t);
-
-  if( i!=data->ibos.end() ){
+  if( t ){
+    Data::Iterator i = data->ibos.find(t);
     delete i->second;
-    data->ibos.erase(i);
-    }
 
-  device().deleteIndexBuffer(t);
+    data->ibos.erase(i);
+    device().deleteIndexBuffer(t);
+    }
   }
 
 void IndexBufferHolder::reset( AbstractAPI::IndexBuffer* t ){
-  Data::Iterator i = data->ibos.find(t);
-  data->restore[t] = i->second;
+  if( t ){
+    Data::Iterator i = data->ibos.find(t);
+    data->restore[t] = i->second;
 
-  data->ibos.erase(i);
-  device().deleteIndexBuffer(t);
+    data->ibos.erase(i);
+    device().deleteIndexBuffer(t);
+    }
   }
 
 AbstractAPI::IndexBuffer* IndexBufferHolder::restore( AbstractAPI::IndexBuffer* t ){
-  Data::LDData* ld = data->restore[t];
-  data->restore.erase(t);
+  if( t ){
+    Data::LDData* ld = data->restore[t];
+    data->restore.erase(t);
 
-  createObject( t, &ld->data[0], ld->size, ld->vsize );
+    createObject( t, &ld->data[0], ld->size, ld->vsize );
 
-  delete ld;
+    delete ld;
+    }
+
   return t;
   }
 
 AbstractAPI::IndexBuffer* IndexBufferHolder::copy( AbstractAPI::IndexBuffer* t ){
-  Data::LDData& ld = *data->ibos[t];
+  if( t ){
+    Data::LDData& ld = *data->ibos[t];
 
-  AbstractAPI::IndexBuffer* ret = 0;
-  createObject( ret, &ld.data[0], ld.size, ld.vsize );
-  return ret;
+    AbstractAPI::IndexBuffer* ret = 0;
+    createObject( ret, &ld.data[0], ld.size, ld.vsize );
+    return ret;
+    }
+  return 0;
   }
 
 char *IndexBufferHolder::lockBuffer( AbstractAPI::IndexBuffer *t,
                                      int b, int sz ) {
+  if( t==0 )
+    return 0;
+
   Data::LDData & ld = *data->ibos[t];
   ld.lockBegin = b;
   ld.lockSize  = sz;
@@ -112,6 +111,9 @@ char *IndexBufferHolder::lockBuffer( AbstractAPI::IndexBuffer *t,
   }
 
 void IndexBufferHolder::unlockBuffer(AbstractAPI::IndexBuffer *t) {
+  if( t==0 )
+    return;
+
   Data::LDData & ld = *data->ibos[t];
 
   char *v = (char*)device().lockBuffer( t, ld.lockBegin, ld.lockSize );

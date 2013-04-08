@@ -38,50 +38,36 @@ VertexBufferHolder::VertexBufferHolder( const VertexBufferHolder& h)
 void VertexBufferHolder::createObject( AbstractAPI::VertexBuffer*& t,
                                        const char * src,
                                        int size, int vsize ){
-  int c = 100;
-  t = 0;
-  while( !t && c>0 ){
-    t = device().createVertexbuffer( size, vsize );
-    --c;
-    }
+  t = device().createVertexbuffer( size, vsize, src );
 
   if( !t )
     return;
 
-  {
-    void *pVertices = device().lockBuffer( t, 0, size*vsize );
-    memcpy( pVertices, src, size*vsize );
-    device().unlockBuffer( t );
-    }
+  Data::LDData *d = new Data::LDData();
+  d->vsize = vsize;
+  d->size  = size;
+  d->lockBegin = 0;
+  d->lockSize  = 0;
+  //d.data  = src;
 
-  if( 1 || !device().hasManagedStorge() ){
-    Data::LDData *d = new Data::LDData();
-    d->vsize = vsize;
-    d->size  = size;
-    d->lockBegin = 0;
-    d->lockSize  = 0;
-    //d.data  = src;
+  d->data.resize( size*vsize );
+  std::copy( src, src + size*vsize, d->data.begin() );
 
-    d->data.resize( size*vsize );
-    std::copy( src, src + size*vsize, d->data.begin() );
-
-    data->vbos[t] = d;
-    }
+  data->vbos[t] = d;
   }
 
 void VertexBufferHolder::deleteObject( AbstractAPI::VertexBuffer* t ){
-  if( 1 || !device().hasManagedStorge() ){
+  if( t ){
     Data::Iterator i = data->vbos.find(t);
     delete i->second;
 
     data->vbos.erase(i);
+    device().deleteVertexBuffer(t);
     }
-
-  device().deleteVertexBuffer(t);
   }
 
 void VertexBufferHolder::reset( AbstractAPI::VertexBuffer* t ){
-  if( 1 || !device().hasManagedStorge() ){
+  if( t ){
     Data::Iterator i = data->vbos.find(t);
     data->restore[t] = i->second;
 
@@ -91,7 +77,7 @@ void VertexBufferHolder::reset( AbstractAPI::VertexBuffer* t ){
   }
 
 AbstractAPI::VertexBuffer* VertexBufferHolder::restore( AbstractAPI::VertexBuffer* t ){
-  if( 1 || !device().hasManagedStorge() ){
+  if( t ){
     Data::LDData* ld = data->restore[t];
     data->restore.erase(t);
 
@@ -103,19 +89,22 @@ AbstractAPI::VertexBuffer* VertexBufferHolder::restore( AbstractAPI::VertexBuffe
   }
 
 AbstractAPI::VertexBuffer* VertexBufferHolder::copy( AbstractAPI::VertexBuffer* t ){
-  if( 0 && device().hasManagedStorge() ){
-
-    } else {
+  if( t ){
     Data::LDData& ld = *data->vbos[t];
 
     AbstractAPI::VertexBuffer* ret = 0;
     createObject( ret, &ld.data[0], ld.size, ld.vsize );
     return ret;
     }
+
+  return 0;
   }
 
 char *VertexBufferHolder::lockBuffer( AbstractAPI::VertexBuffer *t,
                                       int b, int sz ) {
+  if( t==0 )
+    return 0;
+
   Data::LDData & ld = *data->vbos[t];
   ld.lockBegin = b;
   ld.lockSize  = sz;
@@ -124,6 +113,9 @@ char *VertexBufferHolder::lockBuffer( AbstractAPI::VertexBuffer *t,
   }
 
 void VertexBufferHolder::unlockBuffer(AbstractAPI::VertexBuffer *t) {
+  if( t==0 )
+    return;
+
   Data::LDData & ld = *data->vbos[t];
 
   char *v = (char*)device().lockBuffer( t, ld.lockBegin, ld.lockSize );

@@ -28,7 +28,8 @@ class VertexBufferHolder : public AbstractHolder
       if( count > 0 ){
         createObject( obj.data.value(), (const char*)v,
                       count, sizeof(Vertex) );
-        }
+        } else
+        obj.data.value() = 0;
 
       return obj;
       }

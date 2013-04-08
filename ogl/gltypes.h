@@ -10,22 +10,12 @@
 #include <GL/gl.h>
 #endif
 
+#include <vector>
+#include <Tempest/Texture2d>
+
 namespace Tempest{
 
 namespace Detail{
-  struct GLTexture{
-    GLTexture();
-
-    GLuint id;
-    GLuint depthId;
-
-    GLenum min, mag;
-    bool mips, compress;
-
-    int w,h;
-    GLenum format;
-    };
-
   struct GLBuffer{
     GLuint id;
     char * mappedData;
@@ -33,6 +23,7 @@ namespace Detail{
     unsigned offset, size;
     };
 
+  class GLTexture;
   struct RenderTg{
     static const int maxMRT = 32;
 
@@ -43,6 +34,22 @@ namespace Detail{
     int depthMip;
     };
 
+  struct GLTexture{
+    GLTexture();
+
+    GLuint id;
+    GLuint depthId;
+
+    GLuint fbo;
+    RenderTg* fboTg;
+
+    GLenum min, mag;
+    bool mips, compress;
+
+    int w,h;
+    float anisotropyLevel;
+    GLenum format;
+    };
   }
 }
 

@@ -24,6 +24,22 @@ class Pixmap {
 
     struct Pixel{
       unsigned char r,g,b,a;
+
+      unsigned char* data(){
+        return &r;
+        }
+
+      const unsigned char* data() const {
+        return &r;
+        }
+
+      template< class T >
+      void assign( T it ){
+        r = *it; ++it;
+        g = *it; ++it;
+        b = *it; ++it;
+        a = *it; ++it;
+        }
       };
 
     inline const unsigned char* const_data() const {

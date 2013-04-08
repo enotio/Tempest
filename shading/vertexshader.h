@@ -2,7 +2,6 @@
 #define VERTEXSHADER_H
 
 #include <Tempest/AbstractShadingLang>
-#include <Tempest/CopyWhenNeedPtr>
 #include <Tempest/VertexShaderHolder>
 
 #include "shaderinput.h"

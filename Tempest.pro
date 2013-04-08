@@ -1,6 +1,6 @@
 QT       -= core gui
 
-CONFIG += opengl
+CONFIG += opengl directx
 
 TARGET = Tempest
 TEMPLATE = lib
@@ -54,6 +54,12 @@ directx: {
     dx/directx9.cpp
 
   TARGET = Tempest_dx
+  }
+
+opengl:{
+  directx:{
+    TARGET = Tempest
+    }
   }
 
 LIBS += -L"$$(DEVIL_LIB_PATH)" -l"DevIL"

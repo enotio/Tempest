@@ -111,8 +111,8 @@ struct GLSL::Data{
     }
 
   struct ShProgram{
-    const Tempest::VertexShader*   vs;
-    const Tempest::FragmentShader* fs;
+    GLuint vs;
+    GLuint fs;
 
     GLuint linked;
     };
@@ -120,6 +120,8 @@ struct GLSL::Data{
   std::vector<ShProgram> prog;
   bool cgcgen;
   bool hasAnisotropic;
+
+  GLuint curProgram;
   };
 
 void* GLSL::context() const{
@@ -163,6 +165,8 @@ void Tempest::GLSL::endPaint() const {
 
   data->currentFS = 0;
   data->fsCash.reset();
+
+  data->curProgram = 0;
   //cgGLDisableProfile( data->pixelProfile );
   }
 
@@ -195,13 +199,15 @@ void GLSL::deleteVertexShader( VertexShader* s ) const {
   glDeleteShader( *prog );
 
   for( size_t i=0; i<data->prog.size();  ){
-    if( get( *data->prog[i].vs ) == s ){
+    if( data->prog[i].vs == *prog ){
       glDeleteProgram( data->prog[i].linked );
       data->prog[i] = data->prog.back();
       data->prog.pop_back();
       } else
       ++i;
     }
+
+  delete prog;
   }
 
 AbstractShadingLang::FragmentShader*
@@ -228,13 +234,15 @@ void GLSL::deleteFragmentShader( FragmentShader* s ) const{
   glDeleteShader( *prog );
 
   for( size_t i=0; i<data->prog.size();  ){
-    if( get( *data->prog[i].fs ) == s ){
+    if( data->prog[i].fs == *prog ){
       glDeleteProgram( data->prog[i].linked );
       data->prog[i] = data->prog.back();
       data->prog.pop_back();
       } else
       ++i;
     }
+
+  delete prog;
   }
 
 void GLSL::bind( const Tempest::VertexShader& s ) const {
@@ -279,8 +287,8 @@ void GLSL::enable() const {
   GLuint program = 0;
 
   for( size_t i=0; i<data->prog.size(); ++i )
-    if( data->prog[i].vs==data->currentVS &&
-        data->prog[i].fs==data->currentFS ){
+    if( data->prog[i].vs == vertexShader &&
+        data->prog[i].fs == pixelShader ){
       program = data->prog[i].linked;
       }
 
@@ -349,8 +357,8 @@ void GLSL::enable() const {
       }
 
     Data::ShProgram s;
-    s.vs = data->currentVS;
-    s.fs = data->currentFS;
+    s.vs = vertexShader;
+    s.fs = pixelShader;
     s.linked = program;
     data->prog.push_back( s );
 
@@ -360,7 +368,11 @@ void GLSL::enable() const {
     std::cout << vl;*/
     }
 
-  glUseProgram( program );
+  if( program != data->curProgram){
+    glUseProgram( program );
+    data->curProgram = program;
+    }
+
   { const ShaderInput & in = inputOf( *data->currentFS );
 
     for( size_t i=0; i<in.tex.names.size(); ++i ){
@@ -406,6 +418,8 @@ void GLSL::setUniform( unsigned int s,
 
   GLuint   prog = s;
   GLint    prm = data->location( prog, name );
+  if( prm==-1 )
+    return;
 
   if( !data->vsCash.fetch(prm, m) ){
     float r[16] = {};
@@ -421,6 +435,8 @@ void GLSL::setUniform( unsigned int s,
                        const char *name ) const{
   GLuint    prog = s;
   GLint     prm = data->location( prog, name );
+  if( prm==-1 )
+    return;
 
   if( !data->vsCash.fetch(prm, v, l) ){
     //Data::dbg(prm, data->context);
@@ -440,6 +456,8 @@ void GLSL::setUniform( unsigned int sh,
                        int slot ) const{
   GLuint    prog = sh;
   GLint     prm = data->location( prog, name );
+  if( prm==-1 )
+    return;
 
   const Texture2d::Sampler & s = u.sampler();
   //Data::dbg(prm, data->context);
@@ -490,15 +508,25 @@ void GLSL::setUniform( unsigned int sh,
         }
       
 //#ifndef __ANDROID__
-      if( s.anisotropic && data->hasAnisotropic &&
-          ((tx->w &(tx->w-1))==0) &&
-          ((tx->h &(tx->h-1))==0) ){
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                        data->maxAnisotropy);
-        } else {
-        if( data->hasAnisotropic )
-          glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                           1 );
+      if( data->hasAnisotropic ){
+        if( s.anisotropic &&
+            ((tx->w &(tx->w-1))==0) &&
+            ((tx->h &(tx->h-1))==0) &&
+            tx->mips ){
+          if( tx->anisotropyLevel!=data->maxAnisotropy ){
+            glTexParameterf( GL_TEXTURE_2D,
+                             GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                             data->maxAnisotropy );
+            tx->anisotropyLevel = data->maxAnisotropy;
+            }
+          } else {
+          if( tx->anisotropyLevel!=1 ){
+            glTexParameterf( GL_TEXTURE_2D,
+                             GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                             1 );
+            tx->anisotropyLevel = 1;
+            }
+          }
         }
 
 //#endif

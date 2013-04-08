@@ -25,8 +25,10 @@ class IndexBufferHolder : public AbstractHolder
     IndexBuffer<Index> load( const Index v[], int count ){
       IndexBuffer<Index> obj( *this, count );
 
-      createObject( obj.data.value(), (const char*)v,
-                    count, sizeof(Index) );
+      if( count )
+        createObject( obj.data.value(), (const char*)v,
+                      count, sizeof(Index) ); else
+        obj.data.value() = 0;
 
       return obj;
       }

@@ -41,21 +41,29 @@ FragmentShader FragmentShaderHolder::loadFromSource(const std::string & src) {
 void FragmentShaderHolder::createObjectFromSrc( AbstractShadingLang::FragmentShader *&t,
                                                 const std::string &src ) {
   t = device().shadingLang().createFragmentShaderFromSource( src );
-  data->shadersSrc[t] = src;
+  if( t )
+    data->shadersSrc[t] = src;
   }
 
 void FragmentShaderHolder::createObject( AbstractShadingLang::FragmentShader*& t,
                                        const std::string & fname ){
   t = device().shadingLang().createFragmentShader( fname );
-  data->shaders[t] = fname;
+  if( t )
+    data->shaders[t] = fname;
   }
 
 void FragmentShaderHolder::deleteObject( AbstractShadingLang::FragmentShader* t ){
+  if( t==0 )
+    return;
+
   data->shaders.erase(t);
   reset(t);
   }
 
 void FragmentShaderHolder::reset( AbstractShadingLang::FragmentShader* t ){
+  if( t==0 )
+    return;
+
   Data::iterator i = data->shaders.find(t);
 
   if( i!=data->shaders.end() ){
@@ -71,6 +79,9 @@ void FragmentShaderHolder::reset( AbstractShadingLang::FragmentShader* t ){
 
 AbstractShadingLang::FragmentShader*
       FragmentShaderHolder::restore( AbstractShadingLang::FragmentShader* t ){
+  if( t==0 )
+    return 0;
+
   Data::iterator i = data->restore.find(t);
 
   if( i!=data->restore.end() ){
@@ -90,6 +101,9 @@ AbstractShadingLang::FragmentShader*
 
 AbstractShadingLang::FragmentShader*
       FragmentShaderHolder::copy( AbstractShadingLang::FragmentShader* t ){
+  if( t==0 )
+    return 0;
+
   Data::iterator i = data->shaders.find(t);
   AbstractShadingLang::FragmentShader* ret = 0;
 

@@ -2,7 +2,6 @@
 #define FRAGMENTSHADER_H
 
 #include <Tempest/AbstractShadingLang>
-#include <Tempest/CopyWhenNeedPtr>
 #include <Tempest/FragmentShaderHolder>
 
 #include "shaderinput.h"
