@@ -20,6 +20,7 @@ using namespace Tempest;
 struct DirectX9::Device{
   LPDIRECT3DDEVICE9 dev;
   DirectX9::IBO * curIBO;
+  D3DCAPS9        caps;
   };
 
 struct DirectX9::IBO{
@@ -61,6 +62,7 @@ AbstractAPI::Device* DirectX9::createDevice(void *hwnd, const Options &opt) cons
                      D3DCREATE_HARDWARE_VERTEXPROCESSING,
                      &d3dpp, &dev->dev );
 
+  dev->dev->GetDeviceCaps( &dev->caps );
   return (AbstractAPI::Device*)dev;
   }
 
@@ -510,8 +512,10 @@ AbstractAPI::VertexBuffer*
                                          0,
                                          D3DPOOL_DEFAULT,
                                          &vbo,
-                                         0 ) ) )
+                                         0 ) ) ){
+        assert(0);
         vbo = 0;
+        }
     --c;
     }
 
@@ -534,13 +538,15 @@ AbstractAPI::IndexBuffer*
   int c = 100;
   // avoid false out of memory alarm
   while( !index && c>0 ){
-    if( FAILED( dev->CreateIndexBuffer(  size*elSize,
-                                         D3DUSAGE_WRITEONLY,
-                                         D3DFMT_INDEX16,
-                                         D3DPOOL_DEFAULT,
-                                         &index,
-                                         0 ) ) )
+    if( FAILED( dev->CreateIndexBuffer( size*elSize,
+                                        D3DUSAGE_WRITEONLY,
+                                        D3DFMT_INDEX16,
+                                        D3DPOOL_DEFAULT,
+                                        &index,
+                                        0 ) ) ){
+        assert(0);
         index = 0;
+        }
     --c;
     }
 
@@ -567,19 +573,20 @@ void DirectX9::deleteIndexBuffer( AbstractAPI::Device *d,
 
 void* DirectX9::lockBuffer( AbstractAPI::Device *,
                             AbstractAPI::VertexBuffer * v,
-                            unsigned offset, unsigned size) const {
+                            unsigned offset,
+                            unsigned size ) const {
   LPDIRECT3DVERTEXBUFFER9 vbo = LPDIRECT3DVERTEXBUFFER9(v);
 
   void* pVertices = 0;
-  vbo->Lock( offset, size, &pVertices, 0 );
+  assert( vbo->Lock( 0, 0, &pVertices, 0 )==D3D_OK );
+  //assert( vbo->Lock( offset, size, &pVertices, 0 )==D3D_OK );
 
-  return pVertices;
+  return (char*)pVertices+offset;
   }
 
 void DirectX9::unlockBuffer( AbstractAPI::Device *,
                              AbstractAPI::VertexBuffer* v) const {
   LPDIRECT3DVERTEXBUFFER9 vbo = LPDIRECT3DVERTEXBUFFER9(v);
-
   vbo->Unlock();
   }
 
@@ -588,7 +595,8 @@ void* DirectX9::lockBuffer( AbstractAPI::Device *d,
                             unsigned offset, unsigned /*size*/) const {
   IBO* ibo = (IBO*)(v);
 
-  return ((char*)ibo->pbuf.data())+offset;
+  char* ptr = (char*)&ibo->pbuf[0];
+  return ptr+offset;
   }
 
 void DirectX9::unlockBuffer( AbstractAPI::Device *,
@@ -597,7 +605,8 @@ void DirectX9::unlockBuffer( AbstractAPI::Device *,
   void *pIBO = 0;
 
   size_t byteSize = ibo->pbuf.size()*sizeof(ibo->pbuf[0]);
-  ibo->index->Lock( 0, byteSize, (void**)&pIBO, 0 );
+
+  assert( ibo->index->Lock( 0, 0, &pIBO, 0 )==D3D_OK );
   memcpy(pIBO, &ibo->pbuf[0], byteSize );
   ibo->index->Unlock();
 
@@ -731,17 +740,20 @@ void DirectX9::bindVertexBuffer( AbstractAPI::Device *d,
                                  AbstractAPI::VertexBuffer* b,
                                  int vsize ) const {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
+
+  HRESULT re =
   dev->SetStreamSource( 0, LPDIRECT3DVERTEXBUFFER9(b),
                         0, vsize );
-
+  assert(re==D3D_OK);
   }
 
 void DirectX9::bindIndexBuffer( AbstractAPI::Device * d,
                                 AbstractAPI::IndexBuffer * b ) const {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
-  dev->SetIndices( ((IBO*)(b))->index );
+  HRESULT re = dev->SetIndices( ((IBO*)(b))->index );
 
   ((Device*)d)->curIBO = (IBO*)(b);
+  assert(re==D3D_OK);
   }
 
 void DirectX9::draw( AbstractAPI::Device *d,

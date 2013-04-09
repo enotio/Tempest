@@ -39,7 +39,7 @@ class LocalBufferHolder : public Holder {
 
     struct NonFreedData {
       typename Holder::DescriptorType* handle;
-      int memSize;
+      int  memSize, elSize;
       bool restoreIntent;
       };
 
@@ -119,13 +119,15 @@ class LocalBufferHolder : public Holder {
       NonFreedData d;
       d.memSize       = nearPOT( size*vsize );
       d.restoreIntent = false;
+      d.elSize        = vsize;
 
       for( size_t i=0; i<nonFreed.size(); ++i ){
         d.handle = nonFreed[i].data.handle;
 
         NonFreedData& x = nonFreed[i].data;
         if( d.memSize   <= x.memSize &&
-            d.memSize*4 >= x.memSize ){
+            d.memSize*4 >= x.memSize &&
+            d.elSize    == x.elSize ){
           dynVBOs.push_back( nonFreed[i] );
           nonFreed[i] = nonFreed.back();
           nonFreed.pop_back();

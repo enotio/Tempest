@@ -32,6 +32,7 @@ IndexBufferHolder::~IndexBufferHolder(){
 
 IndexBufferHolder::IndexBufferHolder( const IndexBufferHolder& h)
                    :BaseType( h.device() ) {
+  data = new Data();
   }
 
 void IndexBufferHolder::createObject( AbstractAPI::IndexBuffer*& t,
