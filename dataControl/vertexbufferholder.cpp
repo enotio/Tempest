@@ -4,6 +4,7 @@
 #include <Tempest/Device>
 
 #include <map>
+#include <iostream>
 
 #include <cstring>
 
@@ -109,17 +110,20 @@ char *VertexBufferHolder::lockBuffer( AbstractAPI::VertexBuffer *t,
   ld.lockBegin = b;
   ld.lockSize  = sz;
 
+  //std::cout <<"l " << t <<" " << b <<" " << sz <<" " << ld.data.size() << std::endl;
+
   return &ld.data[0];//(char*)device().lockBuffer( t, b, sz);
   }
 
 void VertexBufferHolder::unlockBuffer(AbstractAPI::VertexBuffer *t) {
   if( t==0 )
     return;
+  //std::cout <<"u " << t << std::endl;
 
   Data::LDData & ld = *data->vbos[t];
 
   char *v = (char*)device().lockBuffer( t, ld.lockBegin, ld.lockSize );
-  memcpy( v, (&ld.data[0])+ld.lockBegin, ld.lockSize );
+  memcpy( v, &ld.data[ld.lockBegin], ld.lockSize );
   device().unlockBuffer(t);
   }
 

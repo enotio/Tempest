@@ -16,7 +16,7 @@ class LocalBufferHolder : public Holder {
       nonFreed.reserve(128);
       dynVBOs .reserve(128);
 
-      setReserveSize( 32*8092 );
+      setReserveSize( 0xFFFF );
       maxReserved = -1;
 
       needToRestore = false;
@@ -117,7 +117,7 @@ class LocalBufferHolder : public Holder {
         }
 
       NonFreedData d;
-      d.memSize       = nearPOT( size*vsize );
+      d.memSize       = vsize*(nearPOT( size*vsize )/vsize);
       d.restoreIntent = false;
       d.elSize        = vsize;
 
@@ -134,11 +134,12 @@ class LocalBufferHolder : public Holder {
 
           t = dynVBOs.back().data.handle;
           {
-            int sz = dynVBOs.back().data.memSize;
+            int   sz    = dynVBOs.back().data.memSize,
+                  cpySz = size*vsize;
             char *pVertices = this->lockBuffer( t, 0, sz);
-            memcpy( pVertices, src, size*vsize );
 
-            std::fill( pVertices+size*vsize, pVertices+sz, 0 );
+            std::copy( src, src+cpySz, pVertices );
+            std::fill( pVertices+cpySz, pVertices+sz, 0 );
             this->unlockBuffer( t );
             }
 
@@ -150,7 +151,7 @@ class LocalBufferHolder : public Holder {
       std::copy( src, src+size*vsize, tmp.begin() );
       std::fill( tmp.begin()+size*vsize, tmp.end(), 0 );
 
-      Holder::createObject( t, &tmp[0], d.memSize, 1 );
+      Holder::createObject( t, &tmp[0], d.memSize/d.elSize, d.elSize );
 
       if( !t )
         return;
