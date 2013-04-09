@@ -32,6 +32,10 @@ template< class Data, class APIDescriptor >
 class AbstractHolder : public AbstractHolderBase {
   protected:
     AbstractHolder( Device & d ):AbstractHolderBase(d){}
+    ~AbstractHolder(){
+      for( size_t i=0; i<freed.size(); ++i )
+        delete freed[i];
+      }
 
     struct ImplManip{
       struct Ref{
@@ -42,7 +46,7 @@ class AbstractHolder : public AbstractHolderBase {
         };
 
       Ref * newRef(){
-        return dev->addRef( new Ref( 0 ) );
+        return dev->addRef( Ref( 0 ) );
         }
 
       Ref * newRef( const Ref * base ){
@@ -54,7 +58,6 @@ class AbstractHolder : public AbstractHolderBase {
           dev->deleteObject( r->data );
 
         dev->delRef( r );
-        delete r;
         }
 
       ImplManip( AbstractHolder * d ):dev(d){}
@@ -69,6 +72,7 @@ class AbstractHolder : public AbstractHolderBase {
 
       private:
         AbstractHolder * dev;
+
       };
 
     virtual void deleteObject( APIDescriptor* t ) = 0;
@@ -85,26 +89,50 @@ class AbstractHolder : public AbstractHolderBase {
   private:
     typedef typename ImplManip::Ref Ref;
 
-    Ref* addRef( Ref* re ){
-      references.push_back( re );
-      return re;
+    Ref* addRef( const Ref& re ){
+      Ref *r = 0;
+      if( freed.size() ){
+        r = freed.back();
+        *r = Ref(re);
+        freed.pop_back();
+        } else {
+        r = new Ref(re);
+        }
+
+      references.push_back( r );
+      return references.back();
       }
 
     Ref* copyRef( const Ref* re ){
-      return addRef( new Ref( copy(re->data) ) );
+      return addRef( Ref( copy(re->data) ) );
       }
 
     void delRef( Ref * re ){
-      for( size_t i=0; i<references.size(); ++i )
-        if( references[i]==re ){
-          references[i] = references.back();
+      for( size_t i=0; i<references.size(); ++i ){
+        size_t id = references.size()-i-1;
+        if( references[id]==re ){
+          references[id] = references.back();
           references.pop_back();
+          //delete re;
+
+          if( freed.size()<references.size() )
+            freed.push_back( re ); else
+            delete re;
+
+          while( freed.size()>2*references.size() ){
+            delete freed.back();
+            freed.pop_back();
+            }
+
           return;
           }
+        }
+
+      delete re;
       }
 
   protected:
-    std::vector< Ref* > references;
+    std::vector< Ref* > references, freed;
 
     void reset(){
       typename std::vector< Ref* >::iterator i = this->references.begin(),
