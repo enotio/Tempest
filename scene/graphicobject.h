@@ -109,7 +109,7 @@ class GraphicObject : public AbstractGraphicObject<Material> {
       return m->bounds();
       }
 
-    Matrix4x4 transform() const {
+    const Matrix4x4& transform() const {
       updateMat();
       return mat;
       }

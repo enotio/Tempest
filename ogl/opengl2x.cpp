@@ -28,6 +28,8 @@
 #include "gltypes.h"
 #include <squish.h>
 
+// #define OGL_DEBUG
+
 using namespace Tempest;
 
 struct Opengl2x::Device{
@@ -52,6 +54,8 @@ struct Opengl2x::Device{
 
   GLuint fboId;//, rboId;
   bool    isPainting;
+
+  Tempest::RenderState renderState;
 
   Detail::RenderTg target;
   std::vector<squish::u8> compressBuffer;
@@ -92,6 +96,7 @@ struct Opengl2x::Device{
   };
 
 void Opengl2x::errCk() const {
+#ifdef OGL_DEBUG
   GLenum err = glGetError();
   while( err!=GL_NO_ERROR ){
 #ifndef __ANDROID__
@@ -103,6 +108,7 @@ void Opengl2x::errCk() const {
 #endif
     err = glGetError();
     }
+#endif
   }
 
 Opengl2x::Opengl2x( ShaderLang sl ):impl(0){
@@ -169,6 +175,12 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   glEnable( GL_DEPTH_TEST );
   glEnable( GL_CULL_FACE );
   glFrontFace( GL_CW );
+  dev->renderState.setCullFaceMode( RenderState::CullMode::noCull );
+  dev->renderState.setZTest(0);
+  dev->renderState.setZWriting(1);
+  dev->renderState.setAlphaTestMode( RenderState::AlphaTestMode::Count );
+  dev->renderState.setBlend(0);
+
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glGenFramebuffers(1, &dev->fboId);
@@ -368,25 +380,30 @@ void Opengl2x::setupFBO() const {
   for( int i=0; i<maxMRT; ++i ){
     if( dev->target.color[i] ){
       // NVidia old driver bug issue
-      glBindTexture( GL_TEXTURE_2D, dev->target.color[i]->id );
-      dev->target.color[i]->min  = dev->target.color[i]->mag = GL_NEAREST;
+
+      bool potW = (w&(w-1))==0,
+           potH = (h&(h-1))==0;
+      if( !( potW && potH ) ){
+        glBindTexture( GL_TEXTURE_2D, dev->target.color[i]->id );
+        dev->target.color[i]->min  = dev->target.color[i]->mag = GL_NEAREST;
+
+        glTexParameteri( GL_TEXTURE_2D,
+                         GL_TEXTURE_MIN_FILTER,
+                         GL_NEAREST );
+        glTexParameteri( GL_TEXTURE_2D,
+                         GL_TEXTURE_MAG_FILTER,
+                         GL_NEAREST );
+        //*****
+        glTexParameteri( GL_TEXTURE_2D,
+                         GL_TEXTURE_WRAP_S,
+                         GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D,
+                         GL_TEXTURE_WRAP_T,
+                         GL_CLAMP_TO_EDGE );
+
+        glBindTexture( GL_TEXTURE_2D, 0 );
+        }
       dev->target.color[i]->mips = false;
-
-      glTexParameteri( GL_TEXTURE_2D,
-                       GL_TEXTURE_MIN_FILTER,
-                       GL_NEAREST );
-      glTexParameteri( GL_TEXTURE_2D,
-                       GL_TEXTURE_MAG_FILTER,
-                       GL_NEAREST );
-      //*****
-      glTexParameteri( GL_TEXTURE_2D,
-                       GL_TEXTURE_WRAP_S, 
-                       GL_CLAMP_TO_EDGE );
-      glTexParameteri( GL_TEXTURE_2D,
-                       GL_TEXTURE_WRAP_T,
-                       GL_CLAMP_TO_EDGE );
-
-      glBindTexture( GL_TEXTURE_2D, 0 );
       //*****
 
       if( tex->fboTg->color[i]!=dev->target.color[i] ){
@@ -416,7 +433,7 @@ void Opengl2x::setupFBO() const {
                                  0 );
       }
     }
-
+#ifdef OGL_DEBUG
   int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
 
   if( !(status==0 || status==GL_FRAMEBUFFER_COMPLETE) ){
@@ -425,6 +442,7 @@ void Opengl2x::setupFBO() const {
 
   assert( status==0 || status==GL_FRAMEBUFFER_COMPLETE );
   errCk();
+#endif
 
   glViewport( 0, 0, w, h );
   errCk();
@@ -811,13 +829,20 @@ void Opengl2x::deleteTexture( AbstractAPI::Device *d,
 AbstractAPI::VertexBuffer*
      Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
                                    size_t size, size_t elSize ) const{
+  return createVertexBuffer(d, size, elSize, 0 );
+  }
+
+AbstractAPI::VertexBuffer *Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
+                                                         size_t size,
+                                                         size_t elSize,
+                                                         const void *src ) const {
   setDevice(d);
 
   Detail::GLBuffer *vbo = new Detail::GLBuffer;
   glGenBuffers( 1, &vbo->id );
   glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
   glBufferData( GL_ARRAY_BUFFER,
-                size*elSize, 0,
+                size*elSize, src,
                 GL_STATIC_DRAW );
   errCk();
 
@@ -838,13 +863,20 @@ void Opengl2x::deleteVertexBuffer(  AbstractAPI::Device *d,
 AbstractAPI::IndexBuffer*
      Opengl2x::createIndexBuffer( AbstractAPI::Device *d,
                                   size_t size, size_t elSize ) const {
+  return createIndexBuffer(d, size, elSize, 0);
+  }
+
+AbstractAPI::IndexBuffer *Opengl2x::createIndexBuffer( AbstractAPI::Device *d,
+                                                       size_t size,
+                                                       size_t elSize,
+                                                       const void *src ) const {
   setDevice(d);
 
   Detail::GLBuffer *ibo = new Detail::GLBuffer;
   glGenBuffers( 1, &ibo->id );
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo->id );
   glBufferData( GL_ELEMENT_ARRAY_BUFFER,
-                size*elSize, 0,
+                size*elSize, src,
                 GL_STATIC_DRAW );
   errCk();
 
@@ -1202,21 +1234,20 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
     GL_ALWAYS
     };
 
-  glCullFace( cull[ r.cullFaceMode() ] );
+  if( dev->renderState.cullFaceMode()!=r.cullFaceMode() )
+    glCullFace( cull[ r.cullFaceMode() ] );
 
-  if( r.isZTest() ){
-    glDepthFunc( cmp[ r.getZTestMode() ] );
-    } else {
-    glDepthFunc( GL_ALWAYS );
+  if( dev->renderState.isZTest() != r.isZTest() ||
+      dev->renderState.getZTestMode()!=r.getZTestMode() ){
+    if( r.isZTest() ){
+      glDepthFunc( cmp[ r.getZTestMode() ] );
+      } else {
+      glDepthFunc( GL_ALWAYS );
+      }
     }
 
-  /*
-  if( r.isZTest() )
-    glEnable ( GL_DEPTH_TEST ); else
-    glDisable( GL_DEPTH_TEST );
-
-  */
-  glDepthMask( r.isZWriting() );
+  if( dev->renderState.isZWriting()!=r.isZWriting() )
+    glDepthMask( r.isZWriting() );
   
 #ifdef __ANDROID__
   //a-test not supported
@@ -1245,16 +1276,27 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
     GL_ZERO
     };
 
-  if( r.isBlend() ){
-    glEnable( GL_BLEND );
-    glBlendFunc( blend[ r.getBlendSFactor() ], blend[ r.getBlendDFactor() ] );
-    } else {
-    glDisable( GL_BLEND );
+  if( dev->renderState.isBlend()!=r.isBlend() ||
+      dev->renderState.getBlendDFactor()!=r.getBlendDFactor() ||
+      dev->renderState.getBlendSFactor()!=r.getBlendSFactor() || 1 ){
+    if( r.isBlend() ){
+      glEnable( GL_BLEND );
+      glBlendFunc( blend[ r.getBlendSFactor() ], blend[ r.getBlendDFactor() ] );
+      } else {
+      glDisable( GL_BLEND );
+      }
     }
 
-  bool w[4];
+  bool w[4], w1[4];
   r.getColorMask( w[0], w[1], w[2], w[3] );
-  glColorMask( w[0], w[1], w[2], w[3] );
+  dev->renderState.getColorMask( w1[0], w1[1], w1[2], w1[3] );
+
+  if( w[0]!=w1[0] ||
+      w[1]!=w1[1] ||
+      w[2]!=w1[2] ||
+      w[3]!=w1[3] ){
+    glColorMask( w[0], w[1], w[2], w[3] );
+    }
 
 #ifndef __ANDROID__
   GLenum rmode[] = {
@@ -1266,5 +1308,7 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
   glPolygonMode( GL_FRONT, rmode[r.frontPolygonRenderMode()] );
   glPolygonMode( GL_BACK,  rmode[r.backPolygonRenderMode()] );
 #endif
+
+  dev->renderState = r;
   errCk();
   }

@@ -34,7 +34,7 @@ class AbstractSceneObject {
       }
 
     virtual ModelBounds bounds() const = 0;
-    virtual Matrix4x4   transform() const = 0;
+    virtual const Matrix4x4&  transform() const = 0;
 
     bool isVisible() const{
       return visible;
