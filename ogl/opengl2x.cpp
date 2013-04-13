@@ -553,7 +553,6 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
   glGenTextures(1, &tex->id);
   glBindTexture(GL_TEXTURE_2D, tex->id);
 
-  tex->min      = tex->mag = GL_NEAREST;
   tex->mips     = mips;
   tex->compress = compress;
 
@@ -705,9 +704,9 @@ AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
     GL_LUMINANCE,
     GL_LUMINANCE,
 
+    GL_RGB565,
     GL_RGB,
-    GL_RGB,
-    GL_RGB,
+    GL_RGB565,
     GL_RGB,
     GL_RGB,
     GL_RGB,

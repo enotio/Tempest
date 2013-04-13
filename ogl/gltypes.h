@@ -44,6 +44,7 @@ namespace Detail{
     RenderTg* fboTg;
 
     GLenum min, mag;
+    GLenum clampU,clampV, clampW;
     bool mips, compress;
 
     int w,h;

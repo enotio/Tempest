@@ -474,61 +474,85 @@ void GLSL::setUniform( unsigned int sh,
     {GL_NEAREST, GL_NEAREST, GL_NEAREST}
     };
 
+  static const GLenum clamp[6] = {
+    GL_CLAMP,
+    GL_CLAMP_TO_BORDER,
+    GL_CLAMP_TO_EDGE,
+    GL_MIRRORED_REPEAT,
+    GL_REPEAT,
+    GL_REPEAT
+    };
+
   if( !data->fsCash.fetch(prm, u.handle()) ){
     Detail::GLTexture* tx = (Detail::GLTexture*)get(u);
 
     if( tx && tx->id ){
+      bool isPot = ((tx->w &(tx->w-1))==0) &&
+                   ((tx->h &(tx->h-1))==0);
       //cgGLSetTextureParameter   ( prm, *tx);
       //cgGLEnableTextureParameter( prm );
       glActiveTexture( GL_TEXTURE0 + slot );
       glBindTexture( GL_TEXTURE_2D, tx->id );
 
-
-      if( tx->mips ){
-        if( tx->min!=filter[ s.minFilter ][s.mipFilter] ){
-          glTexParameteri( GL_TEXTURE_2D,
-                           GL_TEXTURE_MIN_FILTER,
-                           filter[ s.minFilter ][s.mipFilter] );
-          tx->min = filter[ s.minFilter ][s.mipFilter];
+      if( isPot ){
+        if( tx->clampU!=clamp[ s.uClamp ] ){
+          tx->clampU = clamp[ s.uClamp ];
+          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, tx->clampU );
           }
-        } else {
-        if( tx->min!=filter[ s.minFilter ][0] ){
-          glTexParameteri( GL_TEXTURE_2D,
-                           GL_TEXTURE_MIN_FILTER,
-                           filter[ s.minFilter ][0] );
-          tx->min = filter[ s.minFilter ][0];
+        if( tx->clampV!=clamp[ s.vClamp ] ){
+          tx->clampV = clamp[ s.vClamp ];
+          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tx->clampV );
           }
-        }
 
-      if( tx->mag!=magFilter[ s.magFilter ] ){
-        glTexParameteri( GL_TEXTURE_2D,
-                         GL_TEXTURE_MAG_FILTER,
-                         magFilter[ s.magFilter ] );
-        tx->mag = magFilter[ s.magFilter ];
-        }
-      
-//#ifndef __ANDROID__
-      if( data->hasAnisotropic ){
-        if( s.anisotropic &&
-            ((tx->w &(tx->w-1))==0) &&
-            ((tx->h &(tx->h-1))==0) &&
-            tx->mips ){
-          if( tx->anisotropyLevel!=data->maxAnisotropy ){
-            glTexParameterf( GL_TEXTURE_2D,
-                             GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                             data->maxAnisotropy );
-            tx->anisotropyLevel = data->maxAnisotropy;
+        if( tx->mips ){
+          if( tx->clampW!=clamp[ s.wClamp ] ){
+            tx->clampW = clamp[ s.wClamp ];
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, tx->clampW );
+            }
+
+          if( tx->min!=filter[ s.minFilter ][s.mipFilter] ){
+            glTexParameteri( GL_TEXTURE_2D,
+                             GL_TEXTURE_MIN_FILTER,
+                             filter[ s.minFilter ][s.mipFilter] );
+            tx->min = filter[ s.minFilter ][s.mipFilter];
             }
           } else {
-          if( tx->anisotropyLevel!=1 ){
-            glTexParameterf( GL_TEXTURE_2D,
-                             GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                             1 );
-            tx->anisotropyLevel = 1;
+          if( tx->min!=filter[ s.minFilter ][0] ){
+            glTexParameteri( GL_TEXTURE_2D,
+                             GL_TEXTURE_MIN_FILTER,
+                             filter[ s.minFilter ][0] );
+            tx->min = filter[ s.minFilter ][0];
+            }
+          }
+
+        if( tx->mag!=magFilter[ s.magFilter ] ){
+          glTexParameteri( GL_TEXTURE_2D,
+                           GL_TEXTURE_MAG_FILTER,
+                           magFilter[ s.magFilter ] );
+          tx->mag = magFilter[ s.magFilter ];
+          }
+
+//#ifndef __ANDROID__
+        if( data->hasAnisotropic ){
+          if( s.anisotropic &&
+              isPot &&
+              tx->mips ){
+            if( tx->anisotropyLevel!=data->maxAnisotropy ){
+              glTexParameterf( GL_TEXTURE_2D,
+                               GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                               data->maxAnisotropy );
+              tx->anisotropyLevel = data->maxAnisotropy;
+              }
+            } else {
+            if( tx->anisotropyLevel!=1 ){
+              glTexParameterf( GL_TEXTURE_2D,
+                               GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                               1 );
+              tx->anisotropyLevel = 1;
+              }
             }
           }
         }
-
 //#endif
 
       glUniform1i( prm, slot );

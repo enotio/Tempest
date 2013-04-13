@@ -615,11 +615,8 @@ void DirectX9::unlockBuffer( AbstractAPI::Device *,
 
 const AbstractShadingLang*
         DirectX9::createShadingLang( AbstractAPI::Device *d ) const {
-  struct Dev{
-    AbstractAPI::DirectX9Device *dev;
-    };
-
-  AbstractAPI::DirectX9Device *dev = reinterpret_cast<Dev*>(d)->dev;
+  AbstractAPI::DirectX9Device* dev =
+      (AbstractAPI::DirectX9Device*)reinterpret_cast<DirectX9::Device*>(d)->dev;
 
   return new CgDx9( dev );
   }
