@@ -299,12 +299,17 @@ AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
   LPDIRECT3DTEXTURE9 tex = 0;
 
-  D3DFORMAT format = D3DFMT_X8R8G8B8;
-  if( p.hasAlpha() )
-    format = D3DFMT_A8R8G8B8;
+  static const D3DFORMAT frm[] = {
+    D3DFMT_X8R8G8B8,
+    D3DFMT_A8R8G8B8,
+    D3DFMT_DXT1,
+    D3DFMT_DXT3,
+    D3DFMT_DXT5
+    };
+  //D3DFORMAT format = frm[p.format()];
 
   if (FAILED(dev->CreateTexture( p.width(), p.height(), 0,
-                                 D3DUSAGE_AUTOGENMIPMAP, format,
+                                 D3DUSAGE_AUTOGENMIPMAP, frm[p.format()],
                                  D3DPOOL_MANAGED,
                                  &tex, NULL))) {
     return 0;
@@ -312,22 +317,29 @@ AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
 
   if (FAILED( tex->LockRect(0, &lockedRect, 0, 0))) {
     return 0;
+    }  
+
+  if( p.format()==Pixmap::Format_RGB ||
+      p.format()==Pixmap::Format_RGBA ){
+    unsigned char *dest = (unsigned char*) lockedRect.pBits;
+    for( int i=0; i<p.width(); ++i )
+      for( int r=0; r<p.height(); ++r ){
+        unsigned char * t = &dest[ 4*(i + r*p.width()) ];
+        const Pixmap::Pixel s = p.at(i,r);
+        t[2] = s.r;
+        t[1] = s.g;
+        t[0] = s.b;
+        t[3] = s.a;
+        }
+    } else {
+    int nBlockSize = 16;
+    if( p.format() == Pixmap::Format_DXT1 )
+        nBlockSize = 8;
+    int nSize = ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
+    memcpy( lockedRect.pBits, p.const_data(), nSize );
     }
 
-  unsigned char *dest = (unsigned char*) lockedRect.pBits;
-
-  for( int i=0; i<p.width(); ++i )
-    for( int r=0; r<p.height(); ++r ){
-      unsigned char * t = &dest[ 4*(i + r*p.width()) ];
-      const Pixmap::Pixel s = p.at(i,r);
-      t[2] = s.r;
-      t[1] = s.g;
-      t[0] = s.b;
-      t[3] = s.a;
-      }
-
   tex->UnlockRect(0);
-
   if( mips )
     tex->GenerateMipSubLevels();
 
@@ -348,9 +360,13 @@ AbstractAPI::Texture *DirectX9::recreateTexture( AbstractAPI::Device *d,
   LPDIRECT3DTEXTURE9 tex = 0;
   LPDIRECT3DTEXTURE9 old = LPDIRECT3DTEXTURE9(oldT);
 
-  D3DFORMAT format = D3DFMT_X8R8G8B8;
-  if( p.hasAlpha() )
-    format = D3DFMT_A8R8G8B8;
+  static const D3DFORMAT frm[] = {
+    D3DFMT_X8R8G8B8,
+    D3DFMT_A8R8G8B8,
+    D3DFMT_DXT1,
+    D3DFMT_DXT3,
+    D3DFMT_DXT5
+    };
 
   D3DSURFACE_DESC desc;
   if( FAILED( old->GetLevelDesc(0, &desc) ) ){
@@ -360,13 +376,13 @@ AbstractAPI::Texture *DirectX9::recreateTexture( AbstractAPI::Device *d,
 
   if( int(desc.Width)==p.width() &&
       int(desc.Height)==p.height() &&
-      desc.Format==format ){
+      desc.Format==frm[p.format()] ){
     tex = old;
     } else {
     deleteTexture(d, oldT);
 
     if (FAILED(dev->CreateTexture( p.width(), p.height(), 0,
-                                   D3DUSAGE_AUTOGENMIPMAP, format,
+                                   D3DUSAGE_AUTOGENMIPMAP, frm[p.format()],
                                    D3DPOOL_MANAGED,
                                    &tex, NULL))) {
       return 0;
@@ -377,19 +393,25 @@ AbstractAPI::Texture *DirectX9::recreateTexture( AbstractAPI::Device *d,
     return 0;
     }
 
-  unsigned char *dest = (unsigned char*) lockedRect.pBits;
-
-  for( int i=0; i<p.width(); ++i )
-    for( int r=0; r<p.height(); ++r ){
-      unsigned char * t = &dest[ 4*(i + r*p.width()) ];
-      const Pixmap::Pixel s = p.at(i,r);
-      t[2] = s.r;
-      t[1] = s.g;
-      t[0] = s.b;
-      t[3] = s.a;
-      }
-
-  tex->UnlockRect(0);
+  if( p.format()==Pixmap::Format_RGB ||
+      p.format()==Pixmap::Format_RGBA ){
+    unsigned char *dest = (unsigned char*) lockedRect.pBits;
+    for( int i=0; i<p.width(); ++i )
+      for( int r=0; r<p.height(); ++r ){
+        unsigned char * t = &dest[ 4*(i + r*p.width()) ];
+        const Pixmap::Pixel s = p.at(i,r);
+        t[2] = s.r;
+        t[1] = s.g;
+        t[0] = s.b;
+        t[3] = s.a;
+        }
+    } else {
+    int nBlockSize = 16;
+    if( p.format() == Pixmap::Format_DXT1 )
+        nBlockSize = 8;
+    int nSize = ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
+    memcpy( lockedRect.pBits, p.const_data(), nSize );
+    }
 
   if( mips )
     tex->GenerateMipSubLevels();

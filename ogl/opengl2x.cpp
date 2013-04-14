@@ -559,22 +559,33 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
   tex->w = p.width();
   tex->h = p.height();
 
-  if( p.hasAlpha() )
-    tex->format = GL_RGBA; else
-    tex->format = GL_RGB;
+  static const GLenum frm[] = {
+    GL_RGB,
+    GL_RGBA,
+    0x83F1,
+    0x83F2,
+    0x83F3
+    };
 
-  if( !compress || !dev->canCompress(p) ){
+  tex->format = frm[p.format()];
+
+  if( p.format()==Pixmap::Format_RGB ||
+      p.format()==Pixmap::Format_RGBA ){
     glTexImage2D( GL_TEXTURE_2D, 0, tex->format, p.width(), p.height(), 0,tex->format,
                   GL_UNSIGNED_BYTE, p.const_data() );
     } else {
-    dev->compress(p);
+    int nBlockSize = 16;
+    if( p.format() == Pixmap::Format_DXT1 )
+        nBlockSize = 8;
+
+    int nSize = ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
     glCompressedTexImage2D( GL_TEXTURE_2D, 0,
-                            0x83F1,//tex->format,
+                            tex->format,//tex->format,
                             p.width(),
                             p.height(),
                             0,
-                            dev->compressBuffer.size(),
-                            &dev->compressBuffer[0] );
+                            nSize,
+                            p.const_data() );
     errCk();
     }
 
@@ -604,9 +615,15 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
   Detail::GLTexture* tex = 0;
   Detail::GLTexture* old = (Detail::GLTexture*)(oldT);
 
-  GLenum format = GL_RGB;
-  if( p.hasAlpha() )
-    format = GL_RGBA;
+  static const GLenum frm[] = {
+    GL_RGB,
+    GL_RGBA,
+    0x83F1,
+    0x83F2,
+    0x83F3
+    };
+
+  GLenum format = frm[p.format()];
 
   if( int(old->w)  == p.width() &&
       int(old->h)  == p.height() &&
@@ -621,19 +638,24 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
 
   glBindTexture(GL_TEXTURE_2D, tex->id);
 
-  if( !compress || !dev->canCompress(p)){
+  if( p.format()==Pixmap::Format_RGB ||
+      p.format()==Pixmap::Format_RGBA ){
     glTexImage2D( GL_TEXTURE_2D, 0, tex->format,
                   p.width(), p.height(), 0, tex->format,
                   GL_UNSIGNED_BYTE, p.const_data() );
     } else {
-    dev->compress(p);
+    int nBlockSize = 16;
+    if( p.format() == Pixmap::Format_DXT1 )
+        nBlockSize = 8;
+
+    int nSize = ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
     glCompressedTexImage2D( GL_TEXTURE_2D, 0,
-                            0x83F1,//tex->format,
+                            tex->format,//tex->format,
                             p.width(),
                             p.height(),
                             0,
-                            dev->compressBuffer.size(),
-                            &dev->compressBuffer[0] );
+                            nSize,
+                            p.const_data() );
     errCk();
     }
 

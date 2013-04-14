@@ -56,6 +56,12 @@ class WindowsAPI:public AbstractSystemAPI {
 
     static void initImgLib();
 
+    bool loadS3TCImpl( const char* file,
+                        int &w,
+                        int &h,
+                        int &bpp,
+                        std::vector<unsigned char>& out );
+
   friend class AbstractSystemAPI;
   };
 #endif

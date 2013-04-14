@@ -19,19 +19,22 @@ void Pixmap::DbgManip::delRef( Ref * r ){
   }
 
 Pixmap::Pixmap() {
-  w = 0;
-  h = 0;
+  mw = 0;
+  mh = 0;
 
   bpp = 3;
   rawPtr  = 0;
   mrawPtr = 0;
+
+  frm = Format_RGB;
   }
 
 Tempest::Pixmap::Pixmap(const std::string &p) {
-  w = 0;
-  h = 0;
+  mw = 0;
+  mh = 0;
 
   bpp = 3;
+  frm = Format_RGB;
 
   load(p);
 
@@ -40,25 +43,30 @@ Tempest::Pixmap::Pixmap(const std::string &p) {
 
 
 Pixmap::Pixmap(int iw, int ih, bool alpha) {
-  w = iw;
-  h = ih;
+  mw = iw;
+  mh = ih;
 
-  if( alpha )
-    bpp = 4; else
+  if( alpha ){
+    bpp = 4;
+    frm = Format_RGBA;
+    }else{
     bpp = 3;
+    frm = Format_RGB;
+    }
 
   data.value() = new Data();
-  data.value()->bytes.resize(w*h*bpp);
+  data.value()->bytes.resize(mw*mh*bpp);
   rawPtr = &data.const_value()->bytes[0];
   mrawPtr = 0;
   }
 
 Pixmap::Pixmap(const Pixmap &p):data(p.data) {
-  w   = p.w;
-  h   = p.h;
-  bpp = p.bpp;
+  mw   = p.mw;
+  mh   = p.mh;
+  bpp  = p.bpp;
+  frm  = p.frm;
 
-  if( w>0 && h>0 )
+  if( mw>0 && mh>0 )
     rawPtr = &data.const_value()->bytes[0]; else
     rawPtr = 0;
   mrawPtr = 0;
@@ -67,11 +75,12 @@ Pixmap::Pixmap(const Pixmap &p):data(p.data) {
 Pixmap &Pixmap::operator =(const Pixmap &p) {
   data = p.data;
 
-  w   = p.w;
-  h   = p.h;
+  mw  = p.mw;
+  mh  = p.mh;
   bpp = p.bpp;
+  frm = p.frm;
 
-  if( w>0 && h>0 )
+  if( mw>0 && mh>0 )
     rawPtr = &data.const_value()->bytes[0]; else
     rawPtr = 0;
   mrawPtr = 0;
@@ -89,8 +98,17 @@ bool Pixmap::load( const std::string &f ) {
     delete image;
     return false;
     }
-  this->w   = w;
-  this->h   = h;
+
+  switch( bpp ){
+    case -5: frm = Format_DXT5; break;
+    case -3: frm = Format_DXT3; break;
+    case -1: frm = Format_DXT1; break;
+    case  3: frm = Format_RGB;  break;
+    case  4: frm = Format_RGBA; break;
+    }
+
+  this->mw  = w;
+  this->mh  = h;
   this->bpp = bpp;
 
   this->data.value() = image;
@@ -103,17 +121,17 @@ bool Pixmap::load( const std::string &f ) {
   }
 
 bool Pixmap::hasAlpha() const {
-  return bpp==4;
+  return frm!=Format_RGB;
   }
 
 void Pixmap::addAlpha() {
-  if( bpp==4 )
+  if( hasAlpha() )
     return;
 
-  data.value()->bytes.resize(w*h*4);
+  data.value()->bytes.resize(mw*mh*4);
   unsigned char * v = &data.value()->bytes[0];
 
-  for( size_t i=w*h; i>0; --i ){
+  for( size_t i=mw*mh; i>0; --i ){
     unsigned char * p = &v[ 4*i-4 ];
     unsigned char * s = &v[ 3*i-3 ];
     for( int r=0; r<3; ++r )
@@ -131,7 +149,7 @@ bool Pixmap::save( const std::string &f ) {
 
   Tempest::Detail::Atomic::begin();
   bool ok = AbstractSystemAPI::saveImage( f.data(),
-                                          w, h, bpp,
+                                          mw, mh, bpp,
                                           data.const_value()->bytes );
   Tempest::Detail::Atomic::end();
   return ok;

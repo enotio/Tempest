@@ -27,7 +27,7 @@ std::vector<char> AbstractSystemAPI::loadBytes(const char *file) {
   return instance().loadBytesImpl(file);
   }
 
-bool AbstractSystemAPI::loadImage(const char *file,
+bool AbstractSystemAPI::loadImage( const char *file,
                                    int &w, int &h,
                                    int &bpp,
                                    std::vector<unsigned char> &out ) {

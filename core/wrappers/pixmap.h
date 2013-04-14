@@ -19,8 +19,8 @@ class Pixmap {
     bool load( const std::string & f );
     bool save( const std::string & f );
 
-    inline int width() const { return w; }
-    inline int height() const { return h; }
+    inline int width() const { return mw; }
+    inline int height() const { return mh; }
 
     struct Pixel{
       unsigned char r,g,b,a;
@@ -47,7 +47,7 @@ class Pixmap {
       }
 
     inline Pixel at( int x, int y ) const {
-      const unsigned char * p = &rawPtr[ (x + y*w)*bpp ];
+      const unsigned char * p = &rawPtr[ (x + y*mw)*bpp ];
       Pixel r;
 
       r.r = p[0];
@@ -67,7 +67,7 @@ class Pixmap {
         rawPtr  = mrawPtr;
         }
 
-      unsigned char * v = &mrawPtr[ (x + y*w)*bpp ];
+      unsigned char * v = &mrawPtr[ (x + y*mw)*bpp ];
 
       v[0] = p.r;
       v[1] = p.g;
@@ -79,12 +79,23 @@ class Pixmap {
 
     bool  hasAlpha() const;
     void  addAlpha();
+
+    enum Format{
+      Format_RGB,
+      Format_RGBA,
+      Format_DXT1,
+      Format_DXT3,
+      Format_DXT5
+      };
+
+    Format format() const{ return frm; }
   private:
     struct Data{
       std::vector<unsigned char> bytes;
       // std::vector<unsigned char> dxt;
       };
-    int w, h, bpp;
+    int mw, mh, bpp;
+    Format      frm;
 
     struct DbgManip{
       typedef Data* T;

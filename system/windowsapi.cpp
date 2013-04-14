@@ -9,9 +9,11 @@
 #include <unordered_map>
 #include <fstream>
 #include <cassert>
+#include <iostream>
 
 #include <IL/il.h>
 #include "core/wrappers/atomic.h"
+#include "ddsdef.h"
 
 using namespace Tempest;
 
@@ -280,6 +282,83 @@ void WindowsAPI::initImgLib() {
   Tempest::Detail::Atomic::end();
   }
 
+bool WindowsAPI::loadS3TCImpl( const char *file,
+                               int &w,
+                               int &h,
+                               int &bpp,
+                               std::vector<unsigned char> &out ) {
+  DDSURFACEDESC2 ddsd;
+  FILE *pFile;
+
+  pFile = fopen( file, "rb" );
+  if( pFile == NULL ) {
+    return false;
+    }
+
+  char magic[4];
+  fread( magic, 1, 4, pFile );
+
+  if( strncmp( magic, "DDS ", 4 ) != 0 ) {
+    fclose( pFile );
+    return false;
+    }
+
+  fread( &ddsd, sizeof(ddsd), 1, pFile );
+
+  int factor;
+  switch( ddsd.ddpfPixelFormat.dwFourCC ) {
+    case FOURCC_DXT1:
+      // DXT1's compression ratio is 8:1
+      //pDDSImageData->format = 1;//GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+      bpp    = -1;
+      factor = 2;
+      break;
+
+    case FOURCC_DXT3:
+      // DXT3's compression ratio is 4:1
+      //pDDSImageData->format = 3;//GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+      bpp    = -3;
+      factor = 4;
+      break;
+
+    case FOURCC_DXT5:
+      // DXT5's compression ratio is 4:1
+      //pDDSImageData->format = 5;//GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+      bpp    = -5;
+      factor = 4;
+      break;
+
+    default:
+      fclose( pFile );
+      //delete pDDSImageData;
+      return false;
+    }
+
+  if( ddsd.dwLinearSize == 0 ) {
+    fclose( pFile );
+    //delete pDDSImageData;
+    return false;
+    }
+
+  int bufferSize = 0;
+  if( ddsd.dwMipMapCount > 1 )
+    bufferSize = ddsd.dwLinearSize * factor; else
+    bufferSize = ddsd.dwLinearSize;
+
+  out.reserve( bufferSize );
+  out.resize ( bufferSize );
+  fread( &out[0], 1, bufferSize, pFile );
+  fclose( pFile );
+/*
+  if( ddsd.ddpfPixelFormat.dwFourCC == FOURCC_DXT1 )
+    pDDSImageData->components = 3; else
+    pDDSImageData->components = 4;
+*/
+  w = ddsd.dwWidth;
+  h = ddsd.dwHeight;
+  return true;
+  }
+
 template< class ChanelType, int mul >
 void WindowsAPI::initRawData( std::vector<unsigned char> &d,
                               void * input,
@@ -308,6 +387,9 @@ bool WindowsAPI::loadImageImpl( const char *file,
                                 std::vector<unsigned char> &out ) {
   initImgLib();
   bool ok = true;
+
+  if( loadS3TCImpl(file,w,h,bpp,out) )
+    return true;
 
   ILuint	id;
   ilGenImages ( 1, &id );

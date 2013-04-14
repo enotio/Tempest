@@ -203,7 +203,8 @@ HEADERS += \
     squish/colourfit.h \
     squish/colourblock.h \
     squish/clusterfit.h \
-    squish/alpha.h
+    squish/alpha.h \
+    system/ddsdef.h
 
 OTHER_FILES += \
     include/Tempest/Window \
