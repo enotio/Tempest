@@ -475,8 +475,13 @@ void GLSL::setUniform( unsigned int sh,
     };
 
   static const GLenum clamp[6] = {
+#ifndef __ANDROID__
     GL_CLAMP,
     GL_CLAMP_TO_BORDER,
+#else
+    GL_CLAMP_TO_EDGE,
+    GL_CLAMP_TO_EDGE,
+#endif
     GL_CLAMP_TO_EDGE,
     GL_MIRRORED_REPEAT,
     GL_REPEAT,
@@ -505,10 +510,12 @@ void GLSL::setUniform( unsigned int sh,
           }
 
         if( tx->mips ){
+#ifndef __ANDROID__
           if( tx->clampW!=clamp[ s.wClamp ] ){
             tx->clampW = clamp[ s.wClamp ];
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, tx->clampW );
             }
+#endif
 
           if( tx->min!=filter[ s.minFilter ][s.mipFilter] ){
             glTexParameteri( GL_TEXTURE_2D,

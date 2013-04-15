@@ -4,7 +4,9 @@
 #include <iostream>
 #include "core/wrappers/atomic.h"
 
+#include <squish/squish.h>
 #include <cassert>
+#include <cstring>
 
 using namespace Tempest;
 
@@ -141,6 +143,35 @@ void Pixmap::addAlpha() {
 
   rawPtr = &data.const_value()->bytes[0];
   mrawPtr = 0;
+  }
+
+void Pixmap::makeEditable() {
+  //squish::u8 pixels[16*4];  // 16 pixels of input
+  squish::u8 block[8];      // 8 bytes of output
+
+  size_t sz = mw*mh, s = sz;
+  if( frm==Format_DXT1 ){
+    sz /= 2;
+    s *= 4;
+    } else {
+    s *= 4;
+    }
+
+  data.value()->bytes.resize(s);
+  squish::u8* px = (squish::u8*)(&data.value()->bytes[0]);
+
+  for( size_t i=sz-8, w = s-16*4; i>0; i-=8, w-=16*4 ){
+    memcpy( px+i, block, 8 );
+    squish::Decompress( px+w, block, squish::kDxt1 );
+    }
+
+  rawPtr  = &data.value()->bytes[0];
+  mrawPtr = &data.value()->bytes[0];
+  frm = Format_RGBA;
+  bpp = 4;
+
+  save("./dbg.png");
+  //for( size_t i=mrawPtr+; i)
   }
 
 bool Pixmap::save( const std::string &f ) {

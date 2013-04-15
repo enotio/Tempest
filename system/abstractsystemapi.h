@@ -73,6 +73,12 @@ class AbstractSystemAPI {
                                 int &bpp,
                                 std::vector<unsigned char>& out ) = 0;
 
+    virtual bool loadS3TCImpl( const char *file,
+                               int &w,
+                               int &h,
+                               int &bpp,
+                               std::vector<unsigned char> &out );
+
   private:
     AbstractSystemAPI( const AbstractSystemAPI& ){}
     AbstractSystemAPI& operator = ( const AbstractSystemAPI&){return *this;}

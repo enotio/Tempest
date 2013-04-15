@@ -413,6 +413,7 @@ AbstractAPI::Texture *DirectX9::recreateTexture( AbstractAPI::Device *d,
     memcpy( lockedRect.pBits, p.const_data(), nSize );
     }
 
+  tex->UnlockRect(0);
   if( mips )
     tex->GenerateMipSubLevels();
 

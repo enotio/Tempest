@@ -28,7 +28,7 @@
 #include "gltypes.h"
 #include <squish.h>
 
-// #define OGL_DEBUG
+#define OGL_DEBUG
 
 using namespace Tempest;
 
@@ -93,6 +93,21 @@ struct Opengl2x::Device{
                           &data[pos], squish::kDxt1 );
         }
     }
+
+  inline static uint32_t nextPot( uint32_t v ){
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    v++;
+
+    return v;
+    }
+
+  bool  potFboTegraBug; // pot texture+potRBO = fail
+  bool npotFboTegraBug; //npot texture+potRBO = ok
   };
 
 void Opengl2x::errCk() const {
@@ -113,14 +128,9 @@ void Opengl2x::errCk() const {
 
 Opengl2x::Opengl2x( ShaderLang sl ):impl(0){
   shaderLang = sl;
-  // impl   = (Opengl2xImpl*)Direct3DCreate9( D3D_SDK_VERSION );
-  // data   = new Data();
   }
 
 Opengl2x::~Opengl2x(){
-  // LPDIRECT3D9 dev = LPDIRECT3D9(impl);
-  //delete data;
-  // dev->Release();
   }
 
 AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) const {
@@ -181,6 +191,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->renderState.setAlphaTestMode( RenderState::AlphaTestMode::Count );
   dev->renderState.setBlend(0);
 
+  checkBugs( (AbstractAPI::Device*)dev );
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glGenFramebuffers(1, &dev->fboId);
@@ -282,7 +293,7 @@ void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
 
   setupBuffers( 0, true, true, false );
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
-  setupFBO();
+  assert( setupFBO() );
   }
 
 void Opengl2x::endPaint  ( AbstractAPI::Device * d ) const{
@@ -305,6 +316,11 @@ AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
                                                     AbstractTexture::Format::Type f)
   const {
   setDevice(d);
+
+  if( dev->potFboTegraBug && dev->npotFboTegraBug ){
+    w = Device::nextPot(w);
+    h = Device::nextPot(h);
+    }
 
 #ifdef __ANDROID__
   GLenum format[] = {
@@ -340,7 +356,7 @@ AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
   return (AbstractAPI::Texture*)tex;
   }
 
-void Opengl2x::setupFBO() const {
+bool Opengl2x::setupFBO() const {
   const int maxMRT = Detail::RenderTg::maxMRT;
     
   GLint w = 0, h = 0;
@@ -358,7 +374,7 @@ void Opengl2x::setupFBO() const {
     }
 
   if( w==0 || h==0 ){
-    return;
+    return 1;
     }
 
   //assert( glCheckFramebufferStatus( GL_FRAMEBUFFER )==GL_FRAMEBUFFER_COMPLETE );
@@ -433,19 +449,21 @@ void Opengl2x::setupFBO() const {
                                  0 );
       }
     }
-#ifdef OGL_DEBUG
-  int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
 
+  int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
   if( !(status==0 || status==GL_FRAMEBUFFER_COMPLETE) ){
     std::cout << std::hex << status << std::dec << std::endl;
+    return 0;
     }
 
+#ifdef OGL_DEBUG
   assert( status==0 || status==GL_FRAMEBUFFER_COMPLETE );
   errCk();
 #endif
 
   glViewport( 0, 0, w, h );
   errCk();
+  return 1;
   }
 
 void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
@@ -573,6 +591,8 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
       p.format()==Pixmap::Format_RGBA ){
     glTexImage2D( GL_TEXTURE_2D, 0, tex->format, p.width(), p.height(), 0,tex->format,
                   GL_UNSIGNED_BYTE, p.const_data() );
+    if( mips )
+      glGenerateMipmap( GL_TEXTURE_2D );
     } else {
     int nBlockSize = 16;
     if( p.format() == Pixmap::Format_DXT1 )
@@ -586,6 +606,39 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
                             0,
                             nSize,
                             p.const_data() );
+    if( mips ){
+      int mipCount = 0;
+      int w = std::max(1, p.width() /2),
+          h = std::max(1, p.height()/2);
+      while( w>1||h>1){
+        if(w>1) w/=2;
+        if(h>1) h/=2;
+        ++mipCount;
+        }
+      glTexParameteri( GL_TEXTURE_2D,
+                       0x813D,//GL_TEXTURE_MAX_LEVEL,
+                       mipCount );
+
+      w = std::max(1, p.width() /2);
+      h = std::max(1, p.height()/2);
+      const unsigned char * data =
+          p.const_data() + ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
+      for( int i=1; w>1||h>1; ++i ){
+        int nSize = ((w+3)/4) * ((h+3)/4) * nBlockSize;
+        glCompressedTexImage2D( GL_TEXTURE_2D,
+                                i,
+                                tex->format,//tex->format,
+                                w,
+                                h,
+                                0,
+                                nSize,
+                                data );
+        data += nSize;
+        if(w>1) w/=2;
+        if(h>1) h/=2;
+        errCk();
+        }
+      }
     errCk();
     }
 
@@ -595,10 +648,7 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
   glTexParameteri( GL_TEXTURE_2D,
                    GL_TEXTURE_MAG_FILTER,
                    GL_NEAREST );
-
-  if( mips )
-    glGenerateMipmap( GL_TEXTURE_2D );
-
+  
   errCk();
   return ((AbstractAPI::Texture*)tex);
   }
@@ -643,6 +693,8 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
     glTexImage2D( GL_TEXTURE_2D, 0, tex->format,
                   p.width(), p.height(), 0, tex->format,
                   GL_UNSIGNED_BYTE, p.const_data() );
+    if( mips )
+      glGenerateMipmap( GL_TEXTURE_2D );
     } else {
     int nBlockSize = 16;
     if( p.format() == Pixmap::Format_DXT1 )
@@ -656,12 +708,42 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
                             0,
                             nSize,
                             p.const_data() );
+    if( mips ){
+      int mipCount = 0;
+      int w = std::max(1, p.width() /2),
+          h = std::max(1, p.height()/2);
+      while( w>1||h>1){
+        if(w>1) w/=2;
+        if(h>1) h/=2;
+        ++mipCount;
+        }
+      glTexParameteri( GL_TEXTURE_2D,
+                       0x813D,//GL_TEXTURE_MAX_LEVEL,
+                       mipCount );
+
+      w = std::max(1, p.width() /2);
+      h = std::max(1, p.height()/2);
+      const unsigned char * data =
+          p.const_data() + ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
+      for( int i=1; w>1||h>1; ++i ){
+        int nSize = ((w+3)/4) * ((h+3)/4) * nBlockSize;
+        glCompressedTexImage2D( GL_TEXTURE_2D,
+                                i,
+                                tex->format,//tex->format,
+                                w,
+                                h,
+                                0,
+                                nSize,
+                                data );
+        data += nSize;
+        if(w>1) w/=2;
+        if(h>1) h/=2;
+        errCk();
+        }
+      }
     errCk();
     }
-
-  if( mips )
-    glGenerateMipmap( GL_TEXTURE_2D );
-
+  
   return (AbstractAPI::Texture*)tex;
   }
 
@@ -726,9 +808,9 @@ AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
     GL_LUMINANCE,
     GL_LUMINANCE,
 
-    GL_RGB565,
     GL_RGB,
-    GL_RGB565,
+    GL_RGB,
+    GL_RGB,
     GL_RGB,
     GL_RGB,
     GL_RGB,
@@ -798,10 +880,15 @@ AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
   tex->format = format[f];
 
 #ifdef __ANDROID__
+  GLenum inFrm = GL_UNSIGNED_BYTE;
+  if( f==AbstractTexture::Format::RGB ||
+      f==AbstractTexture::Format::RGB4 )
+    inFrm = GL_UNSIGNED_SHORT_5_6_5;
+
   glTexImage2D( GL_TEXTURE_2D, 0,
                 format[f], w, h, 0,
                 format[f],
-                GL_UNSIGNED_BYTE, 0 );
+                inFrm, 0 );
 #else
   glTexImage2D( GL_TEXTURE_2D, 0,
                 format[f], w, h, 0,
@@ -1332,4 +1419,29 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
 
   dev->renderState = r;
   errCk();
+  }
+
+void Opengl2x::checkBugs( AbstractAPI::Device * d ) const {
+  setDevice(d);
+
+  Texture *tx = createTexture( d, 13,14, 0,
+                               AbstractTexture::Format::RGB,   TU_Undefined );
+  Texture *td = createTexture( d, 16,16, 0,
+                               AbstractTexture::Format::Depth16, TU_Undefined );
+  setRenderTaget(d, tx, 0, 0);
+  setDSSurfaceTaget(d, td);
+
+  dev->npotFboTegraBug = !setupFBO();
+
+  deleteTexture(d,tx);
+  tx = createTexture( d, 16,16, 0,
+                      AbstractTexture::Format::RGB, TU_Undefined );
+  setRenderTaget(d, tx, 0, 0);
+  setDSSurfaceTaget(d, td);
+
+  dev->potFboTegraBug = setupFBO();
+
+  deleteTexture(d,tx);
+  deleteTexture(d,td);
+  glViewport( 0, 0, dev->scrW, dev->scrH );
   }

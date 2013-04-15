@@ -172,11 +172,13 @@ class Opengl2x : public AbstractAPI {
 
     void errCk() const;
 
-    void setupFBO() const;
+    bool setupFBO() const;
 
     AbstractAPI::Texture* createDepthStorage( AbstractAPI::Device *d,
                                               int w, int h,
                                               AbstractTexture::Format::Type f ) const;
+
+    void checkBugs( AbstractAPI::Device *dev ) const;
   };
 
 }

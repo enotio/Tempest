@@ -47,6 +47,8 @@ class Pixmap {
       }
 
     inline Pixel at( int x, int y ) const {
+      verifyFormatEditable();
+
       const unsigned char * p = &rawPtr[ (x + y*mw)*bpp ];
       Pixel r;
 
@@ -62,6 +64,8 @@ class Pixmap {
       }
 
     inline void  set(int x, int y, const Pixel & p ) {
+      verifyFormatEditable();
+
       if( true || !mrawPtr ){
         mrawPtr = &data.value()->bytes[0];
         rawPtr  = mrawPtr;
@@ -122,6 +126,16 @@ class Pixmap {
     Detail::Ptr<Data*, DbgManip> data;
     const unsigned char * rawPtr;
     unsigned char * mrawPtr;
+
+    void verifyFormatEditable() const {
+      if( frm==Format_RGB || frm==Format_RGBA )
+        return;
+
+      Pixmap* p = const_cast<Pixmap*>(this);
+      p->makeEditable();
+      }
+
+    void makeEditable();
   };
 
 class PixEditor{

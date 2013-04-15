@@ -4,15 +4,8 @@
 #include <cstdint>
 
 namespace Tempest{
-  struct DDS_IMAGE_DATA{
-    int  width;
-    int  height;
-    int    components;
-    // GLenum   format;
-    char format;
-    int      numMipMaps;
-    unsigned char *pixels;
-    };
+  typedef uint32_t DWORD;
+  typedef uint16_t WORD;
 
   struct DDCOLORKEY {
     DWORD       dwColorSpaceLowValue;
@@ -85,7 +78,7 @@ namespace Tempest{
     DWORD      dwHeight;
     DWORD      dwWidth;
     union {
-      LONG  lPitch;
+      int32_t  lPitch;
       DWORD dwLinearSize;
       };
     union {
@@ -99,7 +92,7 @@ namespace Tempest{
       };
     DWORD      dwAlphaBitDepth;
     DWORD      dwReserved;
-    LPVOID     lpSurface;
+    void*      lpSurface;
     union {
       DDCOLORKEY ddckCKDestOverlay;
       DWORD      dwEmptyFaceColor;

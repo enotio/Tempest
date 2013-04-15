@@ -365,6 +365,11 @@ static struct TmpImg{
 
 JNIEXPORT bool JNICALL Java_com_android_gl2jni_GL2JNILib_loadImg( JNIEnv * env, jobject obj,
                                                                   jobject bitmap){
+  if( bitmap==0 ){
+    LOGE("bad bitmap!");        
+    return false;
+    }
+
   AndroidBitmapInfo  info;
   AndroidBitmap_getInfo(env, bitmap, &info);
 
@@ -424,6 +429,11 @@ bool AndroidAPI::loadImageImpl( const char* file,
                                 int &h,
                                 int &bpp,
                                 std::vector<unsigned char>& out ){
+  LOGI("load img begin: %s", file);
+  if( loadS3TCImpl(file,w,h,bpp,out) )
+    return true;
+  LOGI("load img end  : %s", file);
+
   JNIEnv * env = 0;
   jvm->AttachCurrentThread( &env, NULL);
                                   

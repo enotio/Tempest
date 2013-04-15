@@ -76,12 +76,13 @@ void LocalTexturesHolder::createObject( Tempest::AbstractAPI::Texture *&t,
     }
 
   NonFreedData d;
-  d.w       = w;
-  d.h       = h;
-  d.mip     = mip;
-  d.usage   = u;
-  d.format  = f;
-  d.dynamic = true;
+  d.w        = w;
+  d.h        = h;
+  d.mip      = mip;
+  d.compress = false;
+  d.usage    = u;
+  d.format   = f;
+  d.dynamic  = true;
   d.restoreIntent = true;
 
   for( size_t i=0; i<nonFreed.size(); ++i ){

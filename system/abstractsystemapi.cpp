@@ -2,8 +2,11 @@
 
 #include "system/windowsapi.h"
 #include "system/androidapi.h"
+#include "ddsdef.h"
 
 #include <Tempest/Window>
+#include <cstring>
+#include <iostream>
 
 using namespace Tempest;
 
@@ -94,3 +97,79 @@ void AbstractSystemAPI::sizeEvent( Tempest::Window *w,
 void AbstractSystemAPI::activateEvent(Tempest::Window *w, bool a) {
   w->isAppActive = a;
   }
+
+bool AbstractSystemAPI::loadS3TCImpl( const char *file,
+                                      int &w,
+                                      int &h,
+                                      int &bpp,
+                                      std::vector<unsigned char> &out ) {
+  DDSURFACEDESC2 ddsd;
+  std::vector<char> img = loadBytesImpl(file);
+  char* pos = &img[0];
+  if( img.size()<4+sizeof(ddsd) )
+    return false;
+
+  if( strncmp( pos, "DDS ", 4 ) != 0 ) {
+    return false;
+    }
+
+  //std::cout << sizeof(DWORD) << std::endl;
+  pos+=4;
+  memcpy(&ddsd, pos, sizeof(ddsd) );
+  pos += sizeof(ddsd);
+
+  int factor;
+  switch( ddsd.ddpfPixelFormat.dwFourCC ) {
+    case FOURCC_DXT1:
+      bpp    = -1;
+      factor = 2;
+      break;
+
+    case FOURCC_DXT3:
+      bpp    = -3;
+      factor = 4;
+      break;
+
+    case FOURCC_DXT5:
+      bpp    = -5;
+      factor = 4;
+      break;
+
+    default:
+      return false;
+    }
+
+  if( ddsd.dwLinearSize == 0 ) {
+    //return false;
+    }
+
+  w = ddsd.dwWidth;
+  h = ddsd.dwHeight;
+  int bufferSize = w*h/factor;
+
+  if( ddsd.dwMipMapCount > 1 ){
+    int mipW = w, mipH = h;
+    for( size_t i=0; i<ddsd.dwMipMapCount; ++i ){
+      if(mipW>1)
+        mipW/=2;
+      if(mipH>1)
+        mipH/=2;
+
+      bufferSize += mipW*mipH/factor;
+      }
+    }
+  //if( ddsd.dwMipMapCount > 1 )
+  //  bufferSize = ddsd.dwLinearSize * factor; else
+    //bufferSize = ddsd.dwLinearSize;
+
+  size_t sz = 4+sizeof(ddsd)+bufferSize;
+  if( img.size() < sz )
+    return false;
+
+  out.reserve( bufferSize );
+  out.resize ( bufferSize );
+  memcpy( &out[0], pos, bufferSize );
+
+  return true;
+  }
+
