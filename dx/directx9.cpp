@@ -421,9 +421,9 @@ AbstractAPI::Texture *DirectX9::recreateTexture( AbstractAPI::Device *d,
   return ((AbstractAPI::Texture*)tex);
   }
 
-AbstractAPI::Texture* DirectX9::createTexture( AbstractAPI::Device *d,
+AbstractAPI::Texture* DirectX9::createTexture(AbstractAPI::Device *d,
                                                int w, int h,
-                                               int mips,
+                                               bool mips,
                                                AbstractTexture::Format::Type f,
                                                TextureUsage u  ) const {
   LPDIRECT3DDEVICE9 dev  = Data::dev(d);
@@ -494,11 +494,17 @@ AbstractAPI::Texture* DirectX9::createTexture( AbstractAPI::Device *d,
     return ((AbstractAPI::Texture*)tex);
     //data->tex.insert( surf );
     } else {
+    int ww = std::max(w,h)/2, mipsc = 1;
+    while( mips && ww>1 ){
+      ww/=2;
+      ++mipsc;
+      }
+
     if( FAILED(
       D3DXCreateTexture(  dev,
                           w,
                           h,
-                          mips,
+                          mipsc,
                           usage[u],
 
                           d3frm[f],

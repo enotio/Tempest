@@ -234,8 +234,8 @@ class Device {
                                           bool mips = true,
                                           bool compress = true );
 
-    AbstractAPI::Texture* createTexture( int w, int h,
-                                         int mips,
+    AbstractAPI::Texture* createTexture(int w, int h,
+                                         bool mips,
                                          AbstractTexture::Format::Type f,
                                          TextureUsage u );
     void deleteTexture( AbstractAPI::Texture* & t );

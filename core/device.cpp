@@ -247,7 +247,7 @@ AbstractAPI::Texture *Device::recreateTexture( AbstractAPI::Texture *t,
   }
 
 AbstractAPI::Texture* Device::createTexture( int w, int h,
-                                             int mips,
+                                             bool mips,
                                              AbstractTexture::Format::Type f,
                                              TextureUsage u ) {
   AbstractAPI::Texture* t = api.createTexture( impl, w, h, mips, f, u );

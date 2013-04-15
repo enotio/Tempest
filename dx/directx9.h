@@ -70,7 +70,7 @@ class DirectX9 : public AbstractAPI {
                                            bool compress ) const;
 
     AbstractAPI::Texture* createTexture( AbstractAPI::Device *d,
-                                         int w, int h, int mips,
+                                         int w, int h, bool mips,
                                          AbstractTexture::Format::Type f,
                                          TextureUsage usage  ) const;
 

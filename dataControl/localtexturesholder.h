@@ -15,7 +15,8 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
     struct NonFreedData {
       Tempest::AbstractAPI::Texture* handle;
 
-      int w,h,mip;
+      int  w,h;
+      bool mip;
       bool compress;
 
       Tempest::AbstractTexture::Format::Type format;
@@ -52,7 +53,7 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
     void deleteObject( NonFreed& obj );
   private:
     void createObject( Tempest::AbstractAPI::Texture*& t,
-                       int w, int h, int mip,
+                       int w, int h, bool mips,
                        Tempest::AbstractTexture::Format::Type f,
                        Tempest::TextureUsage u );
 

@@ -57,13 +57,13 @@ void LocalTexturesHolder::deleteObject(LocalTexturesHolder::NonFreed &obj) {
   Tempest::TextureHolder::deleteObject( obj.data.handle );
   }
 
-void LocalTexturesHolder::createObject( Tempest::AbstractAPI::Texture *&t,
-                                        int w, int h, int mip,
+void LocalTexturesHolder::createObject(Tempest::AbstractAPI::Texture *&t,
+                                        int w, int h, bool mips,
                                         Tempest::AbstractTexture::Format::Type f,
                                         Tempest::TextureUsage u ) {
   if( needToRestore ){
     AbstractAPI::Texture* old = t;
-    Tempest::TextureHolder::createObject(t,w,h,mip,f,u);
+    Tempest::TextureHolder::createObject(t,w,h,mips,f,u);
 
     for( size_t i=0; i<dynTextures.size(); ++i )
       if( dynTextures[i].data.handle==old &&
@@ -78,7 +78,7 @@ void LocalTexturesHolder::createObject( Tempest::AbstractAPI::Texture *&t,
   NonFreedData d;
   d.w        = w;
   d.h        = h;
-  d.mip      = mip;
+  d.mip      = mips;
   d.compress = false;
   d.usage    = u;
   d.format   = f;
@@ -99,7 +99,7 @@ void LocalTexturesHolder::createObject( Tempest::AbstractAPI::Texture *&t,
       }
     }
 
-  Tempest::TextureHolder::createObject(t,w,h,mip,f,u);
+  Tempest::TextureHolder::createObject(t,w,h,mips,f,u);
 
   if( !t )
     return;

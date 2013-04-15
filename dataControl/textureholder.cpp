@@ -51,7 +51,7 @@ Tempest::Texture2d TextureHolder::create( int w, int h,
   h = std::max(h,0);
 
   if( !(w==0 || h==0) )
-    createObject( obj.data.value(), w, h, 1, f, u ); else
+    createObject( obj.data.value(), w, h, 0, f, u ); else
     obj.data.value() = 0;
   obj.w   = w;
   obj.h   = h;
@@ -97,10 +97,10 @@ void TextureHolder::createObject( AbstractAPI::Texture*& t,
   }
 
 void TextureHolder::createObject( AbstractAPI::Texture*& t,
-                                  int w, int h, int mip,
+                                  int w, int h, bool mips,
                                   AbstractTexture::Format::Type f,
                                   TextureUsage u ){
-  t = device().createTexture( w, h, mip, f, u );
+  t = device().createTexture( w, h, mips, f, u );
 
   if( !t )
     return;
@@ -108,7 +108,7 @@ void TextureHolder::createObject( AbstractAPI::Texture*& t,
   Data::DynTexture d;
   d.w      = w;
   d.h      = h;
-  d.mip    = mip;
+  d.mip    = mips;
   d.usage  = u;
   d.format = f;
 

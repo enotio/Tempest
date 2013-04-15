@@ -36,8 +36,8 @@ class TextureHolder : public AbstractHolderWithLoad
     virtual void createObject( AbstractAPI::Texture*& t,
                                const std::string & fname );
 
-    virtual void createObject( AbstractAPI::Texture*& t,
-                               int w, int h, int mip,
+    virtual void createObject(AbstractAPI::Texture*& t,
+                               int w, int h, bool mips,
                                AbstractTexture::Format::Type f,
                                TextureUsage u );
 

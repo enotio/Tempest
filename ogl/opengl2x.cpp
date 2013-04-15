@@ -105,9 +105,6 @@ struct Opengl2x::Device{
 
     return v;
     }
-
-  bool  potFboTegraBug; // pot texture+potRBO = fail
-  bool npotFboTegraBug; //npot texture+potRBO = ok
   };
 
 void Opengl2x::errCk() const {
@@ -190,8 +187,6 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->renderState.setZWriting(1);
   dev->renderState.setAlphaTestMode( RenderState::AlphaTestMode::Count );
   dev->renderState.setBlend(0);
-
-  checkBugs( (AbstractAPI::Device*)dev );
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glGenFramebuffers(1, &dev->fboId);
@@ -316,11 +311,11 @@ AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
                                                     AbstractTexture::Format::Type f)
   const {
   setDevice(d);
-
+/*
   if( dev->potFboTegraBug && dev->npotFboTegraBug ){
     w = Device::nextPot(w);
     h = Device::nextPot(h);
-    }
+    }*/
 
 #ifdef __ANDROID__
   GLenum format[] = {
@@ -449,6 +444,7 @@ bool Opengl2x::setupFBO() const {
                                  0 );
       }
     }
+  errCk();
 
   int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
   if( !(status==0 || status==GL_FRAMEBUFFER_COMPLETE) ){
@@ -747,9 +743,9 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
   return (AbstractAPI::Texture*)tex;
   }
 
-AbstractAPI::Texture* Opengl2x::createTexture( AbstractAPI::Device *d,
+AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
                                                int w, int h,
-                                               int mips,
+                                               bool mips,
                                                AbstractTexture::Format::Type f,
                                                TextureUsage u  ) const {
   if( w==0 || h==0 )
@@ -1419,29 +1415,4 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
 
   dev->renderState = r;
   errCk();
-  }
-
-void Opengl2x::checkBugs( AbstractAPI::Device * d ) const {
-  setDevice(d);
-
-  Texture *tx = createTexture( d, 13,14, 0,
-                               AbstractTexture::Format::RGB,   TU_Undefined );
-  Texture *td = createTexture( d, 16,16, 0,
-                               AbstractTexture::Format::Depth16, TU_Undefined );
-  setRenderTaget(d, tx, 0, 0);
-  setDSSurfaceTaget(d, td);
-
-  dev->npotFboTegraBug = !setupFBO();
-
-  deleteTexture(d,tx);
-  tx = createTexture( d, 16,16, 0,
-                      AbstractTexture::Format::RGB, TU_Undefined );
-  setRenderTaget(d, tx, 0, 0);
-  setDSSurfaceTaget(d, td);
-
-  dev->potFboTegraBug = setupFBO();
-
-  deleteTexture(d,tx);
-  deleteTexture(d,td);
-  glViewport( 0, 0, dev->scrW, dev->scrH );
   }
