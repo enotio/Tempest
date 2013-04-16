@@ -1273,13 +1273,13 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
   if( !dev->ibo )
     return;
 
-  bool rebind = !(dev->curIBO == dev->vbo && dev->curIboOffsetIndex==iboOffsetIndex );
+  bool rebind = !(dev->curIBO == dev->ibo && dev->curIboOffsetIndex==iboOffsetIndex );
   //int pCount;
 
   setupBuffers( vboOffsetIndex*dev->vertexSize, false, false, true );
 
   if( rebind ){
-    dev->curIBO = dev->ibo;
+    dev->curIBO            = dev->ibo;
     dev->curIboOffsetIndex = iboOffsetIndex;
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, dev->ibo );
     }
