@@ -287,7 +287,9 @@ void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
   dev->isPainting = true;
 
   setupBuffers( 0, true, true, false );
+  errCk();
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+  errCk();
   assert( setupFBO() );
   }
 
@@ -448,7 +450,9 @@ bool Opengl2x::setupFBO() const {
 
   int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
   if( !(status==0 || status==GL_FRAMEBUFFER_COMPLETE) ){
+#ifndef __ANDROID__
     std::cout << std::hex << status << std::dec << std::endl;
+#endif
     return 0;
     }
 

@@ -246,19 +246,11 @@ void GLSL::deleteFragmentShader( FragmentShader* s ) const{
   }
 
 void GLSL::bind( const Tempest::VertexShader& s ) const {
-  if( data->currentVS == &s )
-    return;
-
   data->currentVS = &s;
-  data->vsCash.reset();
   }
 
 void GLSL::bind( const Tempest::FragmentShader& s ) const {
-  if( data->currentFS == &s )
-    return;
-
   data->currentFS = &s;
-  data->fsCash.reset();
   }
 
 void GLSL::unBind( const Tempest::VertexShader& s ) const {
@@ -371,6 +363,8 @@ void GLSL::enable() const {
   if( program != data->curProgram){
     glUseProgram( program );
     data->curProgram = program;
+    data->vsCash.reset();
+    data->fsCash.reset();
     }
 
   { const ShaderInput & in = inputOf( *data->currentFS );
@@ -434,7 +428,7 @@ void GLSL::setUniform( unsigned int s,
                        int l,
                        const char *name ) const{
   GLuint    prog = s;
-  GLint     prm = data->location( prog, name );
+  GLint     prm  = data->location( prog, name );
   if( prm==-1 )
     return;
 
