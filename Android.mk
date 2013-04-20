@@ -3,7 +3,9 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := Tempest
-LOCAL_CFLAGS := -std=gnu++11
+NDK_TOOLCHAIN_VERSION := 4.7
+APP_ABI := armeabi-v7a
+LOCAL_ARM_MODE := arm
 
 Tempest_PATH := C:/Users/Try/Home/Programming/Tempest/Tempest
 
@@ -11,7 +13,9 @@ LOCAL_C_INCLUDES := $(Tempest_PATH)/include\
                     $(Tempest_PATH)/math\
                     $(Tempest_PATH)/squish
 
-LOCAL_CFLAGS := -std=gnu++11
+LOCAL_CFLAGS := -std=c++11 -pthread -frtti -fexceptions
+LOCAL_CFLAGS += -D_STLP_NO_EXCEPTIONS
+
 LOCAL_SRC_FILES := \
   $(subst $(LOCAL_PATH)/,,\
   $(wildcard $(LOCAL_PATH)/core/wrappers/*.cpp) \

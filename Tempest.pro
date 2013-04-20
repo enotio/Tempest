@@ -1,6 +1,8 @@
 QT       -= core gui
+CONFIG -= app_bundle
+CONFIG -= qt
 
-CONFIG += opengl directx
+CONFIG += ogl directx
 
 TARGET = Tempest
 TEMPLATE = lib
@@ -21,7 +23,7 @@ INCLUDEPATH += \
                "."
 #DEFINES += D3D_DEBUG_INFO
 
-opengl:{
+ogl:{
   LIBS += -L"$$(CG_LIB_PATH)" -l"opengl32" -l"cg" -l"cgGL"
   LIBS += -L"$$(GLEW_PATH)/lib"  -l"glew32" -l"glew32"
 
@@ -56,7 +58,7 @@ directx: {
   TARGET = Tempest_dx
   }
 
-opengl:{
+ogl:{
   directx:{
     TARGET = Tempest
     }

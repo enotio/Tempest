@@ -1,6 +1,7 @@
 #ifndef SIGNAL_H
 #define SIGNAL_H
 
+#include <cstdint>
 #include <vector>
 
 namespace Tempest{

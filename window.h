@@ -43,8 +43,8 @@ class Window : public Widget {
     int winW, winH;
     void init(int w, int h);
 
-    Window( const Window& ){}
-    const Window& operator = ( const Window& ){ return *this; }
+    Window( const Window& )                    = delete;
+    const Window& operator = ( const Window& ) = delete;
 
   friend class AbstractSystemAPI;
   };

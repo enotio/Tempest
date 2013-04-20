@@ -127,6 +127,6 @@ void VertexBufferHolder::unlockBuffer(AbstractAPI::VertexBuffer *t) {
   device().unlockBuffer(t);
   }
 
-void VertexBufferHolder::unlockNWBuffer(AbstractAPI::VertexBuffer *t) {
+void VertexBufferHolder::unlockNWBuffer(AbstractAPI::VertexBuffer *) {
 
   }

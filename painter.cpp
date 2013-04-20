@@ -238,7 +238,7 @@ void PainterDevice::translate(int dx, int dy) {
   rstate.orign += Point(dx,dy);
   }
 
-void PainterDevice::setBlendMode(BlendMode m)
+void PainterDevice::setBlendMode(BlendMode )
 {
 }
 

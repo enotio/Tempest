@@ -36,7 +36,7 @@ struct GLSL::Data{
   AbstractAPI::OpenGL2xDevice * context;
   float maxAnisotropy;
 
-  static void dbgOut( GLuint context ){
+  static void dbgOut( GLuint /*context*/ ){
 
     }
 
@@ -44,7 +44,7 @@ struct GLSL::Data{
     //dbg(false, context);
     }
 
-  static void dbg( bool ok, GLuint context ){
+  static void dbg( bool /*ok*/, GLuint /*context*/ ){
 
     }
 
@@ -186,7 +186,7 @@ AbstractShadingLang::VertexShader*
   *prog = data->loadShader( GL_VERTEX_SHADER, src.data() );
 
   if( !*prog )
-    ;//Data::dbgOut( data->context );
+    {}//Data::dbgOut( data->context );
 
   assert( *prog );
 
@@ -222,7 +222,7 @@ AbstractShadingLang::FragmentShader *
   *prog = data->loadShader( GL_FRAGMENT_SHADER, src.data() );
 
   if( !*prog )
-    ;//Data::dbgOut( data->context );
+    {}//Data::dbgOut( data->context );
 
   assert( *prog );
 
@@ -253,7 +253,7 @@ void GLSL::bind( const Tempest::FragmentShader& s ) const {
   data->currentFS = &s;
   }
 
-void GLSL::unBind( const Tempest::VertexShader& s ) const {
+void GLSL::unBind( const Tempest::VertexShader& ) const {
   //CGprogram prog = CGprogram( get(s) );
   data->currentVS = 0;
   data->vsCash.reset();
@@ -261,7 +261,7 @@ void GLSL::unBind( const Tempest::VertexShader& s ) const {
   //setDevice();
   }
 
-void GLSL::unBind( const Tempest::FragmentShader& s ) const {
+void GLSL::unBind( const Tempest::FragmentShader& ) const {
   //CGprogram prog = CGprogram( get(s) );
   data->currentFS = 0;
   data->fsCash.reset();

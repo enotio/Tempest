@@ -308,19 +308,41 @@ AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
     };
   //D3DFORMAT format = frm[p.format()];
 
-  if (FAILED(dev->CreateTexture( p.width(), p.height(), 0,
-                                 D3DUSAGE_AUTOGENMIPMAP, frm[p.format()],
-                                 D3DPOOL_MANAGED,
-                                 &tex, NULL))) {
-    return 0;
-    }
+  if( !(p.format()==Pixmap::Format_RGB ||
+        p.format()==Pixmap::Format_RGBA) ){
+    int mipCount = 0;
 
-  if (FAILED( tex->LockRect(0, &lockedRect, 0, 0))) {
-    return 0;
-    }  
+    if( mips ){
+      int w = std::max(1, p.width() ),
+          h = std::max(1, p.height());
+      while( w>1||h>1){
+        if(w>1) w/=2;
+        if(h>1) h/=2;
+        ++mipCount;
+        }
+      }
+
+    if (FAILED(dev->CreateTexture( p.width(), p.height(), mipCount,
+                                   0, frm[p.format()],
+                                   D3DPOOL_MANAGED,
+                                   &tex, NULL))) {
+      return 0;
+      }
+    } else {
+    if (FAILED(dev->CreateTexture( p.width(), p.height(), 0,
+                                   D3DUSAGE_AUTOGENMIPMAP, frm[p.format()],
+                                   D3DPOOL_MANAGED,
+                                   &tex, NULL))) {
+      return 0;
+      }
+    }
 
   if( p.format()==Pixmap::Format_RGB ||
       p.format()==Pixmap::Format_RGBA ){
+    if (FAILED( tex->LockRect(0, &lockedRect, 0, 0))) {
+      return 0;
+      }
+
     unsigned char *dest = (unsigned char*) lockedRect.pBits;
     for( int i=0; i<p.width(); ++i )
       for( int r=0; r<p.height(); ++r ){
@@ -331,17 +353,34 @@ AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
         t[0] = s.b;
         t[3] = s.a;
         }
+
+    tex->UnlockRect(0);
+    if( mips )
+      tex->GenerateMipSubLevels();
     } else {
     int nBlockSize = 16;
     if( p.format() == Pixmap::Format_DXT1 )
         nBlockSize = 8;
-    int nSize = ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
-    memcpy( lockedRect.pBits, p.const_data(), nSize );
-    }
+    const unsigned char *mipData = p.const_data();
+    int w = p.width(), h = p.height();
 
-  tex->UnlockRect(0);
-  if( mips )
-    tex->GenerateMipSubLevels();
+    for(int i=0; w>1 || h>1; ++i ){
+      if (FAILED( tex->LockRect(i, &lockedRect, 0, 0))) {
+        return 0;
+        }
+      int nSize = ((w+3)/4) * ((h+3)/4) * nBlockSize;
+      memcpy( lockedRect.pBits, mipData, nSize );
+      tex->UnlockRect(0);
+
+      if( w>1 ) w/=2;
+      if( h>1 ) h/=2;
+      mipData += nSize;
+
+      if( !mips ){
+        return ((AbstractAPI::Texture*)tex);
+        }
+      }
+    }
 
   //data->tex.insert( tex );
   return ((AbstractAPI::Texture*)tex);
@@ -381,41 +420,91 @@ AbstractAPI::Texture *DirectX9::recreateTexture( AbstractAPI::Device *d,
     } else {
     deleteTexture(d, oldT);
 
-    if (FAILED(dev->CreateTexture( p.width(), p.height(), 0,
-                                   D3DUSAGE_AUTOGENMIPMAP, frm[p.format()],
-                                   D3DPOOL_MANAGED,
-                                   &tex, NULL))) {
-      return 0;
-      }
-    }
+    if( !(p.format()==Pixmap::Format_RGB ||
+          p.format()==Pixmap::Format_RGBA) ){
+      int mipCount = 0;
 
-  if (FAILED( tex->LockRect(0, &lockedRect, 0, 0))) {
-    return 0;
+      if( mips ){
+        int w = std::max(1, p.width() ),
+            h = std::max(1, p.height());
+        while( w>1||h>1){
+          if(w>1) w/=2;
+          if(h>1) h/=2;
+          ++mipCount;
+          }
+        }
+
+      if (FAILED(dev->CreateTexture( p.width(), p.height(), mipCount,
+                                     0, frm[p.format()],
+                                     D3DPOOL_MANAGED,
+                                     &tex, NULL))) {
+        return 0;
+        }
+      } else {
+      if (FAILED(dev->CreateTexture( p.width(), p.height(), 0,
+                                     D3DUSAGE_AUTOGENMIPMAP, frm[p.format()],
+                                     D3DPOOL_MANAGED,
+                                     &tex, NULL))) {
+        return 0;
+        }
+      }
     }
 
   if( p.format()==Pixmap::Format_RGB ||
       p.format()==Pixmap::Format_RGBA ){
+    if (FAILED( tex->LockRect(0, &lockedRect, 0, 0))) {
+      return 0;
+      }
+    int bpp = 3;
+    if( p.format()==Pixmap::Format_RGBA )
+      bpp = 4;
+
     unsigned char *dest = (unsigned char*) lockedRect.pBits;
+    const unsigned char *src  = p.const_data();
+
     for( int i=0; i<p.width(); ++i )
       for( int r=0; r<p.height(); ++r ){
-        unsigned char * t = &dest[ 4*(i + r*p.width()) ];
+        unsigned char       * t = &dest[   4*(i + r*p.width()) ];
+        const unsigned char * s =  &src[ bpp*(i + r*p.width()) ];
+        /*
         const Pixmap::Pixel s = p.at(i,r);
         t[2] = s.r;
         t[1] = s.g;
         t[0] = s.b;
-        t[3] = s.a;
-        }
+        t[3] = s.a;*/
+        t[2] = s[0];
+        t[1] = s[1];
+        t[0] = s[2];
+
+        t[3] = (bpp==4)?s[3]:255;
+        }    
+    tex->UnlockRect(0);
+    if( mips )
+      tex->GenerateMipSubLevels();
     } else {
     int nBlockSize = 16;
     if( p.format() == Pixmap::Format_DXT1 )
         nBlockSize = 8;
-    int nSize = ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
-    memcpy( lockedRect.pBits, p.const_data(), nSize );
-    }
+    const unsigned char *mipData = p.const_data();
+    int w = p.width(), h = p.height();
 
-  tex->UnlockRect(0);
-  if( mips )
-    tex->GenerateMipSubLevels();
+    for(int i=0; w>1 || h>1; ++i ){
+      if (FAILED( tex->LockRect(i, &lockedRect, 0, 0))) {
+        return 0;
+        }
+      int nSize = ((w+3)/4) * ((h+3)/4) * nBlockSize;
+      memcpy( lockedRect.pBits, mipData, nSize );
+      tex->UnlockRect(0);
+
+      if( w>1 ) w/=2;
+      if( h>1 ) h/=2;
+      mipData += nSize;
+
+      if( !mips ){
+        return ((AbstractAPI::Texture*)tex);
+        }
+      }
+    }
 
   //data->tex.insert( tex );
   return ((AbstractAPI::Texture*)tex);

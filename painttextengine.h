@@ -24,15 +24,35 @@ class PaintTextEngine {
   public:
     virtual ~PaintTextEngine(){}
 
-    virtual void setFont( const std::string & f, int sz ){}
-    virtual void setFont( const Bind::UserFont & f ){}
+    virtual void setFont( const std::string & f, int sz ){
+      (void)f;
+      (void)sz;
+      }
+    virtual void setFont( const Bind::UserFont & f ){ (void)f; }
 
     virtual void drawText( int x, int y, int w, int h, const std::string  &,
-                           int align = NoAlign ){}
+                           int align = NoAlign ){
+      (void)x;
+      (void)y;
+      (void)w;
+      (void)h;
+      (void)align;
+      }
     virtual void drawText( int x, int y, int w, int h, const std::wstring &,
-                           int align = NoAlign ){}
+                           int align = NoAlign ){
+      (void)x;
+      (void)y;
+      (void)w;
+      (void)h;
+      (void)align;
+      }
 
-    virtual void setScissor( int x, int y, int w, int h ){}
+    virtual void setScissor( int x, int y, int w, int h ){
+      (void)x;
+      (void)y;
+      (void)w;
+      (void)h;
+      }
   };
 
 }

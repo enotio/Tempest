@@ -195,7 +195,7 @@ void LinearLayout::applyLayoutPrivate( int (*w)( const Size& wd ),
                                        int (*h)( const Size& wd ),
                                        SizePolicyType (*typeH)( const Widget*  ),
                                        SizePolicyType (*typeV)( const Widget*  ),
-                                       bool hor,
+                                       bool /*hor*/,
                                        void (*setGeometry)( Widget* wd,
                                                             int x, int y,
                                                             int w, int h ) ){

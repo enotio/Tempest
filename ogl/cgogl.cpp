@@ -269,7 +269,7 @@ void CgOGL::bind( const Tempest::FragmentShader& s ) const {
   //setDevice();
   }
 
-void CgOGL::unBind( const Tempest::VertexShader& s ) const {
+void CgOGL::unBind( const Tempest::VertexShader&  ) const {
   //CGprogram prog = CGprogram( get(s) );
   data->currentProgramVS = 0;
   data->vsCash.reset();
@@ -278,7 +278,7 @@ void CgOGL::unBind( const Tempest::VertexShader& s ) const {
   cgGLDisableProfile( data->vertexProfile );
   }
 
-void CgOGL::unBind( const Tempest::FragmentShader& s ) const {
+void CgOGL::unBind( const Tempest::FragmentShader&  ) const {
   //CGprogram prog = CGprogram( get(s) );
   data->currentProgramFS = 0;
   data->fsCash.reset();

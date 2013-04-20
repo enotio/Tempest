@@ -27,6 +27,7 @@
 
 #include "gltypes.h"
 #include <squish.h>
+#include <cstring>
 
 #define OGL_DEBUG
 
@@ -529,7 +530,7 @@ bool Opengl2x::present( AbstractAPI::Device *d ) const {
 
 bool Opengl2x::reset( AbstractAPI::Device *d,
                       void* hwnd,
-                      const Options &opt ) const {
+                      const Options &/*opt*/ ) const {
   setDevice(d);
 
 #ifndef __ANDROID__
@@ -1059,7 +1060,14 @@ void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
 
-  vbo->mappedData = new char[size];
+  if( !dev->lbUseed ){
+    dev->lbUseed = true;
+    dev->tmpLockBuffer.resize( size );
+    vbo->mappedData = &dev->tmpLockBuffer[0];
+    } else {
+    vbo->mappedData = new char[size];
+    }
+
   vbo->offset = offset;
   vbo->size   = size;
 
@@ -1076,7 +1084,12 @@ void Opengl2x::unlockBuffer( AbstractAPI::Device *d,
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, vbo->id );
   glBufferSubData( GL_ELEMENT_ARRAY_BUFFER, vbo->offset, vbo->size, vbo->mappedData );
 
-  delete[] vbo->mappedData;
+  if( vbo->mappedData == &dev->tmpLockBuffer[0] ){
+    dev->lbUseed = false;
+    dev->tmpLockBuffer.clear();
+    } else {
+    delete[] vbo->mappedData;
+    }
   vbo->mappedData = 0;
 
   //glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, *vbo );
