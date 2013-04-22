@@ -46,7 +46,7 @@ void WindowsAPI::startApplication(ApplicationInitArgs *) {
   winClass.cbWndExtra    = 0;
 
   if( !RegisterClassEx(&winClass) )
-    ;//return E_FAIL;
+    {};//return E_FAIL;
   }
 
 void WindowsAPI::endApplication() {
@@ -78,7 +78,7 @@ WindowsAPI::Window *WindowsAPI::createWindow(int w, int h) {
 
   AdjustWindowRect(&r, wflags, false);
 
-  HWND hwnd = CreateWindowEx( NULL,
+  HWND hwnd = CreateWindowEx( 0,
                               L"Tempest_Window_Class",
                               L"Tempest_Window_Class",
                               wflags,
@@ -91,7 +91,7 @@ WindowsAPI::Window *WindowsAPI::createWindow(int w, int h) {
   return (Window*)hwnd;
   }
 
-AbstractSystemAPI::Window *WindowsAPI::createWindowMaximized() {
+SystemAPI::Window *WindowsAPI::createWindowMaximized() {
   int w = GetSystemMetrics(SM_CXFULLSCREEN),
       h = GetSystemMetrics(SM_CYFULLSCREEN);
   DEVMODE mode;
@@ -100,7 +100,7 @@ AbstractSystemAPI::Window *WindowsAPI::createWindowMaximized() {
   h = mode.dmPelsHeight;
 
   DWORD wflags = WS_OVERLAPPEDWINDOW | WS_POPUP | WS_VISIBLE;
-  HWND hwnd = CreateWindowEx( NULL,
+  HWND hwnd = CreateWindowEx( 0,
                               L"Tempest_Window_Class",
                               L"Tempest_Window_Class",
                               wflags,
@@ -114,7 +114,7 @@ AbstractSystemAPI::Window *WindowsAPI::createWindowMaximized() {
   return (Window*)hwnd;
   }
 
-AbstractSystemAPI::Window *WindowsAPI::createWindowMinimized() {
+SystemAPI::Window *WindowsAPI::createWindowMinimized() {
   int w = GetSystemMetrics(SM_CXFULLSCREEN),
       h = GetSystemMetrics(SM_CYFULLSCREEN);
   DEVMODE mode;
@@ -123,7 +123,7 @@ AbstractSystemAPI::Window *WindowsAPI::createWindowMinimized() {
   h = mode.dmPelsHeight;
 
   DWORD wflags = WS_OVERLAPPEDWINDOW | WS_POPUP | WS_VISIBLE;
-  HWND hwnd = CreateWindowEx( NULL,
+  HWND hwnd = CreateWindowEx( 0,
                               L"Tempest_Window_Class",
                               L"Tempest_Window_Class",
                               wflags,
@@ -135,7 +135,7 @@ AbstractSystemAPI::Window *WindowsAPI::createWindowMinimized() {
   return (Window*)hwnd;
   }
 
-AbstractSystemAPI::Window *WindowsAPI::createWindowFullScr() {
+SystemAPI::Window *WindowsAPI::createWindowFullScr() {
   int w = GetSystemMetrics(SM_CXFULLSCREEN),
       h = GetSystemMetrics(SM_CYFULLSCREEN);
   DEVMODE mode;
@@ -144,7 +144,7 @@ AbstractSystemAPI::Window *WindowsAPI::createWindowFullScr() {
   h = mode.dmPelsHeight;
 
   DWORD wflags = WS_POPUP;
-  HWND hwnd = CreateWindowEx( NULL,
+  HWND hwnd = CreateWindowEx( 0,
                               L"Tempest_Window_Class",
                               L"Tempest_Window_Class",
                               wflags,
@@ -159,7 +159,7 @@ AbstractSystemAPI::Window *WindowsAPI::createWindowFullScr() {
   return (Window*)hwnd;
   }
 
-Size WindowsAPI::windowClientRect( AbstractSystemAPI::Window * hWnd ) {
+Size WindowsAPI::windowClientRect( SystemAPI::Window * hWnd ) {
   RECT rectWindow;
   GetClientRect( HWND(hWnd), &rectWindow);
   int cW = rectWindow.right  - rectWindow.left;
@@ -519,7 +519,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
                       HIWORD (lParam),
                       toButton(msg) );
         //w->mouseDownEvent(e);
-        AbstractSystemAPI::mkMouseEvent(w, e, 0);
+        SystemAPI::mkMouseEvent(w, e, 0);
         }
         break;
 
@@ -530,7 +530,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
                       HIWORD (lParam),
                       toButton(msg) );
         //w->mouseUpEvent(e);
-        AbstractSystemAPI::mkMouseEvent(w, e, 1);
+        SystemAPI::mkMouseEvent(w, e, 1);
         }
         break;
 
@@ -538,7 +538,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         MouseEvent e( LOWORD (lParam),
                       HIWORD (lParam),
                       Event::ButtonNone );
-        AbstractSystemAPI::mkMouseEvent(w, e, 2);
+        SystemAPI::mkMouseEvent(w, e, 2);
         }
         break;
 
@@ -563,7 +563,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           int cH = rectWindow.bottom-rectWindow.top;
 
           if( w )
-            AbstractSystemAPI::sizeEvent( w,
+            SystemAPI::sizeEvent( w,
                                           LOWORD(lParam), HIWORD(lParam),
                                           cW, cH );
           }
@@ -572,7 +572,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       case WM_ACTIVATEAPP:
       {
           bool a = (wParam==TRUE);
-          AbstractSystemAPI::activateEvent(w,a);
+          SystemAPI::activateEvent(w,a);
 
           if( !a && w->isFullScreenMode() )
             ShowWindow( hWnd, SW_MINIMIZE );

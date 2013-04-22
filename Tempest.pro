@@ -69,7 +69,6 @@ LIBS += -l"gdi32"
 
 SOURCES += \
     window.cpp \
-    system/abstractsystemapi.cpp \
     system/windowsapi.cpp \
     widget.cpp \
     utility.cpp \
@@ -131,11 +130,12 @@ SOURCES += \
     squish/colourfit.cpp \
     squish/colourblock.cpp \
     squish/clusterfit.cpp \
-    squish/alpha.cpp
+    squish/alpha.cpp \
+    dataControl/resourcecontext.cpp \
+    system/systemapi.cpp
 
 HEADERS += \
     window.h \
-    system/abstractsystemapi.h \
     system/windowsapi.h \
     widget.h \
     utility.h \
@@ -206,12 +206,13 @@ HEADERS += \
     squish/colourblock.h \
     squish/clusterfit.h \
     squish/alpha.h \
-    system/ddsdef.h
+    system/ddsdef.h \
+    dataControl/resourcecontext.h \
+    system/systemapi.h
 
 OTHER_FILES += \
     include/Tempest/Window \
     include/Tempest/Application \
-    include/Tempest/AbstractSystemAPI \
     include/Tempest/Widget \
     include/Tempest/Utility \
     include/Tempest/SizePolicy \
@@ -222,5 +223,7 @@ OTHER_FILES += \
     include/Tempest/Layout \
     include/Tempest/Image \
     include/Tempest/Event \
-    Android.mk
+    Android.mk \
+    include/Tempest/ResourceContext \
+    include/Tempest/SystemAPI
 

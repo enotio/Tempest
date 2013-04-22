@@ -31,6 +31,9 @@ void Layout::add(Widget *widget) {
       }
 
     widget->parentLay = this;
+    if( owner() )
+      widget->setContext( owner()->context() );
+
     if( widget->nToUpdate ){
       widget->nToUpdate    = false;
       widget->update();
@@ -150,8 +153,13 @@ void Layout::placeIn(Widget *wx, const Rect &r) {
                    h );
   }
 
-void Layout::rebind( Widget* w) {
-  ow = w;
+void Layout::rebind( Widget* wx) {
+  ow = wx;
+
+  if( ow ){
+    for( size_t i=0; i<w.size(); ++i )
+      w[i]->setContext( ow->context() );
+    }
   }
 
 void Layout::swap(Layout *other){

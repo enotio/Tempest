@@ -12,9 +12,9 @@ class Window;
 class MouseEvent;
 class SizeEvent;
 
-class AbstractSystemAPI {
+class SystemAPI{
   public:
-    virtual ~AbstractSystemAPI(){}
+    virtual ~SystemAPI(){}
 
     struct Window;
     virtual Window* createWindow( int w, int h ) = 0;
@@ -29,7 +29,7 @@ class AbstractSystemAPI {
     virtual void show( Window* ) = 0;
     virtual void bind( Window*, Tempest::Window* ) = 0;
 
-    static AbstractSystemAPI& instance();
+    static SystemAPI& instance();
 
     struct ApplicationInitArgs;
     virtual void startApplication( ApplicationInitArgs* ) = 0;
@@ -57,7 +57,7 @@ class AbstractSystemAPI {
                            int winW , int winH, int cW, int cH);
     static void activateEvent( Tempest::Window*w, bool a );
   protected:
-    AbstractSystemAPI(){}
+    SystemAPI(){}
 
     virtual std::string       loadTextImpl(  const char* file ) = 0;
     virtual std::vector<char> loadBytesImpl( const char* file ) = 0;
@@ -80,8 +80,8 @@ class AbstractSystemAPI {
                                std::vector<unsigned char> &out );
 
   private:
-    AbstractSystemAPI( const AbstractSystemAPI& ){}
-    AbstractSystemAPI& operator = ( const AbstractSystemAPI&){return *this;}
+    SystemAPI( const SystemAPI& ){}
+    SystemAPI& operator = ( const SystemAPI&){return *this;}
   };
 
 }

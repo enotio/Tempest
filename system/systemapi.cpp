@@ -1,4 +1,4 @@
-#include "abstractsystemapi.h"
+#include "systemapi.h"
 
 #include "system/windowsapi.h"
 #include "system/androidapi.h"
@@ -10,7 +10,7 @@
 
 using namespace Tempest;
 
-AbstractSystemAPI &AbstractSystemAPI::instance() {
+SystemAPI &SystemAPI::instance() {
 #ifdef __WIN32__
   static WindowsAPI api;
 #endif
@@ -22,29 +22,29 @@ AbstractSystemAPI &AbstractSystemAPI::instance() {
   return api;
   }
 
-std::string AbstractSystemAPI::loadText(const char *file) {
+std::string SystemAPI::loadText(const char *file) {
   return instance().loadTextImpl(file);
   }
 
-std::vector<char> AbstractSystemAPI::loadBytes(const char *file) {
+std::vector<char> SystemAPI::loadBytes(const char *file) {
   return instance().loadBytesImpl(file);
   }
 
-bool AbstractSystemAPI::loadImage( const char *file,
+bool SystemAPI::loadImage( const char *file,
                                    int &w, int &h,
                                    int &bpp,
                                    std::vector<unsigned char> &out ) {
   return instance().loadImageImpl( file, w, h, bpp, out );
   }
 
-bool AbstractSystemAPI::saveImage( const char *file,
+bool SystemAPI::saveImage( const char *file,
                                    int &w, int &h,
                                    int &bpp,
                                    std::vector<unsigned char> &in ) {
   return instance().saveImageImpl( file, w, h, bpp, in );
   }
 
-void AbstractSystemAPI::mkMouseEvent( Tempest::Window *w, MouseEvent &e , int type ) {
+void SystemAPI::mkMouseEvent( Tempest::Window *w, MouseEvent &e , int type ) {
   if( type==0 ){
     //++w->pressedC;
     w->pressedC = 1;
@@ -71,8 +71,8 @@ void AbstractSystemAPI::mkMouseEvent( Tempest::Window *w, MouseEvent &e , int ty
   //if( w-> )
   }
 
-void AbstractSystemAPI::sizeEvent( Tempest::Window *w,
-                                   int winW, int winH,
+void SystemAPI::sizeEvent( Tempest::Window *w,
+                                   int /*winW*/, int /*winH*/,
                                    int   cW, int   cH ) {
   if( w->winW==cW &&
       w->winH==cH )
@@ -94,11 +94,11 @@ void AbstractSystemAPI::sizeEvent( Tempest::Window *w,
     }
   }
 
-void AbstractSystemAPI::activateEvent(Tempest::Window *w, bool a) {
+void SystemAPI::activateEvent(Tempest::Window *w, bool a) {
   w->isAppActive = a;
   }
 
-bool AbstractSystemAPI::loadS3TCImpl( const char *file,
+bool SystemAPI::loadS3TCImpl( const char *file,
                                       int &w,
                                       int &h,
                                       int &bpp,

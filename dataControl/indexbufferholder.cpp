@@ -122,6 +122,6 @@ void IndexBufferHolder::unlockBuffer(AbstractAPI::IndexBuffer *t) {
   device().unlockBuffer(t);
   }
 
-void IndexBufferHolder::unlockNWBuffer(AbstractAPI::IndexBuffer *t) {
+void IndexBufferHolder::unlockNWBuffer(AbstractAPI::IndexBuffer *) {
 
   }

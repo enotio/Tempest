@@ -1,6 +1,6 @@
 #include "pixmap.h"
 
-#include <Tempest/AbstractSystemAPI>
+#include <Tempest/SystemAPI>
 #include <iostream>
 #include "core/wrappers/atomic.h"
 
@@ -94,7 +94,7 @@ bool Pixmap::load( const std::string &f ) {
   int w = 0, h = 0, bpp = 0;
 
   Data * image = new Data();
-  bool ok = AbstractSystemAPI::loadImage( f.data(), w, h, bpp, image->bytes );
+  bool ok = SystemAPI::loadImage( f.data(), w, h, bpp, image->bytes );
 
   if( !ok ){
     delete image;
@@ -179,7 +179,7 @@ bool Pixmap::save( const std::string &f ) {
     return false;
 
   Tempest::Detail::Atomic::begin();
-  bool ok = AbstractSystemAPI::saveImage( f.data(),
+  bool ok = SystemAPI::saveImage( f.data(),
                                           mw, mh, bpp,
                                           data.const_value()->bytes );
   Tempest::Detail::Atomic::end();

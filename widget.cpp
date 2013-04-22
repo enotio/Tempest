@@ -9,7 +9,8 @@
 
 using namespace Tempest;
 
-Widget::Widget():fpolicy(BackgroundFocus){
+Widget::Widget(ResourceContext *context):
+        fpolicy(BackgroundFocus), rcontext(context){
   parentLay    = 0;
   focus        = false;
   chFocus      = false;
@@ -531,6 +532,16 @@ void Widget::setVisible(bool v) {
   update();
   }
 
+ResourceContext *Widget::context() const {
+  return rcontext;
+  }
+
+void Widget::setContext(ResourceContext *context) {
+  rcontext = context;
+
+  if( lay )
+    lay->rebind(this);
+  }
 
 void Widget::setFocus(bool f) {
   if( focus!=f ){

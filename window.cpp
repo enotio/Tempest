@@ -4,19 +4,19 @@ using namespace Tempest;
 
 Window::Window( int w, int h ) {
   init(w,h);
-  wnd = AbstractSystemAPI::instance().createWindow(w, h);
-  resize( AbstractSystemAPI::instance().windowClientRect( wnd ) );
+  wnd = SystemAPI::instance().createWindow(w, h);
+  resize( SystemAPI::instance().windowClientRect( wnd ) );
 
-  AbstractSystemAPI::instance().bind(wnd, this);
+  SystemAPI::instance().bind(wnd, this);
   }
 
 Window::Window() {
   int w = 800, h=600;
   init(w,h);
-  wnd = AbstractSystemAPI::instance().createWindow(w, h);
-  resize( AbstractSystemAPI::instance().windowClientRect( wnd ) );
+  wnd = SystemAPI::instance().createWindow(w, h);
+  resize( SystemAPI::instance().windowClientRect( wnd ) );
 
-  AbstractSystemAPI::instance().bind(wnd, this);
+  SystemAPI::instance().bind(wnd, this);
   }
 
 Window::Window( Window::ShowMode sm ) {
@@ -24,8 +24,8 @@ Window::Window( Window::ShowMode sm ) {
   smode = sm;
 
   if( sm==Maximized ){
-    wnd = AbstractSystemAPI::instance().createWindowMaximized();
-    Size s = AbstractSystemAPI::instance().windowClientRect( wnd );
+    wnd = SystemAPI::instance().createWindowMaximized();
+    Size s = SystemAPI::instance().windowClientRect( wnd );
     winW = s.w;
     winH = s.h;
 
@@ -33,19 +33,19 @@ Window::Window( Window::ShowMode sm ) {
     }
 
   if( sm==Minimized ){
-    wnd = AbstractSystemAPI::instance().createWindowMinimized();
+    wnd = SystemAPI::instance().createWindowMinimized();
     }
 
   if( sm==FullScreen ){
-    wnd = AbstractSystemAPI::instance().createWindowFullScr();
-    Size s = AbstractSystemAPI::instance().windowClientRect( wnd );
+    wnd = SystemAPI::instance().createWindowFullScr();
+    Size s = SystemAPI::instance().windowClientRect( wnd );
     winW = s.w;
     winH = s.h;
 
     resize( s.w, s.h );
     }
 
-  AbstractSystemAPI::instance().bind(wnd, this);
+  SystemAPI::instance().bind(wnd, this);
   }
 
 void Window::init( int w, int h ){
@@ -59,17 +59,17 @@ void Window::init( int w, int h ){
   }
 
 Window::~Window() {
-  AbstractSystemAPI::instance().deleteWindow( wnd );
+  SystemAPI::instance().deleteWindow( wnd );
   }
 
 void Window::show() {
-  AbstractSystemAPI::instance().show( wnd );
+  SystemAPI::instance().show( wnd );
   }
 
 void Window::setPosition(int x, int y) {
   if( !isFullScreenMode() ){
     Widget::setPosition(x,y);
-    AbstractSystemAPI::instance().setGeometry( wnd, x, y, w(), h() );
+    SystemAPI::instance().setGeometry( wnd, x, y, w(), h() );
     }
   }
 
@@ -77,7 +77,7 @@ void Window::resize(int w, int h) {
   Widget::resize(w,h);
 
   if( !isFullScreenMode() )
-    AbstractSystemAPI::instance().setGeometry( wnd, x(), y(), w, h );
+    SystemAPI::instance().setGeometry( wnd, x(), y(), w, h );
   }
 
 bool Window::isFullScreenMode() const {
@@ -88,6 +88,6 @@ Window::ShowMode Window::showMode() const {
   return smode;
   }
 
-AbstractSystemAPI::Window *Window::handle() {
+SystemAPI::Window *Window::handle() {
   return wnd;
   }

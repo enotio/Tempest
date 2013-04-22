@@ -1,14 +1,14 @@
 #ifndef WINDOWSAPI_H
 #define WINDOWSAPI_H
 
-#include <Tempest/AbstractSystemAPI>
+#include <Tempest/SystemAPI>
 
 namespace Tempest{
 
 class Window;
 
 #ifdef __WIN32__
-class WindowsAPI:public AbstractSystemAPI {
+class WindowsAPI:public SystemAPI {
   protected:
     WindowsAPI();
     ~WindowsAPI();
@@ -56,7 +56,7 @@ class WindowsAPI:public AbstractSystemAPI {
 
     static void initImgLib();
 
-  friend class AbstractSystemAPI;
+  friend class SystemAPI;
   };
 #endif
 

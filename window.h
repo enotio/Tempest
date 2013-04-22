@@ -1,7 +1,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <Tempest/AbstractSystemAPI>
+#include <Tempest/SystemAPI>
 #include <Tempest/Widget>
 
 namespace Tempest{
@@ -32,10 +32,10 @@ class Window : public Widget {
     bool isFullScreenMode() const;
     ShowMode showMode() const;
   protected:
-    AbstractSystemAPI::Window *handle();
+    SystemAPI::Window *handle();
 
   private:
-    AbstractSystemAPI::Window *wnd;
+    SystemAPI::Window *wnd;
     int  pressedC;
     bool resizeIntent, isAppActive;
 
@@ -46,7 +46,7 @@ class Window : public Widget {
     Window( const Window& )                    = delete;
     const Window& operator = ( const Window& ) = delete;
 
-  friend class AbstractSystemAPI;
+  friend class SystemAPI;
   };
 
 }

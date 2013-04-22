@@ -1,7 +1,7 @@
 #ifndef ANDROIDAPI_H
 #define ANDROIDAPI_H
 
-#include <Tempest/AbstractSystemAPI>
+#include <Tempest/SystemAPI>
 
 namespace Tempest{
 

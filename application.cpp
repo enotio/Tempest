@@ -1,25 +1,32 @@
 #include "application.h"
 
-#include <Tempest/AbstractSystemAPI>
+#include <Tempest/SystemAPI>
 #include <Tempest/Event>
 
 using namespace Tempest;
 
+Application::App Application::app;
+
 Application::Application() {
-  AbstractSystemAPI::instance().startApplication(0);
+  app.ret  = -1;
+  app.quit = false;
+  SystemAPI::instance().startApplication(0);
   }
 
 Application::~Application() {
-  AbstractSystemAPI::instance().endApplication();
+  SystemAPI::instance().endApplication();
   } 
 
 int Application::exec() {
-  bool quit = 0;
-  int ret;
-
-  while( !quit ) {
-    ret = AbstractSystemAPI::instance().nextEvent(quit);
+  while( !app.quit ) {
+    processEvents();
     }
+  return app.ret;
+  }
 
-  return ret;
+bool Application::processEvents() {
+  if( app.quit )
+    app.ret = SystemAPI::instance().nextEvent(app.quit);
+
+  return app.quit;
   }

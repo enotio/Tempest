@@ -10,6 +10,8 @@
 #include <Tempest/Painter>
 #include <Tempest/Event>
 
+#include <Tempest/ResourceContext>
+
 namespace Tempest{
 
 namespace Bind{
@@ -36,7 +38,7 @@ class Shortcut;
 
 class Widget {
   public:
-    Widget();
+    Widget( ResourceContext* context = 0 );
     virtual ~Widget();
     void deleteLater();
 
@@ -123,6 +125,9 @@ class Widget {
 
     bool isVisible() const;
     void setVisible( bool v );
+
+    ResourceContext* context() const;
+    void setContext( ResourceContext* context );
   protected:
     virtual void paintNested( Tempest::PaintEvent & p );
 
@@ -151,6 +156,8 @@ class Widget {
     Widget* mouseReleseReciver;
     Layout * lay;
     Layout * parentLay;
+
+    ResourceContext* rcontext;
 
     bool nToUpdate, multiPaint, deleteLaterFlag;
 

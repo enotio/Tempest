@@ -11,6 +11,12 @@ class Application {
     ~Application();
 
     int exec();
+    static bool processEvents();
+  private:
+    static struct App{
+      int  ret;
+      bool quit;
+      } app;
     //static bool processMessage();
   };
 

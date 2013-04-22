@@ -17,7 +17,7 @@
 
 #include "shading/uniformcash.h"
 #include <Tempest/Uniform>
-#include <Tempest/AbstractSystemAPI>
+#include <Tempest/SystemAPI>
 #include "gltypes.h"
 
 #include <iostream>
@@ -55,7 +55,7 @@ struct GLSL::Data{
   const AbstractAPI::VertexDecl* vdecl;
 
   std::string readFile( const char* f ){
-    return AbstractSystemAPI::loadText(f).data();
+    return SystemAPI::loadText(f).data();
     }
 
   GLuint loadShader( GLenum shaderType, const char* pSource) {
