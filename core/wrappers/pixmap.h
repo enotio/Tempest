@@ -11,6 +11,7 @@ class Pixmap {
   public:
     Pixmap();
     Pixmap( const std::string& p );
+    //Pixmap( const std::wstring& p );
     Pixmap( int w, int h, bool alpha );
 
     Pixmap( const Pixmap& p );
@@ -43,8 +44,10 @@ class Pixmap {
       };
 
     inline const unsigned char* const_data() const {
-      return rawPtr;
+      return &data.const_value()->bytes[0];
       }
+
+    void fill( const Pixel& p );
 
     inline Pixel at( int x, int y ) const {
       verifyFormatEditable();

@@ -39,9 +39,9 @@ bool ViewTester::isVisible( const ModelBounds &obj,
   //Matrix4x4 m = mvp;
   //m.transpose();
 
-  double left[4] = { m.at(0,0), m.at(1,0), m.at(2,0), 0 };
-  double  top[4] = { m.at(0,1), m.at(1,1), m.at(2,1), 0 };
-  double data1[4], data2[4];
+  float left[4] = { m.at(0,0), m.at(1,0), m.at(2,0), 0 };
+  float  top[4] = { m.at(0,1), m.at(1,1), m.at(2,1), 0 };
+  float data1[4], data2[4];
 
   for( int r=0; r<3; ++r ){
     left[3] += left[r]*left[r];
@@ -51,7 +51,7 @@ bool ViewTester::isVisible( const ModelBounds &obj,
   left[3] = sqrt(left[3]);
   top [3] = sqrt(top[3]);
 
-  double rad = obj.radius();
+  float rad = obj.radius();
 
   for( int r=0; r<3; ++r ){
     left[r] /= left[3];

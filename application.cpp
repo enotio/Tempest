@@ -25,7 +25,7 @@ int Application::exec() {
   }
 
 bool Application::processEvents() {
-  if( app.quit )
+  if( !app.quit )
     app.ret = SystemAPI::instance().nextEvent(app.quit);
 
   return app.quit;

@@ -41,6 +41,7 @@ namespace Tempest{
           RGB16,
 
           RGBA,
+          RGBA5,
           RGBA8,
           RGB10_A2,
           RGBA12,

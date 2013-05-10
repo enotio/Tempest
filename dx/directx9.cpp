@@ -539,6 +539,7 @@ AbstractAPI::Texture* DirectX9::createTexture(AbstractAPI::Device *d,
     D3DFMT_A2B10G10R10, // RGB16,
 
     D3DFMT_A8R8G8B8,     // RGBA,
+    D3DFMT_A1R5G5B5,     // RGBA5,
     D3DFMT_A8R8G8B8,     // RGBA8,
     D3DFMT_A2B10G10R10,  // RGB10_A2,
     D3DFMT_A2B10G10R10,  // RGBA12,
@@ -755,7 +756,10 @@ AbstractAPI::VertexDecl *
     D3DDECLTYPE_D3DCOLOR,
 
     D3DDECLTYPE_SHORT2,
-    D3DDECLTYPE_SHORT4
+    D3DDECLTYPE_SHORT4,
+
+    D3DDECLTYPE_FLOAT16_2,
+    D3DDECLTYPE_FLOAT16_4
     };
 
   BYTE usage[] = {
@@ -793,10 +797,12 @@ AbstractAPI::VertexDecl *
     if( de[i].component==Decl::color )
       e.Offset = 4;
 
-    if( de[i].component==Decl::short2 )
+    if( de[i].component==Decl::short2 ||
+        de[i].component==Decl::half2 )
       e.Offset = 4;
 
-    if( de[i].component==Decl::short4 )
+    if( de[i].component==Decl::short4 ||
+        de[i].component==Decl::half4 )
       e.Offset = 8;
 
     e.Method = D3DDECLMETHOD_DEFAULT;

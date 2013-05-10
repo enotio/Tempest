@@ -20,6 +20,7 @@ INCLUDEPATH += \
                "$$(CG_INC_PATH)"\
                "$$(DEVIL_INC_PATH)"\
                "$$(GLEW_PATH)/include"\
+               "./thirdparty/" \
                "."
 #DEFINES += D3D_DEBUG_INFO
 
@@ -68,17 +69,17 @@ LIBS += -L"$$(DEVIL_LIB_PATH)" -l"DevIL"
 LIBS += -l"gdi32"
 
 SOURCES += \
-    window.cpp \
+    ui/window.cpp \
     system/windowsapi.cpp \
-    widget.cpp \
-    utility.cpp \
-    sizepolicy.cpp \
-    shortcut.cpp \
-    painttextengine.cpp \
-    painter.cpp \
-    layout.cpp \
-    image.cpp \
-    event.cpp \
+    ui/widget.cpp \
+    utils/utility.cpp \
+    ui/sizepolicy.cpp \
+    ui/shortcut.cpp \
+    ui/painttextengine.cpp \
+    ui/painter.cpp \
+    ui/layout.cpp \
+    ui/image.cpp \
+    ui/event.cpp \
     application.cpp \
     system/androidapi.cpp \
     core/renderstate.cpp \
@@ -132,24 +133,27 @@ SOURCES += \
     squish/clusterfit.cpp \
     squish/alpha.cpp \
     dataControl/resourcecontext.cpp \
-    system/systemapi.cpp
+    system/systemapi.cpp \
+    core/wrappers/half.cpp \
+    thirdparty/nv_math/nv_quat.cpp \
+    thirdparty/nv_math/nv_matrix.cpp \
+    thirdparty/nv_math/nv_math.cpp
 
 HEADERS += \
-    window.h \
+    ui/window.h \
     system/windowsapi.h \
-    widget.h \
-    utility.h \
-    sizepolicy.h \
-    signal.h \
-    shortcut.h \
-    painttextengine.h \
-    painter.h \
-    layout.h \
-    image.h \
-    event.h \
+    ui/widget.h \
+    utils/utility.h \
+    ui/sizepolicy.h \
+    ui/signal.h \
+    ui/shortcut.h \
+    ui/painttextengine.h \
+    ui/painter.h \
+    ui/layout.h \
+    ui/image.h \
+    ui/event.h \
     application.h \
     system/androidapi.h \
-    system/STLConfig.h \
     core/renderstate.h \
     core/device.h \
     core/abstractapi.h \
@@ -208,7 +212,14 @@ HEADERS += \
     squish/alpha.h \
     system/ddsdef.h \
     dataControl/resourcecontext.h \
-    system/systemapi.h
+    system/systemapi.h \
+    core/wrappers/half.h \
+    thirdparty/nv_math/NvVec.h \
+    thirdparty/nv_math/nv_quat.h \
+    thirdparty/nv_math/nv_matrix.h \
+    thirdparty/nv_math/nv_math.h \
+    thirdparty/nv_math/misc.h \
+    thirdparty/GLES2/gl2.h
 
 OTHER_FILES += \
     include/Tempest/Window \
@@ -225,5 +236,6 @@ OTHER_FILES += \
     include/Tempest/Event \
     Android.mk \
     include/Tempest/ResourceContext \
-    include/Tempest/SystemAPI
+    include/Tempest/SystemAPI \
+    android/jni/Android.mk
 

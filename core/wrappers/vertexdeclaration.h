@@ -19,7 +19,10 @@ enum ComponentType{
 
   color  = 5,
   short2 = 6,
-  short4 = 7
+  short4 = 7,
+
+  half2  = 8,
+  half4  = 9
   };
 
 }

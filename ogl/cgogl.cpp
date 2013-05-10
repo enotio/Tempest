@@ -368,7 +368,7 @@ void CgOGL::setUniform( const Tempest::FragmentShader &sh,
   CGprogram   prog = CGprogram( get(sh) );
   CGparameter prm = cgGetNamedParameter( prog, name );
 
-  const Texture2d::Sampler & s = u.sampler();
+  //const Texture2d::Sampler & s = u.sampler();
   Data::dbg(prm, data->context);
 
   /*

@@ -4,8 +4,6 @@ using namespace Tempest;
 
 #ifdef __ANDROID__
 
-#include "STLConfig.h"
-
 #include <Tempest/Application>
 #include <Tempest/Window>
 #include <Tempest/Event>
@@ -89,33 +87,33 @@ static AEvent peekMessage(){
 #include <android/bitmap.h>
 
 extern "C" {
-  JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_initTempest(JNIEnv * env, jobject obj);
-  JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_init(JNIEnv * env, jobject obj,  jint width, jint height);
-  JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_run (JNIEnv * env, jobject obj);
+  JNIEXPORT void JNICALL Java_com_android_game_Tempest_initTempest(JNIEnv * env, jobject obj);
+  JNIEXPORT void JNICALL Java_com_android_game_Tempest_init(JNIEnv * env, jobject obj,  jint width, jint height);
+  JNIEXPORT void JNICALL Java_com_android_game_Tempest_run (JNIEnv * env, jobject obj);
 
-  JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_setupAManager(JNIEnv * env, jobject obj, jobject am);
+  JNIEXPORT void JNICALL Java_com_android_game_Tempest_setupAManager(JNIEnv * env, jobject obj, jobject am);
 
-  JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_mouseDownEvent(JNIEnv * env, jobject obj,  jint x, jint y);
-  JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_mouseUpEvent  (JNIEnv * env, jobject obj,  jint x, jint y);
-  JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_mouseMoveEvent(JNIEnv * env, jobject obj,  jint x, jint y);
+  JNIEXPORT void JNICALL Java_com_android_game_Tempest_mouseDownEvent(JNIEnv * env, jobject obj,  jint x, jint y);
+  JNIEXPORT void JNICALL Java_com_android_game_Tempest_mouseUpEvent  (JNIEnv * env, jobject obj,  jint x, jint y);
+  JNIEXPORT void JNICALL Java_com_android_game_Tempest_mouseMoveEvent(JNIEnv * env, jobject obj,  jint x, jint y);
   
-  JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_quit (JNIEnv * env, jobject obj);
+  JNIEXPORT void JNICALL Java_com_android_game_Tempest_quit (JNIEnv * env, jobject obj);
 
-  JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_resetDevice(JNIEnv * env, jobject obj);
-  JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_backKeyEvent(JNIEnv * env, jobject obj);
-  JNIEXPORT bool JNICALL Java_com_android_gl2jni_GL2JNILib_loadImg( JNIEnv * env, jobject obj,
+  JNIEXPORT void JNICALL Java_com_android_game_Tempest_resetDevice(JNIEnv * env, jobject obj);
+  JNIEXPORT void JNICALL Java_com_android_game_Tempest_backKeyEvent(JNIEnv * env, jobject obj);
+  JNIEXPORT bool JNICALL Java_com_android_game_Tempest_loadImg( JNIEnv * env, jobject obj,
                                                                     jobject bitmap );
 
   }
 
-JNIEXPORT void Java_com_android_gl2jni_GL2JNILib_initTempest(JNIEnv * env, jobject obj){
+JNIEXPORT void Java_com_android_game_Tempest_initTempest(JNIEnv * env, jobject obj){
   LOGI("Tempest native init begin");
   pthread_mutex_init( &appMutex, 0 );
   pthread_mutex_init( &imgMutex, 0 );
 
   env->GetJavaVM(&jvm);
 
-  jclass c = env->FindClass("com/android/gl2jni/GL2JNILib");
+  jclass c = env->FindClass("com/android/game/Tempest");
   libClass = (jclass)env->NewGlobalRef( (jclass)c );
 
   callMain = env->GetStaticMethodID(libClass, "runApplication", "()V");
@@ -124,13 +122,13 @@ JNIEXPORT void Java_com_android_gl2jni_GL2JNILib_initTempest(JNIEnv * env, jobje
   LOGI("Tempest native init end");
   }
 
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_setupAManager( JNIEnv * env,  
+JNIEXPORT void JNICALL Java_com_android_game_Tempest_setupAManager( JNIEnv * env,
                                                                         jobject obj, 
                                                                         jobject am ){
   assets = env->NewGlobalRef(am);
   }
 
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_init( JNIEnv * env, 
+JNIEXPORT void JNICALL Java_com_android_game_Tempest_init( JNIEnv * env,
                                                                jobject obj, 
                                                                jint w, jint h) {
   window_w = w;
@@ -147,7 +145,7 @@ JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_init( JNIEnv * env,
   pthread_mutex_unlock( &appMutex );
   }
 
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_quit (JNIEnv * env, jobject obj){
+JNIEXPORT void JNICALL Java_com_android_game_Tempest_quit (JNIEnv * env, jobject obj){
   AEvent e;
   e.type = AEvent::QuitEvent;
   
@@ -156,7 +154,7 @@ JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_quit (JNIEnv * env, job
   pthread_mutex_unlock( &appMutex );
   }
 
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_mouseDownEvent( JNIEnv * env, jobject obj,
+JNIEXPORT void JNICALL Java_com_android_game_Tempest_mouseDownEvent( JNIEnv * env, jobject obj,
                                                                          jint x, jint y) {
   AEvent e;
   e.type = AEvent::MouseDownEvent;
@@ -169,7 +167,7 @@ JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_mouseDownEvent( JNIEnv 
   pthread_mutex_unlock( &appMutex );
   }
 
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_mouseUpEvent( JNIEnv * env, jobject obj,
+JNIEXPORT void JNICALL Java_com_android_game_Tempest_mouseUpEvent( JNIEnv * env, jobject obj,
                                                                        jint x, jint y) {
   AEvent e;
   e.type = AEvent::MouseUpEvent;
@@ -186,7 +184,7 @@ JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_mouseUpEvent( JNIEnv * 
   pthread_mutex_unlock( &appMutex );
   }
 
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_mouseMoveEvent( JNIEnv * env, jobject obj, 
+JNIEXPORT void JNICALL Java_com_android_game_Tempest_mouseMoveEvent( JNIEnv * env, jobject obj,
                                                                          jint x, jint y) {
   AEvent e;
   e.type = AEvent::MouseMoveEvent;
@@ -199,15 +197,15 @@ JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_mouseMoveEvent( JNIEnv 
   pthread_mutex_unlock( &appMutex );
   }
 
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_resetDevice(JNIEnv * g_env, jobject obj) {  
+JNIEXPORT void JNICALL Java_com_android_game_Tempest_resetDevice(JNIEnv * g_env, jobject obj) {
   //application().resetDevice();
   }
 
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_run(JNIEnv * g_env, jobject obj) {
+JNIEXPORT void JNICALL Java_com_android_game_Tempest_run(JNIEnv * g_env, jobject obj) {
   start(0);
   }
 
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_backKeyEvent(JNIEnv * g_env, jobject obj) {
+JNIEXPORT void JNICALL Java_com_android_game_Tempest_backKeyEvent(JNIEnv * g_env, jobject obj) {
   //application().backKeyEvent();
   }
 
@@ -318,7 +316,7 @@ int AndroidAPI::nextEvent(bool &quit) {
     }
   else{
     wnd->render();
-    sleep(0);
+    usleep(0);
     }
   return 0;
   }
@@ -363,7 +361,7 @@ static struct TmpImg{
   int w,h,bpp;
   } tmpImage;
 
-JNIEXPORT bool JNICALL Java_com_android_gl2jni_GL2JNILib_loadImg( JNIEnv * env, jobject obj,
+JNIEXPORT bool JNICALL Java_com_android_game_Tempest_loadImg( JNIEnv * env, jobject obj,
                                                                   jobject bitmap){
   if( bitmap==0 ){
     LOGE("bad bitmap!");        

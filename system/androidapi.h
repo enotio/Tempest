@@ -8,7 +8,7 @@ namespace Tempest{
 class Window;
 
 #ifdef __ANDROID__
-class AndroidAPI:public AbstractSystemAPI {
+class AndroidAPI:public SystemAPI {
   protected:
     AndroidAPI();
     ~AndroidAPI();
@@ -44,7 +44,7 @@ class AndroidAPI:public AbstractSystemAPI {
                         int &bpp,
                         std::vector<unsigned char>& in );
   public:
-  friend class AbstractSystemAPI;
+  friend class SystemAPI;
   };
 #endif
 

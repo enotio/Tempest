@@ -245,7 +245,7 @@ class GraphicObject : public AbstractGraphicObject<Material> {
       return m->draw( r );
       }
 
-    double pos[3], size[3], rx, rz;
+    float pos[3], size[3], rx, rz;
 
     mutable double radi;
     mutable Matrix4x4 mat;

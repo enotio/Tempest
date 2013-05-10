@@ -1,6 +1,10 @@
 #include "opengl2x.h"
 
 #ifdef __ANDROID__
+//GL_HALF_FLOAT -> GL_HALF_FLOAT_OES -> 0x8D61
+#define GL_HALF_FLOAT 0x8D61
+
+//#define GL_UNSIGNED_SHORT_4_4_4_4 0x8033
 #include <EGL/egl.h>
 #include <GLES/gl.h>
 #include <GLES2/gl2.h>
@@ -41,7 +45,8 @@ struct Opengl2x::Device{
   HDC   hDC;
   HGLRC hRC;
 #endif
-  bool hasS3tcTextures;
+  bool hasS3tcTextures,
+       hasHalfSupport;
 
   int scrW, scrH;
 
@@ -175,6 +180,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->hasS3tcTextures =
       (strstr(ext, "GL_OES_texture_compression_S3TC")!=0) ||
       (strstr(ext, "GL_EXT_texture_compression_s3tc")!=0);
+  dev->hasHalfSupport = strstr(ext, "GL_OES_vertex_half_float")!=0;
 
 #ifdef __ANDROID__
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "extensions = %s", ext );
@@ -784,6 +790,7 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
     GL_RGB16,
 
     GL_RGBA,
+    GL_RGB5_A1,
     GL_RGBA8,
     GL_RGB10_A2,
     GL_RGBA12,
@@ -816,6 +823,7 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
     GL_RGB,
     GL_RGB,
 
+    GL_RGBA,
     GL_RGBA,
     GL_RGBA,
     GL_RGBA,
@@ -885,6 +893,13 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
   if( f==AbstractTexture::Format::RGB ||
       f==AbstractTexture::Format::RGB4 )
     inFrm = GL_UNSIGNED_SHORT_5_6_5;
+
+  if( f==AbstractTexture::Format::RGB5 )
+    inFrm = GL_UNSIGNED_SHORT_5_6_5;
+
+  if( f==AbstractTexture::Format::RGBA5 ||
+      f==AbstractTexture::Format::RGBA )
+    inFrm = GL_UNSIGNED_SHORT_5_5_5_1;
 
   glTexImage2D( GL_TEXTURE_2D, 0,
                 format[f], w, h, 0,
@@ -1178,7 +1193,7 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
 
   static const GLenum vfrm[] = {
     GL_FLOAT, //double0 = 0, // just trick
-    GL_FLOAT, //double1 = 1,
+    GL_FLOAT, //double1 = 1, GL_HALF_FLOAT_OES
     GL_FLOAT, //double2 = 2,
     GL_FLOAT, //double3 = 3,
     GL_FLOAT, //double4 = 4,
@@ -1186,14 +1201,17 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
     GL_UNSIGNED_BYTE, //color  = 5,
     GL_SHORT,//short2 = 6,
     GL_SHORT,//short4 = 7
+
+    GL_HALF_FLOAT,//half2 = 8,
+    GL_HALF_FLOAT,//half4 = 9
     };
 
   static const int counts[] = {
-    0, 1, 2, 3, 4, 4, 2, 4
+    0, 1, 2, 3, 4, 4, 2, 4, 2, 4
     };
 
   static const int strides[] = {
-    0, 4*1, 4*2, 4*3, 4*4, 4, 2*2, 2*4
+    0,  4*1, 4*2, 4*3, 4*4,  4, 2*2, 2*4, 2*2, 2*4
     };
 
   size_t stride = vboOffsetIndex;
