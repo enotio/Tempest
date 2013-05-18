@@ -8,6 +8,8 @@
 #include <cstring>
 #include <iostream>
 
+#include <libpng/png.h>
+
 using namespace Tempest;
 
 SystemAPI &SystemAPI::instance() {
@@ -98,14 +100,18 @@ void SystemAPI::activateEvent(Tempest::Window *w, bool a) {
   w->isAppActive = a;
   }
 
-bool SystemAPI::loadS3TCImpl( const char *file,
-                                      int &w,
-                                      int &h,
-                                      int &bpp,
-                                      std::vector<unsigned char> &out ) {
+bool SystemAPI::isGraphicsContextAviable( Tempest::Window *) {
+  return true;
+  }
+
+bool SystemAPI::loadS3TCImpl( const std::vector<char> &img,
+                              int &w,
+                              int &h,
+                              int &bpp,
+                              std::vector<unsigned char> &out ) {
   DDSURFACEDESC2 ddsd;
-  std::vector<char> img = loadBytesImpl(file);
-  char* pos = &img[0];
+  //std::vector<char> img = loadBytesImpl(data);
+  const char* pos = &img[0];
   if( img.size()<4+sizeof(ddsd) )
     return false;
 
@@ -171,5 +177,117 @@ bool SystemAPI::loadS3TCImpl( const char *file,
   memcpy( &out[0], pos, bufferSize );
 
   return true;
+  }
+
+bool SystemAPI::loadPngImpl( const std::vector<char> &d,
+                              int &w, int &h,
+                              int &bpp,
+                              std::vector<unsigned char> &out ) {
+  if( d.size()<8 )// 8 is the maximum size that can be checked
+    return false;
+
+  unsigned char* data = (unsigned char*)&d[0];
+  if (png_sig_cmp( data, 0, 8))
+    return false;
+  data += 8;
+
+  png_structp png_ptr;
+
+  /* initialize stuff */
+  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+  if (!png_ptr)
+    return 0;
+
+  png_infop info_ptr = png_create_info_struct(png_ptr);
+  if (!info_ptr)
+    return 0;
+
+  if( setjmp(png_jmpbuf(png_ptr)) )
+    return 0;
+
+  struct Reader{
+    bool err;
+    unsigned char* data;
+    size_t sz;
+
+    static void read( png_structp png_ptr,
+                      png_bytep   outBytes,
+                      png_size_t  byteCountToRead ){
+      if( !png_ptr->io_ptr ){
+        return;
+        }
+
+      Reader& r = *(Reader*)png_ptr->io_ptr;
+
+      if( r.sz<byteCountToRead ){
+        r.err = true;
+        return;
+        }
+
+      r.sz -= byteCountToRead;
+
+      for(; byteCountToRead>0; --byteCountToRead ){
+        *outBytes = *r.data;
+        ++r.data;
+        ++outBytes;
+        }
+      }
+    };
+
+  Reader r;
+  r.err  = false;
+  r.data = data;
+  r.sz   = d.size()-8;
+  //png_init_io(png_ptr, data);
+  png_set_read_fn( png_ptr, &r, &Reader::read );
+
+  png_set_sig_bytes(png_ptr, 8);
+
+  png_read_info(png_ptr, info_ptr);
+
+  w = png_get_image_width (png_ptr, info_ptr);
+  h = png_get_image_height(png_ptr, info_ptr);
+
+  png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+  png_byte bit_depth  = png_get_bit_depth(png_ptr, info_ptr);
+
+  if( color_type == PNG_COLOR_TYPE_PALETTE )
+    png_set_palette_to_rgb(png_ptr);
+
+  color_type = png_get_color_type(png_ptr, info_ptr);
+
+  if( color_type==PNG_COLOR_TYPE_RGB )
+    bpp=3;
+
+  if( color_type==PNG_COLOR_TYPE_RGB_ALPHA )
+    bpp=4;
+
+  if( ( color_type==PNG_COLOR_TYPE_RGB ||
+        color_type==PNG_COLOR_TYPE_RGB_ALPHA ) &&
+      bit_depth==8 ){
+    out.resize( w*h*bpp );
+    //int number_of_passes =
+        png_set_interlace_handling(png_ptr);
+    png_read_update_info(png_ptr, info_ptr);
+
+    if (setjmp(png_jmpbuf(png_ptr)))
+      return false;
+
+    png_bytep * row_pointers = new png_bytep[h];//(png_bytep*) malloc(sizeof(png_bytep) * h);
+    //int rowBytes = png_get_rowbytes(png_ptr,info_ptr);
+    for( int y=0; y<h; y++ )
+      row_pointers[y] = &out[ y*w*bpp ];//(png_byte*) malloc(rowBytes);
+
+    if( bpp==3 || bpp==4 )
+      png_read_image(png_ptr, row_pointers); else
+      r.err = true;
+
+    delete (row_pointers);
+
+    return !r.err;
+    }
+
+  return false;
   }
 

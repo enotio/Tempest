@@ -11,7 +11,9 @@ using namespace Tempest;
 #include <queue>
 #include <cassert>
 
+#include <EGL/egl.h>
 #include <GLES/gl.h>
+
 #include <pthread.h>
 #include <android/log.h>
 #include <unistd.h>
@@ -19,6 +21,32 @@ using namespace Tempest;
 #include <jni.h>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
+#include <android_native_app_glue.h>
+#include <android/bitmap.h>
+
+struct android_app;
+
+struct AEngine{
+  //bool       isContextAviable;
+  EGLDisplay display;
+  EGLSurface surface;
+  EGLContext context;
+  int window_w, window_h;
+  Tempest::Window * wnd;
+
+  bool forceToResize;
+
+  AEngine(){
+    display = EGL_NO_DISPLAY;
+    surface = 0;
+    context = 0;
+
+    window_w = 0;
+    window_h = 0;
+    wnd           = 0;
+    forceToResize = 0;
+    }
+  };
 
 template< class ... Args >
 void LOGI( const Args& ... args ){
@@ -30,217 +58,117 @@ void LOGE( const Args& ... args ){
   __android_log_print( ANDROID_LOG_ERROR, "game", args... );
   }
 
-static int window_w = 0, window_h = 0;
-static Tempest::Window * wnd = 0;
+static android_app* android = 0;
 
-static pthread_mutex_t appMutex, imgMutex;
-static pthread_t mainThread = 0;
-static JavaVM *jvm = 0;
+static int32_t handle_input( android_app* app, AInputEvent* event);
+static void    handle_cmd  ( android_app* app, int32_t cmd );
 
-static jclass    libClass = 0;
-static jmethodID callMain = 0; 
-static jmethodID loadImg  = 0; 
-static jobject   assets   = 0;
+static void initDisplay( android_app* app );
+static void termDisplay( android_app* app , bool killContext = false );
+static void      render( android_app* app );
 
-static void* start( void* ){  
-  JNIEnv * env = 0;
-  jvm->AttachCurrentThread( &env, NULL);
+static int preloadNextEvent( bool & q, android_app* state ){
+  int ident;
+  int events;
+  struct android_poll_source* source;
 
-  env->CallStaticVoidMethod( libClass, callMain );
-  return 0;
-  } 
+  if ((ident=ALooper_pollOnce( 0, NULL, &events,
+                                 (void**)&source)) >= 0) {
+    if( source ) {
+      source->process(state, source);
+      }
 
-struct AEvent {
-  enum Type{
-    NoEvent,
-    SizeEvent,
-    KeyEvent,
-
-    MouseDownEvent,
-    MouseUpEvent,
-    MouseMoveEvent,
-
-    QuitEvent
-    } type;
-
-  int w,h, x,y;
-  };
-
-static std::queue<AEvent> events;
-
-static AEvent peekMessage(){
-  AEvent e;
-  e.type = AEvent::NoEvent;
-
-  pthread_mutex_lock( &appMutex );
-
-  if( events.size() ){
-    e = events.back();
-    events.pop();
+    if( state->destroyRequested != 0 ) {
+    //if( !nv_app_status_running(android) ){
+      q = true;
+      return 0;
+      }
     }
 
-  pthread_mutex_unlock( &appMutex );
-
-  return e;
+  return 0;
   }
 
-#include <android/bitmap.h>
+void Tempest_android_main( android_app* s,
+                           int (*main)(int, char**),
+                           int w,
+                           int h ){
+  AEngine e;
+  e.window_w = w;
+  e.window_h = h;
 
-extern "C" {
-  JNIEXPORT void JNICALL Java_com_android_game_Tempest_initTempest(JNIEnv * env, jobject obj);
-  JNIEXPORT void JNICALL Java_com_android_game_Tempest_init(JNIEnv * env, jobject obj,  jint width, jint height);
-  JNIEXPORT void JNICALL Java_com_android_game_Tempest_run (JNIEnv * env, jobject obj);
+  android = s;
+  android->userData     = &e;
+  android->onAppCmd     = handle_cmd;
+  android->onInputEvent = handle_input;  
 
-  JNIEXPORT void JNICALL Java_com_android_game_Tempest_setupAManager(JNIEnv * env, jobject obj, jobject am);
+  bool quit = false;
+  while( !quit && (e.context==EGL_NO_CONTEXT) ){
+    preloadNextEvent(quit, android);
+    if( quit ){
+      return;
+      }
+    }
 
-  JNIEXPORT void JNICALL Java_com_android_game_Tempest_mouseDownEvent(JNIEnv * env, jobject obj,  jint x, jint y);
-  JNIEXPORT void JNICALL Java_com_android_game_Tempest_mouseUpEvent  (JNIEnv * env, jobject obj,  jint x, jint y);
-  JNIEXPORT void JNICALL Java_com_android_game_Tempest_mouseMoveEvent(JNIEnv * env, jobject obj,  jint x, jint y);
-  
-  JNIEXPORT void JNICALL Java_com_android_game_Tempest_quit (JNIEnv * env, jobject obj);
+  if( !quit ){
+    char args[] = "TempestAndroidApp";
+    ((AndroidAPI&)SystemAPI::instance()).android = android;
+    LOGI("Tempest: start main");
+    main(1, (char**)&args);
+    LOGI("Tempest: main finished");
 
-  JNIEXPORT void JNICALL Java_com_android_game_Tempest_resetDevice(JNIEnv * env, jobject obj);
-  JNIEXPORT void JNICALL Java_com_android_game_Tempest_backKeyEvent(JNIEnv * env, jobject obj);
-  JNIEXPORT bool JNICALL Java_com_android_game_Tempest_loadImg( JNIEnv * env, jobject obj,
-                                                                    jobject bitmap );
+    termDisplay(android, true);
+    }
 
-  }
+  e.wnd = 0;
 
-JNIEXPORT void Java_com_android_game_Tempest_initTempest(JNIEnv * env, jobject obj){
-  LOGI("Tempest native init begin");
-  pthread_mutex_init( &appMutex, 0 );
-  pthread_mutex_init( &imgMutex, 0 );
 
-  env->GetJavaVM(&jvm);
-
-  jclass c = env->FindClass("com/android/game/Tempest");
-  libClass = (jclass)env->NewGlobalRef( (jclass)c );
-
-  callMain = env->GetStaticMethodID(libClass, "runApplication", "()V");
-  loadImg  = env->GetStaticMethodID(libClass, "loadImage", "(Ljava/lang/String;)Z");
-
-  LOGI("Tempest native init end");
-  }
-
-JNIEXPORT void JNICALL Java_com_android_game_Tempest_setupAManager( JNIEnv * env,
-                                                                        jobject obj, 
-                                                                        jobject am ){
-  assets = env->NewGlobalRef(am);
-  }
-
-JNIEXPORT void JNICALL Java_com_android_game_Tempest_init( JNIEnv * env,
-                                                               jobject obj, 
-                                                               jint w, jint h) {
-  window_w = w;
-  window_h = h; 
-
-  AEvent e;
-  e.type = AEvent::SizeEvent;
-
-  e.w = w;
-  e.h = h;
-  
-  pthread_mutex_lock( &appMutex );
-  events.push(e);
-  pthread_mutex_unlock( &appMutex );
-  }
-
-JNIEXPORT void JNICALL Java_com_android_game_Tempest_quit (JNIEnv * env, jobject obj){
-  AEvent e;
-  e.type = AEvent::QuitEvent;
-  
-  pthread_mutex_lock( &appMutex );
-  events.push(e);
-  pthread_mutex_unlock( &appMutex );
-  }
-
-JNIEXPORT void JNICALL Java_com_android_game_Tempest_mouseDownEvent( JNIEnv * env, jobject obj,
-                                                                         jint x, jint y) {
-  AEvent e;
-  e.type = AEvent::MouseDownEvent;
-
-  e.x = x;
-  e.y = y;
-  
-  pthread_mutex_lock( &appMutex );
-  events.push(e);
-  pthread_mutex_unlock( &appMutex );
-  }
-
-JNIEXPORT void JNICALL Java_com_android_game_Tempest_mouseUpEvent( JNIEnv * env, jobject obj,
-                                                                       jint x, jint y) {
-  AEvent e;
-  e.type = AEvent::MouseUpEvent;
-
-  e.x = x;
-  e.y = y;
-  
-  
-  pthread_mutex_lock( &appMutex );
-  e.type = AEvent::MouseMoveEvent;
-  events.push(e);
-  e.type = AEvent::MouseUpEvent;
-  events.push(e);
-  pthread_mutex_unlock( &appMutex );
-  }
-
-JNIEXPORT void JNICALL Java_com_android_game_Tempest_mouseMoveEvent( JNIEnv * env, jobject obj,
-                                                                         jint x, jint y) {
-  AEvent e;
-  e.type = AEvent::MouseMoveEvent;
-
-  e.x = x;
-  e.y = y;  
-  
-  pthread_mutex_lock( &appMutex );
-  events.push(e);
-  pthread_mutex_unlock( &appMutex );
-  }
-
-JNIEXPORT void JNICALL Java_com_android_game_Tempest_resetDevice(JNIEnv * g_env, jobject obj) {
-  //application().resetDevice();
-  }
-
-JNIEXPORT void JNICALL Java_com_android_game_Tempest_run(JNIEnv * g_env, jobject obj) {
-  start(0);
-  }
-
-JNIEXPORT void JNICALL Java_com_android_game_Tempest_backKeyEvent(JNIEnv * g_env, jobject obj) {
-  //application().backKeyEvent();
-  }
-
-AndroidAPI::AndroidAPI() {
-  }
-
-AndroidAPI::~AndroidAPI() {
   JNIEnv * env = 0;
-  jvm->AttachCurrentThread( &env, NULL);
-  env->DeleteGlobalRef(assets);
+  ((android_app*)android)->activity->vm->AttachCurrentThread( &env, NULL);
+  jclass libClass = env->GetObjectClass(((android_app*)android)->activity->clazz);
+  jmethodID finish = env->GetStaticMethodID(libClass, "finishAll", "()V");
 
-  pthread_mutex_destroy( &appMutex );
-  pthread_mutex_destroy( &imgMutex );
+  env->CallStaticVoidMethod( libClass, finish );
+
+  android->activity->vm->DetachCurrentThread();
+
+  ANativeActivity_finish(android->activity);
+  }
+
+using namespace Tempest;
+
+AndroidAPI::AndroidAPI(){
+
+  }
+
+AndroidAPI::~AndroidAPI(){
+
+  }
+
+bool AndroidAPI::startRender( Window * ) {
+  return 1;
+  }
+
+bool AndroidAPI::present(SystemAPI::Window *) {
+  return 0;
   }
 
 void AndroidAPI::startApplication( ApplicationInitArgs * ) {
   }
 
 void AndroidAPI::endApplication() {
-  
+
   }
 
 std::string AndroidAPI::loadTextImpl( const char* file ){
-  JNIEnv * env = 0;
-  jvm->AttachCurrentThread( &env, NULL);
+  //JNIEnv * env = 0;
 
-  AAssetManager* mgr = AAssetManager_fromJava(env, assets);
+  //android->activity->assetManager;
+  //jvm->AttachCurrentThread( &env, NULL);
+
+  AAssetManager* mgr = ((android_app*)android)->activity->assetManager;//AAssetManager_fromJava(env, assets);
   AAsset* asset = AAssetManager_open(mgr, file, AASSET_MODE_UNKNOWN);
 
   assert( asset );
-  /*
-  if (NULL == asset) {
-    __android_log_print(ANDROID_LOG_ERROR, "Tempest", "_ASSET_NOT_FOUND_");
-    return "";
-    }*/
 
   long size = AAsset_getLength(asset);
   std::string str;
@@ -253,18 +181,10 @@ std::string AndroidAPI::loadTextImpl( const char* file ){
   }
 
 std::vector<char> AndroidAPI::loadBytesImpl( const char* file ){
-  JNIEnv * env = 0;
-  jvm->AttachCurrentThread( &env, NULL);
-
-  AAssetManager* mgr = AAssetManager_fromJava(env, assets);
+  AAssetManager* mgr = ((android_app*)android)->activity->assetManager;
   AAsset* asset = AAssetManager_open(mgr, file, AASSET_MODE_UNKNOWN);
 
   assert( asset );
-  /*
-  if (NULL == asset) {
-    __android_log_print(ANDROID_LOG_ERROR, "Tempest", "_ASSET_NOT_FOUND_");
-    return "";
-    }*/
 
   long size = AAsset_getLength(asset);
   std::vector<char> str;
@@ -277,47 +197,31 @@ std::vector<char> AndroidAPI::loadBytesImpl( const char* file ){
   }
 
 int AndroidAPI::nextEvent(bool &quit) {
-  AEvent e;
-  e.type = AEvent::NoEvent;
+  int ident;
+  int events;
+  struct android_poll_source* source;
 
-  pthread_mutex_lock( &appMutex );
-  if( events.size() ){
-    e = events.front();
-    events.pop();
-    if( events.size() )
-      LOGI( "events.size() = %d", events.size() );
-    }
-  pthread_mutex_unlock( &appMutex );
-  
-  if( e.type==AEvent::QuitEvent ){
-    quit = true;
-    }
-  else
-  if( e.type==AEvent::SizeEvent ){
-    wnd->resize(e.w, e.h);
-    }
-  else
-  if( e.type==AEvent::MouseDownEvent ){
-    MouseEvent ex( e.x, e.y, Tempest::Event::ButtonLeft );
-    wnd->mouseDownEvent(ex);
-    }
-  else
-  if( e.type==AEvent::MouseUpEvent ){
-    MouseEvent ex( e.x, e.y, Tempest::Event::ButtonLeft );
-    wnd->mouseUpEvent(ex);
-    }
-  else
-  if( e.type==AEvent::MouseMoveEvent ){
-    MouseEvent ex( e.x, e.y, Tempest::Event::ButtonNone );
-    wnd->mouseDragEvent(ex);
+  if ((ident=ALooper_pollOnce( 0, NULL, &events,
+                                 (void**)&source)) >= 0) {
 
-    if( !ex.isAccepted() )
-      wnd->mouseMoveEvent(ex);
+    // Process this event.
+    if (source != NULL) {
+      source->process(((android_app*)android), source);
+      }
+
+    // Check if we are exiting.
+    if( ((android_app*)android)->destroyRequested != 0 ){
+    //if( !nv_app_status_running((android_app*)android) ){
+      //termDisplay( ((android_app*)android) );
+      quit = true;
+      return 0;
+      }
+    } else {
+    if( ((android_app*)android)->destroyRequested==0 )
+    //if( !nv_app_status_running((android_app*)android) )
+      render(((android_app*)android));
     }
-  else{
-    wnd->render();
-    usleep(0);
-    }
+
   return 0;
   }
 
@@ -338,22 +242,31 @@ AndroidAPI::Window* AndroidAPI::createWindowFullScr(){
   }
 
 Size AndroidAPI::windowClientRect( Window* ){
-  return Size(window_w, window_h);
+  AEngine *e = (AEngine*)(((android_app*)android)->userData);
+  return Size( e->window_w, e->window_h );
   }
 
 void AndroidAPI::deleteWindow( Window *w ) {
+  AEngine *e = (AEngine*)(((android_app*)android)->userData);
+  e->wnd = 0;
   }
 
 void AndroidAPI::show(Window *) {
-  glViewport(0,0,window_w, window_h);
-  wnd->resize(window_w, window_h);
+  AEngine *e = (AEngine*)(((android_app*)android)->userData);
+
+  if( e->wnd && e->display!=EGL_NO_DISPLAY ){
+    glViewport(0,0,e->window_w, e->window_h);
+    //e->forceToResize = true;
+    e->wnd->resize( e->window_w, e->window_h );
+    }
   }
 
 void AndroidAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
   }
 
 void AndroidAPI::bind( Window *w, Tempest::Window *wx ) {
-  wnd = wx;
+  AEngine *e = (AEngine*)(((android_app*)android)->userData);
+  e->wnd = wx;
   }
 
 static struct TmpImg{
@@ -361,10 +274,12 @@ static struct TmpImg{
   int w,h,bpp;
   } tmpImage;
 
-JNIEXPORT bool JNICALL Java_com_android_game_Tempest_loadImg( JNIEnv * env, jobject obj,
-                                                                  jobject bitmap){
+extern "C"
+JNIEXPORT bool JNICALL Java_com_native_1call_TempestActivity_loadImg(
+        JNIEnv * env, jobject obj,
+        jobject bitmap){
   if( bitmap==0 ){
-    LOGE("bad bitmap!");        
+    LOGE("bad bitmap!");
     return false;
     }
 
@@ -375,18 +290,18 @@ JNIEXPORT bool JNICALL Java_com_android_game_Tempest_loadImg( JNIEnv * env, jobj
   tmpImage.h = info.height;
 
   unsigned char *pixels;
-  
+
   if(info.format == ANDROID_BITMAP_FORMAT_RGBA_8888) {
     tmpImage.bpp = 4;
     tmpImage.data->resize( tmpImage.w*tmpImage.h*tmpImage.bpp );
-  
+
     AndroidBitmap_lockPixels(env, bitmap, reinterpret_cast<void **>(&pixels));
     memcpy( &(*tmpImage.data)[0], pixels, tmpImage.data->size() );
     AndroidBitmap_unlockPixels(env, bitmap);
 
     return true;
     }
-  
+
   if(info.format == ANDROID_BITMAP_FORMAT_RGB_565) {
     tmpImage.bpp = 3;
     tmpImage.data->resize( tmpImage.w*tmpImage.h*tmpImage.bpp );
@@ -427,26 +342,34 @@ bool AndroidAPI::loadImageImpl( const char* file,
                                 int &h,
                                 int &bpp,
                                 std::vector<unsigned char>& out ){
-  LOGI("load img begin: %s", file);
-  if( loadS3TCImpl(file,w,h,bpp,out) )
+  LOGI("load img : %s", file);
+  std::vector<char> imgBytes = loadBytesImpl(file);
+  if( loadS3TCImpl(imgBytes,w,h,bpp,out) )
     return true;
-  LOGI("load img end  : %s", file);
+
+  if( loadPngImpl(imgBytes,w,h,bpp,out) )
+    return true;
+  //LOGI("load img end  : %s", file);
 
   JNIEnv * env = 0;
-  jvm->AttachCurrentThread( &env, NULL);
-                                  
+  ((android_app*)android)->activity->vm->AttachCurrentThread( &env, NULL);
+
+  jclass libClass = env->GetObjectClass(((android_app*)android)->activity->clazz);
+
+  jmethodID loadImg = env->GetStaticMethodID(libClass, "loadImage", "(Ljava/lang/String;)Z");
+
   jstring jstr = env->NewStringUTF( file );
-  
-  pthread_mutex_lock( &imgMutex );
+
+  //pthread_mutex_lock( &imgMutex );
   tmpImage.data = &out;
   bool ok = env->CallStaticBooleanMethod( libClass, loadImg, jstr );
-  
+
   w   = tmpImage.w;
   h   = tmpImage.h;
   bpp = tmpImage.bpp;
 
   tmpImage.data = 0;
-  pthread_mutex_unlock( &imgMutex );
+  //pthread_mutex_unlock( &imgMutex );
   env->DeleteLocalRef( jstr );
 
   return ok;
@@ -460,4 +383,206 @@ bool AndroidAPI::saveImageImpl( const char* file,
 
   }
 
+bool AndroidAPI::isGraphicsContextAviable( Tempest::Window *w ) {
+  return 1;//isContextAviable;
+  }
+
+static int32_t handle_input( android_app* a, AInputEvent* event) {
+  AEngine *e = (AEngine*)a->userData;
+
+  if( !e->wnd )
+    return 0;
+
+  if( AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION ){
+    int x = AMotionEvent_getX(event, 0),
+        y = AMotionEvent_getY(event, 0);
+    int action = AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_MASK;
+
+    if( action==AMOTION_EVENT_ACTION_DOWN ){
+      MouseEvent ex( x, y, Tempest::Event::ButtonLeft );
+      e->wnd->mouseDownEvent(ex);
+      }
+    else
+    if( action==AMOTION_EVENT_ACTION_UP ){
+      MouseEvent ex( x, y, Tempest::Event::ButtonLeft );
+      e->wnd->mouseUpEvent(ex);
+      }
+    else
+    if( action==AMOTION_EVENT_ACTION_MOVE ){
+      MouseEvent ex( x, y, Tempest::Event::ButtonNone );
+      e->wnd->mouseDragEvent(ex);
+
+      if( !ex.isAccepted() )
+        e->wnd->mouseMoveEvent(ex);
+      }
+    return 1;
+    }
+
+  if( AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION ){
+    int x = AMotionEvent_getX(event, 0),
+        y = AMotionEvent_getY(event, 0);
+
+    MouseEvent ex( x, y, Tempest::Event::ButtonNone );
+    e->wnd->mouseDragEvent(ex);
+
+    if( !ex.isAccepted() )
+      e->wnd->mouseMoveEvent(ex);
+    return 1;
+    }
+
+  return 0;
+  }
+
+static void handle_cmd( android_app* app, int32_t cmd ) {
+  AEngine* e = (AEngine*)app->userData;
+
+  switch (cmd) {
+    case APP_CMD_SAVE_STATE:
+      //engine->app->savedState = malloc( sizeof(saved_state) );
+      //*((saved_state*)engine->app->savedState) = engine->state;
+      //engine->app->savedStateSize = sizeof(saved_state);
+      break;
+
+    case APP_CMD_INIT_WINDOW:
+      if( app->window != NULL ){
+        initDisplay(app);
+        render(app);
+        }
+      break;
+
+    case APP_CMD_TERM_WINDOW:
+      termDisplay(app);
+      break;
+
+    case APP_CMD_WINDOW_RESIZED:
+    case APP_CMD_CONFIG_CHANGED:
+      e->window_w = 0;
+      e->window_h = 0;
+      termDisplay(app);
+      initDisplay(app);
+      break;
+
+    case APP_CMD_GAINED_FOCUS:
+      break;
+
+    case APP_CMD_LOST_FOCUS:
+      // render(app); //don't do it
+      break;
+      }
+    }
+
+static void initDisplay(android_app *app){
+  AEngine* e = (AEngine*)app->userData;
+
+  const EGLint attribs[] = {
+    EGL_SURFACE_TYPE,
+    EGL_WINDOW_BIT,
+    EGL_BLUE_SIZE, 4,
+    EGL_GREEN_SIZE, 4,
+    EGL_RED_SIZE, 4,
+    EGL_DEPTH_SIZE,   16,
+    EGL_STENCIL_SIZE, 0,
+    EGL_NONE
+  };
+
+  EGLint w, h, format;
+  EGLint numConfigs;
+  EGLConfig  config;
+  EGLSurface ini_surface;
+  EGLContext ini_context;
+
+  EGLDisplay ini_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+
+  eglInitialize(ini_display, 0, 0);
+  eglChooseConfig(ini_display, attribs, &config, 1, &numConfigs);
+  eglGetConfigAttrib(ini_display, config, EGL_NATIVE_VISUAL_ID, &format);
+
+  ANativeWindow_setBuffersGeometry( app->window, 0, 0, format);
+
+  ini_surface = eglCreateWindowSurface( ini_display, config, app->window, NULL);
+
+  if( e->context==EGL_NO_CONTEXT ){
+    const EGLint attrib_list[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
+    ini_context = eglCreateContext(ini_display, config, NULL, attrib_list);
+    } else {
+    ini_context = e->context;
+    }
+
+  if (eglMakeCurrent(ini_display, ini_surface, ini_surface, ini_context) == EGL_FALSE) {
+    LOGE("Unable to eglMakeCurrent");
+    return;
+    }
+
+  eglQuerySurface(ini_display, ini_surface, EGL_WIDTH,  &w);
+  eglQuerySurface(ini_display, ini_surface, EGL_HEIGHT, &h);
+
+  e->display = ini_display;
+  e->context = ini_context;
+  e->surface = ini_surface;
+
+  e->window_w = w;
+  e->window_h = h;
+
+  if( e->wnd && e->display != EGL_NO_DISPLAY ){
+    e->forceToResize = true;
+    }
+
+  //return true;
+  }
+
+static void termDisplay( android_app * a, bool killContext ) {
+  AEngine* e = (AEngine*)a->userData;
+  //isContextAviable = 0;
+
+  if( e->display != EGL_NO_DISPLAY ) {
+    eglMakeCurrent( e->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
+
+    if( e->context != EGL_NO_CONTEXT && killContext ){
+      eglDestroyContext( e->display, e->context );
+      }
+
+    if( e->surface != EGL_NO_SURFACE ){
+      eglDestroySurface( e->display, e->surface );
+      }
+
+    if( killContext )
+      eglTerminate(e->display);
+    }
+
+  e->display = EGL_NO_DISPLAY;
+  if( killContext )
+    e->context = EGL_NO_CONTEXT;
+  e->surface = EGL_NO_SURFACE;
+  //android->activity->vm->DetachCurrentThread();
+  }
+
+
+static void render( android_app * a ) {
+  AEngine* e = (AEngine*)a->userData;
+
+  if( e && e->display!= EGL_NO_DISPLAY && e->wnd ){
+    int w = e->window_w,
+        h = e->window_h;
+
+    eglQuerySurface(e->display, e->surface, EGL_WIDTH,  &w);
+    eglQuerySurface(e->display, e->surface, EGL_HEIGHT, &h);
+
+    if( e->forceToResize ||
+      (e->window_w!=w || e->window_h!=h) ){
+      e->window_w = w;
+      e->window_h = h;
+
+      if( e->forceToResize  ){
+        SizeEvent s(w,h);
+        e->wnd->resizeEvent(s);
+        e->wnd->resize(w,h);
+        e->forceToResize = 0;
+        } else {
+        e->wnd->resize( w,h );
+        }
+      }
+
+    e->wnd->render();
+    }
+  }
 #endif

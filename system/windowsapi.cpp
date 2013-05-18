@@ -309,8 +309,12 @@ bool WindowsAPI::loadImageImpl( const char *file,
                                 std::vector<unsigned char> &out ) {
   initImgLib();
   bool ok = true;
+  std::vector<char> imgBytes = loadBytesImpl(file);
 
-  if( loadS3TCImpl(file,w,h,bpp,out) )
+  if( loadS3TCImpl(imgBytes,w,h,bpp,out) )
+    return true;
+
+  if( loadPngImpl(imgBytes,w,h,bpp,out) )
     return true;
 
   ILuint	id;

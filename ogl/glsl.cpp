@@ -1,7 +1,8 @@
 #include "glsl.h"
 
-
 #ifdef __ANDROID__
+#include <EGL/egl.h>
+#include <GLES/gl.h>
 #include <GLES2/gl2.h>
 // #include <SDL.h>
 #else
@@ -135,7 +136,6 @@ GLSL::GLSL( AbstractAPI::OpenGL2xDevice * dev ) {
   data->currentVS = 0;
   data->currentFS = 0;
 
-  data->context = dev;
   data->cgcgen  = false;
 
   const char * ext = (const char*)glGetString(GL_EXTENSIONS);
@@ -196,11 +196,14 @@ AbstractShadingLang::VertexShader*
 void GLSL::deleteVertexShader( VertexShader* s ) const {
   //setNullDevice();
   GLuint* prog = (GLuint*)(s);
-  glDeleteShader( *prog );
+
+  if( glIsShader(*prog) )
+    glDeleteShader( *prog );
 
   for( size_t i=0; i<data->prog.size();  ){
     if( data->prog[i].vs == *prog ){
-      glDeleteProgram( data->prog[i].linked );
+      if( glIsProgram(data->prog[i].linked) )
+        glDeleteProgram( data->prog[i].linked );
       data->prog[i] = data->prog.back();
       data->prog.pop_back();
       } else
@@ -231,11 +234,14 @@ AbstractShadingLang::FragmentShader *
 
 void GLSL::deleteFragmentShader( FragmentShader* s ) const{
   GLuint* prog = (GLuint*)(s);
-  glDeleteShader( *prog );
+
+  if( glIsShader(*prog) )
+    glDeleteShader( *prog );
 
   for( size_t i=0; i<data->prog.size();  ){
     if( data->prog[i].fs == *prog ){
-      glDeleteProgram( data->prog[i].linked );
+      if( glIsProgram(data->prog[i].linked) )
+        glDeleteProgram( data->prog[i].linked );
       data->prog[i] = data->prog.back();
       data->prog.pop_back();
       } else

@@ -20,6 +20,7 @@ INCLUDEPATH += \
                "$$(CG_INC_PATH)"\
                "$$(DEVIL_INC_PATH)"\
                "$$(GLEW_PATH)/include"\
+               "./thirdparty/fakeGL" \
                "./thirdparty/" \
                "."
 #DEFINES += D3D_DEBUG_INFO
@@ -66,7 +67,7 @@ ogl:{
   }
 
 LIBS += -L"$$(DEVIL_LIB_PATH)" -l"DevIL"
-LIBS += -l"gdi32"
+LIBS += -l"gdi32" -l"z"
 
 SOURCES += \
     ui/window.cpp \
@@ -137,7 +138,22 @@ SOURCES += \
     core/wrappers/half.cpp \
     thirdparty/nv_math/nv_quat.cpp \
     thirdparty/nv_math/nv_matrix.cpp \
-    thirdparty/nv_math/nv_math.cpp
+    thirdparty/nv_math/nv_math.cpp \
+    thirdparty/libpng/pngwutil.c \
+    thirdparty/libpng/pngwtran.c \
+    thirdparty/libpng/pngwrite.c \
+    thirdparty/libpng/pngwio.c \
+    thirdparty/libpng/pngtrans.c \
+    thirdparty/libpng/pngset.c \
+    thirdparty/libpng/pngrutil.c \
+    thirdparty/libpng/pngrtran.c \
+    thirdparty/libpng/pngrio.c \
+    thirdparty/libpng/pngread.c \
+    thirdparty/libpng/pngpread.c \
+    thirdparty/libpng/pngmem.c \
+    thirdparty/libpng/pngget.c \
+    thirdparty/libpng/pngerror.c \
+    thirdparty/libpng/png.c
 
 HEADERS += \
     ui/window.h \
@@ -219,7 +235,11 @@ HEADERS += \
     thirdparty/nv_math/nv_matrix.h \
     thirdparty/nv_math/nv_math.h \
     thirdparty/nv_math/misc.h \
-    thirdparty/GLES2/gl2.h
+    thirdparty/fakeGL/GLES2/gl2.h \
+    thirdparty/libpng/pngpriv.h \
+    thirdparty/libpng/pngconf.h \
+    thirdparty/libpng/png.h \
+    thirdparty/libpng/config.h
 
 OTHER_FILES += \
     include/Tempest/Window \

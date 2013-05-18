@@ -35,6 +35,10 @@
 
 #define OGL_DEBUG
 
+#ifdef __ANDROID__
+#include "system/androidapi.h"
+#endif
+
 using namespace Tempest;
 
 struct Opengl2x::Device{
@@ -59,7 +63,7 @@ struct Opengl2x::Device{
   int vertexSize, curVboOffsetIndex, curIboOffsetIndex;
 
   GLuint fboId;//, rboId;
-  bool    isPainting;
+  bool   isPainting;
 
   Tempest::RenderState renderState;
 
@@ -189,6 +193,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   glEnable( GL_DEPTH_TEST );
   glEnable( GL_CULL_FACE );
   glFrontFace( GL_CW );
+
   dev->renderState.setCullFaceMode( RenderState::CullMode::noCull );
   dev->renderState.setZTest(0);
   dev->renderState.setZWriting(1);
@@ -304,6 +309,7 @@ void Opengl2x::endPaint  ( AbstractAPI::Device * d ) const{
   setDevice(d);
 
   dev->decl = 0;
+  assert( dev->isPainting );
   dev->isPainting = false;
   setupBuffers( 0, false, true, false );
   dev->vbo    = 0;
@@ -459,6 +465,9 @@ bool Opengl2x::setupFBO() const {
   if( !(status==0 || status==GL_FRAMEBUFFER_COMPLETE) ){
 #ifndef __ANDROID__
     std::cout << std::hex << status << std::dec << std::endl;
+#else
+    void* ierr = (void*)status;
+    __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "fbo error %p", ierr);
 #endif
     return 0;
     }
@@ -521,6 +530,9 @@ void Opengl2x::setDSSurfaceTaget( AbstractAPI::Device *d,
   }
 
 bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
+#ifdef  __ANDROID__
+  return AndroidAPI::startRender(0);
+#endif
   return 1;
   }
 
@@ -529,7 +541,8 @@ bool Opengl2x::present( AbstractAPI::Device *d ) const {
 #ifndef __ANDROID__
   SwapBuffers( dev->hDC );
 #else
-  eglSwapBuffers( dev->disp, dev->s);
+  eglSwapBuffers( dev->disp, dev->s );
+  return AndroidAPI::present(0);
 #endif
   return 0;
   }
@@ -553,6 +566,9 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   EGLDisplay disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   EGLSurface s    = eglGetCurrentSurface(EGL_DRAW);
 
+  dev->disp = disp;
+  dev->s    = s;
+
   EGLint w;
   EGLint h;
   eglQuerySurface( disp, s, EGL_WIDTH,  &w );
@@ -561,7 +577,10 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   dev->scrW = w;
   dev->scrH = h;
   glViewport(0,0,w,h);
-#endif
+#endif  
+
+  dev->curIBO = 0;
+  dev->curVBO = 0;
   return 1;
   }
 
@@ -864,6 +883,7 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
     GL_RGBA,
     GL_RGBA,
     GL_RGBA,
+    GL_RGBA,
 
     GL_RGB,
     GL_RGBA,
@@ -935,13 +955,13 @@ void Opengl2x::deleteTexture( AbstractAPI::Device *d,
   setDevice(d);
   Detail::GLTexture* tex = (Detail::GLTexture*)t;
 
-  if( tex->id )
+  if( tex->id && glIsTexture(tex->id) )
     glDeleteTextures( 1, &tex->id );
 
-  if( tex->depthId )
+  if( tex->depthId && glIsRenderbuffer(tex->depthId) )
     glDeleteRenderbuffers( 1, &tex->depthId );
 
-  if( tex->fbo )
+  if( tex->fbo && glIsRenderbuffer(tex->fbo) )
     glDeleteFramebuffers( 1, &tex->fbo );
 
   delete tex->fboTg;
@@ -978,7 +998,8 @@ void Opengl2x::deleteVertexBuffer(  AbstractAPI::Device *d,
   setDevice(d);
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
-  glDeleteBuffers( 1, &vbo->id );
+  if( glIsBuffer(vbo->id) )
+    glDeleteBuffers( 1, &vbo->id );
   delete vbo;
 
   errCk();
@@ -1012,7 +1033,8 @@ void Opengl2x::deleteIndexBuffer( AbstractAPI::Device *d,
   setDevice(d);
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
-  glDeleteBuffers( 1, &vbo->id );
+  if( glIsBuffer(vbo->id) )
+    glDeleteBuffers( 1, &vbo->id );
   delete vbo;
 
   errCk();
@@ -1314,6 +1336,7 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
     dev->curIboOffsetIndex = iboOffsetIndex;
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, dev->ibo );
     }
+  errCk();
 
   static const GLenum type[] = {
   #ifdef __ANDROID__
@@ -1335,16 +1358,20 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
       t==AbstractAPI::LinesStrip  )
     vpCount = pCount+2;
 
-  glDrawElements( type[ t-1 ],
-                  vpCount,
-                  GL_UNSIGNED_SHORT,
-                  ((void*)(iboOffsetIndex*sizeof(uint16_t))) );
+  //if( glIsBuffer(dev->curIBO) && glIsBuffer(dev->curVBO) )
+    glDrawElements( type[ t-1 ],
+                    vpCount,
+                    GL_UNSIGNED_SHORT,
+                    ((void*)(iboOffsetIndex*sizeof(uint16_t))) );
 
   //setupBuffers( firstIndex, false, false );
   errCk();
   }
 
 bool Opengl2x::hasManagedStorge() const {
+#ifdef __ANDROID__
+  //return false;
+#endif
   return true;
   }
 
@@ -1417,7 +1444,7 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
 
   if( dev->renderState.isBlend()!=r.isBlend() ||
       dev->renderState.getBlendDFactor()!=r.getBlendDFactor() ||
-      dev->renderState.getBlendSFactor()!=r.getBlendSFactor() || 1 ){
+      dev->renderState.getBlendSFactor()!=r.getBlendSFactor()  ){
     if( r.isBlend() ){
       glEnable( GL_BLEND );
       glBlendFunc( blend[ r.getBlendSFactor() ], blend[ r.getBlendDFactor() ] );

@@ -61,6 +61,7 @@ class AbstractHolder : public AbstractHolderBase {
         }
 
       ImplManip( AbstractHolder * d ):dev(d){}
+      ImplManip( const ImplManip& m ):dev(m.dev){}
 
       bool isValid() const {
         return dev!=0;

@@ -13,6 +13,9 @@ class AndroidAPI:public SystemAPI {
     AndroidAPI();
     ~AndroidAPI();
 
+    static bool startRender( Window* );
+    static bool present( Window* );
+
     void startApplication( ApplicationInitArgs* );
     void endApplication();
     int  nextEvent(bool &qiut);
@@ -43,8 +46,13 @@ class AndroidAPI:public SystemAPI {
                         int &h,
                         int &bpp,
                         std::vector<unsigned char>& in );
+
+    bool isGraphicsContextAviable( Tempest::Window *w );
   public:
-  friend class SystemAPI;
+    friend class SystemAPI;
+    friend class Opengl2x;
+
+    void * android;
   };
 #endif
 

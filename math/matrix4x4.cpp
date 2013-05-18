@@ -129,7 +129,7 @@ const float* Matrix4x4::data() const{
   }
 
 float Matrix4x4::at(int x, int y) const {
-  return m[y][x];
+  return m[x][y];
   }
 
 void Matrix4x4::setData( const float data[/*16*/]){
@@ -252,7 +252,7 @@ void Matrix4x4::perspective(float angle, float aspect, float zNear, float zFar) 
   }
 
 void Tempest::Matrix4x4::set(int x, int y, float v) {
-  m[y][x]  = v;
+  m[x][y]  = v;
   // matrix->gm[x][y] = v;
 
   check();

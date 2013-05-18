@@ -53,9 +53,11 @@ class SystemAPI{
                               MouseEvent& e,
                               int type );
 
-    static void sizeEvent(Tempest::Window *w,
+    static void sizeEvent( Tempest::Window *w,
                            int winW , int winH, int cW, int cH);
     static void activateEvent( Tempest::Window*w, bool a );
+
+    virtual bool isGraphicsContextAviable( Tempest::Window *w );
   protected:
     SystemAPI(){}
 
@@ -73,12 +75,17 @@ class SystemAPI{
                                 int &bpp,
                                 std::vector<unsigned char>& out ) = 0;
 
-    virtual bool loadS3TCImpl( const char *file,
+    virtual bool loadS3TCImpl(const std::vector<char> &data,
                                int &w,
                                int &h,
                                int &bpp,
                                std::vector<unsigned char> &out );
 
+    virtual bool loadPngImpl(const std::vector<char> &data,
+                             int &w,
+                             int &h,
+                             int &bpp,
+                             std::vector<unsigned char> &out );
   private:
     SystemAPI( const SystemAPI& ){}
     SystemAPI& operator = ( const SystemAPI&){return *this;}

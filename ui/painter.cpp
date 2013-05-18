@@ -263,8 +263,6 @@ Painter::Painter( PainterDevice &d ) :dev(d) {
 
 Painter::~Painter() {
   dev.setState( oldState );
-  dev.unsetTexture();
-  dev.setBlendMode( noBlend );
   dev.popState();
   }
 

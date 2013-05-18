@@ -205,10 +205,12 @@ bool Device::startRender(){
 
 bool Device::reset( const Options & opt ) {
   if( api.startRender( impl, data->isLost ) ){
-    invalidateDeviceObjects();
+    if( !hasManagedStorge() )
+      invalidateDeviceObjects();
 
     if( api.reset( impl, data->windowHwnd, opt ) ){
-      data->isLost = !restoreDeviceObjects();
+      if( !hasManagedStorge() )
+        data->isLost = !restoreDeviceObjects();
       } else {
       assert(0);
       }
