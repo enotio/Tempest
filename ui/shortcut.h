@@ -10,6 +10,8 @@ class Widget;
 
 class Shortcut {
   public:
+    Shortcut();
+
     Shortcut( Widget * w,
               KeyEvent::KeyType key,
               KeyEvent::KeyType md   = KeyEvent::K_NoKey );

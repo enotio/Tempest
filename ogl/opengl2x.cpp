@@ -296,6 +296,15 @@ void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
   setDevice(d);
 
   assert( !dev->isPainting );
+
+  dev->vbo    = 0;
+  dev->ibo    = 0;
+  dev->curVBO = 0;
+  dev->curIBO = 0;
+
+  dev->curVboOffsetIndex = 0;
+  dev->curIboOffsetIndex = 0;
+
   dev->isPainting = true;
 
   setupBuffers( 0, true, true, false );
@@ -308,17 +317,10 @@ void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
 void Opengl2x::endPaint  ( AbstractAPI::Device * d ) const{
   setDevice(d);
 
-  dev->decl = 0;
   assert( dev->isPainting );
   dev->isPainting = false;
   setupBuffers( 0, false, true, false );
-  dev->vbo    = 0;
-  dev->ibo    = 0;
-  dev->curVBO = 0;
-  dev->curIBO = 0;
-
-  dev->curVboOffsetIndex = 0;
-  dev->curIboOffsetIndex = 0;
+  dev->decl = 0;
   }
 
 AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
@@ -1175,7 +1177,8 @@ void Opengl2x::deleteVertexDecl( AbstractAPI::Device *,
 void Opengl2x::setVertexDeclaration( AbstractAPI::Device *d,
                                      AbstractAPI::VertexDecl* de ) const {
   setDevice(d);
-  dev->decl = (VertexDeclaration::Declarator*)de;
+
+  dev->decl   = (VertexDeclaration::Declarator*)de;
 
   if( dev->isPainting )
     setupBuffers( 0, true, true, false );
@@ -1284,6 +1287,7 @@ void Opengl2x::draw( AbstractAPI::Device *de,
                      AbstractAPI::PrimitiveType t,
                      int firstVertex, int pCount ) const {
   setDevice(de);
+
   setupBuffers( 0, false, false, true );
 
   if( dev->curIBO!=0 ){
@@ -1323,6 +1327,7 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
                             int iboOffsetIndex,
                             int pCount ) const {
   setDevice(de);
+
   if( !dev->ibo )
     return;
 

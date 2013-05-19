@@ -6,6 +6,13 @@
 
 using namespace Tempest;
 
+Shortcut::Shortcut() {
+  m.lkey    = 0;
+  m.key     = KeyEvent::K_NoKey;
+  m.modyfer = KeyEvent::K_NoKey;
+  m.owner   = 0;
+  }
+
 Shortcut::Shortcut( Widget *w,
                     KeyEvent::KeyType k,
                     Event::KeyType md ) {
@@ -30,12 +37,15 @@ Shortcut::~Shortcut() {
                            m.owner->skuts.begin() );
   }
 
-Shortcut &Shortcut::operator =(const Shortcut &sc) {
-  m.owner->skuts.resize( std::remove( m.owner->skuts.begin(), m.owner->skuts.end(), this ) -
-                         m.owner->skuts.begin() );
+Shortcut &Shortcut::operator =( const Shortcut &sc ) {
+  if( m.owner )
+    m.owner->skuts.resize( std::remove( m.owner->skuts.begin(), m.owner->skuts.end(), this ) -
+                           m.owner->skuts.begin() );
 
   m = sc.m;
-  m.owner->skuts.push_back(this);
+
+  if( m.owner )
+    m.owner->skuts.push_back(this);
 
   activated = sc.activated;
 
