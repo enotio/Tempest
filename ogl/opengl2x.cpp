@@ -301,6 +301,7 @@ void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
   dev->ibo    = 0;
   dev->curVBO = 0;
   dev->curIBO = 0;
+  dev->decl   = 0;
 
   dev->curVboOffsetIndex = 0;
   dev->curIboOffsetIndex = 0;
@@ -1177,6 +1178,9 @@ void Opengl2x::deleteVertexDecl( AbstractAPI::Device *,
 void Opengl2x::setVertexDeclaration( AbstractAPI::Device *d,
                                      AbstractAPI::VertexDecl* de ) const {
   setDevice(d);
+
+  if( dev->decl==(VertexDeclaration::Declarator*)de )
+    return;
 
   dev->decl   = (VertexDeclaration::Declarator*)de;
 

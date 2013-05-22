@@ -300,8 +300,8 @@ void Painter::setFont(const Bind::UserFont &f) {
 
 void Painter::drawText( int x, int y, int w, int h, const std::string &str,
                         int flag ) {
-  dev.textEngine().drawText( dev.rstate.orign.x+x,
-                             dev.rstate.orign.y+y,
+  dev.textEngine().drawText( x,
+                             y,
                              w, h, str, flag);
   }
 
