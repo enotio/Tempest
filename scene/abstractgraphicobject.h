@@ -78,6 +78,8 @@ class AbstractGraphicObject : public AbstractSceneObject {
 
     AbstractGraphicObject( Scene & s ):AbstractSceneObject(), scene(&s){
       setVisible(1);
+      vboH = 0;
+      iboH = 0;
       }
 
     AbstractGraphicObject( const AbstractGraphicObject& obj ):
@@ -95,6 +97,8 @@ class AbstractGraphicObject : public AbstractSceneObject {
 
       scene = obj.scene;
       mat   = obj.mat;
+      vboH  = obj.vboH;
+      iboH  = obj.iboH;
 
       AbstractSceneObject::operator =( obj );
       return *this;
@@ -110,6 +114,14 @@ class AbstractGraphicObject : public AbstractSceneObject {
       return mat;
       }
 
+    size_t vboHandle() const{
+      return vboH;
+      }
+
+    size_t iboHandle() const{
+      return iboH;
+      }
+
   protected:
     void onTransformChanged( const Tempest::Matrix4x4& old ) const {
       scene->onObjectTransform( this, old );
@@ -123,6 +135,7 @@ class AbstractGraphicObject : public AbstractSceneObject {
       scene->delObject( this );
       }
 
+    size_t vboH, iboH;
   private:
     Material mat;
     Scene * scene;

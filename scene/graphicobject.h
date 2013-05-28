@@ -17,7 +17,7 @@ class GraphicObject : public AbstractGraphicObject<Material> {
     typedef AbstractScene< AbstractGraphicObject<Material> > Scene;
 
     GraphicObject( Scene & s ) : AbstractGraphicObject<Material>(s) {
-      m_model = new ModelPtr<DefaultVertex>( Model<>());
+      m_model = new ModelPtr<DefaultVertex>( Model<>() );
 
       pos[0] = 0;
       pos[1] = 0;
@@ -42,6 +42,9 @@ class GraphicObject : public AbstractGraphicObject<Material> {
 
       const IModelPtr *m2  = reinterpret_cast< const IModelPtr*>(obj.m_model);
       m2->cloneTo(m_model);
+
+      this->vboH = obj.vboH;
+      this->iboH = obj.iboH;
 
       mat = obj.mat;
       std::copy( obj.pos,  obj.pos+3,  pos  );
@@ -100,6 +103,8 @@ class GraphicObject : public AbstractGraphicObject<Material> {
       new (m_model) ModelPtr<V>(md);
       computeMat();
 
+      this->vboH = md.vertexes().handle();
+      this->iboH = md.indexes().handle();
       this->sceneAddObject();
       }
 
@@ -203,6 +208,9 @@ class GraphicObject : public AbstractGraphicObject<Material> {
                          const AbstractCamera & camera) const = 0;
 
       virtual void draw( Render &r ) const = 0;
+
+      virtual size_t vboHandle() const = 0;
+      virtual size_t iboHandle() const = 0;
       };
 
     template< class V >
@@ -225,6 +233,14 @@ class GraphicObject : public AbstractGraphicObject<Material> {
 
       void draw( Render &r ) const {
         r.draw( model );
+        }
+
+      size_t vboHandle() const{
+        return model.vertexes().handle();
+        }
+
+      size_t iboHandle() const{
+        return model.indexes().handle();
         }
       };
 

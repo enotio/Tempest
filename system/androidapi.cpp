@@ -24,6 +24,8 @@ using namespace Tempest;
 #include <android_native_app_glue.h>
 #include <android/bitmap.h>
 
+#include <cmath>
+
 struct android_app;
 
 struct AEngine{
@@ -394,8 +396,9 @@ static int32_t handle_input( android_app* a, AInputEvent* event) {
     return 0;
 
   if( AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION ){
-    int x = AMotionEvent_getX(event, 0),
-        y = AMotionEvent_getY(event, 0);
+    int x = round( AMotionEvent_getX(event, 0) ),
+        y = round( AMotionEvent_getY(event, 0) );
+
     int action = AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_MASK;
 
     if( action==AMOTION_EVENT_ACTION_DOWN ){
@@ -583,6 +586,7 @@ static void render( android_app * a ) {
       }
 
     e->wnd->render();
+    sleep(0);
     }
   }
 #endif

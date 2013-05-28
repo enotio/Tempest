@@ -2,6 +2,7 @@
 #define PIXMAP_H
 
 #include <Tempest/CopyWhenNeedPtr>
+#include <Tempest/Color>
 #include <vector>
 #include <string>
 
@@ -64,6 +65,16 @@ class Pixmap {
         r.a = 255;
 
       return r;
+      }
+
+    inline void  set(int x, int y, const Color & p ) {
+      int px[4] = { int(p.r()*255),
+                    int(p.g()*255),
+                    int(p.b()*255),
+                    int(p.a()*255) };
+      Pixel pixel;
+      pixel.assign(px);
+      set(x,y, pixel);
       }
 
     inline void  set(int x, int y, const Pixel & p ) {

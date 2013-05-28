@@ -1412,6 +1412,10 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
   if( dev->renderState.cullFaceMode()!=r.cullFaceMode() )
     glCullFace( cull[ r.cullFaceMode() ] );
 
+  if( !r.isZTest() && !r.isZWriting() )
+    glDisable(GL_DEPTH_TEST); else
+    glEnable(GL_DEPTH_TEST);
+
   if( dev->renderState.isZTest() != r.isZTest() ||
       dev->renderState.getZTestMode()!=r.getZTestMode() ){
     if( r.isZTest() ){
