@@ -11,6 +11,8 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
     LocalTexturesHolder( Tempest::Device &d );
     ~LocalTexturesHolder();
 
+    void setMaxCollectIterations(int c);
+    int  maxCollectIterations() const;
   protected:
     struct NonFreedData {
       Tempest::AbstractAPI::Texture* handle;
@@ -65,6 +67,7 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
     std::vector< NonFreed > nonFreed, dynTextures;
 
     bool needToRestore;
+    int  mmaxColletIterations;
   };
 
 }
