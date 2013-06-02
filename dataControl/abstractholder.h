@@ -31,7 +31,11 @@ class AbstractHolderBase{
 template< class Data, class APIDescriptor >
 class AbstractHolder : public AbstractHolderBase {
   protected:
-    AbstractHolder( Device & d ):AbstractHolderBase(d){}
+    AbstractHolder( Device & d ):AbstractHolderBase(d){
+      references.reserve(4096);
+      freed.reserve(4096);
+      }
+
     ~AbstractHolder(){
       for( size_t i=0; i<freed.size(); ++i )
         delete freed[i];
