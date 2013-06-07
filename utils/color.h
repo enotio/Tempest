@@ -50,6 +50,17 @@ namespace Tempest{
       float b() const;
 			//! alpha канал.
       float a() const;
+
+      bool operator == ( const Color & other ) const {
+        return cdata[0]==other.cdata[0] &&
+               cdata[1]==other.cdata[1] &&
+               cdata[2]==other.cdata[2] &&
+               cdata[3]==other.cdata[3];
+        }
+
+      bool operator !=( const Color & other ) const {
+        return !(*this==other);
+        }
 		private:
       float cdata[4];
 	};

@@ -49,7 +49,7 @@ namespace Detail{
 
     int w,h;
     float anisotropyLevel;
-    GLenum format;
+    GLenum format, pixelFormat;
     };
   }
 }

@@ -704,11 +704,11 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
 
   GLenum format = frm[p.format()];
 
-  if( int(old->w)  == p.width() &&
-      int(old->h)  == p.height() &&
-      old->format  == format &&
-      old->mips    == mips   &&
-      old->compress== compress ){
+  if( int(old->w)      == p.width() &&
+      int(old->h)      == p.height() &&
+      old->format      == format &&
+      old->mips        == mips   &&
+      old->compress    == compress ){
     tex = old;
     } else {
     deleteTexture(d, oldT);
@@ -924,6 +924,7 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
       f==AbstractTexture::Format::RGBA )
     inFrm = GL_UNSIGNED_SHORT_5_5_5_1;
 
+  tex->pixelFormat = inFrm;
   glTexImage2D( GL_TEXTURE_2D, 0,
                 format[f], w, h, 0,
                 format[f],

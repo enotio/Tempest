@@ -15,4 +15,5 @@ Tempest::Detail::GLTexture::GLTexture() {
 
   fbo    = 0;  
   fboTg = 0;
+  pixelFormat = GL_UNSIGNED_BYTE;
   }
