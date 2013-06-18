@@ -21,7 +21,6 @@ struct Device::Data{
 
   Declarations declarations;
 
-  RenderTaget* currentRT;
   Tempest::AbstractAPI::StdDSSurface* depthStencil;
 
   struct {
@@ -34,7 +33,98 @@ struct Device::Data{
   int mrtSize;
 
   bool isLost;
-  void * windowHwnd;
+  void * windowHwnd;  
+
+  struct BeginPaintArg{
+    BeginPaintArg(){
+      ds        = 0;
+      isDelayd  = 0;
+      mrt.reserve(32);
+      }
+
+    std::vector<AbstractAPI::Texture*> mrt;
+    AbstractAPI::Texture* ds;
+    bool isDelayd;
+
+    void setup(){
+      mrt.clear();
+      ds = 0;
+      }
+
+    void setup( Texture2d rt[], int count ){
+      mrt.resize(count);
+
+      for( int i=0; i<count; ++i )
+        mrt[i] = rt[i].data.value();
+
+      ds = 0;
+      }
+
+    void setup( Texture2d rt[], int count, Texture2d &d ){
+      mrt.resize(count);
+
+      for( int i=0; i<count; ++i )
+        mrt[i] = rt[i].data.value();
+
+      ds = d.data.value();
+      }
+
+    void setup( Texture2d& rt, Texture2d &d ){
+      mrt.resize(1);
+      mrt[0] = rt.data.value();
+      ds = d.data.value();
+      }
+
+    void setup( Texture2d& rt ){
+      mrt.resize(1);
+      mrt[0] = rt.data.value();
+      ds = 0;
+      }
+
+    //
+
+    bool isSame(){
+      return mrt.size()==0 && ds==0;
+      }
+
+    bool isSame( Texture2d rt[], int count ){
+      if( int(mrt.size())!=count )
+        return 0;
+
+      for( int i=0; i<count; ++i )
+        if( mrt[i]!=rt[i].data.value() )
+          return 0;
+
+      return ds==0;
+      }
+
+    bool isSame( Texture2d rt[], int count, Texture2d &d ){
+      if( int(mrt.size())!=count )
+        return 0;
+
+      for( int i=0; i<count; ++i )
+        if( mrt[i]!=rt[i].data.value() )
+          return 0;
+
+      return ds==d.data.value();
+      }
+
+    bool isSame( Texture2d& rt, Texture2d &d ){
+      if( int(mrt.size())!=1 )
+        return 0;
+
+      return mrt[0]==rt.data.value() && ds==d.data.value();
+      }
+
+    bool isSame( Texture2d& rt ){
+      if( int(mrt.size())!=1 )
+        return 0;
+
+      return mrt[0]==rt.data.value() && ds==0;
+      }
+    };
+
+  BeginPaintArg paintTaget;
   };
 
 
@@ -100,12 +190,25 @@ void Device::clearStencil( unsigned s ) {
   }
 
 void Device::beginPaint(){
+  if( data->paintTaget.isDelayd && data->paintTaget.isSame() ){
+    return;
+    }
+
+  forceEndPaint();
+  data->paintTaget.setup();
+
   api.beginPaint(impl);
   shadingLang().beginPaint();
   }
 
 void Device::beginPaint( Texture2d &rt ) {
-  data->currentRT = 0;
+  if( data->paintTaget.isDelayd && data->paintTaget.isSame(rt) ){
+    return;
+    }
+
+  forceEndPaint();
+  data->paintTaget.setup(rt);
+
   data->mrtSize   = 1;
 
   api.setDSSurfaceTaget( impl, (AbstractAPI::Texture*)0 );
@@ -117,7 +220,13 @@ void Device::beginPaint( Texture2d &rt ) {
   }
 
 void Device::beginPaint( Texture2d &rt, Texture2d &depthStencil ) {
-  data->currentRT = 0;
+  if( data->paintTaget.isDelayd && data->paintTaget.isSame(rt, depthStencil) ){
+    return;
+    }
+
+  forceEndPaint();
+  data->paintTaget.setup(rt, depthStencil);
+
   data->mrtSize   = 1;
 
   api.setDSSurfaceTaget( impl, depthStencil.data.value() );
@@ -129,7 +238,13 @@ void Device::beginPaint( Texture2d &rt, Texture2d &depthStencil ) {
   }
 
 void Device::beginPaint( Texture2d rt[], int count ){
-  data->currentRT = 0;
+  if( data->paintTaget.isDelayd && data->paintTaget.isSame(rt, count) ){
+    return;
+    }
+
+  forceEndPaint();
+  data->paintTaget.setup(rt, count);
+
   data->mrtSize   = count;
 
   api.setDSSurfaceTaget( impl, (AbstractAPI::Texture*)0 );
@@ -144,7 +259,13 @@ void Device::beginPaint( Texture2d rt[], int count ){
 
 void Device::beginPaint( Texture2d rt[], int count,
                          Texture2d &depthStencil) {
-  data->currentRT = 0;
+  if( data->paintTaget.isDelayd && data->paintTaget.isSame(rt, count, depthStencil) ){
+    return;
+    }
+
+  forceEndPaint();
+  data->paintTaget.setup(rt, count, depthStencil);
+
   data->mrtSize   = count;
 
   api.setDSSurfaceTaget( impl, depthStencil.data.value() );
@@ -159,8 +280,17 @@ void Device::beginPaint( Texture2d rt[], int count,
   }
 
 void Device::endPaint  (){
+  data->paintTaget.isDelayd = true;
+  //forceEndPaint();
+  }
+
+void Device::forceEndPaint() const {
+  if( !data->paintTaget.isDelayd )
+    return;
+
   shadingLang().endPaint();
 
+  data->paintTaget.isDelayd = false;
   data->cash.vbo     = 0;
   data->cash.vboSize = 0;
   data->cash.ibo     = 0;
@@ -170,19 +300,12 @@ void Device::endPaint  (){
     api.unsetRenderTagets( impl, data->mrtSize );
 
     data->mrtSize = 0;
-    } else
-
-  if( data->currentRT==0 ){
-    api.endPaint(impl);
     } else {
-    //api.endPaint( impl,
-    //              data->currentRT->tex.data.value() );
-    data->currentRT = 0;
-    }  
+    api.endPaint(impl);
+    }
 
   api.setDSSurfaceTaget( impl, data->depthStencil );
   }
-
 
 void Device::setRenderState( const RenderState & r ) const {
   api.setRenderState( impl, r );
@@ -205,6 +328,8 @@ bool Device::startRender(){
 
 bool Device::reset( const Options & opt ) {
   if( api.startRender( impl, data->isLost ) ){
+    forceEndPaint();
+
     if( !hasManagedStorge() )
       invalidateDeviceObjects();
 
@@ -222,6 +347,8 @@ bool Device::reset( const Options & opt ) {
   }
 
 void Device::present(){
+  forceEndPaint();
+
   Data::HIterator end = data->holders.end();
 
   for( Data::HIterator i = data->holders.begin(); i!=end; ++i ){
@@ -238,6 +365,7 @@ bool Device::hasManagedStorge() const {
 AbstractAPI::Texture *Device::createTexture( const Pixmap &p,
                                              bool mips,
                                              bool compress ) {
+  forceEndPaint();
   return api.createTexture( impl, p, mips, compress );
   }
 
@@ -245,6 +373,7 @@ AbstractAPI::Texture *Device::recreateTexture( AbstractAPI::Texture *t,
                                                const Pixmap &p,
                                                bool mips,
                                                bool compress ) {
+  forceEndPaint();
   return api.recreateTexture(impl, t,p,mips, compress);
   }
 
@@ -252,80 +381,81 @@ AbstractAPI::Texture* Device::createTexture( int w, int h,
                                              bool mips,
                                              AbstractTexture::Format::Type f,
                                              TextureUsage u ) {
+  forceEndPaint();
   AbstractAPI::Texture* t = api.createTexture( impl, w, h, mips, f, u );
   return t;
   }
 
 void Device::deleteTexture( AbstractAPI::Texture* & t ){
+  forceEndPaint();
   api.deleteTexture( impl, t );
   }
-/*
-AbstractAPI::RenderTagetSurface Device::createRenderTaget( Texture2d &t,
-                                                      int mipLevel ) const {
-  return api.createRenderTaget( impl, t.data.const_value(), mipLevel );
-  }
-
-void Device::deleteRenderTaget( AbstractAPI::RenderTagetSurface t) const {
-  api.deleteRenderTaget( impl, t );
-  }*/
 
 AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el ){
+  forceEndPaint();
   return api.createVertexBuffer( impl, size, el );
   }
 
 AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el,
                                                        const void* src ){
+  forceEndPaint();
   return api.createVertexBuffer( impl, size, el, src );
   }
 
 void Device::deleteVertexBuffer( AbstractAPI::VertexBuffer* vbo ){
+  forceEndPaint();
   api.deleteVertexBuffer( impl, vbo );
   }
 
 AbstractAPI::IndexBuffer* Device::createIndexBuffer( size_t size,
                                                      size_t elSize ){
+  forceEndPaint();
   return api.createIndexBuffer( impl, size, elSize );
   }
 
 AbstractAPI::IndexBuffer *Device::createIndexBuffer( size_t size,
                                                      size_t elSize,
                                                      const void *src ) {
+  forceEndPaint();
   return api.createIndexBuffer( impl, size, elSize, src );
   }
 
 void Device::deleteIndexBuffer( AbstractAPI::IndexBuffer* b ){
+  forceEndPaint();
   api.deleteIndexBuffer( impl, b);
   }
 
 void* Device::lockBuffer( AbstractAPI::VertexBuffer * vbo,
                           unsigned off, unsigned size ){
+  forceEndPaint();
   return api.lockBuffer( impl, vbo, off, size);
   }
 
 void Device::unlockBuffer( AbstractAPI::VertexBuffer* vbo){
+  forceEndPaint();
   api.unlockBuffer( impl, vbo );
   }
 
 void* Device::lockBuffer( AbstractAPI::IndexBuffer * ibo,
                           unsigned offset, unsigned size ){
+  forceEndPaint();
   return api.lockBuffer( impl, ibo, offset, size );
   }
 
 void Device::unlockBuffer( AbstractAPI::IndexBuffer * ibo ) {
+  forceEndPaint();
   api.unlockBuffer( impl, ibo );
   }
 
 AbstractAPI::VertexDecl *
       Device::createVertexDecl( const VertexDeclaration::Declarator &de ) const {
+  forceEndPaint();
   return api.createVertexDecl( impl, de );
   }
 
 void Device::deleteVertexDecl( AbstractAPI::VertexDecl* d ) const {
+  forceEndPaint();
   api.deleteVertexDecl( impl, d );
-  }
-
-const AbstractShadingLang& Device::shadingLang(){
-  return *shLang;
   }
 
 void Device::bind( const Tempest::VertexShader &s ){
@@ -401,6 +531,8 @@ void Device::delVertexDeclaration( VertexDeclaration& h ){
 
 
 void Device::invalidateDeviceObjects(){
+  forceEndPaint();
+
   api.retDSSurfaceTaget( impl, data->depthStencil );
   data->depthStencil = 0;
 
@@ -423,14 +555,6 @@ void Device::invalidateDeviceObjects(){
         v->decl->impl = 0;
         }
       }
-    }
-
-  {/*
-    Data::RTIterator end = data->renderTagets.end();
-
-    for( Data::RTIterator i = data->renderTagets.begin(); i!=end; ++i ){
-      (*i)->reset();
-      }*/
     }
 
   }
@@ -456,14 +580,6 @@ bool Device::restoreDeviceObjects(){
         ok &= (v->decl->impl!=0);
         }
       }
-    }
-
-  {/*
-    Data::RTIterator end = data->renderTagets.end();
-
-    for( Data::RTIterator i = data->renderTagets.begin(); i!=end; ++i ){
-      ok &= (*i)->restore();
-      }*/
     }
 
   if( ok )

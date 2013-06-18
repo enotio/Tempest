@@ -20,7 +20,12 @@ Widget::Widget(ResourceContext *context):
 
   deleteLaterFlag = false;
 
-  mouseReleseReciver = 0;
+#ifdef __ANDROID__
+  mouseReleseReciver.reserve(8);
+#else
+  mouseReleseReciver.reserve(1);
+#endif
+  //mouseReleseReciver = 0;
   wvisible = true;
 
   //onResize.bind( *this, &Widget<Painter>::m_resized );
@@ -278,7 +283,7 @@ void Widget::mouseMoveEvent(MouseEvent &e){
   }
 
 void Widget::mouseDragEvent(MouseEvent &e) {
-  if( mouseReleseReciver )
+  if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
     impl_mouseDragEvent( this, e ); else
     e.ignore();
   execDeleteRoot();
@@ -296,16 +301,21 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
 
     if( !w->isScissorUsed() ||
         w->rect().contains( e.x, e.y, true ) ){
-      MouseEvent et(e.x - w->x(),
-                    e.y - w->y(),
-                    e.button, e.delta);
+      MouseEvent et( e.x - w->x(),
+                     e.y - w->y(),
+                     e.button,
+                     e.delta,
+                     e.mouseID );
       et.ignore();
 
       Widget* deep = w->impl_mouseEvent(et, f, focus, mpress);
       if( et.isAccepted() ){
         e.accept();
-        if( mpress )
-          w->mouseReleseReciver = deep;
+        if( mpress ){
+          if( w->mouseReleseReciver.size() < size_t(et.mouseID+1) )
+            w->mouseReleseReciver.resize( et.mouseID+1 );
+          w->mouseReleseReciver[et.mouseID] = deep;
+          }
         return w;
         }
 
@@ -316,8 +326,11 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
 
       if( et.isAccepted() ){
         e.accept();
-        if( mpress )
-          mouseReleseReciver = w;
+        if( mpress ){
+          if( mouseReleseReciver.size() < size_t(et.mouseID+1) )
+            mouseReleseReciver.resize( et.mouseID+1 );
+          mouseReleseReciver[et.mouseID] = w;
+          }
 
         if( focus &&  w->focusPolicy()==ClickFocus )
           w->setFocus(1);
@@ -339,8 +352,10 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
 
 void Widget::mouseDownEvent(MouseEvent &e){
   if( owner()==0 ){
-    mouseReleseReciver = impl_mouseEvent( e, &Widget::mouseDownEvent,
-                                          true, true );
+    if( mouseReleseReciver.size() < size_t(e.mouseID+1) )
+      mouseReleseReciver.resize( e.mouseID+1 );
+    mouseReleseReciver[e.mouseID] = impl_mouseEvent( e, &Widget::mouseDownEvent,
+                                                     true, true );
     return;
     }
 
@@ -349,7 +364,7 @@ void Widget::mouseDownEvent(MouseEvent &e){
   }
 
 void Widget::mouseUpEvent(MouseEvent &e) {
-  if( mouseReleseReciver )
+  if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
     impl_mouseUpEvent( this, e ); else
     e.ignore();
   execDeleteRoot();
@@ -472,34 +487,43 @@ void Widget::paintNested( PaintEvent &p ){
   }
 
 void Widget::impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e ){
-  if( w->mouseReleseReciver==0 ){
+  if( !( size_t(e.mouseID) < w->mouseReleseReciver.size() && w->mouseReleseReciver[e.mouseID]) ){
     w->mouseDragEvent(e);
     return;
     }
 
+  Widget *rec = 0;
+  if( size_t(e.mouseID) < w->mouseReleseReciver.size() )
+    rec = w->mouseReleseReciver[e.mouseID];
+
   if( std::find( w->layout().widgets().begin(),
                  w->layout().widgets().end(),
-                 w->mouseReleseReciver )
+                 rec )
       !=layout().widgets().end() ){
-    Widget * r = w->mouseReleseReciver;
-    Tempest::MouseEvent ex( e.x - r->x(), e.y - r->y(), e.button, e.delta );
+    Widget * r = rec;
+    Tempest::MouseEvent ex( e.x - r->x(), e.y - r->y(), e.button, e.delta, e.mouseID );
 
     impl_mouseDragEvent( r, ex);
     }
   }
 
 void Widget::impl_mouseUpEvent( Widget* w, Tempest::MouseEvent & e ){
-  if( w->mouseReleseReciver==0 ){
+  if( !( size_t(e.mouseID) < w->mouseReleseReciver.size() && w->mouseReleseReciver[e.mouseID]) ){
     w->mouseUpEvent(e);
     return;
     }
 
-  if( w->mouseReleseReciver ){
-    Widget * r = w->mouseReleseReciver;
+  Widget * rec = 0;
+  if( size_t(e.mouseID) < w->mouseReleseReciver.size() )
+    rec = w->mouseReleseReciver[e.mouseID];
+
+  if( rec ){
+    Widget * r = rec;
     Tempest::MouseEvent ex( e.x - r->x(), e.y - r->y(), e.button, e.delta );
 
     impl_mouseUpEvent( r, ex );
-    w->mouseReleseReciver = 0;
+    if( size_t(e.mouseID) < w->mouseReleseReciver.size() )
+      w->mouseReleseReciver[e.mouseID] = 0;
     }
   }
 
@@ -613,8 +637,9 @@ void Widget::execDeleteRoot() {
   }
 
 void Widget::execDelete() {
-  if( mouseReleseReciver == layout().execDelete() )
-    mouseReleseReciver = 0;
+  for( size_t i=0; i<mouseReleseReciver.size(); ++i )
+    if( mouseReleseReciver[i] == layout().execDelete() )
+      mouseReleseReciver[i] = 0;
 
   for( size_t i=0; i<layout().widgets().size(); ++i ){
     layout().widgets()[i]->execDelete();

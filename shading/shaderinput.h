@@ -32,6 +32,22 @@ class ShaderInput {
     template< int s >
     struct Vec{
       float v[s];
+
+      bool operator == ( const Vec<s>& t ) const {
+        for( int i=0; i<s; ++i )
+          if( v[i]!=t.v[i] )
+            return 0;
+
+        return 1;
+        }
+
+      bool operator != ( const Vec<s>& t ) const {
+        for( int i=0; i<s; ++i )
+          if( v[i]!=t.v[i] )
+            return 1;
+
+        return 0;
+        }
       };
 
     template< class T >
@@ -39,20 +55,31 @@ class ShaderInput {
       Chunk(){
         names. reserve(32);
         values.reserve(32);
+        id.    reserve(32);
         }
 
-      std::vector<std::string> names;
-      std::vector<T>           values;
+      std::vector<std::string>   names;
+      std::vector<T>             values;
+      mutable std::vector<void*> id;
 
       void set( const char* name, const T & t ){
         for( size_t i=0; i<names.size(); ++i )
           if( name==names[i] ){
-            values[i] = t;
+            if( values[i] != t ){
+              values[i] =  t;
+              id[i]     = (void*)size_t(-1);
+              }
             return;
             }
 
         names.push_back( name );
         values.push_back(t);
+        id.push_back(0);
+        }
+
+      void resetID() const {
+        for( size_t i=0; i<id.size(); ++i )
+          id[i] = (void*)size_t(-1);
         }
       };
 
@@ -62,6 +89,16 @@ class ShaderInput {
     Chunk< Vec<4> >    v4;
     Chunk< const Texture2d* > tex;
     Chunk< Matrix4x4 > mat;
+
+    void resetID() const{
+      v1.resetID();
+      v2.resetID();
+      v3.resetID();
+      v4.resetID();
+
+      tex.resetID();
+      mat.resetID();
+      }
   };
 
 }

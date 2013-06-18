@@ -116,13 +116,17 @@ struct GLSL::Data{
     GLuint fs;
 
     GLuint linked;
+
+    std::vector<GLint> textureID;
     };
 
   std::vector<ShProgram> prog;
   bool cgcgen;
   bool hasAnisotropic;
 
-  GLuint curProgram;
+  //GLuint curProgram;
+  ShProgram curProgram;
+  void* notId;
   };
 
 void* GLSL::context() const{
@@ -132,6 +136,7 @@ void* GLSL::context() const{
 GLSL::GLSL( AbstractAPI::OpenGL2xDevice * dev ) {
   data = new Data();
   data->context = dev;
+  data->notId = (void*)size_t(-1);
 
   data->currentVS = 0;
   data->currentFS = 0;
@@ -146,6 +151,10 @@ GLSL::GLSL( AbstractAPI::OpenGL2xDevice * dev ) {
   if( data->hasAnisotropic )
     glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &data->maxAnisotropy );
 //#endif
+
+  data->curProgram.fs = 0;
+  data->curProgram.vs = 0;
+  data->curProgram.linked = 0;
   }
 
 GLSL::~GLSL(){
@@ -166,7 +175,7 @@ void Tempest::GLSL::endPaint() const {
   data->currentFS = 0;
   data->fsCash.reset();
 
-  data->curProgram = 0;
+  data->curProgram.linked = 0;
   //cgGLDisableProfile( data->pixelProfile );
   }
 
@@ -252,25 +261,32 @@ void GLSL::deleteFragmentShader( FragmentShader* s ) const{
   }
 
 void GLSL::bind( const Tempest::VertexShader& s ) const {
-  data->currentVS = &s;
+  if( data->currentVS != &s ){
+    data->currentVS = &s;
+    inputOf(s).resetID();
+    }
   }
 
 void GLSL::bind( const Tempest::FragmentShader& s ) const {
-  data->currentFS = &s;
+  if( data->currentFS != &s ){
+    data->currentFS = &s;
+    inputOf(s).resetID();
+    }
   }
 
-void GLSL::unBind( const Tempest::VertexShader& ) const {
-  //CGprogram prog = CGprogram( get(s) );
+void GLSL::unBind( const Tempest::VertexShader& s ) const {
   data->currentVS = 0;
   data->vsCash.reset();
+  inputOf(s).resetID();
 
   //setDevice();
   }
 
-void GLSL::unBind( const Tempest::FragmentShader& ) const {
+void GLSL::unBind( const Tempest::FragmentShader& s ) const {
   //CGprogram prog = CGprogram( get(s) );
   data->currentFS = 0;
   data->fsCash.reset();
+  inputOf(s).resetID();
 
   //setDevice();
   }
@@ -284,7 +300,12 @@ void GLSL::enable() const {
   GLuint pixelShader  = *(GLuint*)get( *data->currentFS );
   GLuint program = 0;
 
-  for( size_t i=0; i<data->prog.size(); ++i )
+  if( data->curProgram.vs == vertexShader &&
+      data->curProgram.fs == pixelShader ){
+    program = data->curProgram.linked;
+    }
+
+  for( size_t i=0; !program && i<data->prog.size(); ++i )
     if( data->prog[i].vs == vertexShader &&
         data->prog[i].fs == pixelShader ){
       program = data->prog[i].linked;
@@ -358,6 +379,8 @@ void GLSL::enable() const {
     s.vs = vertexShader;
     s.fs = pixelShader;
     s.linked = program;
+    s.textureID.reserve(8);
+
     data->prog.push_back( s );
 
     /*
@@ -366,21 +389,35 @@ void GLSL::enable() const {
     std::cout << vl;*/
     }
 
-  if( program != data->curProgram){
+  if( program != data->curProgram.linked ){
     glUseProgram( program );
-    data->curProgram = program;
+    data->curProgram.linked = program;
+    data->curProgram.vs = vertexShader;
+    data->curProgram.fs = pixelShader;
+
     data->vsCash.reset();
     data->fsCash.reset();
+
+    std::fill( data->curProgram.textureID.begin(),
+               data->curProgram.textureID.end(),
+               -1 );
     }
 
   { const ShaderInput & in = inputOf( *data->currentFS );
 
     for( size_t i=0; i<in.tex.names.size(); ++i ){
-      setUniform( program, *in.tex.values[i], in.tex.names[i].data(), i );
+      setUniform( program,
+                  *in.tex.values[i],
+                  in.tex.names[i].data(), i,
+                  in.tex.id[i],
+                  data->curProgram.textureID );
       }
 
     for( size_t i=0; i<in.mat.names.size(); ++i ){
-      setUniform( program, in.mat.values[i], in.mat.names[i].data() );
+      setUniform( program,
+                  in.mat.values[i],
+                  in.mat.names[i].data(),
+                  in.mat.id[i] );
       }
 
     setUniforms( program, in.v1, 1 );
@@ -392,7 +429,10 @@ void GLSL::enable() const {
   { const ShaderInput & in = inputOf( *data->currentVS );
 
     for( size_t i=0; i<in.mat.names.size(); ++i ){
-      setUniform( program, in.mat.values[i], in.mat.names[i].data() );
+      setUniform( program,
+                  in.mat.values[i],
+                  in.mat.names[i].data(),
+                  in.mat.id[i] );
       }
 
     setUniforms( program, in.v1, 1 );
@@ -406,20 +446,23 @@ void GLSL::enable() const {
 template< class T >
 void GLSL::setUniforms( unsigned int s, const T & vN, int c ) const{
   for( size_t i=0; i<vN.names.size(); ++i ){
-    setUniform( s, vN.values[i].v, c, vN.names[i].data() );
+    setUniform( s, vN.values[i].v, c, vN.names[i].data(), vN.id[i] );
     }
   }
 
 void GLSL::setUniform( unsigned int s,
                        const Matrix4x4& mIn,
-                       const char *name  ) const{
-  //setDevice();
+                       const char *name,
+                       void *&id  ) const{
+  if( id!=data->notId )
+    return;
   Matrix4x4 m = mIn;
 
   GLuint   prog = s;
   GLint    prm = data->location( prog, name );
   if( prm==-1 )
     return;
+  id = (void*)size_t(prm);
 
   if( !data->vsCash.fetch(prm, m) ){
     float r[16] = {};
@@ -432,11 +475,16 @@ void GLSL::setUniform( unsigned int s,
 void GLSL::setUniform( unsigned int s,
                        const float v[],
                        int l,
-                       const char *name ) const{
+                       const char *name,
+                       void *&id ) const{
+  if( id!=data->notId )
+    return;
+
   GLuint    prog = s;
   GLint     prm  = data->location( prog, name );
   if( prm==-1 )
     return;
+  id = (void*)size_t(prm);
 
   if( !data->vsCash.fetch(prm, v, l) ){
     //Data::dbg(prm, data->context);
@@ -453,11 +501,17 @@ void GLSL::setUniform( unsigned int s,
 void GLSL::setUniform( unsigned int sh,
                        const Texture2d& u,
                        const char *name,
-                       int slot ) const{
+                       int slot,
+                       void *&id,
+                       std::vector<int> &loc ) const{
+  if( id!=data->notId )
+    return;
+
   GLuint    prog = sh;
   GLint     prm = data->location( prog, name );
   if( prm==-1 )
     return;
+  id = (void*)size_t(prm);
 
   const Texture2d::Sampler & s = u.sampler();
   //Data::dbg(prm, data->context);
@@ -562,7 +616,13 @@ void GLSL::setUniform( unsigned int sh,
         }
 //#endif
 
-      glUniform1i( prm, slot );
+      if( int(loc.size())<=prm )
+        loc.resize( prm+1, -1 );
+
+      if( loc[prm]!=slot ){
+        glUniform1i( prm, slot );
+        loc[prm] = slot;
+        }
 
       glActiveTexture( GL_TEXTURE0 );
       }

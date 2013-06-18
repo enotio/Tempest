@@ -58,28 +58,7 @@ Render::~Render(){
 void Render::clear( const Tempest::Color & cl, double z ){
   device.clear( cl, z );
   }
-/*
-void Render::draw( const AbstractMaterial & mat,
-                   const Model & model,
-                   const Tempest::Matrix4x4 & object,
-                   const AbstractCamera & camera ){
-  Tempest::UniformTable table( device, vsh, fsh );
-  Tempest::RenderState rs;
 
-  if( mat.bind( rs, object, camera, table ) ){
-    device.setRenderState(rs);
-
-    device.drawPrimitive( model.primitiveType(),
-                          vsh,
-                          fsh,
-                          model.declaration(),
-                          model.vertexes(),
-                          0,
-                          model.size() );
-    mat.ubind();
-    }
-  }
-*/
 void Render::setRenderState(const RenderState &rs) {
   if( rs!=state ){
     device.setRenderState( rs );

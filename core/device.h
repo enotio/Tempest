@@ -28,8 +28,6 @@ class IndexBuffer;
 
 class AbstractHolderBase;
 
-class RenderTaget;
-
 template< class T >
 class Uniform;
 
@@ -54,16 +52,16 @@ class Device {
     void clearZ( float z );
     void clearStencil( unsigned stencil );
 
-    void beginPaint();
-    void endPaint  ();
-
-    void setRenderState( const RenderState & ) const;
-
     void beginPaint( Texture2d & rt );
     void beginPaint( Texture2d & rt, Texture2d &depthStencil  );
 
     void beginPaint( Texture2d rt[], int count );
     void beginPaint( Texture2d rt[], int count, Texture2d &depthStencil );
+
+    void beginPaint();
+    void endPaint  ();
+
+    void setRenderState( const RenderState & ) const;
 
     bool startRender();
     bool reset( const Options &opt = Options() );
@@ -76,7 +74,6 @@ class Device {
                      const T t[], int l,
                      const std::string & name ){
       s.input.set(name, t, l);
-      //shadingLang().setUniform(s, t, l, name);
       }
 
     template< class T >
@@ -84,7 +81,6 @@ class Device {
                      const T t[], int l,
                      const char* name ){
       s.input.set(name, t, l);
-      //shadingLang().setUniform(s, t, l, name);
       }
 
     template< class T >
@@ -92,14 +88,12 @@ class Device {
                      const T t[], int l,
                      const std::string & name ){
       s.input.set(name.data(), t, l);
-      //shadingLang().setUniform( s, t, l, name);
       }
 
     template< class T >
     void setUniform( Tempest::FragmentShader &s,
                      const Uniform<T> & u ){
       s.input.set( u );
-      //shadingLang().setUniform( s, u, u.sinput );
       }
 
     template< class T >
@@ -107,7 +101,6 @@ class Device {
                      const T t[], int l,
                      const char* name ){
       s.input.set(name, t, l);
-      //shadingLang().setUniform( s, t, l, name);
       }
 
     template< class T >
@@ -115,14 +108,12 @@ class Device {
                      const T& t,
                      const std::string & name ){
       s.input.set( name.data(), t );
-      //shadingLang().setUniform(s,t,name);
       }
 
     template< class T >
     void setUniform( Tempest::VertexShader &s,
                      const Uniform<T>& u ){
       s.input.set( u );
-      //shadingLang().setUniform( s, u, u.sinput );
       }
 
     template< class T >
@@ -130,7 +121,6 @@ class Device {
                      const T& t,
                      const char* name ){
       s.input.set( name, t );
-      //shadingLang().setUniform(s,t,name);
       }
 
     template< class T >
@@ -138,7 +128,6 @@ class Device {
                      const T& t,
                      const std::string& name ){
       s.input.set( name.data(), t );
-      //shadingLang().setUniform(s,t,name);
       }
 
     template< class T >
@@ -146,7 +135,6 @@ class Device {
                      const T& t,
                      const char* name ){
       s.input.set( name, t );
-      //shadingLang().setUniform(s,t,name);
       }
 
     template< class T >
@@ -265,13 +253,14 @@ class Device {
 
     void deleteVertexDecl( AbstractAPI::VertexDecl* ) const;
 
-    const AbstractShadingLang& shadingLang();
+    inline const AbstractShadingLang& shadingLang() const {
+      return *shLang;
+      }
 
     const AbstractShadingLang * shLang;
 
     Device( const Device&d ):api(d.api){}
     void operator = ( const Device& ){}
-
 
     AbstractAPI::Device* impl;
     const AbstractAPI & api;
@@ -285,6 +274,8 @@ class Device {
     void init( const AbstractAPI & dx,
                const Options & opt,
                void * windowHwnd );
+
+    void forceEndPaint() const;
 
   friend class VertexShaderHolder;
   friend class FragmentShaderHolder;

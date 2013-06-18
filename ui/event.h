@@ -39,7 +39,11 @@ class Event {
 
       K_Back,
       K_Delete,
+      K_Insert,
       K_Return,
+      K_Home,
+      K_End,
+      K_Pause,
 
       K_F1,
       K_F2,
@@ -115,11 +119,14 @@ class MouseEvent : public Event {
   public:
     MouseEvent( int mx = -1, int my = -1,
                 MouseButton b = ButtonNone,
-                int mdelta = 0 )
-      :x(mx), y(my), delta(mdelta), button(b){}
+                int mdelta = 0,
+                int mouseID = 0 )
+      :x(mx), y(my), delta(mdelta), button(b), mouseID(mouseID){}
 
     const int x, y, delta;
     const MouseButton button;
+
+    const int mouseID;
 
     Point pos() const;
   };

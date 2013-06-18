@@ -153,7 +153,7 @@ class Widget {
     FocusPolicy fpolicy;
 
     bool focus, chFocus, uscissor;
-    Widget* mouseReleseReciver;
+    std::vector<Widget*> mouseReleseReciver;
     Layout * lay;
     Layout * parentLay;
 

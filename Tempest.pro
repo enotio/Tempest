@@ -23,6 +23,8 @@ INCLUDEPATH += \
                "./thirdparty/fakeGL" \
                "./thirdparty/" \
                "."
+
+
 #DEFINES += D3D_DEBUG_INFO
 
 ogl:{

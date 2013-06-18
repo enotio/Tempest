@@ -48,6 +48,9 @@ class Matrix4x4{
 
     Matrix4x4& operator = ( const Matrix4x4& other );
     bool operator == ( const Matrix4x4& other ) const;
+    bool operator != ( const Matrix4x4& other ) const{
+      return !( *this==other );
+      }
   private:
     float m[4][4];
 

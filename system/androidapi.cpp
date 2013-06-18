@@ -389,6 +389,48 @@ bool AndroidAPI::isGraphicsContextAviable( Tempest::Window *w ) {
   return 1;//isContextAviable;
   }
 
+
+static Tempest::KeyEvent makeKeyEvent( int32_t k, bool scut = false ){
+  Tempest::KeyEvent::KeyType e = Tempest::KeyEvent::K_NoKey;
+
+  if( k==AKEYCODE_BACK )
+    e = Tempest::KeyEvent::K_ESCAPE;//PostQuitMessage(0);
+
+  if( k==AKEYCODE_BACK ){
+    e = Tempest::KeyEvent::K_Back;
+    }
+
+  if( k==AKEYCODE_DEL ){
+    e = Tempest::KeyEvent::K_Delete;
+    }
+
+  //if( k==VK_RETURN ){
+    //e = Tempest::KeyEvent::K_Return;
+    //}
+
+  if( k==AKEYCODE_DPAD_UP  )
+    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_Up) );
+
+  if( k==AKEYCODE_DPAD_DOWN  )
+    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_Down) );
+
+  if( k==AKEYCODE_DPAD_LEFT  )
+    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_Left) );
+
+  if( k==AKEYCODE_DPAD_RIGHT  )
+    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_Right) );
+
+  if( scut ){
+    if( k>=AKEYCODE_A && k<=AKEYCODE_Z )
+      e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_A) + size_t(k) - AKEYCODE_A );
+
+    if( k>=AKEYCODE_0 && k<=AKEYCODE_9 )
+      e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_0) + size_t(k) - AKEYCODE_0 );
+    }
+
+  return Tempest::KeyEvent(e);
+  }
+
 static int32_t handle_input( android_app* a, AInputEvent* event) {
   AEngine *e = (AEngine*)a->userData;
 
@@ -396,41 +438,70 @@ static int32_t handle_input( android_app* a, AInputEvent* event) {
     return 0;
 
   if( AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION ){
-    int x = round( AMotionEvent_getX(event, 0) ),
-        y = round( AMotionEvent_getY(event, 0) );
+    int32_t c = AMotionEvent_getPointerCount(event);
 
-    int action = AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_MASK;
+    for( int32_t i=0; i<c; ++i ){
+      //int32_t id = i;//AMotionEvent_getPointerId(event, i);
+      int x = round( AMotionEvent_getX(event, i) ),
+          y = round( AMotionEvent_getY(event, i) );
 
-    if( action==AMOTION_EVENT_ACTION_DOWN ){
-      MouseEvent ex( x, y, Tempest::Event::ButtonLeft );
-      e->wnd->mouseDownEvent(ex);
-      }
-    else
-    if( action==AMOTION_EVENT_ACTION_UP ){
-      MouseEvent ex( x, y, Tempest::Event::ButtonLeft );
-      e->wnd->mouseUpEvent(ex);
-      }
-    else
-    if( action==AMOTION_EVENT_ACTION_MOVE ){
-      MouseEvent ex( x, y, Tempest::Event::ButtonNone );
-      e->wnd->mouseDragEvent(ex);
+      int action = AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_MASK;
+      int32_t id = AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK;
+      id >>= AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT; 
 
-      if( !ex.isAccepted() )
-        e->wnd->mouseMoveEvent(ex);
+      LOGI("touch id = %d", id);
+
+      if( action==AMOTION_EVENT_ACTION_DOWN ){
+        MouseEvent ex( x, y, Tempest::Event::ButtonLeft, 0, id );
+        e->wnd->mouseDownEvent(ex);
+        }
+      else
+      if( action==AMOTION_EVENT_ACTION_UP ){
+        MouseEvent ex( x, y, Tempest::Event::ButtonLeft, 0, id );
+        e->wnd->mouseUpEvent(ex);
+        }
+      else
+      if( action==AMOTION_EVENT_ACTION_MOVE ){
+        MouseEvent ex( x, y, Tempest::Event::ButtonNone, 0, id );
+        e->wnd->mouseDragEvent(ex);
+
+        if( !ex.isAccepted() )
+          e->wnd->mouseMoveEvent(ex);
+        }
       }
     return 1;
     }
 
-  if( AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION ){
-    int x = AMotionEvent_getX(event, 0),
-        y = AMotionEvent_getY(event, 0);
+  if( AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY ){
+    int32_t key_val = AKeyEvent_getKeyCode(event);    
+    int action = AKeyEvent_getAction(event) & AMOTION_EVENT_ACTION_MASK;
 
-    MouseEvent ex( x, y, Tempest::Event::ButtonNone );
-    e->wnd->mouseDragEvent(ex);
+    if( action==AKEY_EVENT_ACTION_DOWN ){
+      Tempest::KeyEvent sce = makeKeyEvent(key_val, true);
+      //w->scutEvent(sce);
+      sce.ignore();
+      e->wnd->shortcutEvent(sce);
 
-    if( !ex.isAccepted() )
-      e->wnd->mouseMoveEvent(ex);
-    return 1;
+      if( !sce.isAccepted() ){
+        Tempest::KeyEvent ev =  makeKeyEvent(key_val);
+        ev.ignore();
+        if( ev.key!=Tempest::KeyEvent::K_NoKey )
+          e->wnd->keyDownEvent( ev );
+
+        return ev.isAccepted();
+        }
+      }
+
+
+    if( action==AKEY_EVENT_ACTION_UP ){
+      Tempest::KeyEvent ev =  makeKeyEvent(key_val);
+      ev.ignore();
+
+      e->wnd->keyUpEvent( ev );
+      return ev.isAccepted();
+      }
+
+    return 0;
     }
 
   return 0;
@@ -480,9 +551,9 @@ static void initDisplay(android_app *app){
   const EGLint attribs[] = {
     EGL_SURFACE_TYPE,
     EGL_WINDOW_BIT,
-    EGL_BLUE_SIZE, 4,
-    EGL_GREEN_SIZE, 4,
-    EGL_RED_SIZE, 4,
+    EGL_BLUE_SIZE, 5,
+    EGL_GREEN_SIZE, 6,
+    EGL_RED_SIZE, 5,
     EGL_DEPTH_SIZE,   16,
     EGL_STENCIL_SIZE, 0,
     EGL_NONE
@@ -571,7 +642,7 @@ static void render( android_app * a ) {
     eglQuerySurface(e->display, e->surface, EGL_HEIGHT, &h);
 
     if( e->forceToResize ||
-      (e->window_w!=w || e->window_h!=h) ){
+        (e->window_w!=w || e->window_h!=h) ){
       e->window_w = w;
       e->window_h = h;
 

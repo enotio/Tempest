@@ -436,6 +436,22 @@ static Tempest::KeyEvent makeKeyEvent( WPARAM k,
     e = Tempest::KeyEvent::K_Delete;
     }
 
+  if( k==VK_INSERT ){
+    e = Tempest::KeyEvent::K_Insert;
+    }
+
+  if( k==VK_HOME ){
+    e = Tempest::KeyEvent::K_Home;
+    }
+
+  if( k==VK_END ){
+    e = Tempest::KeyEvent::K_End;
+    }
+
+  if( k==VK_PAUSE ){
+    e = Tempest::KeyEvent::K_Pause;
+    }
+
   if( k==VK_RETURN ){
     e = Tempest::KeyEvent::K_Return;
     }
