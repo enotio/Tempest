@@ -29,6 +29,11 @@ class AbstractAPI {
       bool windowed;
       };
 
+    struct Caps{
+      int maxTextureSize;
+      int maxRTCount;
+      };
+
     enum PrimitiveType{
       Points        = 1,
       Lines         = 2,
@@ -38,6 +43,10 @@ class AbstractAPI {
       TriangleFan   = 6,
 
       lastPrimitiveType
+      };
+
+    enum TextureFlag {
+      TF_Inialized
       };
 
     class Texture;
@@ -50,18 +59,11 @@ class AbstractAPI {
     class FragmentShader;
     class VertexShader;
 
-    // class RenderTaget;
-    // class Surface;
-/*
-    struct RenderTagetSurface{
-      RenderTaget * renderTaget;
-      Surface     * surface;
-      };
-*/
     class Device;
     class DirectX9Device;
     class OpenGL2xDevice;
 
+    virtual Caps caps( Device* d ) const = 0;
 
     virtual Device* createDevice( void * hwnd, const Options & opt ) const = 0;
     virtual void    deleteDevice( Device* d )  const = 0;
@@ -130,14 +132,11 @@ class AbstractAPI {
 
     virtual void deleteTexture( AbstractAPI::Device *d,
                                 AbstractAPI::Texture *t) const = 0;
-/*
-    virtual AbstractAPI::RenderTagetSurface
-                  createRenderTaget( AbstractAPI::Device *d,
-                                     AbstractAPI::Texture *t,
-                                     int mipLevel ) const = 0;
 
-    virtual void deleteRenderTaget( AbstractAPI::Device *d,
-                                    AbstractAPI::RenderTagetSurface t) const = 0;*/
+    virtual void setTextureFlag( AbstractAPI::Device  */*d*/,
+                                 AbstractAPI::Texture */*t*/,
+                                 TextureFlag /*f*/,
+                                 bool /*v*/ ) const {}
 
     virtual AbstractAPI::VertexBuffer*
                 createVertexBuffer( AbstractAPI::Device *d,

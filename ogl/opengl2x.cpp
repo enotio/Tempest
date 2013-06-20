@@ -8,7 +8,6 @@
 #include <EGL/egl.h>
 #include <GLES/gl.h>
 #include <GLES2/gl2.h>
-// #include <SDL.h>
 #include <android/log.h>
 #else
 #include <windows.h>
@@ -39,7 +38,13 @@
 #include "system/androidapi.h"
 #endif
 
+#define GL_COLOR_BUFFER_BIT0_QCOM                     0x00000001
+#define GL_DEPTH_BUFFER_BIT0_QCOM                     0x00000100
+#define GL_STENCIL_BUFFER_BIT0_QCOM                   0x00010000
+
 using namespace Tempest;
+typedef void (*PFNGLSTARTTILINGQCOMPROC) (GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
+typedef void (*PFNGLENDTILINGQCOMPROC) (GLbitfield preserveMask);
 
 struct Opengl2x::Device{
 #ifdef __ANDROID__
@@ -53,6 +58,7 @@ struct Opengl2x::Device{
        hasHalfSupport;
 
   int scrW, scrH;
+  AbstractAPI::Caps caps;
 
   VertexDeclaration::Declarator * decl;
   GLuint vbo, curVBO;
@@ -115,6 +121,16 @@ struct Opengl2x::Device{
 
     return v;
     }
+
+  Color clearColor;
+  float clearDepth;
+  unsigned  clearS;
+
+  bool hasTileBasedRender;
+
+  PFNGLSTARTTILINGQCOMPROC glStartTilingQCOM;
+  PFNGLENDTILINGQCOMPROC   glEndTilingQCOM;
+  bool isTileRenderStarted;
   };
 
 void Opengl2x::errCk() const {
@@ -138,6 +154,11 @@ Opengl2x::Opengl2x( ShaderLang sl ):impl(0){
   }
 
 Opengl2x::~Opengl2x(){
+  }
+
+Opengl2x::Caps Opengl2x::caps( AbstractAPI::Device* d ) const {
+  Device * dev = (Device*)d;
+  return dev->caps;
   }
 
 AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) const {
@@ -184,7 +205,17 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->hasS3tcTextures =
       (strstr(ext, "GL_OES_texture_compression_S3TC")!=0) ||
       (strstr(ext, "GL_EXT_texture_compression_s3tc")!=0);
-  dev->hasHalfSupport = strstr(ext, "GL_OES_vertex_half_float")!=0;
+  dev->hasHalfSupport     = strstr(ext, "GL_OES_vertex_half_float")!=0;
+  dev->hasTileBasedRender = strstr(ext, "GL_QCOM_tiled_rendering")!=0;
+  dev->isTileRenderStarted = false;
+  //dev->hasTileBasedRender = 1;
+
+#ifdef __ANDROID__
+  if( dev->hasTileBasedRender ){
+    dev->glStartTilingQCOM = (PFNGLSTARTTILINGQCOMPROC)eglGetProcAddress("glStartTilingQCOM");
+    dev->glEndTilingQCOM   =   (PFNGLENDTILINGQCOMPROC)eglGetProcAddress("glEndTilingQCOM");
+    }
+#endif
 
 #ifdef __ANDROID__
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "extensions = %s", ext );
@@ -199,6 +230,21 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->renderState.setZWriting(1);
   dev->renderState.setAlphaTestMode( RenderState::AlphaTestMode::Count );
   dev->renderState.setBlend(0);
+
+  dev->clearColor = Color(0);
+  dev->clearDepth = 1;
+  dev->clearS     = 0;
+
+  memset( (char*)&dev->caps, 0, sizeof(dev->caps) );
+  glGetIntegerv( GL_MAX_TEXTURE_SIZE,      &dev->caps.maxTextureSize );
+
+#ifdef __ANDROID__
+  dev->caps.maxRTCount = 1;
+#else
+  glGetIntegerv( GL_MAX_COLOR_ATTACHMENTS, &dev->caps.maxRTCount );
+  if( dev->caps.maxRTCount>32 )
+    dev->caps.maxRTCount = 32;
+#endif
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glGenFramebuffers(1, &dev->fboId);
@@ -227,42 +273,62 @@ void Opengl2x::setDevice( AbstractAPI::Device * d ) const {
   errCk();
   }
 
-void Opengl2x::clear(AbstractAPI::Device *d,
+void Opengl2x::clear( AbstractAPI::Device *d,
                       const Color& cl, float z, unsigned stencil ) const {
   setDevice(d);
 
-  glClearColor( cl.r(), cl.g(), cl.b(), cl.a() );
-#ifdef __ANDROID__
-  glClearDepthf( z );
-#else
-  glClearDepth( z );
-#endif
-  glClearStencil( stencil );
+  if( dev->clearColor!=cl ){
+    glClearColor( cl.r(), cl.g(), cl.b(), cl.a() );
+    dev->clearColor = cl;
+    }
+
+  if( dev->clearDepth!=z ){
+    dev->clearDepth = z;
+  #ifdef __ANDROID__
+    glClearDepthf( z );
+  #else
+    glClearDepth( z );
+  #endif
+    }
+
+  if( dev->clearS!=stencil ){
+    glClearStencil( stencil );
+    dev->clearS = stencil;
+    }
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
   }
 
 void Opengl2x::clear(AbstractAPI::Device *d, const Color &cl) const  {
   setDevice(d);
 
-  glClearColor( cl.r(), cl.g(), cl.b(), cl.a() );
+  if( dev->clearColor!=cl ){
+    glClearColor( cl.r(), cl.g(), cl.b(), cl.a() );
+    dev->clearColor = cl;
+    }
   glClear( GL_COLOR_BUFFER_BIT );
   }
 
 void Opengl2x::clearZ(AbstractAPI::Device *d, float z ) const  {
   setDevice(d);
 
-#ifdef __ANDROID__
-  glClearDepthf( z );
-#else
-  glClearDepth( z );
-#endif
+  if( dev->clearDepth!=z ){
+    dev->clearDepth = z;
+  #ifdef __ANDROID__
+    glClearDepthf( z );
+  #else
+    glClearDepth( z );
+  #endif
+    }
   glClear( GL_DEPTH_BUFFER_BIT );
   }
 
 void Opengl2x::clearStencil( AbstractAPI::Device *d, unsigned s ) const  {
   setDevice(d);
 
-  glClearStencil( s );
+  if( dev->clearS!=s ){
+    glClearStencil( s );
+    dev->clearS = s;
+    }
   glClear( GL_STENCIL_BUFFER_BIT );
   }
 
@@ -270,12 +336,19 @@ void Opengl2x::clear(AbstractAPI::Device *d,
                       float z, unsigned s ) const {
   setDevice(d);
 
-#ifdef __ANDROID__
-  glClearDepthf( z );
-#else
-  glClearDepth( z );
-#endif
-  glClearStencil( s );
+  if( dev->clearDepth!=z ){
+    dev->clearDepth = z;
+  #ifdef __ANDROID__
+    glClearDepthf( z );
+  #else
+    glClearDepth( z );
+  #endif
+    }
+
+  if( dev->clearS!=s ){
+    glClearStencil( s );
+    dev->clearS = s;
+    }
 
   glClear( GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
   }
@@ -283,12 +356,19 @@ void Opengl2x::clear(AbstractAPI::Device *d,
 void Opengl2x::clear(AbstractAPI::Device *d,  const Color& cl, float z ) const{
   setDevice(d);
 
-  glClearColor( cl.r(), cl.g(), cl.b(), cl.a() );
-#ifdef __ANDROID__
-  glClearDepthf( z );
-#else
-  glClearDepth( z );
-#endif
+  if( dev->clearColor!=cl ){
+    glClearColor( cl.r(), cl.g(), cl.b(), cl.a() );
+    dev->clearColor = cl;
+    }
+
+  if( dev->clearDepth!=z ){
+    dev->clearDepth = z;
+  #ifdef __ANDROID__
+    glClearDepthf( z );
+  #else
+    glClearDepth( z );
+  #endif
+    }
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
   }
 
@@ -370,7 +450,7 @@ AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
   }
 
 bool Opengl2x::setupFBO() const {
-  const int maxMRT = Detail::RenderTg::maxMRT;
+  const int maxMRT = dev->caps.maxRTCount;
     
   GLint w = 0, h = 0;
   GLuint *fbo = 0;
@@ -406,30 +486,42 @@ bool Opengl2x::setupFBO() const {
     }
 
   glBindFramebuffer(GL_FRAMEBUFFER, *fbo);
+
+  bool wasInitRt = false,
+       wasInitDs = false;
+
   for( int i=0; i<maxMRT; ++i ){
     if( dev->target.color[i] ){
       // NVidia old driver bug issue
 
       bool potW = (w&(w-1))==0,
            potH = (h&(h-1))==0;
-      if( !( potW && potH ) ){
+      if( !( potW && potH ) &&
+          !( dev->target.color[i]->min == GL_NEAREST &&
+             dev->target.color[i]->mag == GL_NEAREST &&
+             dev->target.color[i]->clampU == GL_CLAMP_TO_EDGE &&
+             dev->target.color[i]->clampV == GL_CLAMP_TO_EDGE ) ){
         glBindTexture( GL_TEXTURE_2D, dev->target.color[i]->id );
-        dev->target.color[i]->min  = dev->target.color[i]->mag = GL_NEAREST;
-
-        glTexParameteri( GL_TEXTURE_2D,
-                         GL_TEXTURE_MIN_FILTER,
-                         GL_NEAREST );
-        glTexParameteri( GL_TEXTURE_2D,
-                         GL_TEXTURE_MAG_FILTER,
-                         GL_NEAREST );
+        if( dev->target.color[i]->min!=GL_NEAREST )
+          glTexParameteri( GL_TEXTURE_2D,
+                           GL_TEXTURE_MIN_FILTER,
+                           GL_NEAREST );
+        if( dev->target.color[i]->mag!=GL_NEAREST )
+          glTexParameteri( GL_TEXTURE_2D,
+                           GL_TEXTURE_MAG_FILTER,
+                           GL_NEAREST );
         //*****
-        glTexParameteri( GL_TEXTURE_2D,
-                         GL_TEXTURE_WRAP_S,
-                         GL_CLAMP_TO_EDGE );
-        glTexParameteri( GL_TEXTURE_2D,
-                         GL_TEXTURE_WRAP_T,
-                         GL_CLAMP_TO_EDGE );
+        if( dev->target.color[i]->clampU!=GL_CLAMP_TO_EDGE )
+          glTexParameteri( GL_TEXTURE_2D,
+                           GL_TEXTURE_WRAP_S,
+                           GL_CLAMP_TO_EDGE );
+        if( dev->target.color[i]->clampV!=GL_CLAMP_TO_EDGE )
+          glTexParameteri( GL_TEXTURE_2D,
+                           GL_TEXTURE_WRAP_T,
+                           GL_CLAMP_TO_EDGE );
 
+        dev->target.color[i]->min    = dev->target.color[i]->mag    = GL_NEAREST;
+        dev->target.color[i]->clampU = dev->target.color[i]->clampV = GL_CLAMP_TO_EDGE;
         glBindTexture( GL_TEXTURE_2D, 0 );
         }
       dev->target.color[i]->mips = false;
@@ -444,11 +536,16 @@ bool Opengl2x::setupFBO() const {
         tex->fboTg->color[i] = dev->target.color[i];
         }
       dev->target.color[i]->mips = false;
+
+      wasInitRt |= dev->target.color[i]->isInitalized;
+      dev->target.color[i]->isInitalized = true;
       }
     }
 
   if( tex->fboTg->depth!=dev->target.depth ){
     tex->fboTg->depth = dev->target.depth;
+    wasInitDs = tex->fboTg->depth->isInitalized;
+    tex->fboTg->depth->isInitalized = true;
 
     if( dev->target.depth ){
       glFramebufferRenderbuffer( GL_FRAMEBUFFER,
@@ -481,6 +578,29 @@ bool Opengl2x::setupFBO() const {
 #endif
 
   glViewport( 0, 0, w, h );
+
+  if( dev->hasTileBasedRender ){
+    GLbitfield clr = 0;
+    if( !wasInitRt )
+      clr |= GL_COLOR_BUFFER_BIT;
+
+    if( !wasInitDs )
+      clr |= (GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
+
+    glClear( clr );
+
+    //dev->isTileRenderStarted = true;
+    GLbitfield flg = 0;
+
+    if( wasInitRt )
+      flg |= GL_COLOR_BUFFER_BIT0_QCOM;
+
+    if( wasInitDs )
+      flg |= GL_DEPTH_BUFFER_BIT0_QCOM;
+
+    //dev->glStartTilingQCOM( 0, 0, w, h, flg );
+    }
+
   errCk();
   return 1;
   }
@@ -498,6 +618,30 @@ void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
 void Opengl2x::unsetRenderTagets( AbstractAPI::Device *d,
                                   int /*count*/  ) const {
   setDevice(d);
+
+  if( dev->isTileRenderStarted ){
+    GLbitfield flg  = 0;//GL_COLOR_BUFFER_BIT0_QCOM|GL_DEPTH_BUFFER_BIT0_QCOM|GL_STENCIL_BUFFER_BIT0_QCOM;
+    GLbitfield nflg = GL_COLOR_BUFFER_BIT0_QCOM;
+
+    for( int i=0; i<dev->caps.maxRTCount; ++i )
+      if( dev->target.color[i] )
+        nflg = GL_NONE;
+
+    flg|=nflg;
+
+    for( int i=0; i<dev->caps.maxRTCount; ++i )
+      if( dev->target.color[i] && dev->target.color[i]->isInitalized )
+        flg |= GL_COLOR_BUFFER_BIT0_QCOM;
+
+    if( (dev->target.depth && dev->target.depth->isInitalized)||
+        !dev->target.depth )
+      flg |= GL_DEPTH_BUFFER_BIT0_QCOM;
+
+    dev->glEndTilingQCOM( flg );
+    errCk();
+    dev->isTileRenderStarted = false;
+    }
+
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   memset( &dev->target, 0, sizeof(dev->target) );
@@ -972,6 +1116,16 @@ void Opengl2x::deleteTexture( AbstractAPI::Device *d,
   delete tex;
   
   errCk();
+  }
+
+void Opengl2x::setTextureFlag( AbstractAPI::Device  *,
+                               AbstractAPI::Texture *t,
+                               TextureFlag f,
+                               bool v ) const {
+  Detail::GLTexture* tex = (Detail::GLTexture*)t;
+
+  if( f==TF_Inialized )
+    tex->isInitalized = v;
   }
 
 AbstractAPI::VertexBuffer*

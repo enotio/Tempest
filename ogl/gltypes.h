@@ -47,6 +47,8 @@ namespace Detail{
     GLenum clampU,clampV, clampW;
     bool mips, compress;
 
+    bool isInitalized;
+
     int w,h;
     float anisotropyLevel;
     GLenum format, pixelFormat;

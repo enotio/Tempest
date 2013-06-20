@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <Tempest/Pixmap>
+#include <Tempest/Device>
 
 using namespace Tempest;
 
@@ -105,6 +106,7 @@ void LocalTexturesHolder::createObject(Tempest::AbstractAPI::Texture *&t,
       nonFreed.pop_back();
 
       t = dynTextures.back().data.handle;
+      setTextureFlag(t, AbstractAPI::TF_Inialized, false );
       return;
       }
     }
@@ -174,6 +176,7 @@ void LocalTexturesHolder::deleteObject( Tempest::AbstractAPI::Texture *t ) {
     if( dynTextures[i].data.handle==t ){
       dynTextures[i].collectIteration = 0;
       nonFreed.push_back( dynTextures[i] );
+      setTextureFlag( dynTextures[i].data.handle, AbstractAPI::TF_Inialized, false );
 
       dynTextures[i] = dynTextures.back();
       dynTextures.pop_back();

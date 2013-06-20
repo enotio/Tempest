@@ -2,6 +2,7 @@
 
 #include <Tempest/AbstractAPI>
 #include <Tempest/Texture2d>
+#include <Tempest/RenderState>
 
 #include <set>
 #include <cassert>
@@ -125,6 +126,9 @@ struct Device::Data{
     };
 
   BeginPaintArg paintTaget;
+
+  RenderState rs;
+  bool  delaydRS;
   };
 
 
@@ -155,6 +159,8 @@ void Device::init( const AbstractAPI &,
   data->cash.vboSize = 0;
   data->cash.ibo     = 0;
   data->depthStencil = api.getDSSurfaceTaget(impl);
+
+  data->delaydRS = false;
   }
 
 Device::~Device(){
@@ -163,6 +169,10 @@ Device::~Device(){
 
   api.deleteShadingLang( shLang );
   api.deleteDevice( impl );
+  }
+
+AbstractAPI::Caps Device::caps() const {
+  return api.caps( impl );
   }
 
 void Device::clear(const Color &cl, float z, unsigned s) {
@@ -308,7 +318,15 @@ void Device::forceEndPaint() const {
   }
 
 void Device::setRenderState( const RenderState & r ) const {
-  api.setRenderState( impl, r );
+  data->delaydRS = true;
+  data->rs       = r;
+  }
+
+void Device::applyRs() const {
+  if( data->delaydRS ){
+    api.setRenderState( impl, data->rs );
+    data->delaydRS = true;
+    }
   }
 
 bool Device::startRender(){
@@ -389,6 +407,10 @@ AbstractAPI::Texture* Device::createTexture( int w, int h,
 void Device::deleteTexture( AbstractAPI::Texture* & t ){
   forceEndPaint();
   api.deleteTexture( impl, t );
+  }
+
+void Device::setTextureFlag(AbstractAPI::Texture *t, AbstractAPI::TextureFlag f, bool v) {
+  api.setTextureFlag(impl, t, f, v);
   }
 
 AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el ){

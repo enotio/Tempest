@@ -43,6 +43,8 @@ class Device {
             void * windowHwnd );
     ~Device();
 
+    AbstractAPI::Caps caps() const;
+
     void clear(const Color& cl, float z, unsigned stemcil );
 
     void clear( const Color& cl );
@@ -148,6 +150,7 @@ class Device {
           decl.decl==0 )
         return;
 
+      applyRs();
       bind(vs);
       bind(fs);
       bind(decl);
@@ -173,6 +176,11 @@ class Device {
                        int vboOffsetIndex,
                        int iboOffsetIndex,
                        int pCount ){
+      if( pCount==0 ||
+          decl.decl==0 )
+        return;
+
+      applyRs();
       bind(vs);
       bind(fs);
       bind(decl);
@@ -227,6 +235,9 @@ class Device {
                                          AbstractTexture::Format::Type f,
                                          TextureUsage u );
     void deleteTexture( AbstractAPI::Texture* & t );
+    void setTextureFlag( AbstractAPI::Texture* t,
+                         AbstractAPI::TextureFlag f,
+                         bool v );
 
     AbstractAPI::VertexBuffer* createVertexbuffer( size_t size, size_t elSize );
     AbstractAPI::VertexBuffer* createVertexbuffer(size_t size, size_t elSize,
@@ -276,6 +287,7 @@ class Device {
                void * windowHwnd );
 
     void forceEndPaint() const;
+    void applyRs() const;
 
   friend class VertexShaderHolder;
   friend class FragmentShaderHolder;

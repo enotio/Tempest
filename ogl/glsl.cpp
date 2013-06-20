@@ -462,6 +462,7 @@ void GLSL::setUniform( unsigned int s,
   GLint    prm = data->location( prog, name );
   if( prm==-1 )
     return;
+
   id = (void*)size_t(prm);
 
   if( !data->vsCash.fetch(prm, m) ){

@@ -13,7 +13,9 @@ class RenderState;
 class DirectX9 : public AbstractAPI {
   public:
     DirectX9();
-    ~DirectX9();
+    ~DirectX9();    
+
+    Caps caps(Device *d) const;
 
     Device* createDevice( void * hwnd, const Options & opt ) const;
     void    deleteDevice( Device* d )  const;

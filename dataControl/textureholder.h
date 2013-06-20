@@ -54,6 +54,10 @@ class TextureHolder : public AbstractHolderWithLoad
                   restore( AbstractAPI::Texture* t );
     virtual AbstractAPI::Texture*
                   copy( AbstractAPI::Texture* t );
+
+    virtual void setTextureFlag( AbstractAPI::Texture* t,
+                                 AbstractAPI::TextureFlag f,
+                                 bool v );
   private:
     TextureHolder( const TextureHolder &h );
     void operator = ( const TextureHolder& ){}

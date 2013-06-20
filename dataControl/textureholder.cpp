@@ -114,6 +114,8 @@ void TextureHolder::createObject( AbstractAPI::Texture*& t,
 
   if( !device().hasManagedStorge() )
     data->dynamic_textures[t] = d;
+
+  setTextureFlag(t, AbstractAPI::TF_Inialized, false );
   }
 
 void TextureHolder::createObject( AbstractAPI::Texture *&t,
@@ -215,4 +217,10 @@ AbstractAPI::Texture* TextureHolder::copy( AbstractAPI::Texture* ){
 #ifndef __ANDROID__
   throw std::runtime_error("TextureHolder::copy not implemented yet");
 #endif
+  }
+
+void TextureHolder::setTextureFlag( AbstractAPI::Texture *t,
+                                    AbstractAPI::TextureFlag f,
+                                    bool v) {
+  device().setTextureFlag(t,f,v);
   }

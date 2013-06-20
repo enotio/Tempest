@@ -18,6 +18,8 @@ class Opengl2x : public AbstractAPI {
     Opengl2x( ShaderLang s = GLSL );
     ~Opengl2x();
 
+    Caps caps(Device *d) const;
+
     Device* createDevice( void * hwnd, const Options & opt ) const;
     void    deleteDevice( Device* d )  const;
 
@@ -79,14 +81,11 @@ class Opengl2x : public AbstractAPI {
 
     void deleteTexture( AbstractAPI::Device *d,
                         AbstractAPI::Texture *t) const;
-  /*
-    AbstractAPI::RenderTagetSurface
-            createRenderTaget( AbstractAPI::Device *d,
-                               AbstractAPI::Texture *t,
-                               int mipLevel ) const;
 
-    void deleteRenderTaget( AbstractAPI::Device *d,
-                            AbstractAPI::RenderTagetSurface t ) const;*/
+    void setTextureFlag( AbstractAPI::Device  *d,
+                         AbstractAPI::Texture *t,
+                         TextureFlag f,
+                         bool v ) const;
 
     AbstractAPI::VertexBuffer*
          createVertexBuffer( AbstractAPI::Device *d,

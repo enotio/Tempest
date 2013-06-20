@@ -50,6 +50,18 @@ DirectX9::~DirectX9(){
   dev->Release();
   }
 
+AbstractAPI::Caps DirectX9::caps( AbstractAPI::Device *d ) const {
+  Device *dx = (Device*)d;
+  Caps c;
+  memset( (char*)&c, 0, sizeof(c) );
+
+  c.maxRTCount     = dx->caps.NumSimultaneousRTs;
+  c.maxTextureSize = std::min( dx->caps.MaxTextureWidth,
+                               dx->caps.MaxTextureHeight );
+
+  return c;
+  }
+
 AbstractAPI::Device* DirectX9::createDevice(void *hwnd, const Options &opt) const {
   LPDIRECT3D9 D3D = LPDIRECT3D9(impl);
 
@@ -214,7 +226,7 @@ AbstractAPI::StdDSSurface *DirectX9::getDSSurfaceTaget( AbstractAPI::Device *d )
   return (AbstractAPI::StdDSSurface*)(surf);
   }
 
-void DirectX9::retDSSurfaceTaget( AbstractAPI::Device *d,
+void DirectX9::retDSSurfaceTaget( AbstractAPI::Device *,
                                   AbstractAPI::StdDSSurface *s ) const {
   //LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
   LPDIRECT3DSURFACE9 surf = LPDIRECT3DSURFACE9(s);
@@ -291,7 +303,7 @@ bool DirectX9::reset( AbstractAPI::Device *d, void* hwnd,
 AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
                                                const Pixmap &p,
                                                bool mips,
-                                               bool compress) const {
+                                               bool /*compress*/) const {
   if( p.width()==0 || p.height()==0 )
     return 0;
 
@@ -681,7 +693,7 @@ AbstractAPI::IndexBuffer*
   return ((AbstractAPI::IndexBuffer*)ibo);
   }
 
-void DirectX9::deleteIndexBuffer( AbstractAPI::Device *d,
+void DirectX9::deleteIndexBuffer( AbstractAPI::Device *,
                                   AbstractAPI::IndexBuffer* b) const {
   IBO* ibo = (IBO*)(b);
   if( ibo && ibo->index )
@@ -693,7 +705,7 @@ void DirectX9::deleteIndexBuffer( AbstractAPI::Device *d,
 void* DirectX9::lockBuffer( AbstractAPI::Device *,
                             AbstractAPI::VertexBuffer * v,
                             unsigned offset,
-                            unsigned size ) const {
+                            unsigned /*size*/ ) const {
   LPDIRECT3DVERTEXBUFFER9 vbo = LPDIRECT3DVERTEXBUFFER9(v);
 
   void* pVertices = 0;
@@ -709,7 +721,7 @@ void DirectX9::unlockBuffer( AbstractAPI::Device *,
   vbo->Unlock();
   }
 
-void* DirectX9::lockBuffer( AbstractAPI::Device *d,
+void* DirectX9::lockBuffer( AbstractAPI::Device *,
                             AbstractAPI::IndexBuffer * v,
                             unsigned offset, unsigned /*size*/) const {
   IBO* ibo = (IBO*)(v);
