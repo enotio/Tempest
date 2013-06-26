@@ -89,21 +89,25 @@ class Opengl2x : public AbstractAPI {
 
     AbstractAPI::VertexBuffer*
          createVertexBuffer( AbstractAPI::Device *d,
-                             size_t size, size_t elSize ) const;
+                             size_t size, size_t elSize,
+                             BufferUsage u ) const;
     AbstractAPI::VertexBuffer* createVertexBuffer( AbstractAPI::Device *d,
                                                    size_t size,
                                                    size_t vsize,
-                                                   const void * src ) const;
+                                                   const void * src,
+                                                   BufferUsage u ) const;
     void deleteVertexBuffer( AbstractAPI::Device *d,
                              AbstractAPI::VertexBuffer* ) const;
 
     AbstractAPI::IndexBuffer*
          createIndexBuffer( AbstractAPI::Device *d,
-                            size_t size, size_t elSize ) const;
+                            size_t size, size_t elSize,
+                            BufferUsage u  ) const;
     AbstractAPI::IndexBuffer *createIndexBuffer( AbstractAPI::Device *d,
                                                  size_t size,
                                                  size_t elSize,
-                                                 const void *src ) const;
+                                                 const void *src,
+                                                 BufferUsage u  ) const;
 
     void deleteIndexBuffer( AbstractAPI::Device *d,
                             AbstractAPI::IndexBuffer* ) const;
@@ -172,6 +176,8 @@ class Opengl2x : public AbstractAPI {
     void errCk() const;
 
     bool setupFBO() const;
+    void startTiledRender() const;
+    void endTiledRender() const;
 
     AbstractAPI::Texture* createDepthStorage( AbstractAPI::Device *d,
                                               int w, int h,

@@ -47,6 +47,12 @@ class VertexBufferHolder : public AbstractHolder
                                int size, int vsize );
     virtual void deleteObject( AbstractAPI::VertexBuffer* t );
 
+    virtual AbstractAPI::VertexBuffer* allocBuffer( size_t size, size_t vsize,
+                                                    const void *src );
+    virtual AbstractAPI::VertexBuffer* allocBuffer( size_t size, size_t vsize,
+                                                    const void *src,
+                                                    AbstractAPI::BufferUsage u);
+
 
     virtual void  reset( AbstractAPI::VertexBuffer* t );
     virtual AbstractAPI::VertexBuffer*

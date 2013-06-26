@@ -13,8 +13,9 @@ AbstractAPI::Options::Options() {
 AbstractAPI::VertexBuffer* AbstractAPI::createVertexBuffer( AbstractAPI::Device *d,
                                                             size_t size,
                                                             size_t vsize,
-                                                            const void * src ) const {
-  AbstractAPI::VertexBuffer* t = createVertexBuffer( d, size, vsize );
+                                                            const void * src,
+                                                            BufferUsage u ) const {
+  AbstractAPI::VertexBuffer* t = createVertexBuffer( d, size, vsize, u );
 
   if( !t )
     return 0;
@@ -31,8 +32,9 @@ AbstractAPI::VertexBuffer* AbstractAPI::createVertexBuffer( AbstractAPI::Device 
 AbstractAPI::IndexBuffer *AbstractAPI::createIndexBuffer( AbstractAPI::Device *d,
                                                           size_t size,
                                                           size_t elSize,
-                                                          const void *src ) const {
-  AbstractAPI::IndexBuffer* t = createIndexBuffer( d, size, elSize );
+                                                          const void *src,
+                                                          BufferUsage u ) const {
+  AbstractAPI::IndexBuffer* t = createIndexBuffer( d, size, elSize, u );
 
   if( !t )
     return 0;

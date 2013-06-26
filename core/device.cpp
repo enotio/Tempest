@@ -325,7 +325,7 @@ void Device::setRenderState( const RenderState & r ) const {
 void Device::applyRs() const {
   if( data->delaydRS ){
     api.setRenderState( impl, data->rs );
-    data->delaydRS = true;
+    data->delaydRS = false;
     }
   }
 
@@ -413,15 +413,17 @@ void Device::setTextureFlag(AbstractAPI::Texture *t, AbstractAPI::TextureFlag f,
   api.setTextureFlag(impl, t, f, v);
   }
 
-AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el ){
+AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el,
+                                                       AbstractAPI::BufferUsage u ){
   forceEndPaint();
-  return api.createVertexBuffer( impl, size, el );
+  return api.createVertexBuffer( impl, size, el, u );
   }
 
 AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el,
-                                                       const void* src ){
+                                                       const void* src,
+                                                       AbstractAPI::BufferUsage u ){
   forceEndPaint();
-  return api.createVertexBuffer( impl, size, el, src );
+  return api.createVertexBuffer( impl, size, el, src, u );
   }
 
 void Device::deleteVertexBuffer( AbstractAPI::VertexBuffer* vbo ){
@@ -430,16 +432,18 @@ void Device::deleteVertexBuffer( AbstractAPI::VertexBuffer* vbo ){
   }
 
 AbstractAPI::IndexBuffer* Device::createIndexBuffer( size_t size,
-                                                     size_t elSize ){
+                                                     size_t elSize,
+                                                     AbstractAPI::BufferUsage u  ){
   forceEndPaint();
-  return api.createIndexBuffer( impl, size, elSize );
+  return api.createIndexBuffer( impl, size, elSize, u );
   }
 
 AbstractAPI::IndexBuffer *Device::createIndexBuffer( size_t size,
                                                      size_t elSize,
-                                                     const void *src ) {
+                                                     const void *src,
+                                                     AbstractAPI::BufferUsage u ) {
   forceEndPaint();
-  return api.createIndexBuffer( impl, size, elSize, src );
+  return api.createIndexBuffer( impl, size, elSize, src, u );
   }
 
 void Device::deleteIndexBuffer( AbstractAPI::IndexBuffer* b ){

@@ -638,8 +638,10 @@ void Widget::execDeleteRoot() {
 
 void Widget::execDelete() {
   for( size_t i=0; i<mouseReleseReciver.size(); ++i )
-    if( mouseReleseReciver[i] == layout().execDelete() )
+    if( mouseReleseReciver[i] && mouseReleseReciver[i]->deleteLaterFlag )
       mouseReleseReciver[i] = 0;
+
+  layout().execDelete();
 
   for( size_t i=0; i<layout().widgets().size(); ++i ){
     layout().widgets()[i]->execDelete();

@@ -47,6 +47,14 @@ class IndexBufferHolder : public AbstractHolder
     virtual void deleteObject( AbstractAPI::IndexBuffer* t );
 
 
+    virtual AbstractAPI::IndexBuffer* allocBuffer( size_t size, size_t vsize,
+                                                   const void *src );
+    virtual AbstractAPI::IndexBuffer* allocBuffer( size_t size, size_t vsize,
+                                                   const void *src,
+                                                   AbstractAPI::BufferUsage u );
+
+
+
     virtual void  reset( AbstractAPI::IndexBuffer* t );
     virtual AbstractAPI::IndexBuffer*
                   restore( AbstractAPI::IndexBuffer* t );

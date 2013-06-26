@@ -185,6 +185,11 @@ class LocalBufferHolder : public Holder {
       Holder::deleteObject(t);
       }
 
+    typename Holder::DescriptorType* allocBuffer( size_t size, size_t vsize,
+                                                  const void *src ){
+      return Holder::allocBuffer(size, vsize, src, AbstractAPI::BU_Dynamic);
+      }
+
     std::vector< NonFreed > nonFreed, dynVBOs;
 
     int nearPOT( int x ) {

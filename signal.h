@@ -34,6 +34,11 @@ class signal{
       new (&v.back()) Emit<T, Ret, TBase, FuncArgs...>(t,f);
       }
 
+    template< class T, class Ret, class TBase, class ... FuncArgs >
+    void bind( T *t, Ret (TBase::*f)( FuncArgs... ) ){
+      bind(*t, f);
+      }
+
     template< class Ret, class ... FuncArgs >
     void bind( Ret (&f)( FuncArgs... ) ){
       v.push_back( Impl() );
@@ -58,9 +63,19 @@ class signal{
         }
       }
 
+    template< class T >
+    void ubind( T *t, void (T::*f)( Args... ) ){
+      ubind(*t,f);
+      }
+
     size_t bindsCount() const{
       return v.size();
       }
+
+    void removeBinds(){
+      v.clear();
+      }
+
   private:
     struct IEmit{
       virtual ~IEmit(){}

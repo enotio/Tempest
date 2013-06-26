@@ -156,8 +156,58 @@ void Pixmap::addAlpha() {
     p[3] = 255;
     }
 
-  rawPtr = &data.const_value()->bytes[0];
+  rawPtr  = &data.const_value()->bytes[0];
   mrawPtr = 0;
+  bpp     = 4;
+  }
+
+void Pixmap::removeAlpha() {
+  if( !hasAlpha() )
+    return;
+
+  unsigned char * v = &data.value()->bytes[0];
+
+  for( int i=0; i<mw*mh; ++i ){
+    unsigned char * p = &v[ 3*i ];
+    unsigned char * s = &v[ 4*i ];
+    for( int r=0; r<3; ++r )
+      p[r] = s[r];
+    }
+
+  data.value()->bytes.resize(mw*mh*3);
+  rawPtr  = &data.const_value()->bytes[0];
+  mrawPtr = 0;
+  bpp     = 3;
+  }
+
+void Pixmap::setFormat( Pixmap::Format f ) {
+  if( frm==f )
+    return;
+
+  if( frm==Format_RGB && f==Format_RGBA )
+    addAlpha();
+
+  if( frm==Format_RGBA && f==Format_RGB )
+    removeAlpha();
+
+  if( frm>=Format_DXT1 && frm<=Format_DXT5 &&
+      f==Format_RGB ){
+    makeEditable();
+    removeAlpha();
+    }
+
+  if( frm>=Format_DXT1 && frm<=Format_DXT5 &&
+      f==Format_RGBA ){
+    makeEditable();
+    addAlpha();
+    }
+
+  if( ( frm == Format_RGB || frm == Format_RGBA ) &&
+      f>=Format_DXT1 && f<=Format_DXT5 ){
+    toS3tc(f);
+    }
+
+  frm = f;
   }
 
 void Pixmap::makeEditable() {
@@ -199,10 +249,35 @@ void Pixmap::makeEditable() {
   rawPtr  = &data.value()->bytes[0];
   mrawPtr = &data.value()->bytes[0];
   frm = Format_RGBA;
-  //bpp = 4;
+  }
 
-  //save("./dbg.png");
-  //for( size_t i=mrawPtr+; i)
+void Pixmap::toS3tc( Format /*f*/ ) {
+  squish::u8 px[4][4][4];
+  unsigned char* p  = (&data.value()->bytes[0]);
+
+  std::vector<squish::u8> d;
+  d.resize( mw*mh/2 );
+
+  for( int i=0; i<mw; i+=4 )
+    for( int r=0; r<mh; r+=4 ){
+      for( int y=0; y<4; ++y )
+        for( int x=0; x<4; ++x ){
+          std::copy( p+((x + i + (y+r)*mw)*bpp),
+                     p+((x + i + (y+r)*mw)*bpp)+bpp,
+                     px[y][x] );
+          }
+
+      int pos = ((i/4) + (r/4)*mw/4)*8;
+      squish::Compress( (squish::u8*)px,
+                        &d[pos], squish::kDxt1 );
+      }
+
+  data.value()->bytes = d;
+  frm = Format_DXT1;
+  }
+
+void Pixmap::toETC() {
+
   }
 
 bool Pixmap::save( const std::string &f ) {
@@ -211,8 +286,8 @@ bool Pixmap::save( const std::string &f ) {
 
   Tempest::Detail::Atomic::begin();
   bool ok = SystemAPI::saveImage( f.data(),
-                                          mw, mh, bpp,
-                                          data.const_value()->bytes );
+                                  mw, mh, bpp,
+                                  data.const_value()->bytes );
   Tempest::Detail::Atomic::end();
   return ok;
   }

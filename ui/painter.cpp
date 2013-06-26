@@ -254,11 +254,13 @@ void PainterDevice::setState(const PainterDevice::State &s) {
 Painter::Painter(PaintEvent &e) : dev( e.painter ){
   oldState = dev.rstate;
   dev.pushState();
+  dev.setNullState();
   }
 
 Painter::Painter( PainterDevice &d ) :dev(d) {
   oldState = dev.rstate;
   dev.pushState();
+  dev.setNullState();
   }
 
 Painter::~Painter() {

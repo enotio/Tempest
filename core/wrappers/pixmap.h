@@ -96,17 +96,18 @@ class Pixmap {
       }
 
     bool  hasAlpha() const;
-    void  addAlpha();
 
     enum Format{
       Format_RGB,
       Format_RGBA,
       Format_DXT1,
       Format_DXT3,
-      Format_DXT5
+      Format_DXT5,
+      Format_ETC1_RGB8
       };
 
     Format format() const{ return frm; }
+    void setFormat( Format f );
   private:
     struct Data{
       std::vector<unsigned char> bytes;
@@ -150,6 +151,14 @@ class Pixmap {
       }
 
     void makeEditable();
+    void toS3tc(Format f);
+    void toETC();
+
+    void  addAlpha();
+    void  removeAlpha();
+
+
+  friend class PixEditor;
   };
 
 class PixEditor{

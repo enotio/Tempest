@@ -39,7 +39,7 @@ void IndexBufferHolder::createObject( AbstractAPI::IndexBuffer*& t,
                                       const char * src,
                                       int size,
                                       int vsize ){
-  t = device().createIndexBuffer( size, vsize, src );
+  t = allocBuffer( size, vsize, src );
 
   if( !t )
     return;
@@ -63,6 +63,19 @@ void IndexBufferHolder::deleteObject( AbstractAPI::IndexBuffer* t ){
     data->ibos.erase(i);
     device().deleteIndexBuffer(t);
     }
+  }
+
+AbstractAPI::IndexBuffer *IndexBufferHolder::allocBuffer( size_t size,
+                                                          size_t vsize,
+                                                          const void *src) {
+  return device().createIndexBuffer( size, vsize, src, AbstractAPI::BU_Static );
+  }
+
+AbstractAPI::IndexBuffer *IndexBufferHolder::allocBuffer( size_t size,
+                                                          size_t vsize,
+                                                          const void *src,
+                                                          AbstractAPI::BufferUsage u) {
+  return device().createIndexBuffer( size, vsize, src, u );
   }
 
 void IndexBufferHolder::reset( AbstractAPI::IndexBuffer* t ){

@@ -39,7 +39,7 @@ VertexBufferHolder::VertexBufferHolder( const VertexBufferHolder& h)
 void VertexBufferHolder::createObject( AbstractAPI::VertexBuffer*& t,
                                        const char * src,
                                        int size, int vsize ){
-  t = device().createVertexbuffer( size, vsize, src );
+  t = allocBuffer( size, vsize, src );
 
   if( !t )
     return;
@@ -55,6 +55,19 @@ void VertexBufferHolder::createObject( AbstractAPI::VertexBuffer*& t,
   std::copy( src, src + size*vsize, d->data.begin() );
 
   data->vbos[t] = d;
+  }
+
+AbstractAPI::VertexBuffer* VertexBufferHolder::allocBuffer( size_t size,
+                                                            size_t vsize,
+                                                            const void *src){
+  return device().createVertexbuffer( size, vsize, src, AbstractAPI::BU_Static );
+  }
+
+AbstractAPI::VertexBuffer *VertexBufferHolder::allocBuffer( size_t size,
+                                                            size_t vsize,
+                                                            const void *src,
+                                                            AbstractAPI::BufferUsage u) {
+  return device().createVertexbuffer( size, vsize, src, u );
   }
 
 void VertexBufferHolder::deleteObject( AbstractAPI::VertexBuffer* t ){

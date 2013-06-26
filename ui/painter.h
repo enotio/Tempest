@@ -66,6 +66,8 @@ class PainterDevice {
     virtual void setBlendMode( BlendMode m );
 
     virtual PaintTextEngine& textEngine();
+
+    virtual void setNullState(){}
     virtual void pushState(){}
     virtual void popState(){}
   private:

@@ -94,13 +94,11 @@ Widget *Layout::take(Widget *widget) {
   return widget;
   }
 
-Widget* Layout::execDelete() {
-  Widget* re = 0;
+void Layout::execDelete() {
   for( size_t i=0; i<w.size(); ++i ){
     if( w[i]->deleteLaterFlag ){
       Widget *widget = w[i];
       widget->parentLay  =0;
-      re = widget;
       delete widget;
 
       w[i] = 0;
@@ -116,8 +114,6 @@ Widget* Layout::execDelete() {
     if( owner() )
       owner()->update();
     }
-
-  return re;
   }
 
 const std::vector<Widget*> &Layout::widgets() {

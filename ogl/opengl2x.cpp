@@ -295,7 +295,14 @@ void Opengl2x::clear( AbstractAPI::Device *d,
     glClearStencil( stencil );
     dev->clearS = stencil;
     }
+
+  if( !dev->renderState.isZWriting() ){
+    glDepthMask( 1 );
+    }
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+  if( !dev->renderState.isZWriting() ){
+    glDepthMask( 0 );
+    }
   }
 
 void Opengl2x::clear(AbstractAPI::Device *d, const Color &cl) const  {
@@ -319,7 +326,14 @@ void Opengl2x::clearZ(AbstractAPI::Device *d, float z ) const  {
     glClearDepth( z );
   #endif
     }
+
+  if( !dev->renderState.isZWriting() ){
+    glDepthMask( 1 );
+    }
   glClear( GL_DEPTH_BUFFER_BIT );
+  if( !dev->renderState.isZWriting() ){
+    glDepthMask( 0 );
+    }
   }
 
 void Opengl2x::clearStencil( AbstractAPI::Device *d, unsigned s ) const  {
@@ -350,7 +364,13 @@ void Opengl2x::clear(AbstractAPI::Device *d,
     dev->clearS = s;
     }
 
+  if( !dev->renderState.isZWriting() ){
+    glDepthMask( 1 );
+    }
   glClear( GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+  if( !dev->renderState.isZWriting() ){
+    glDepthMask( 0 );
+    }
   }
 
 void Opengl2x::clear(AbstractAPI::Device *d,  const Color& cl, float z ) const{
@@ -369,7 +389,14 @@ void Opengl2x::clear(AbstractAPI::Device *d,  const Color& cl, float z ) const{
     glClearDepth( z );
   #endif
     }
+
+  if( !dev->renderState.isZWriting() ){
+    glDepthMask( 1 );
+    }
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+  if( !dev->renderState.isZWriting() ){
+    glDepthMask( 0 );
+    }
   }
 
 void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
@@ -393,10 +420,13 @@ void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
   errCk();
   assert( setupFBO() );
+
+  startTiledRender();
   }
 
 void Opengl2x::endPaint  ( AbstractAPI::Device * d ) const{
-  setDevice(d);
+  setDevice(d);  
+  endTiledRender();
 
   assert( dev->isPainting );
   dev->isPainting = false;
@@ -487,9 +517,6 @@ bool Opengl2x::setupFBO() const {
 
   glBindFramebuffer(GL_FRAMEBUFFER, *fbo);
 
-  bool wasInitRt = false,
-       wasInitDs = false;
-
   for( int i=0; i<maxMRT; ++i ){
     if( dev->target.color[i] ){
       // NVidia old driver bug issue
@@ -536,16 +563,11 @@ bool Opengl2x::setupFBO() const {
         tex->fboTg->color[i] = dev->target.color[i];
         }
       dev->target.color[i]->mips = false;
-
-      wasInitRt |= dev->target.color[i]->isInitalized;
-      dev->target.color[i]->isInitalized = true;
       }
     }
 
   if( tex->fboTg->depth!=dev->target.depth ){
     tex->fboTg->depth = dev->target.depth;
-    wasInitDs = tex->fboTg->depth->isInitalized;
-    tex->fboTg->depth->isInitalized = true;
 
     if( dev->target.depth ){
       glFramebufferRenderbuffer( GL_FRAMEBUFFER,
@@ -578,31 +600,94 @@ bool Opengl2x::setupFBO() const {
 #endif
 
   glViewport( 0, 0, w, h );
+  startTiledRender();
+
+  errCk();
+  return 1;
+  }
+
+void Opengl2x::startTiledRender() const {
+  if( dev->isTileRenderStarted )
+    return;
+
+  int w = dev->scrW, h = dev->scrH;
 
   if( dev->hasTileBasedRender ){
+    GLbitfield flg  = 0;
+    GLbitfield nflg = GL_COLOR_BUFFER_BIT0_QCOM;
+
+    for( int i=0; i<dev->caps.maxRTCount; ++i )
+      if( dev->target.color[i] ){
+        w = dev->target.color[i]->w;
+        h = dev->target.color[i]->h;
+        nflg = GL_NONE;
+
+        if( dev->target.color[i]->isInitalized )
+          flg |= GL_COLOR_BUFFER_BIT0_QCOM;
+        dev->target.color[i]->isInitalized = true;
+        }
+
+    flg|=nflg;
+
+    if( (dev->target.depth && dev->target.depth->isInitalized)||
+        !dev->target.depth )
+      flg |= GL_DEPTH_BUFFER_BIT0_QCOM;
+
+    if( dev->target.depth )
+      dev->target.depth->isInitalized = true;
+
     GLbitfield clr = 0;
-    if( !wasInitRt )
+    if( !(flg & GL_COLOR_BUFFER_BIT0_QCOM) )
       clr |= GL_COLOR_BUFFER_BIT;
 
-    if( !wasInitDs )
+    if( !(flg & GL_DEPTH_BUFFER_BIT) )
       clr |= (GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
 
     glClear( clr );
 
+    //flg = GL_COLOR_BUFFER_BIT0_QCOM|GL_DEPTH_BUFFER_BIT0_QCOM|GL_STENCIL_BUFFER_BIT0_QCOM;
     //dev->isTileRenderStarted = true;
-    GLbitfield flg = 0;
-
-    if( wasInitRt )
-      flg |= GL_COLOR_BUFFER_BIT0_QCOM;
-
-    if( wasInitDs )
-      flg |= GL_DEPTH_BUFFER_BIT0_QCOM;
-
     //dev->glStartTilingQCOM( 0, 0, w, h, flg );
     }
+  }
 
-  errCk();
-  return 1;
+void Opengl2x::endTiledRender() const {
+  if( dev->isTileRenderStarted ){
+    GLbitfield flg  = 0;
+    //flg = GL_COLOR_BUFFER_BIT0_QCOM|GL_DEPTH_BUFFER_BIT0_QCOM|GL_STENCIL_BUFFER_BIT0_QCOM;
+    GLbitfield nflg = GL_COLOR_BUFFER_BIT0_QCOM;
+
+    for( int i=0; i<dev->caps.maxRTCount; ++i )
+      if( dev->target.color[i] )
+        nflg = GL_NONE;
+
+    flg|=nflg;
+
+    if( nflg == GL_NONE ){
+      for( int i=0; i<dev->caps.maxRTCount; ++i )
+        if( dev->target.color[i] && dev->target.color[i]->isInitalized )
+          flg |= GL_COLOR_BUFFER_BIT0_QCOM;
+      }
+
+    if( (dev->target.depth && dev->target.depth->isInitalized)||
+        !dev->target.depth )
+      flg |= GL_DEPTH_BUFFER_BIT0_QCOM;
+
+    if(1){
+      GLbitfield clr = 0;
+      if( !(flg & GL_COLOR_BUFFER_BIT0_QCOM) )
+        clr |= GL_COLOR_BUFFER_BIT;
+
+      if( !(flg & GL_DEPTH_BUFFER_BIT) )
+        clr |= (GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
+
+      //glClear( clr );
+      }
+
+    dev->glEndTilingQCOM( flg );
+    errCk();
+    dev->isTileRenderStarted = false;
+    }
   }
 
 void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
@@ -618,29 +703,7 @@ void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
 void Opengl2x::unsetRenderTagets( AbstractAPI::Device *d,
                                   int /*count*/  ) const {
   setDevice(d);
-
-  if( dev->isTileRenderStarted ){
-    GLbitfield flg  = 0;//GL_COLOR_BUFFER_BIT0_QCOM|GL_DEPTH_BUFFER_BIT0_QCOM|GL_STENCIL_BUFFER_BIT0_QCOM;
-    GLbitfield nflg = GL_COLOR_BUFFER_BIT0_QCOM;
-
-    for( int i=0; i<dev->caps.maxRTCount; ++i )
-      if( dev->target.color[i] )
-        nflg = GL_NONE;
-
-    flg|=nflg;
-
-    for( int i=0; i<dev->caps.maxRTCount; ++i )
-      if( dev->target.color[i] && dev->target.color[i]->isInitalized )
-        flg |= GL_COLOR_BUFFER_BIT0_QCOM;
-
-    if( (dev->target.depth && dev->target.depth->isInitalized)||
-        !dev->target.depth )
-      flg |= GL_DEPTH_BUFFER_BIT0_QCOM;
-
-    dev->glEndTilingQCOM( flg );
-    errCk();
-    dev->isTileRenderStarted = false;
-    }
+  endTiledRender();
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -1130,22 +1193,31 @@ void Opengl2x::setTextureFlag( AbstractAPI::Device  *,
 
 AbstractAPI::VertexBuffer*
      Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
-                                   size_t size, size_t elSize ) const{
-  return createVertexBuffer(d, size, elSize, 0 );
+                                   size_t size, size_t elSize,
+                                   BufferUsage u  ) const{
+  return createVertexBuffer(d, size, elSize, 0, u );
   }
 
 AbstractAPI::VertexBuffer *Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
                                                          size_t size,
                                                          size_t elSize,
-                                                         const void *src ) const {
+                                                         const void *src,
+                                                         BufferUsage u ) const {
   setDevice(d);
+  setDevice(d);
+
+  static const GLenum gu[] = {
+    GL_STREAM_DRAW,
+    GL_DYNAMIC_DRAW,
+    GL_STATIC_DRAW
+    };
 
   Detail::GLBuffer *vbo = new Detail::GLBuffer;
   glGenBuffers( 1, &vbo->id );
   glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
   glBufferData( GL_ARRAY_BUFFER,
                 size*elSize, src,
-                GL_STATIC_DRAW );
+                gu[u] );
   errCk();
 
   return (AbstractAPI::VertexBuffer*)vbo;
@@ -1165,22 +1237,30 @@ void Opengl2x::deleteVertexBuffer(  AbstractAPI::Device *d,
 
 AbstractAPI::IndexBuffer*
      Opengl2x::createIndexBuffer( AbstractAPI::Device *d,
-                                  size_t size, size_t elSize ) const {
-  return createIndexBuffer(d, size, elSize, 0);
+                                  size_t size, size_t elSize,
+                                  BufferUsage u ) const {
+  return createIndexBuffer(d, size, elSize, 0, u);
   }
 
 AbstractAPI::IndexBuffer *Opengl2x::createIndexBuffer( AbstractAPI::Device *d,
                                                        size_t size,
                                                        size_t elSize,
-                                                       const void *src ) const {
+                                                       const void *src,
+                                                       BufferUsage u  ) const {
   setDevice(d);
+
+  static const GLenum gu[] = {
+    GL_STREAM_DRAW,
+    GL_DYNAMIC_DRAW,
+    GL_STATIC_DRAW
+    };
 
   Detail::GLBuffer *ibo = new Detail::GLBuffer;
   glGenBuffers( 1, &ibo->id );
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo->id );
   glBufferData( GL_ELEMENT_ARRAY_BUFFER,
                 size*elSize, src,
-                GL_STATIC_DRAW );
+                gu[u] );
   errCk();
 
   return (AbstractAPI::IndexBuffer*)ibo;
@@ -1567,9 +1647,11 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
   if( dev->renderState.cullFaceMode()!=r.cullFaceMode() )
     glCullFace( cull[ r.cullFaceMode() ] );
 
+  /*
   if( !r.isZTest() && !r.isZWriting() )
     glDisable(GL_DEPTH_TEST); else
     glEnable(GL_DEPTH_TEST);
+  */
 
   if( dev->renderState.isZTest() != r.isZTest() ||
       dev->renderState.getZTestMode()!=r.getZTestMode() ){
@@ -1614,8 +1696,8 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
       dev->renderState.getBlendDFactor()!=r.getBlendDFactor() ||
       dev->renderState.getBlendSFactor()!=r.getBlendSFactor()  ){
     if( r.isBlend() ){
-      glEnable( GL_BLEND );
       glBlendFunc( blend[ r.getBlendSFactor() ], blend[ r.getBlendDFactor() ] );
+      glEnable( GL_BLEND );
       } else {
       glDisable( GL_BLEND );
       }

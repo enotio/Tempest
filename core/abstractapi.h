@@ -49,6 +49,12 @@ class AbstractAPI {
       TF_Inialized
       };
 
+    enum BufferUsage {
+      BU_Stream,
+      BU_Static,
+      BU_Dynamic
+      };
+
     class Texture;
     class StdDSSurface;
 
@@ -140,24 +146,28 @@ class AbstractAPI {
 
     virtual AbstractAPI::VertexBuffer*
                 createVertexBuffer( AbstractAPI::Device *d,
-                                    size_t size, size_t elSize ) const = 0;
+                                    size_t size, size_t elSize,
+                                    BufferUsage u ) const = 0;
 
-    virtual AbstractAPI::VertexBuffer* createVertexBuffer(AbstractAPI::Device *d,
+    virtual AbstractAPI::VertexBuffer* createVertexBuffer( AbstractAPI::Device *d,
                                                            size_t size,
                                                            size_t elSize,
-                                                           const void *src ) const;
+                                                           const void *src,
+                                                           BufferUsage u  ) const;
 
     virtual void deleteVertexBuffer( AbstractAPI::Device *d,
                                      AbstractAPI::VertexBuffer* ) const = 0;
 
     virtual AbstractAPI::IndexBuffer*
                 createIndexBuffer( AbstractAPI::Device *d,
-                                   size_t size, size_t elSize ) const = 0;
+                                   size_t size, size_t elSize,
+                                   BufferUsage u  ) const = 0;
 
     virtual AbstractAPI::IndexBuffer*
                 createIndexBuffer( AbstractAPI::Device *d,
                                    size_t size, size_t elSize,
-                                   const void* src ) const;
+                                   const void* src,
+                                   BufferUsage u  ) const;
 
     virtual void deleteIndexBuffer( AbstractAPI::Device *d,
                                     AbstractAPI::IndexBuffer* ) const = 0;

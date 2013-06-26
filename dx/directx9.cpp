@@ -545,7 +545,7 @@ AbstractAPI::Texture* DirectX9::createTexture(AbstractAPI::Device *d,
 
     D3DFMT_R8G8B8,   // RGB,
     D3DFMT_X4R4G4B4, // RGB4,
-    D3DFMT_X1R5G5B5, // RGB5,
+    D3DFMT_R5G6B5, // RGB5,
     D3DFMT_A2B10G10R10, // RGB10,
     D3DFMT_A2B10G10R10, // RGB12,
     D3DFMT_A2B10G10R10, // RGB16,
@@ -631,7 +631,8 @@ void DirectX9::deleteTexture( AbstractAPI::Device *,
 
 AbstractAPI::VertexBuffer*
      DirectX9::createVertexBuffer( AbstractAPI::Device *d,
-                                   size_t size, size_t elSize ) const{
+                                   size_t size, size_t elSize,
+                                   BufferUsage /*usage*/) const{
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
   LPDIRECT3DVERTEXBUFFER9 vbo = 0;
 
@@ -662,7 +663,8 @@ void DirectX9::deleteVertexBuffer( AbstractAPI::Device *,
 
 AbstractAPI::IndexBuffer*
      DirectX9::createIndexBuffer( AbstractAPI::Device *d,
-                                  size_t size, size_t elSize ) const {
+                                  size_t size, size_t elSize,
+                                  BufferUsage /*usage*/ ) const {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
   LPDIRECT3DINDEXBUFFER9 index = 0;
 

@@ -11,6 +11,7 @@ RenderState::RenderState( RenderState::Preset p ) {
 
   if( p==PostProcess ){
     setZTest(0);
+    setZWriting(0);
     }
   }
 

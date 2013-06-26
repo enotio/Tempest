@@ -239,14 +239,18 @@ class Device {
                          AbstractAPI::TextureFlag f,
                          bool v );
 
-    AbstractAPI::VertexBuffer* createVertexbuffer( size_t size, size_t elSize );
-    AbstractAPI::VertexBuffer* createVertexbuffer(size_t size, size_t elSize,
-                                                   const void *src );
+    AbstractAPI::VertexBuffer* createVertexbuffer( size_t size, size_t elSize,
+                                                   AbstractAPI::BufferUsage u );
+    AbstractAPI::VertexBuffer* createVertexbuffer( size_t size, size_t elSize,
+                                                   const void *src,
+                                                   AbstractAPI::BufferUsage u );
     void deleteVertexBuffer( AbstractAPI::VertexBuffer* );
 
-    AbstractAPI::IndexBuffer* createIndexBuffer( size_t size, size_t elSize );
     AbstractAPI::IndexBuffer* createIndexBuffer( size_t size, size_t elSize,
-                                                 const void* src );
+                                                 AbstractAPI::BufferUsage u );
+    AbstractAPI::IndexBuffer* createIndexBuffer( size_t size, size_t elSize,
+                                                 const void* src,
+                                                 AbstractAPI::BufferUsage u );
     void deleteIndexBuffer( AbstractAPI::IndexBuffer* );
 
     void* lockBuffer( AbstractAPI::VertexBuffer*,
