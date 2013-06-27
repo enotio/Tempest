@@ -108,8 +108,7 @@ class GraphicObject : public AbstractGraphicObject<Material> {
       this->sceneAddObject();
       }
 
-    //const Model<>& model() const;
-    ModelBounds bounds() const {
+    const ModelBounds& bounds() const {
       const IModelPtr *m  = reinterpret_cast< const IModelPtr*>(m_model);
       return m->bounds();
       }
@@ -200,7 +199,7 @@ class GraphicObject : public AbstractGraphicObject<Material> {
   private:
     struct IModelPtr{
       virtual ~IModelPtr(){}
-      virtual ModelBounds bounds() const = 0;
+      virtual const ModelBounds& bounds() const = 0;
       virtual void cloneTo( void* ) const = 0;
       virtual void draw( const AbstractMaterial &mat,
                          Render &r,
@@ -219,7 +218,7 @@ class GraphicObject : public AbstractGraphicObject<Material> {
         }
 
       Model<V> model;
-      ModelBounds bounds() const { return model.bounds(); }
+      const ModelBounds& bounds() const { return model.bounds(); }
       virtual void cloneTo( void* p ) const {
         new(p) ModelPtr(model);
         }
