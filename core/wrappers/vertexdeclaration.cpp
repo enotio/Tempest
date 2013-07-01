@@ -110,3 +110,21 @@ const VertexDeclaration::Declarator::Element&
     VertexDeclaration::Declarator::operator [] (int i) const {
   return data[i];
   }
+
+bool VertexDeclaration::Declarator::operator ==(const VertexDeclaration::Declarator &d) const {
+  return data==d.data;
+  }
+
+bool VertexDeclaration::Declarator::operator !=(const VertexDeclaration::Declarator &d) const {
+  return data!=d.data;
+  }
+
+bool VertexDeclaration::Declarator::Element::operator ==(const VertexDeclaration::Declarator::Element &d) const {
+  return component==d.component &&
+         usage    ==d.usage &&
+         index    ==d.index;
+  }
+
+bool VertexDeclaration::Declarator::Element::operator !=(const VertexDeclaration::Declarator::Element &d) const {
+  return !(*this==d);
+  }

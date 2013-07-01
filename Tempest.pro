@@ -122,7 +122,6 @@ SOURCES += \
     shading/fragmentshader.cpp \
     shading/abstractshadinglang.cpp \
     utils/tessobject.cpp \
-    utils/postprocesshelper.cpp \
     utils/color.cpp \
     shading/shaderinput.cpp \
     squish/squish.cpp \
@@ -210,7 +209,6 @@ HEADERS += \
     shading/fragmentshader.h \
     shading/abstractshadinglang.h \
     utils/tessobject.h \
-    utils/postprocesshelper.h \
     utils/cwnptr.h \
     utils/color.h \
     shading/shaderinput.h \

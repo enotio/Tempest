@@ -610,9 +610,11 @@ void Opengl2x::startTiledRender() const {
   if( dev->isTileRenderStarted )
     return;
 
-  int w = dev->scrW, h = dev->scrH;
-
   if( dev->hasTileBasedRender ){
+    int w = dev->scrW, h = dev->scrH;
+    (void)w;
+    (void)h;
+
     GLbitfield flg  = 0;
     GLbitfield nflg = GL_COLOR_BUFFER_BIT0_QCOM;
 

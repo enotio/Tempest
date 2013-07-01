@@ -3,11 +3,12 @@
 #include <Tempest/AbstractAPI>
 #include <Tempest/Texture2d>
 #include <Tempest/RenderState>
+#include <Tempest/VertexBufferHolder>
+#include <Tempest/VertexBuffer>
 
 #include <set>
 #include <cassert>
 
-#include <iostream>
 
 using namespace Tempest;
 
@@ -130,6 +131,59 @@ struct Device::Data{
 
   RenderState rs;
   bool  delaydRS;
+
+  Tempest::VertexDeclaration quadDecl;
+  struct QuadVertex{
+    float x,y;
+    float u,v;
+    };
+
+  VertexBufferHolder* vboH;
+  Tempest::VertexBuffer<QuadVertex> quad;
+
+  struct Dec{
+    AbstractAPI::VertexDecl* v;
+    VertexDeclaration::Declarator d;
+    size_t count;
+    };
+
+  std::vector<Dec> declPool;
+
+  AbstractAPI::VertexDecl* createDecl( const VertexDeclaration::Declarator& d ){
+    for( size_t i=0; i<declPool.size(); ++i )
+      if( declPool[i].d==d ){
+        ++declPool[i].count;
+        return declPool[i].v;
+        }
+
+    return 0;
+    }
+
+  void addDecl( const VertexDeclaration::Declarator& de,
+                AbstractAPI::VertexDecl* v ){
+    Dec d;
+    d.v = v;
+    d.d = de;
+    d.count = 1;
+
+    declPool.push_back(d);
+    }
+
+  bool deleteDecl( AbstractAPI::VertexDecl *v ){
+    for( size_t i=0; i<declPool.size(); ++i )
+      if( declPool[i].v==v ){
+        --declPool[i].count;
+        if( declPool[i].count==0 ){
+          declPool[i] = declPool.back();
+          declPool.pop_back();
+          return 1;
+          } else {
+          return 0;
+          }
+        }
+
+    return 1;
+    }
   };
 
 
@@ -152,6 +206,7 @@ void Device::init( const AbstractAPI &,
   shLang = api.createShadingLang( impl );
 
   data = new Data();
+  data->declPool.reserve(64);
 
   data->windowHwnd = windowHwnd;
   data->isLost = 0;
@@ -163,9 +218,34 @@ void Device::init( const AbstractAPI &,
   data->depthStencil = api.getDSSurfaceTaget(impl);
 
   data->delaydRS = false;
+
+  data->vboH = new VertexBufferHolder(*this);
+
+  Tempest::VertexDeclaration::Declarator decl;
+  decl.add( Tempest::Decl::float2, Tempest::Usage::Position )
+      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord );
+
+  data->quadDecl = Tempest::VertexDeclaration( *this, decl );
+
+  Data::QuadVertex q[6] = {
+    {-1,-1,  0,1},
+    { 1, 1,  1,0},
+    { 1,-1,  1,1},
+
+    {-1,-1,  0,1},
+    {-1, 1,  0,0},
+    { 1, 1,  1,0}
+    };
+
+  data->quad = data->vboH->load(q, 6);
   }
 
 Device::~Device(){
+  data->quad     = VertexBuffer<Data::QuadVertex>();
+  data->quadDecl = VertexDeclaration();
+
+  delete data->vboH;
+
   api.retDSSurfaceTaget( impl, data->depthStencil );
   delete data;
 
@@ -399,6 +479,12 @@ bool Device::hasManagedStorge() const {
   return api.hasManagedStorge();
   }
 
+void Device::drawFullScreenQuad(VertexShader &vs, FragmentShader &fs) {
+  drawPrimitive( AbstractAPI::Triangle, vs, fs,
+                 data->quadDecl, data->quad,
+                 0, 2 );
+  }
+
 AbstractAPI::Texture *Device::createTexture( const Pixmap &p,
                                              bool mips,
                                              bool compress ) {
@@ -495,12 +581,21 @@ void Device::unlockBuffer( AbstractAPI::IndexBuffer * ibo ) {
 AbstractAPI::VertexDecl *
       Device::createVertexDecl( const VertexDeclaration::Declarator &de ) const {
   forceEndPaint();
-  return api.createVertexDecl( impl, de );
+
+  AbstractAPI::VertexDecl * v = data->createDecl(de);
+  if( !v ){
+    v = api.createVertexDecl( impl, de );
+    data->addDecl(de, v);
+    }
+
+  return v;
   }
 
 void Device::deleteVertexDecl( AbstractAPI::VertexDecl* d ) const {
   forceEndPaint();
-  api.deleteVertexDecl( impl, d );
+
+  if( data->deleteDecl(d) )
+    api.deleteVertexDecl( impl, d );
   }
 
 void Device::bind( const Tempest::VertexShader &s ){

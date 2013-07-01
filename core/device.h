@@ -199,6 +199,8 @@ class Device {
       //unBind(fs);
       }
 
+    void drawFullScreenQuad( Tempest::VertexShader   & vs,
+                             Tempest::FragmentShader & fs );
   private:
     void bind( const Tempest::VertexShader   &s );
     void bind( const Tempest::FragmentShader &s );

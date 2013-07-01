@@ -27,7 +27,6 @@ struct TextureHolder::Data {
     };
 
   std::map< AbstractAPI::Texture*, DynTexture   > dynamic_textures;
-  //std::map< AbstractAPI::Texture*, PixmapTexture> pixmap_textures;
   std::vector<PixmapTexture> pixmap_textures;
   };
 
@@ -213,7 +212,7 @@ AbstractAPI::Texture* TextureHolder::restore( AbstractAPI::Texture* t ){
   return 0;
   }
 
-AbstractAPI::Texture* TextureHolder::copy( AbstractAPI::Texture* ){
+AbstractAPI::Texture* TextureHolder::copy( AbstractAPI::Texture* t ){
 #ifndef __ANDROID__
   throw std::runtime_error("TextureHolder::copy not implemented yet");
 #endif

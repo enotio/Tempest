@@ -67,6 +67,10 @@ class VertexDeclaration {
           Tempest::Decl::ComponentType component;
           Tempest::Usage::UsageType    usage;
           int index;
+
+
+          bool operator == ( const Element& d ) const;
+          bool operator != ( const Element& d ) const;
           };
 
         Declarator& operator << ( const Element& e );
@@ -77,6 +81,8 @@ class VertexDeclaration {
         int size() const;
 
         const Element& operator [] (int i) const;
+        bool operator == ( const Declarator& d ) const;
+        bool operator != ( const Declarator& d ) const;
       private:
         std::vector< Element > data;
       };
