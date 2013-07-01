@@ -34,6 +34,7 @@ struct Device::Data{
   int mrtSize;
 
   bool isLost;
+  bool isPaintMode;
   void * windowHwnd;  
 
   struct BeginPaintArg{
@@ -154,6 +155,7 @@ void Device::init( const AbstractAPI &,
 
   data->windowHwnd = windowHwnd;
   data->isLost = 0;
+  data->isPaintMode = false;
 
   data->cash.vbo     = 0;
   data->cash.vboSize = 0;
@@ -200,6 +202,9 @@ void Device::clearStencil( unsigned s ) {
   }
 
 void Device::beginPaint(){
+  assert( !data->isPaintMode );
+  data->isPaintMode = true;
+
   if( data->paintTaget.isDelayd && data->paintTaget.isSame() ){
     return;
     }
@@ -212,6 +217,9 @@ void Device::beginPaint(){
   }
 
 void Device::beginPaint( Texture2d &rt ) {
+  assert( !data->isPaintMode );
+  data->isPaintMode = true;
+
   if( data->paintTaget.isDelayd && data->paintTaget.isSame(rt) ){
     return;
     }
@@ -230,6 +238,9 @@ void Device::beginPaint( Texture2d &rt ) {
   }
 
 void Device::beginPaint( Texture2d &rt, Texture2d &depthStencil ) {
+  assert( !data->isPaintMode );
+  data->isPaintMode = true;
+
   if( data->paintTaget.isDelayd && data->paintTaget.isSame(rt, depthStencil) ){
     return;
     }
@@ -248,6 +259,9 @@ void Device::beginPaint( Texture2d &rt, Texture2d &depthStencil ) {
   }
 
 void Device::beginPaint( Texture2d rt[], int count ){
+  assert( !data->isPaintMode );
+  data->isPaintMode = true;
+
   if( data->paintTaget.isDelayd && data->paintTaget.isSame(rt, count) ){
     return;
     }
@@ -269,6 +283,9 @@ void Device::beginPaint( Texture2d rt[], int count ){
 
 void Device::beginPaint( Texture2d rt[], int count,
                          Texture2d &depthStencil) {
+  assert( !data->isPaintMode );
+  data->isPaintMode = true;
+
   if( data->paintTaget.isDelayd && data->paintTaget.isSame(rt, count, depthStencil) ){
     return;
     }
@@ -290,6 +307,8 @@ void Device::beginPaint( Texture2d rt[], int count,
   }
 
 void Device::endPaint  (){
+  assert( data->isPaintMode );
+  data->isPaintMode        = false;
   data->paintTaget.isDelayd = true;
   //forceEndPaint();
   }

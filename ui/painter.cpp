@@ -264,8 +264,8 @@ Painter::Painter( PainterDevice &d ) :dev(d) {
   }
 
 Painter::~Painter() {
-  dev.setState( oldState );
   dev.popState();
+  dev.setState( oldState );
   }
 
 void Painter::setScissor(int x, int y, int w, int h) {

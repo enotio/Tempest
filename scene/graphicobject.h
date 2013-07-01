@@ -11,12 +11,13 @@ namespace Tempest{
 
 class AbstractMaterial;
 
-template< class Material >
-class GraphicObject : public AbstractGraphicObject<Material> {
+template< class Material,
+          class UserState = char >
+class GraphicObject : public AbstractGraphicObject<Material, UserState> {
   public:
-    typedef AbstractScene< AbstractGraphicObject<Material> > Scene;
+    typedef AbstractScene< AbstractGraphicObject<Material,UserState> > Scene;
 
-    GraphicObject( Scene & s ) : AbstractGraphicObject<Material>(s) {
+    GraphicObject( Scene & s ) : AbstractGraphicObject<Material, UserState>(s) {
       m_model = new ModelPtr<DefaultVertex>( Model<>() );
 
       pos[0] = 0;
@@ -33,10 +34,11 @@ class GraphicObject : public AbstractGraphicObject<Material> {
       radi = 0;
 
       needToUpdateMat = true;
+
       this->sceneAddObject();
       }
 
-    GraphicObject( const GraphicObject& obj ) : AbstractGraphicObject<Material>(obj) {
+    GraphicObject( const GraphicObject& obj ) : AbstractGraphicObject<Material, UserState>(obj) {
       m_model = new ModelPtr<DefaultVertex>( Model<>());
       m_model->~IModelPtr();
 
@@ -57,6 +59,7 @@ class GraphicObject : public AbstractGraphicObject<Material> {
 
       computeMat();
       needToUpdateMat = false;
+
       this->sceneAddObject();
       }
 
@@ -70,7 +73,8 @@ class GraphicObject : public AbstractGraphicObject<Material> {
         return *this;
 
       this->sceneDelObject();
-      AbstractGraphicObject<Material>::operator = (g);
+
+      AbstractGraphicObject<Material, UserState>::operator = (g);
 
       IModelPtr *m  = reinterpret_cast<IModelPtr*>(m_model);
       m->~IModelPtr();

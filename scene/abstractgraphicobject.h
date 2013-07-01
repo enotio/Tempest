@@ -41,8 +41,8 @@ class AbstractSceneObject {
       }
 
     void setVisible( bool v){
-      if( visible==v )
-        return;
+      //if( visible==v )
+        //return;
 
       visible = v;
       }
@@ -71,20 +71,25 @@ class AbstractSceneObject {
     friend class Render;
   };
 
-template< class Material >
+template< class Material,
+          class UserState = char >
 class AbstractGraphicObject : public AbstractSceneObject {
   public:
-    typedef AbstractScene< AbstractGraphicObject<Material> > Scene;
+    typedef AbstractScene< AbstractGraphicObject<Material,UserState> > Scene;
 
     AbstractGraphicObject( Scene & s ):AbstractSceneObject(), scene(&s){
       setVisible(1);
       vboH = 0;
       iboH = 0;
+
+      isInScene = false;
       }
 
     AbstractGraphicObject( const AbstractGraphicObject& obj ):
         AbstractSceneObject(obj), scene( obj.scene ){
-      setVisible(1);
+      setVisible(1);      
+      isInScene = false;
+
       *this = obj;
       }
 
@@ -101,13 +106,14 @@ class AbstractGraphicObject : public AbstractSceneObject {
       iboH  = obj.iboH;
 
       AbstractSceneObject::operator =( obj );
+
       return *this;
       }
 
     void setMaterial( const Material& m ){
-      scene->delObject(this);
+      sceneDelObject();
       mat = m;
-      scene->addObject(this);
+      sceneAddObject();
       }
 
     const Material& material() const {
@@ -122,23 +128,32 @@ class AbstractGraphicObject : public AbstractSceneObject {
       return iboH;
       }
 
+    UserState ustate;
   protected:
     void onTransformChanged( const Tempest::Matrix4x4& old ) const {
-      scene->onObjectTransform( this, old );
+      if( isInScene )
+        scene->onObjectTransform( this, old );
       }
 
     void sceneAddObject(){
-      scene->addObject( this );
+      if( !isInScene ){
+        scene->addObject( this );
+        isInScene = true;
+        }
       }
 
     void sceneDelObject(){
-      scene->delObject( this );
+      if( isInScene ){
+        scene->delObject( this );
+        isInScene = false;
+        }
       }
 
     size_t vboH, iboH;
   private:
     Material mat;
     Scene * scene;
+    bool isInScene;
 
     //friend class Scene;
     friend class Render;

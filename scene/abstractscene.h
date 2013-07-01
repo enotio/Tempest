@@ -15,7 +15,7 @@
 
 namespace Tempest{
 
-template< class M >
+template< class M, class UserState >
 class AbstractGraphicObject;
 
 class Device;
