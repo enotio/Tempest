@@ -25,7 +25,7 @@
 #include <iostream>
 #include <Tempest/Pixmap>
 
-#include <cassert>
+#include <Tempest/Assert>
 #include <stdexcept>
 
 #include "gltypes.h"
@@ -402,7 +402,7 @@ void Opengl2x::clear(AbstractAPI::Device *d,  const Color& cl, float z ) const{
 void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
   setDevice(d);
 
-  assert( !dev->isPainting );
+  T_ASSERT( !dev->isPainting );
 
   dev->vbo    = 0;
   dev->ibo    = 0;
@@ -419,7 +419,7 @@ void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
   errCk();
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
   errCk();
-  assert( setupFBO() );
+  T_ASSERT( setupFBO() );
 
   startTiledRender();
   }
@@ -428,7 +428,7 @@ void Opengl2x::endPaint  ( AbstractAPI::Device * d ) const{
   setDevice(d);  
   endTiledRender();
 
-  assert( dev->isPainting );
+  T_ASSERT( dev->isPainting );
   dev->isPainting = false;
   setupBuffers( 0, false, true, false );
   dev->decl = 0;
@@ -500,7 +500,7 @@ bool Opengl2x::setupFBO() const {
     return 1;
     }
 
-  //assert( glCheckFramebufferStatus( GL_FRAMEBUFFER )==GL_FRAMEBUFFER_COMPLETE );
+  //T_ASSERT( glCheckFramebufferStatus( GL_FRAMEBUFFER )==GL_FRAMEBUFFER_COMPLETE );
   errCk();
 
   if( fbo ){
@@ -595,7 +595,7 @@ bool Opengl2x::setupFBO() const {
     }
 
 #ifdef OGL_DEBUG
-  assert( status==0 || status==GL_FRAMEBUFFER_COMPLETE );
+  T_ASSERT( status==0 || status==GL_FRAMEBUFFER_COMPLETE );
   errCk();
 #endif
 

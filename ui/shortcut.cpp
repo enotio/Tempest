@@ -2,7 +2,7 @@
 
 #include <Tempest/Widget>
 #include <algorithm>
-#include <cassert>
+#include <Tempest/Assert>
 
 using namespace Tempest;
 
@@ -16,7 +16,7 @@ Shortcut::Shortcut() {
 Shortcut::Shortcut( Widget *w,
                     KeyEvent::KeyType k,
                     Event::KeyType md ) {
-  assert(w!=0);
+  T_ASSERT(w!=0);
 
   m.lkey    = 0;
   m.key     = k;

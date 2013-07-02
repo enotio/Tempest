@@ -5,7 +5,7 @@
 #include "core/wrappers/atomic.h"
 
 #include <squish/squish.h>
-#include <cassert>
+#include <Tempest/Assert>
 #include <cstring>
 
 using namespace Tempest;
@@ -30,7 +30,7 @@ Pixmap::Pixmap() {
 
   frm = Format_RGB;
 
-  assert( sizeof(Pixel)==4 );
+  T_ASSERT( sizeof(Pixel)==4 );
   }
 
 Tempest::Pixmap::Pixmap(const std::string &p) {
@@ -42,7 +42,7 @@ Tempest::Pixmap::Pixmap(const std::string &p) {
 
   load(p);
 
-  assert( sizeof(Pixel)==4 );
+  T_ASSERT( sizeof(Pixel)==4 );
   }
 /*
 Tempest::Pixmap::Pixmap(const std::wstring &p) {
@@ -54,7 +54,7 @@ Tempest::Pixmap::Pixmap(const std::wstring &p) {
 
   load(p);
 
-  assert( sizeof(Pixel)==4 );
+  T_ASSERT( sizeof(Pixel)==4 );
   }*/
 
 Pixmap::Pixmap(int iw, int ih, bool alpha) {
@@ -74,7 +74,7 @@ Pixmap::Pixmap(int iw, int ih, bool alpha) {
   rawPtr = &data.const_value()->bytes[0];
   mrawPtr = 0;
 
-  assert( sizeof(Pixel)==4 );
+  T_ASSERT( sizeof(Pixel)==4 );
   }
 
 Pixmap::Pixmap(const Pixmap &p):data(p.data) {

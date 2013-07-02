@@ -154,7 +154,8 @@ SOURCES += \
     thirdparty/libpng/pngmem.c \
     thirdparty/libpng/pngget.c \
     thirdparty/libpng/pngerror.c \
-    thirdparty/libpng/png.c
+    thirdparty/libpng/png.c \
+    core/assert.cpp
 
 HEADERS += \
     ui/window.h \
@@ -239,7 +240,8 @@ HEADERS += \
     thirdparty/libpng/pngpriv.h \
     thirdparty/libpng/pngconf.h \
     thirdparty/libpng/png.h \
-    thirdparty/libpng/config.h
+    thirdparty/libpng/config.h \
+    core/assert.h
 
 OTHER_FILES += \
     include/Tempest/Window \

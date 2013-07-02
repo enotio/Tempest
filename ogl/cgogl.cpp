@@ -5,7 +5,7 @@
 #include <Cg/Cg.h>
 #include <Cg/cgGL.h>
 
-#include <cassert>
+#include <Tempest/Assert>
 
 #include <Tempest/VertexShader>
 #include <Tempest/Matrix4x4>
@@ -52,7 +52,7 @@ struct CgOGL::Data{
         std::cout << str << std::endl;
         }
 
-      assert(ok);
+      T_ASSERT(ok);
       }
     }
 
@@ -169,7 +169,7 @@ AbstractShadingLang::VertexShader*
 
   cgGLLoadProgram(prog);
 
-  assert( prog );
+  T_ASSERT( prog );
 
   return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
   }
@@ -188,7 +188,7 @@ AbstractShadingLang::VertexShader*
 
   cgGLLoadProgram(prog);
 
-  assert( prog );
+  T_ASSERT( prog );
 
   return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
   }
@@ -213,7 +213,7 @@ AbstractShadingLang::FragmentShader*
     Data::dbgOut( data->context );
 
   cgGLLoadProgram( prog );
-  assert( prog );
+  T_ASSERT( prog );
 
   return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
   }
@@ -232,7 +232,7 @@ AbstractShadingLang::FragmentShader *
 
   cgGLLoadProgram( prog );
 
-  assert( prog );
+  T_ASSERT( prog );
 
   return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
   }

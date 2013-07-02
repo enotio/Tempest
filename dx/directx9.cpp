@@ -11,9 +11,9 @@
 #include <set>
 #include <iostream>
 #include <algorithm>
-#include <Tempest/Pixmap>
 
-#include <cassert>
+#include <Tempest/Pixmap>
+#include <Tempest/Assert>
 
 using namespace Tempest;
 
@@ -645,7 +645,7 @@ AbstractAPI::VertexBuffer*
                                          D3DPOOL_DEFAULT,
                                          &vbo,
                                          0 ) ) ){
-        assert(0);
+        T_ASSERT(0);
         vbo = 0;
         }
     --c;
@@ -677,7 +677,7 @@ AbstractAPI::IndexBuffer*
                                         D3DPOOL_DEFAULT,
                                         &index,
                                         0 ) ) ){
-        assert(0);
+        T_ASSERT(0);
         index = 0;
         }
     --c;
@@ -711,8 +711,7 @@ void* DirectX9::lockBuffer( AbstractAPI::Device *,
   LPDIRECT3DVERTEXBUFFER9 vbo = LPDIRECT3DVERTEXBUFFER9(v);
 
   void* pVertices = 0;
-  assert( vbo->Lock( 0, 0, &pVertices, 0 )==D3D_OK );
-  //assert( vbo->Lock( offset, size, &pVertices, 0 )==D3D_OK );
+  T_ASSERT( vbo->Lock( 0, 0, &pVertices, 0 )==D3D_OK );
 
   return (char*)pVertices+offset;
   }
@@ -739,7 +738,7 @@ void DirectX9::unlockBuffer( AbstractAPI::Device *,
 
   size_t byteSize = ibo->pbuf.size()*sizeof(ibo->pbuf[0]);
 
-  assert( ibo->index->Lock( 0, 0, &pIBO, 0 )==D3D_OK );
+  T_ASSERT( ibo->index->Lock( 0, 0, &pIBO, 0 )==D3D_OK );
   memcpy(pIBO, &ibo->pbuf[0], byteSize );
   ibo->index->Unlock();
 
@@ -849,7 +848,7 @@ AbstractAPI::VertexDecl *
   HRESULT hr = dev->CreateVertexDeclaration( decl.data(), &ret );
 
   if( FAILED(hr) ){
-    assert(0);
+    T_ASSERT(0);
     }
 
   return reinterpret_cast<AbstractAPI::VertexDecl*>(ret);
@@ -879,7 +878,7 @@ void DirectX9::bindVertexBuffer( AbstractAPI::Device *d,
   HRESULT re =
   dev->SetStreamSource( 0, LPDIRECT3DVERTEXBUFFER9(b),
                         0, vsize );
-  assert(re==D3D_OK);
+  T_ASSERT(re==D3D_OK);
   }
 
 void DirectX9::bindIndexBuffer( AbstractAPI::Device * d,
@@ -888,7 +887,7 @@ void DirectX9::bindIndexBuffer( AbstractAPI::Device * d,
   HRESULT re = dev->SetIndices( ((IBO*)(b))->index );
 
   ((Device*)d)->curIBO = (IBO*)(b);
-  assert(re==D3D_OK);
+  T_ASSERT(re==D3D_OK);
   }
 
 void DirectX9::draw( AbstractAPI::Device *d,

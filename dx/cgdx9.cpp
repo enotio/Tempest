@@ -5,11 +5,10 @@
 #include <Cg/Cg.h>
 #include <Cg/CgD3D9.h>
 
-#include <cassert>
-
 #include <Tempest/VertexShader>
 #include <Tempest/Matrix4x4>
 #include <Tempest/Texture2d>
+#include <Tempest/Assert>
 
 #include "shading/uniformcash.h"
 #include <Tempest/Uniform>
@@ -44,7 +43,7 @@ struct CgDx9::Data{
     if( str )
       std::cout << str << std::endl;
 
-    assert(ok);
+    T_ASSERT(ok);
     }
 
   CGprogram currentProgramVS, currentProgramFS;
@@ -160,7 +159,7 @@ AbstractShadingLang::VertexShader*
 
   cgD3D9LoadProgram( prog, false, 0 );
 
-  assert( prog );
+  T_ASSERT( prog );
 
   return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
   }
@@ -185,7 +184,7 @@ AbstractShadingLang::VertexShader*
 
   cgD3D9LoadProgram( prog, false, 0 );
 
-  assert( prog );
+  T_ASSERT( prog );
 
   return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
   }
@@ -216,7 +215,7 @@ AbstractShadingLang::FragmentShader*
     Data::dbgOut( data->context );
 
   cgD3D9LoadProgram( prog, false, 0 );
-  assert( prog );
+  T_ASSERT( prog );
 
   return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
   }
@@ -241,7 +240,7 @@ AbstractShadingLang::FragmentShader *
 
   cgD3D9LoadProgram( prog, false, 0 );
 
-  assert( prog );
+  T_ASSERT( prog );
 
   return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
   }

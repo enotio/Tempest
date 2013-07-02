@@ -14,34 +14,17 @@
 #include <iostream>
 
 using namespace Tempest;
-/*
-//! ObjectMatrix::pimpl
-//! А ты как думал?
-class Matrix4x4::pimpl{
-  public:
-    //! http://glm.g-truc.net/
-    GLfloat m[4][4];
-    glm::detail::tmat4x4<float> gm;
-  };
-*/
 
-Matrix4x4::Matrix4x4(){//:matrix( (pimpl*)&rimpl[0] ){
-    //new(rimpl) Matrix4x4::pimpl();
-    //assert( sizeof(pimpl)==sizeof(float)*16 );
 
-    // std::cout <<" size = " << sizeof(pimpl) << std::endl;
+Matrix4x4::Matrix4x4(){
     identity();
     }
 
 Matrix4x4::Matrix4x4( const Matrix4x4& other ){
-           //  :matrix( (pimpl*)&rimpl[0] ){
-    // new(rimpl) Matrix4x4::pimpl();
     setData( other.data() );
     }
 
 Matrix4x4::Matrix4x4( const float data[/*16*/] ){
-           //  :matrix( (pimpl*)&rimpl[0] ){
-    // new(rimpl) Matrix4x4::pimpl();
     setData( data );
     }
 
@@ -49,8 +32,6 @@ Matrix4x4::Matrix4x4( float a11, float a12, float a13, float a14,
                       float a21, float a22, float a23, float a24,
                       float a31, float a32, float a33, float a34,
                       float a41, float a42, float a43, float a44 ){
-         //  :matrix( (pimpl*)&rimpl[0] ){
-  // new(rimpl) Matrix4x4::pimpl();
   setData(a11, a12, a13, a14,
           a21, a22, a23, a24,
           a31, a32, a33, a34,
@@ -58,11 +39,9 @@ Matrix4x4::Matrix4x4( float a11, float a12, float a13, float a14,
   }
 
 Matrix4x4::~Matrix4x4(){
-  //delete matrix;
   }
 
 Matrix4x4& Matrix4x4::operator = ( const Matrix4x4& other ){
-  //*matrix = *other.matrix;
   NvCopyMatf( m, other.m );
   return *this;
   }
@@ -88,9 +67,6 @@ void Matrix4x4::translate( const float v[/*3*/]){
   }
 
 void Matrix4x4::translate(float x, float y, float z){
-  //matrix->gm = glm::translate( matrix->gm,
-  //                             glm::detail::tvec3<float>( x, y, z) );
-
   NvMultTranslateMatf( m, m, x, y, z );
 
   check();
@@ -101,18 +77,12 @@ void Matrix4x4::scale( float x ){
   }
 
 void Matrix4x4::scale(float x, float y, float z){
-  //matrix->gm = glm::scale( matrix->gm,
-  //                         glm::detail::tvec3<float>( x, y, z) );
   NvMultScaleMatf( m, m, x, y, z );
 
   check();
   }
 
 void Matrix4x4::rotate(float angle, float x, float y, float z){
-  //matrix->gm = glm::rotate( matrix->gm,
-  //                          angle,
-  //                          glm::detail::tvec3<float>( x, y, z) );
-
   float ax[3] = {x,y,z};
   NvMultRotDegMatf( m, m, ax, angle );
 
@@ -134,13 +104,6 @@ float Matrix4x4::at(int x, int y) const {
 
 void Matrix4x4::setData( const float data[/*16*/]){
   memcpy(m, data, 16*sizeof(float) );
-
-  /*
-  for( int i=0; i<4; ++i )
-    for( int r=0; r<4; ++r )
-      matrix->gm[i][r] = matrix->m[i][r];
-  */
-
   check();
   }
 
@@ -148,9 +111,6 @@ void Matrix4x4::transpose(){
   for( int i=0; i<4; ++i )
     for( int r=0; r<i; ++r )
       std::swap( m[i][r], m[r][i] );
-
-  //matrix->gm = glm::transpose( matrix->gm );
-
   check();
   }
 
@@ -162,16 +122,11 @@ void Matrix4x4::inverse(){
   for( int i=0; i<4; ++i )
     for( int r=0; r<i; ++r )
       std::swap( m[i][r], m[r][i] );
-
-  //matrix->gm = glm::inverse( matrix->gm );
-
   check();
   }
 
 void Matrix4x4::mul( const Matrix4x4& other ){
   NvMultMatf( m, m, other.m );
-  //matrix->gm *= other.matrix->gm;
-
   check();
   }
 
@@ -198,12 +153,6 @@ void Matrix4x4::setData( float a11, float a12, float a13, float a14,
   m[1][3] = a42;
   m[2][3] = a43;
   m[3][3] = a44;
-
-  /*
-  for( int i=0; i<4; ++i )
-    for( int r=0; r<4; ++r )
-      matrix->gm[i][r] = matrix->m[r][i];
-      */
 
   check();
   }
@@ -242,37 +191,13 @@ void Matrix4x4::perspective(float angle, float aspect, float zNear, float zFar) 
   m[2][2] = zFar/(zFar-zNear);
   m[3][2] = -zNear*zFar/(zFar-zNear);
 
-  /*
-  matrix->gm = glm::perspective( angle, aspect, zNear, zFar );
-  matrix->gm[2][3] = 1;
-  matrix->gm[2][2] = zFar/(zFar-zNear);
-  matrix->gm[3][2] = -zNear*zFar/(zFar-zNear);*/
-
   check();
   }
 
 void Tempest::Matrix4x4::set(int x, int y, float v) {
   m[x][y]  = v;
-  // matrix->gm[x][y] = v;
-
   check();
   }
 
 void Matrix4x4::check() const {
-  /*
-  return;
-
-  for( int i=0; i<16; ++i ){
-    if( ((const float*)matrix->m)[i] != glm::value_ptr( matrix->gm )[i] ){
-      for( int r=0; r<16; ++r )
-        std::cout << ((const float*)matrix->m)[r] <<" ";
-      std::cout << std::endl;
-
-      for( int r=0; r<16; ++r )
-        std::cout << glm::value_ptr( matrix->gm )[r] <<" ";
-      std::cout << std::endl;
-
-      //assert(0);
-      }
-    }*/
   }

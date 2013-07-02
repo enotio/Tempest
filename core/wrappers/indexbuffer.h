@@ -5,8 +5,7 @@
 #include <Tempest/CopyWhenNeedPtr>
 #include <Tempest/AbstractHolder>
 #include <Tempest/IndexBufferHolder>
-
-#include <cassert>
+#include <Tempest/Assert>
 
 namespace Tempest{
 
@@ -36,7 +35,7 @@ class IndexBuffer : public IndexBufferBase {
       }
 
     IndexBuffer<Index> slice( int first, int size ) const {
-      assert( first+size <= m_size );
+      T_ASSERT( first+size <= m_size );
 
       IndexBuffer<Index> tmp = *this;
       tmp.m_first += first;

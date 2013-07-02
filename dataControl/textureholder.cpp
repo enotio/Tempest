@@ -5,7 +5,6 @@
 #include <Tempest/Pixmap>
 
 #include <map>
-#include <cassert>
 
 #include <stdexcept>
 
@@ -127,7 +126,6 @@ void TextureHolder::createObject( AbstractAPI::Texture *&t,
   px.compress = compress;
 
   t = device().createTexture( p, mips, compress );
-  // assert(t);
 
   px.owner = t;
   //data->pixmap_textures[t] = px;

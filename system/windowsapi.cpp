@@ -8,7 +8,7 @@
 
 #include <unordered_map>
 #include <fstream>
-#include <cassert>
+#include <Tempest/Assert>
 #include <iostream>
 
 #include <IL/il.h>
@@ -234,7 +234,7 @@ void WindowsAPI::bind( Window *w, Tempest::Window *wx ) {
 
 std::string WindowsAPI::loadTextImpl(const char *file) {
   std::ifstream is( file, std::ifstream::binary );
-  assert(is);
+  T_ASSERT(is);
 
   is.seekg (0, is.end);
   int length = is.tellg();
@@ -244,7 +244,7 @@ std::string WindowsAPI::loadTextImpl(const char *file) {
   src.resize( length );
   is.read ( &src[0], length );
 
-  assert(is);
+  T_ASSERT(is);
   is.close();
 
   return src;
@@ -252,7 +252,7 @@ std::string WindowsAPI::loadTextImpl(const char *file) {
 
 std::vector<char> WindowsAPI::loadBytesImpl(const char *file) {
   std::ifstream is( file, std::ifstream::binary );
-  assert(is);
+  T_ASSERT(is);
 
   is.seekg (0, is.end);
   int length = is.tellg();
@@ -262,7 +262,7 @@ std::vector<char> WindowsAPI::loadBytesImpl(const char *file) {
   src.resize( length );
   is.read ( &src[0], length );
 
-  assert(is);
+  T_ASSERT(is);
   is.close();
 
   return src;

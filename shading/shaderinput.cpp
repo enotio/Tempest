@@ -1,6 +1,6 @@
 #include "shaderinput.h"
 
-#include <cassert>
+#include <Tempest/Assert>
 
 using namespace Tempest;
 
@@ -52,7 +52,7 @@ void ShaderInput::set(const char *name, const float *v, int l) {
     case 2: set( name, v[0], v[1] ); break;
     case 3: set( name, v[0], v[1], v[2] ); break;
     case 4: set( name, v[0], v[1], v[2], v[3] ); break;
-    default: assert(0 & l);
+    default: T_ASSERT_X(0 & l, "vector size is too long");
     }
   }
 

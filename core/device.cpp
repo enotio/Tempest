@@ -5,15 +5,15 @@
 #include <Tempest/RenderState>
 #include <Tempest/VertexBufferHolder>
 #include <Tempest/VertexBuffer>
+#include <Tempest/Assert>
 
 #include <set>
-#include <cassert>
-
+#include <unordered_set>
 
 using namespace Tempest;
 
 struct Device::Data{
-  typedef std::set< AbstractHolderBase* > Holders;
+  typedef std::unordered_set< AbstractHolderBase* > Holders;
   typedef Holders::iterator HIterator;
 
   Holders holders;
@@ -282,7 +282,7 @@ void Device::clearStencil( unsigned s ) {
   }
 
 void Device::beginPaint(){
-  assert( !data->isPaintMode );
+  T_ASSERT_X( !data->isPaintMode, "recursive paint detected" );
   data->isPaintMode = true;
 
   if( data->paintTaget.isDelayd && data->paintTaget.isSame() ){
@@ -297,7 +297,7 @@ void Device::beginPaint(){
   }
 
 void Device::beginPaint( Texture2d &rt ) {
-  assert( !data->isPaintMode );
+  T_ASSERT_X( !data->isPaintMode, "recursive paint detected" );
   data->isPaintMode = true;
 
   if( data->paintTaget.isDelayd && data->paintTaget.isSame(rt) ){
@@ -318,7 +318,7 @@ void Device::beginPaint( Texture2d &rt ) {
   }
 
 void Device::beginPaint( Texture2d &rt, Texture2d &depthStencil ) {
-  assert( !data->isPaintMode );
+  T_ASSERT_X( !data->isPaintMode, "recursive paint detected" );
   data->isPaintMode = true;
 
   if( data->paintTaget.isDelayd && data->paintTaget.isSame(rt, depthStencil) ){
@@ -339,7 +339,7 @@ void Device::beginPaint( Texture2d &rt, Texture2d &depthStencil ) {
   }
 
 void Device::beginPaint( Texture2d rt[], int count ){
-  assert( !data->isPaintMode );
+  T_ASSERT_X( !data->isPaintMode, "recursive paint detected" );
   data->isPaintMode = true;
 
   if( data->paintTaget.isDelayd && data->paintTaget.isSame(rt, count) ){
@@ -363,7 +363,7 @@ void Device::beginPaint( Texture2d rt[], int count ){
 
 void Device::beginPaint( Texture2d rt[], int count,
                          Texture2d &depthStencil) {
-  assert( !data->isPaintMode );
+  T_ASSERT_X( !data->isPaintMode, "recursive paint detected" );
   data->isPaintMode = true;
 
   if( data->paintTaget.isDelayd && data->paintTaget.isSame(rt, count, depthStencil) ){
@@ -387,7 +387,7 @@ void Device::beginPaint( Texture2d rt[], int count,
   }
 
 void Device::endPaint  (){
-  assert( data->isPaintMode );
+  T_ASSERT_X( !data->isPaintMode, "invalid endPaint call" );
   data->isPaintMode        = false;
   data->paintTaget.isDelayd = true;
   //forceEndPaint();
@@ -454,7 +454,7 @@ bool Device::reset( const Options & opt ) {
       if( !hasManagedStorge() )
         data->isLost = !restoreDeviceObjects();
       } else {
-      assert(0);
+      T_ASSERT_X( 0, "reset device error" );
       }
 
     return data->isLost;

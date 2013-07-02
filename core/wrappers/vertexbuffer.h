@@ -2,13 +2,9 @@
 #define VERTEXBUFFER_H
 
 #include <Tempest/Device>
-
 #include <Tempest/CopyWhenNeedPtr>
-
 #include <Tempest/AbstractHolder>
-
-#include <cassert>
-
+#include <Tempest/Assert>
 #include <Tempest/VertexBufferHolder>
 
 namespace Tempest{
@@ -41,7 +37,7 @@ class VertexBuffer : public VertexBufferBase {
       }
 
     VertexBuffer<Vertex> slice( int first, int size ) const {
-      assert( first+size <= m_size );
+      T_ASSERT( first+size <= m_size );
 
       VertexBuffer<Vertex> tmp = *this;
       tmp.m_first += first;

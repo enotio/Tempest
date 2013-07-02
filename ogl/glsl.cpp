@@ -4,13 +4,12 @@
 #include <EGL/egl.h>
 #include <GLES/gl.h>
 #include <GLES2/gl2.h>
-// #include <SDL.h>
 #else
 #include <GL/glew.h>
 #include <GL/gl.h>
 #endif
 
-#include <cassert>
+#include <Tempest/Assert>
 
 #include <Tempest/VertexShader>
 #include <Tempest/Matrix4x4>
@@ -197,7 +196,7 @@ AbstractShadingLang::VertexShader*
   if( !*prog )
     {}//Data::dbgOut( data->context );
 
-  assert( *prog );
+  T_ASSERT( *prog );
 
   return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
   }
@@ -236,7 +235,7 @@ AbstractShadingLang::FragmentShader *
   if( !*prog )
     {}//Data::dbgOut( data->context );
 
-  assert( *prog );
+  T_ASSERT( *prog );
 
   return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
   }
@@ -313,7 +312,7 @@ void GLSL::enable() const {
 
   if( program==0 ){
     program = glCreateProgram();
-    assert( program );
+    T_ASSERT( program );
 
     glAttachShader(program, vertexShader);
     glAttachShader(program, pixelShader);
@@ -367,7 +366,7 @@ void GLSL::enable() const {
           glGetProgramInfoLog(program, bufLength, NULL, buf);
           std::cerr << buf;
           delete[] (buf);
-          assert(0);
+          T_ASSERT(0);
           }
         }
 

@@ -9,7 +9,7 @@ using namespace Tempest;
 #include <Tempest/Event>
 #include <map>
 #include <queue>
-#include <cassert>
+#include <Tempest/Assert>
 
 #include <EGL/egl.h>
 #include <GLES/gl.h>
@@ -170,7 +170,7 @@ std::string AndroidAPI::loadTextImpl( const char* file ){
   AAssetManager* mgr = ((android_app*)android)->activity->assetManager;//AAssetManager_fromJava(env, assets);
   AAsset* asset = AAssetManager_open(mgr, file, AASSET_MODE_UNKNOWN);
 
-  assert( asset );
+  T_ASSERT( asset );
 
   long size = AAsset_getLength(asset);
   std::string str;
@@ -186,7 +186,7 @@ std::vector<char> AndroidAPI::loadBytesImpl( const char* file ){
   AAssetManager* mgr = ((android_app*)android)->activity->assetManager;
   AAsset* asset = AAssetManager_open(mgr, file, AASSET_MODE_UNKNOWN);
 
-  assert( asset );
+  T_ASSERT( asset );
 
   long size = AAsset_getLength(asset);
   std::vector<char> str;
