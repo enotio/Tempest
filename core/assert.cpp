@@ -28,10 +28,10 @@ void Tempest::Detail::t_assert( bool a,
     return;
 
   std::stringstream ss;
-  ss << "ASSERT failure: " << X;
+  ss << "ASSERT failure: \"" << X <<"\"";
 
   if( msg )
-    ss << "\t\"" << msg <<"\"\t";
+    ss << ",\t\"" << msg <<"\"\t";
 
   ss << "[file " << file <<", line " << line <<"]";
 

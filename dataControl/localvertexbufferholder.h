@@ -14,10 +14,11 @@ class LocalBufferHolder : public Holder {
     LocalBufferHolder( Tempest::Device &d )
       :Holder(d){
       nonFreed.reserve(128);
-      dynVBOs .reserve(128);
+      dynVBOs .reserve(2048);
 
       setReserveSize( 0xFFFF );
       maxReserved = -1;
+      minVboSize  = 4*1024;
 
       needToRestore = false;
       }
@@ -36,6 +37,7 @@ class LocalBufferHolder : public Holder {
 
   protected:
     int reserveSize, maxReserved;
+    int minVboSize;
 
     struct NonFreedData {
       typename Holder::DescriptorType* handle;
@@ -83,7 +85,8 @@ class LocalBufferHolder : public Holder {
       for( size_t i=0; i<nonFreed.size(); ){
         ++nonFreed[i].collectIteration;
 
-        if( nonFreed[i].collectIteration > 3 ){
+        if( nonFreed[i].collectIteration > 3 &&
+            nonFreed[i].data.memSize > minVboSize ){
           deleteObject( nonFreed[i] );
           nonFreed[i] = nonFreed.back();
           nonFreed.pop_back();
@@ -117,7 +120,8 @@ class LocalBufferHolder : public Holder {
         }
 
       NonFreedData d;
-      d.memSize       = vsize*(nearPOT( size*vsize )/vsize);
+      d.memSize       = std::max( minVboSize,
+                                  vsize*(nearPOT( size*vsize )/vsize) );
       d.restoreIntent = false;
       d.elSize        = vsize;
 
@@ -126,7 +130,7 @@ class LocalBufferHolder : public Holder {
 
         NonFreedData& x = nonFreed[i].data;
         if( d.memSize   <= x.memSize &&
-            d.memSize*4 >= x.memSize &&
+            (d.memSize <= minVboSize || d.memSize*4 >= x.memSize) &&
             d.elSize    == x.elSize ){
           dynVBOs.push_back( nonFreed[i] );
           nonFreed[i] = nonFreed.back();
@@ -134,12 +138,12 @@ class LocalBufferHolder : public Holder {
 
           t = dynVBOs.back().data.handle;
           {
-            int   sz    = dynVBOs.back().data.memSize,
+            int   //sz    = dynVBOs.back().data.memSize,
                   cpySz = size*vsize;
-            char *pVertices = this->lockBuffer( t, 0, sz);
+            char *pVertices = this->lockBuffer( t, 0, cpySz);
 
             std::copy( src, src+cpySz, pVertices );
-            std::fill( pVertices+cpySz, pVertices+sz, 0 );
+            //std::fill( pVertices+cpySz, pVertices+sz, 0 );
             this->unlockBuffer( t );
             }
 
@@ -169,8 +173,8 @@ class LocalBufferHolder : public Holder {
     void deleteObject( typename Holder::DescriptorType* t ) {
       for( size_t i=0; i<dynVBOs.size(); ++i )
         if( dynVBOs[i].data.handle==t ){
-          dynVBOs[i].collectIteration = 0;
           nonFreed.push_back( dynVBOs[i] );
+          nonFreed.back().collectIteration = 0;
 
           dynVBOs[i] = dynVBOs.back();
           dynVBOs.pop_back();

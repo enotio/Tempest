@@ -387,8 +387,8 @@ void Device::beginPaint( Texture2d rt[], int count,
   }
 
 void Device::endPaint  (){
-  T_ASSERT_X( !data->isPaintMode, "invalid endPaint call" );
-  data->isPaintMode        = false;
+  T_ASSERT_X( data->isPaintMode, "invalid endPaint call" );
+  data->isPaintMode         = false;
   data->paintTaget.isDelayd = true;
   //forceEndPaint();
   }
