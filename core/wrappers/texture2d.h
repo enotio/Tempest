@@ -5,6 +5,7 @@
 #include <Tempest/TextureHolder>
 
 #include <Tempest/CopyWhenNeedPtr>
+#include <Tempest/Utility>
 
 namespace Tempest{
 
@@ -30,6 +31,7 @@ namespace Tempest{
 
       int width()  const;
       int height() const;
+      Size  size() const;
 
       bool isEmpty() const;
 

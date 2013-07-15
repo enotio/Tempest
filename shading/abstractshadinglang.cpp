@@ -4,8 +4,29 @@
 #include <Tempest/FragmentShader>
 
 #include <Tempest/Texture2d>
+#include <Tempest/SystemAPI>
 
 using namespace Tempest;
+
+AbstractShadingLang::VertexShader*
+  AbstractShadingLang::createVertexShader(const std::string &fname) const {
+  return createVertexShaderFromSource( SystemAPI::loadText(fname) );
+  }
+
+AbstractShadingLang::VertexShader*
+  AbstractShadingLang::createVertexShader(const std::wstring &fname) const {
+  return createVertexShaderFromSource( SystemAPI::loadText(fname) );
+  }
+
+AbstractShadingLang::FragmentShader*
+  AbstractShadingLang::createFragmentShader(const std::wstring &fname) const {
+  return createFragmentShaderFromSource( SystemAPI::loadText(fname) );
+  }
+
+AbstractShadingLang::FragmentShader*
+  AbstractShadingLang::createFragmentShader(const std::string &fname) const {
+  return createFragmentShaderFromSource( SystemAPI::loadText(fname) );
+  }
 
 AbstractShadingLang::VertexShader*
     AbstractShadingLang::get( const Tempest::VertexShader& s ){

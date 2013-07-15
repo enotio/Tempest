@@ -26,7 +26,7 @@ class FragmentShaderHolder : public
     virtual void createObjectFromSrc( AbstractShadingLang::FragmentShader*& t,
                                       const std::string & src );
     virtual void createObject( AbstractShadingLang::FragmentShader*& t,
-                               const std::string & fname );
+                               const std::wstring & fname );
     virtual void deleteObject( AbstractShadingLang::FragmentShader* t );
 
     virtual void reset( AbstractShadingLang::FragmentShader* t );

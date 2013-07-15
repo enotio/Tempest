@@ -58,6 +58,10 @@ struct GLSL::Data{
     return SystemAPI::loadText(f).data();
     }
 
+  std::string readFile( const wchar_t* f ){
+    return SystemAPI::loadText(f).data();
+    }
+
   GLuint loadShader( GLenum shaderType, const char* pSource) {
     GLuint shader = glCreateShader(shaderType);
 
@@ -183,12 +187,6 @@ void GLSL::setDevice() const {
   }
 
 AbstractShadingLang::VertexShader*
-    GLSL::createVertexShader( const std::string& fname ) const {
-  std::string src = data->readFile(fname.data());
-  return createVertexShaderFromSource( src );
-  }
-
-AbstractShadingLang::VertexShader*
   GLSL::createVertexShaderFromSource(const std::string &src) const {
   GLuint *prog = new GLuint(0);
   *prog = data->loadShader( GL_VERTEX_SHADER, src.data() );
@@ -219,12 +217,6 @@ void GLSL::deleteVertexShader( VertexShader* s ) const {
     }
 
   delete prog;
-  }
-
-AbstractShadingLang::FragmentShader*
-    GLSL::createFragmentShader( const std::string& fname ) const{
-  std::string src = data->readFile(fname.data());
-  return createFragmentShaderFromSource( src );
   }
 
 AbstractShadingLang::FragmentShader *

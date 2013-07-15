@@ -8,11 +8,10 @@
 #include <android/log.h>
 #endif
 
-
 namespace Tempest{
   static void h_default( const char */*file*/, int /*line*/,
                          const char */*X*/, const char */*msg*/) {
-    assert(0);
+    assert(0 && "T_ASSERT failed");
     }
 
   static void (*h_assert)( const char *,

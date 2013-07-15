@@ -75,6 +75,18 @@ Texture2d TextureHolder::create( const Pixmap &p, bool mips, bool compress ) {
   return obj;
   }
 
+Texture2d TextureHolder::create(Size wh,
+                                AbstractTexture::Format::Type format,
+                                TextureUsage u) {
+  return create( wh.w, wh.h, format, u );
+  }
+
+Texture2d TextureHolder::load(const std::wstring &fname) {
+  Pixmap p;
+  p.load(fname);
+  return create(p, true);
+  }
+
 Tempest::Texture2d TextureHolder::load( const std::string & fname ){
   Pixmap p;
   p.load(fname);
@@ -88,7 +100,7 @@ Tempest::Texture2d TextureHolder::load( const char* fname ){
   }
 
 void TextureHolder::createObject( AbstractAPI::Texture*& t,
-                                  const std::string &fname ){
+                                  const std::wstring &fname ){
   Pixmap p;
   p.load(fname);
   createObject( t, p, true, true );

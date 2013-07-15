@@ -2,19 +2,20 @@
 
 #include <Tempest/FragmentShader>
 #include <Tempest/Device>
+#include <Tempest/SystemAPI>
 
 #include <map>
 
 using namespace Tempest;
 
 struct FragmentShaderHolder::Data {
-  std::map< AbstractShadingLang::FragmentShader*, std::string > shaders;
+  //std::map< AbstractShadingLang::FragmentShader*, std::string > shaders;
   std::map< AbstractShadingLang::FragmentShader*, std::string > shadersSrc;
 
   typedef std::map< AbstractShadingLang::FragmentShader*, std::string >::iterator
           iterator;
 
-  std::map< AbstractShadingLang::FragmentShader*, std::string > restore;
+  //std::map< AbstractShadingLang::FragmentShader*, std::string > restore;
   std::map< AbstractShadingLang::FragmentShader*, std::string > restoreSrc;
   };
 
@@ -38,25 +39,22 @@ FragmentShader FragmentShaderHolder::loadFromSource(const std::string & src) {
   return obj;
   }
 
-void FragmentShaderHolder::createObjectFromSrc( AbstractShadingLang::FragmentShader *&t,
+void FragmentShaderHolder::createObjectFromSrc(AbstractShadingLang::FragmentShader *&t,
                                                 const std::string &src ) {
   t = device().shadingLang().createFragmentShaderFromSource( src );
   if( t )
     data->shadersSrc[t] = src;
   }
 
-void FragmentShaderHolder::createObject( AbstractShadingLang::FragmentShader*& t,
-                                       const std::string & fname ){
-  t = device().shadingLang().createFragmentShader( fname );
-  if( t )
-    data->shaders[t] = fname;
+void FragmentShaderHolder::createObject(AbstractShadingLang::FragmentShader*& t,
+                                       const std::wstring &fname ){
+  createObjectFromSrc( t, SystemAPI::loadText(fname) );
   }
 
 void FragmentShaderHolder::deleteObject( AbstractShadingLang::FragmentShader* t ){
   if( t==0 )
     return;
 
-  data->shaders.erase(t);
   reset(t);
   }
 
@@ -64,15 +62,8 @@ void FragmentShaderHolder::reset( AbstractShadingLang::FragmentShader* t ){
   if( t==0 )
     return;
 
-  Data::iterator i = data->shaders.find(t);
-
-  if( i!=data->shaders.end() ){
-    data->restore[t] = i->second;
-    data->shaders.erase(i);
-    } else {
-    data->restoreSrc[t] = data->shadersSrc[t];
-    data->shadersSrc.erase(t);
-    }
+  data->restoreSrc[t] = data->shadersSrc[t];
+  data->shadersSrc.erase(t);
 
   device().shadingLang().deleteFragmentShader(t);
   }
@@ -82,21 +73,11 @@ AbstractShadingLang::FragmentShader*
   if( t==0 )
     return 0;
 
-  Data::iterator i = data->restore.find(t);
+  std::string src = data->restoreSrc[t];
+  data->restoreSrc.erase(t);
 
-  if( i!=data->restore.end() ){
-    std::string fname = data->restore[t];
-    data->restore.erase(i);
-
-    createObject( t, fname );
-    return t;
-    } else {
-    std::string src = data->restoreSrc[t];
-    data->restoreSrc.erase(t);
-
-    createObjectFromSrc( t, src );
-    return t;
-    }
+  createObjectFromSrc( t, src );
+  return t;
   }
 
 AbstractShadingLang::FragmentShader*
@@ -104,14 +85,8 @@ AbstractShadingLang::FragmentShader*
   if( t==0 )
     return 0;
 
-  Data::iterator i = data->shaders.find(t);
   AbstractShadingLang::FragmentShader* ret = 0;
 
-  if( i!=data->shaders.end() ){
-    createObject( ret, data->shaders[t] );
-    return ret;
-    } else {
-    createObjectFromSrc( ret, data->shadersSrc[t] );
-    return ret;
-    }
+  createObjectFromSrc( ret, data->shadersSrc[t] );
+  return ret;
   }

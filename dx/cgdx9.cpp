@@ -139,32 +139,6 @@ void CgDx9::setNullDevice(){
   }
 
 AbstractShadingLang::VertexShader*
-    CgDx9::createVertexShader( const std::string& fname ) const {
-
-  const char **vertexOptions[] =  {
-    cgD3D9GetOptimalOptions( data->vertexProfile ),
-    0,
-    };
-
-  //setDevice();
-  CGprogram  prog = cgCreateProgramFromFile( data->context,
-                                             CG_SOURCE,
-                                             (char*)fname.data(),
-                                             data->vertexProfile,
-                                             "main",
-                                             *vertexOptions );
-
-  if( !prog )
-    Data::dbgOut( data->context );
-
-  cgD3D9LoadProgram( prog, false, 0 );
-
-  T_ASSERT( prog );
-
-  return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
-  }
-
-AbstractShadingLang::VertexShader*
   CgDx9::createVertexShaderFromSource(const std::string &src) const {
   const char **vertexOptions[] =  {
     cgD3D9GetOptimalOptions( data->vertexProfile ),
@@ -193,31 +167,6 @@ void CgDx9::deleteVertexShader( VertexShader* s ) const {
   //setNullDevice();
   cgD3D9UnloadProgram( CGprogram(s) );
   cgDestroyProgram( CGprogram(s) );
-  }
-
-AbstractShadingLang::FragmentShader*
-    CgDx9::createFragmentShader( const std::string& fname ) const{
-
-  const char **pixelOptions[] = {
-    cgD3D9GetOptimalOptions( data->pixelProfile ),
-    0,
-    };
-
-  //setDevice();
-  CGprogram  prog = cgCreateProgramFromFile( data->context,
-                                             CG_SOURCE,
-                                             (char*)fname.data(),
-                                             data->pixelProfile,
-                                             "main",
-                                             *pixelOptions );
-
-  if( !prog )
-    Data::dbgOut( data->context );
-
-  cgD3D9LoadProgram( prog, false, 0 );
-  T_ASSERT( prog );
-
-  return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
   }
 
 AbstractShadingLang::FragmentShader *

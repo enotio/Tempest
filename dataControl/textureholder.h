@@ -2,6 +2,7 @@
 #define TEXTUREHOLDER_H
 
 #include <Tempest/AbstractHolder>
+#include <Tempest/Utility>
 
 namespace Tempest{
 
@@ -24,19 +25,25 @@ class TextureHolder : public AbstractHolderWithLoad
                                        bool mips = true,
                                        bool compress = true );
 
+    virtual Tempest::Texture2d create( Size wh,
+                                        AbstractTexture::Format::Type format
+                                          = Tempest::AbstractTexture::Format::RGB,
+                                        TextureUsage u = TU_Undefined );
+
     virtual Tempest::Texture2d create( int w, int h,
                                         AbstractTexture::Format::Type format
                                           = Tempest::AbstractTexture::Format::RGB,
                                         TextureUsage u = TU_Undefined );
 
+    Tempest::Texture2d load( const std::wstring & fname );
     Tempest::Texture2d load( const std::string & fname );
     Tempest::Texture2d load( const char* fname );
 
   protected:
     virtual void createObject( AbstractAPI::Texture*& t,
-                               const std::string & fname );
+                               const std::wstring & fname );
 
-    virtual void createObject(AbstractAPI::Texture*& t,
+    virtual void createObject( AbstractAPI::Texture*& t,
                                int w, int h, bool mips,
                                AbstractTexture::Format::Type f,
                                TextureUsage u );

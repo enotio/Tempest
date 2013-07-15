@@ -27,11 +27,9 @@ class CgDx9 : public AbstractShadingLang {
 
     void* context() const;
 
-    VertexShader* createVertexShader( const std::string& fname ) const;
     VertexShader* createVertexShaderFromSource( const std::string& src ) const;
     void          deleteVertexShader( VertexShader* s ) const;
 
-    FragmentShader* createFragmentShader( const std::string& fname ) const;
     FragmentShader* createFragmentShaderFromSource( const std::string& src ) const;
     void            deleteFragmentShader( FragmentShader* s ) const;
 

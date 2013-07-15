@@ -171,6 +171,13 @@ class AbstractHolderWithLoad : public AbstractHolder<Data, APIDescriptor> {
 
     typedef typename AbstractHolder<Data, APIDescriptor>::ImplManip ImplManip;
 
+    virtual Data load( const std::wstring & fname ){
+      Data obj( *this );
+
+      createObject( obj.data.value(), fname );
+      return obj;
+      }
+
     virtual Data load( const std::string & fname ){
       Data obj( *this );
 
@@ -187,7 +194,13 @@ class AbstractHolderWithLoad : public AbstractHolder<Data, APIDescriptor> {
 
   protected:
     virtual void createObject( APIDescriptor*& t,
-                               const std::string & fname ) = 0;
+                               const std::string & fname ){
+      std::wstring str;
+      str.assign( fname.begin(), fname.end() );
+      createObject(t, str);
+      }
+    virtual void createObject( APIDescriptor*& t,
+                               const std::wstring & fname ) = 0;
 
   private:
     typedef typename ImplManip::Ref Ref;

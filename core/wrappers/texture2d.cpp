@@ -48,6 +48,10 @@ int Texture2d::height() const {
   return h;
   }
 
+Size Texture2d::size() const {
+  return Size(w,h);
+  }
+
 bool Texture2d::isEmpty() const {
   return w==0||0==h;
   }

@@ -6,7 +6,7 @@ CONFIG += ogl directx
 
 TARGET = Tempest
 TEMPLATE = lib
-#CONFIG += staticlib
+CONFIG += dll
 
 #DEFINES += __ANDROID__
 INCLUDEPATH += math
@@ -28,8 +28,10 @@ INCLUDEPATH += \
 #DEFINES += D3D_DEBUG_INFO
 
 ogl:{
-  LIBS += -L"$$(CG_LIB_PATH)" -l"opengl32" -l"cg" -l"cgGL"
-  LIBS += -L"$$(GLEW_PATH)/lib"  -l"glew32" -l"glew32"
+  LIBS += -L"$$(CG_LIB_PATH)"
+  LIBS += -L"$$(GLEW_PATH)/lib"
+
+  LIBS += -l"opengl32" -l"cg" -l"cgGL" -l"glew32"
 
   HEADERS +=\
     ogl/opengl2x.h \

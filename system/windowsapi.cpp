@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <fstream>
 #include <Tempest/Assert>
+
 #include <iostream>
 
 #include <IL/il.h>
@@ -250,22 +251,63 @@ std::string WindowsAPI::loadTextImpl(const char *file) {
   return src;
   }
 
+std::string WindowsAPI::loadTextImpl(const wchar_t *file) {
+  HANDLE hTextFile = CreateFile( file, GENERIC_READ,
+                                 0, NULL, OPEN_ALWAYS,
+                                 FILE_ATTRIBUTE_NORMAL, NULL);
+
+  DWORD dwFileSize = GetFileSize(hTextFile, &dwFileSize);
+  DWORD dwBytesRead;
+
+  if( dwFileSize==DWORD(-1) )
+    return std::string();
+
+  std::string str;
+  str.resize(dwFileSize);
+  ReadFile(hTextFile, &str[0], dwFileSize, &dwBytesRead, NULL);
+  CloseHandle(hTextFile);
+
+  return str;
+  }
+
 std::vector<char> WindowsAPI::loadBytesImpl(const char *file) {
+  std::vector<char> src;
+
   std::ifstream is( file, std::ifstream::binary );
-  T_ASSERT(is);
+  if(!is)
+    return src;
 
   is.seekg (0, is.end);
   int length = is.tellg();
   is.seekg (0, is.beg);
 
-  std::vector<char> src;
   src.resize( length );
   is.read ( &src[0], length );
 
-  T_ASSERT(is);
+  if(!is)
+    return src;
   is.close();
 
   return src;
+  }
+
+std::vector<char> WindowsAPI::loadBytesImpl(const wchar_t *file) {
+  HANDLE hTextFile = CreateFile( file, GENERIC_READ,
+                                 0, NULL, OPEN_ALWAYS,
+                                 FILE_ATTRIBUTE_NORMAL, NULL);
+
+  DWORD dwFileSize = GetFileSize(hTextFile, &dwFileSize);
+  DWORD dwBytesRead;
+
+  std::vector<char> str;  
+  if( dwFileSize==DWORD(-1) )
+    return str;
+
+  str.resize(dwFileSize);
+  ReadFile(hTextFile, &str[0], dwFileSize, &dwBytesRead, NULL);
+  CloseHandle(hTextFile);
+
+  return str;
   }
 
 void WindowsAPI::initImgLib() {
@@ -302,7 +344,7 @@ void WindowsAPI::initRawData( std::vector<unsigned char> &d,
       }
   }
 
-bool WindowsAPI::loadImageImpl( const char *file,
+bool WindowsAPI::loadImageImpl( const wchar_t *file,
                                 int &w,
                                 int &h,
                                 int &bpp,
@@ -321,7 +363,8 @@ bool WindowsAPI::loadImageImpl( const char *file,
   ilGenImages ( 1, &id );
   ilBindImage ( id );
 
-  if( ilLoadImage ( file ) ){
+  //if( ilLoadImage( file ) ){
+  if( ilLoadL( IL_TYPE_UNKNOWN, &imgBytes[0], imgBytes.size() ) ){
     int format = ilGetInteger( IL_IMAGE_FORMAT );
 
     int size_of_pixel = 1;
@@ -403,6 +446,29 @@ bool WindowsAPI::saveImageImpl( const char* file,
   ilDeleteImages( 1, &id );
 
   return ok;
+  }
+
+bool WindowsAPI::loadImageImpl( const char *file,
+                                int &w, int &h,
+                                int &bpp,
+                                std::vector<unsigned char> &out) {
+  std::wstring wstr;
+  size_t s = 0;
+
+  for( size_t i = 0; file[i]; ++i )
+    s = i;
+
+  wstr.assign(file, file+s);
+
+  return loadImageImpl(wstr.data(), w,h, bpp, out);
+  }
+
+bool WindowsAPI::saveImageImpl( const wchar_t *file,
+                                int &w, int &h,
+                                int &bpp,
+                                std::vector<unsigned char> &out) {
+  //TODO: save image file
+  return 0;
   }
 
 static Event::MouseButton toButton( UINT msg ){

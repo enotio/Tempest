@@ -43,13 +43,17 @@ class AbstractShadingLang {
 
     virtual void* context() const = 0;
     virtual VertexShader*
-                 createVertexShader( const std::string& fname ) const = 0;
+                 createVertexShader( const std::string& fname ) const;
+    virtual VertexShader*
+                 createVertexShader( const std::wstring& fname ) const;
     virtual VertexShader*
                  createVertexShaderFromSource( const std::string& src ) const = 0;
     virtual void deleteVertexShader( VertexShader* s ) const = 0;
 
     virtual FragmentShader*
-                 createFragmentShader( const std::string& fname ) const = 0;
+                 createFragmentShader( const std::string& fname ) const;
+    virtual FragmentShader*
+                 createFragmentShader( const std::wstring& fname ) const;
     virtual FragmentShader*
                  createFragmentShaderFromSource( const std::string& src ) const = 0;
     virtual void deleteFragmentShader( FragmentShader* s ) const = 0;

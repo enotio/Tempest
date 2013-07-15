@@ -26,7 +26,7 @@ class VertexShaderHolder : public
     virtual void createObjectFromSrc( AbstractShadingLang::VertexShader*& t,
                                       const std::string & src );
     virtual void createObject( AbstractShadingLang::VertexShader*& t,
-                               const std::string & fname );
+                               const std::wstring & fname );
     virtual void deleteObject( AbstractShadingLang::VertexShader* t );
 
 

@@ -156,25 +156,6 @@ void CgOGL::setDevice() const {
   }
 
 AbstractShadingLang::VertexShader*
-    CgOGL::createVertexShader( const std::string& fname ) const {
-  CGprogram  prog = cgCreateProgramFromFile( data->context,
-                                             CG_SOURCE,
-                                             (char*)fname.data(),
-                                             data->vertexProfile,
-                                             "main",
-                                             0 );
-
-  if( !prog )
-    Data::dbgOut( data->context );
-
-  cgGLLoadProgram(prog);
-
-  T_ASSERT( prog );
-
-  return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
-  }
-
-AbstractShadingLang::VertexShader*
   CgOGL::createVertexShaderFromSource(const std::string &src) const {
   CGprogram prog = cgCreateProgram( data->context,
                                     CG_SOURCE,
@@ -197,25 +178,6 @@ void CgOGL::deleteVertexShader( VertexShader* s ) const {
   //setNullDevice();
   cgGLUnloadProgram( CGprogram(s) );
   cgDestroyProgram( CGprogram(s) );
-  }
-
-AbstractShadingLang::FragmentShader*
-    CgOGL::createFragmentShader( const std::string& fname ) const{
-  //setDevice();
-  CGprogram  prog = cgCreateProgramFromFile( data->context,
-                                             CG_SOURCE,
-                                             (char*)fname.data(),
-                                             data->pixelProfile,
-                                             "main",
-                                             0 );
-
-  if( !prog )
-    Data::dbgOut( data->context );
-
-  cgGLLoadProgram( prog );
-  T_ASSERT( prog );
-
-  return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
   }
 
 AbstractShadingLang::FragmentShader *

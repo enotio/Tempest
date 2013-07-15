@@ -18,6 +18,9 @@ class Pixmap {
     Pixmap( const Pixmap& p );
     Pixmap& operator = ( const Pixmap & p );
 
+    bool load( const std::wstring & f );
+    bool save( const std::wstring & f );
+
     bool load( const std::string & f );
     bool save( const std::string & f );
 

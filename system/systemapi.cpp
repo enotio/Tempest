@@ -22,9 +22,21 @@ SystemAPI &SystemAPI::instance() {
 #endif
 
   return api;
+ }
+
+std::string SystemAPI::loadText(const std::string &file) {
+  return instance().loadText( file.data() );
+  }
+
+std::string SystemAPI::loadText(const std::wstring &file) {
+  return instance().loadText( file.data() );
   }
 
 std::string SystemAPI::loadText(const char *file) {
+  return instance().loadTextImpl(file);
+  }
+
+std::string SystemAPI::loadText(const wchar_t *file) {
   return instance().loadTextImpl(file);
   }
 
@@ -32,17 +44,31 @@ std::vector<char> SystemAPI::loadBytes(const char *file) {
   return instance().loadBytesImpl(file);
   }
 
-bool SystemAPI::loadImage( const char *file,
-                                   int &w, int &h,
-                                   int &bpp,
-                                   std::vector<unsigned char> &out ) {
+bool SystemAPI::loadImage( const wchar_t *file,
+                           int &w, int &h,
+                           int &bpp,
+                           std::vector<unsigned char> &out) {
   return instance().loadImageImpl( file, w, h, bpp, out );
   }
 
+bool SystemAPI::loadImage( const char *file,
+                           int &w, int &h,
+                           int &bpp,
+                           std::vector<unsigned char> &out ) {
+  return instance().loadImageImpl( file, w, h, bpp, out );
+  }
+
+bool SystemAPI::saveImage( const wchar_t *file,
+                           int &w, int &h,
+                           int &bpp,
+                           std::vector<unsigned char> &in ) {
+  return instance().saveImageImpl( file, w, h, bpp, in );
+  }
+
 bool SystemAPI::saveImage( const char *file,
-                                   int &w, int &h,
-                                   int &bpp,
-                                   std::vector<unsigned char> &in ) {
+                           int &w, int &h,
+                           int &bpp,
+                           std::vector<unsigned char> &in ) {
   return instance().saveImageImpl( file, w, h, bpp, in );
   }
 

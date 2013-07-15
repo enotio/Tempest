@@ -105,7 +105,21 @@ Pixmap &Pixmap::operator =(const Pixmap &p) {
   return *this;
   }
 
-bool Pixmap::load( const std::string &f ) {
+bool Pixmap::load(const std::string &f) {
+  std::wstring str;
+  str.assign(f.begin(), f.end());
+
+  return load(str);
+  }
+
+bool Pixmap::save(const std::string &f) {
+  std::wstring str;
+  str.assign(f.begin(), f.end());
+
+  return save(str);
+  }
+
+bool Pixmap::load( const std::wstring &f ) {
   int w = 0, h = 0, bpp = 0;
 
   Data * image = new Data();
@@ -280,7 +294,7 @@ void Pixmap::toETC() {
 
   }
 
-bool Pixmap::save( const std::string &f ) {
+bool Pixmap::save( const std::wstring &f ) {
   if( data.const_value()==0 )
     return false;
 

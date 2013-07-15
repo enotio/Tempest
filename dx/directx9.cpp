@@ -21,6 +21,22 @@ struct DirectX9::Device{
   LPDIRECT3DDEVICE9 dev;
   DirectX9::IBO * curIBO;
   D3DCAPS9        caps;
+
+  bool hasDepthTaget, hasStencilTaget;
+
+  DWORD mkClearFlg(bool cl, bool d, bool s ){
+    DWORD re = 0;
+    if( cl )
+      re |= D3DCLEAR_TARGET;
+
+    if( d && hasDepthTaget )
+      re |= D3DCLEAR_ZBUFFER;
+
+    if( s && hasStencilTaget )
+      re |= D3DCLEAR_STENCIL;
+
+    return re;
+    }
   };
 
 struct DirectX9::IBO{
@@ -75,6 +91,9 @@ AbstractAPI::Device* DirectX9::createDevice(void *hwnd, const Options &opt) cons
                      &d3dpp, &dev->dev );
 
   dev->dev->GetDeviceCaps( &dev->caps );
+  dev->hasDepthTaget   = 1;
+  dev->hasStencilTaget = 1;
+
   return (AbstractAPI::Device*)dev;
   }
 
@@ -127,32 +146,38 @@ void DirectX9::clear( AbstractAPI::Device *d,
                       const Color& cl,
                       float z, unsigned stencil ) const {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
+  Device *dx = (Device*)d;
 
-  dev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
+  dev->Clear( 0, 0, dx->mkClearFlg(1,1,1),
               D3DCOLOR_COLORVALUE( cl.r(), cl.g(), cl.b(), cl.a() ),
               z, stencil );
   }
 
 void DirectX9::clear(AbstractAPI::Device *d, const Color &cl) const  {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
+  Device *dx = (Device*)d;
 
-  dev->Clear( 0, 0, D3DCLEAR_TARGET,
+  dev->Clear( 0, 0, dx->mkClearFlg(1,0,0),
               D3DCOLOR_COLORVALUE( cl.r(), cl.g(), cl.b(), cl.a() ),
               0, 0 );
   }
 
 void DirectX9::clearZ( AbstractAPI::Device *d, float z ) const  {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
+  Device *dx = (Device*)d;
 
-  dev->Clear( 0, 0, D3DCLEAR_ZBUFFER,
+  dev->Clear( 0, 0,
+              dx->mkClearFlg(0,1,0),
               0,
               z, 0 );
   }
 
 void DirectX9::clearStencil( AbstractAPI::Device *d, unsigned s ) const  {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
+  Device *dx = (Device*)d;
 
-  dev->Clear( 0, 0, D3DCLEAR_STENCIL,
+  dev->Clear( 0, 0,
+              dx->mkClearFlg(0,0,1),
               0,
               0, s );
   }
@@ -160,16 +185,20 @@ void DirectX9::clearStencil( AbstractAPI::Device *d, unsigned s ) const  {
 void DirectX9::clear( AbstractAPI::Device *d,
                       float z, unsigned s ) const {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
+  Device *dx = (Device*)d;
 
-  dev->Clear( 0, 0, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
+  dev->Clear( 0, 0,
+              dx->mkClearFlg(0,1,1),
               0,
               z, s );
   }
 
-void DirectX9::clear( AbstractAPI::Device *d,  const Color& cl, float z ) const{
+void DirectX9::clear( AbstractAPI::Device *d, const Color& cl, float z ) const{
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
+  Device *dx = (Device*)d;
 
-  dev->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+  dev->Clear( 0, 0,
+              dx->mkClearFlg(1,1,0),
               D3DCOLOR_COLORVALUE( cl.r(), cl.g(), cl.b(), cl.a() ),
               z, 0 );
   }
@@ -189,6 +218,7 @@ void DirectX9::endPaint  ( AbstractAPI::Device *d ) const{
 void DirectX9::setRenderTaget( AbstractAPI::Device *d,
                                AbstractAPI::Texture   *t, int mip,
                                int mrtSlot ) const {
+  T_ASSERT_X(t, "null render taget");
   LPDIRECT3DDEVICE9  dev  = Data::dev(d);
   LPDIRECT3DTEXTURE9 tex  = LPDIRECT3DTEXTURE9(t);
 
@@ -226,13 +256,16 @@ AbstractAPI::StdDSSurface *DirectX9::getDSSurfaceTaget( AbstractAPI::Device *d )
   return (AbstractAPI::StdDSSurface*)(surf);
   }
 
-void DirectX9::retDSSurfaceTaget( AbstractAPI::Device *,
+void DirectX9::retDSSurfaceTaget( AbstractAPI::Device *d,
                                   AbstractAPI::StdDSSurface *s ) const {
-  //LPDIRECT3DDEVICE9  dev  = LPDIRECT3DDEVICE9(d);
+  Device*  dev  = (Device*)(d);
   LPDIRECT3DSURFACE9 surf = LPDIRECT3DSURFACE9(s);
 
   if( surf )
     surf->Release();
+
+  dev->hasDepthTaget   = 1;
+  dev->hasStencilTaget = 1;
   }
 
 void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
@@ -246,6 +279,11 @@ void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
 
   dev->SetDepthStencilSurface( surf );
 
+  {
+    Device*  dev  = (Device*)(d);
+    dev->hasDepthTaget   = surf;
+    dev->hasStencilTaget = surf;
+    }
   //surf->Release();
   }
 
@@ -262,6 +300,12 @@ void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
     tex->Release();
     } else {
     dev->SetDepthStencilSurface(0);
+    }
+
+  {
+    Device*  dev  = (Device*)(d);
+    dev->hasDepthTaget   = tx;
+    dev->hasStencilTaget = tx;
     }
   }
 
@@ -303,7 +347,7 @@ bool DirectX9::reset( AbstractAPI::Device *d, void* hwnd,
 AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
                                                const Pixmap &p,
                                                bool mips,
-                                               bool /*compress*/) const {
+                                               bool compress ) const {
   if( p.width()==0 || p.height()==0 )
     return 0;
 
