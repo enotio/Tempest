@@ -18,7 +18,6 @@ class DirectionLight{
     Color color() const;
     void setColor( const Color & c );
 
-
     Color ablimient() const;
     void setAblimient( const Color & c );
   private:

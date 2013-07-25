@@ -28,9 +28,6 @@ class IndexBuffer;
 
 class AbstractHolderBase;
 
-template< class T >
-class Uniform;
-
 class Device {
   public:  
     typedef AbstractAPI::Options Options;
@@ -71,72 +68,24 @@ class Device {
 
     bool hasManagedStorge() const;
 
-    template< class T >
-    void setUniform( Tempest::VertexShader &s,
-                     const T t[], int l,
-                     const std::string & name ){
-      s.input.set(name, t, l);
+    template< class S, class T >
+    void setUniform( S &s, const T t[], int l, const char* name ){
+      s.setUniform(name, t, l );
       }
 
-    template< class T >
-    void setUniform( Tempest::VertexShader &s,
-                     const T t[], int l,
-                     const char* name ){
-      s.input.set(name, t, l);
+    template< class S, class T >
+    void setUniform( S &s, const T& t, const char* name ){
+      s.setUniform(name, t);
       }
 
-    template< class T >
-    void setUniform( Tempest::FragmentShader &s,
-                     const T t[], int l,
-                     const std::string & name ){
-      s.input.set(name.data(), t, l);
+    template< class S, class T >
+    void setUniform( S &s, const T t[], int l, const std::string& name ){
+      s.setUniform(name.c_str(), t, l );
       }
 
-    template< class T >
-    void setUniform( Tempest::FragmentShader &s,
-                     const Uniform<T> & u ){
-      s.input.set( u );
-      }
-
-    template< class T >
-    void setUniform( Tempest::FragmentShader &s,
-                     const T t[], int l,
-                     const char* name ){
-      s.input.set(name, t, l);
-      }
-
-    template< class T >
-    void setUniform( Tempest::VertexShader &s,
-                     const T& t,
-                     const std::string & name ){
-      s.input.set( name.data(), t );
-      }
-
-    template< class T >
-    void setUniform( Tempest::VertexShader &s,
-                     const Uniform<T>& u ){
-      s.input.set( u );
-      }
-
-    template< class T >
-    void setUniform( Tempest::VertexShader &s,
-                     const T& t,
-                     const char* name ){
-      s.input.set( name, t );
-      }
-
-    template< class T >
-    void setUniform( Tempest::FragmentShader &s,
-                     const T& t,
-                     const std::string& name ){
-      s.input.set( name.data(), t );
-      }
-
-    template< class T >
-    void setUniform( Tempest::FragmentShader &s,
-                     const T& t,
-                     const char* name ){
-      s.input.set( name, t );
+    template< class S, class T >
+    void setUniform( S &s, const T& t, const std::string& name ){
+      s.setUniform(name.c_str(), t);
       }
 
     template< class T >
@@ -147,7 +96,9 @@ class Device {
                         const Tempest::VertexBuffer<T> & vbo,
                         int firstVertex, int pCount ){
       if( pCount==0 ||
-          decl.decl==0 )
+          decl.decl==0 ||
+          !vs.isValid() ||
+          !fs.isValid() )
         return;
 
       applyRs();
@@ -177,7 +128,9 @@ class Device {
                        int iboOffsetIndex,
                        int pCount ){
       if( pCount==0 ||
-          decl.decl==0 )
+          decl.decl==0  ||
+          !vs.isValid() ||
+          !fs.isValid() )
         return;
 
       applyRs();

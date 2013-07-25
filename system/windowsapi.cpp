@@ -235,7 +235,8 @@ void WindowsAPI::bind( Window *w, Tempest::Window *wx ) {
 
 std::string WindowsAPI::loadTextImpl(const char *file) {
   std::ifstream is( file, std::ifstream::binary );
-  T_ASSERT(is);
+  if( !is )
+    return "";
 
   is.seekg (0, is.end);
   int length = is.tellg();
@@ -245,7 +246,8 @@ std::string WindowsAPI::loadTextImpl(const char *file) {
   src.resize( length );
   is.read ( &src[0], length );
 
-  T_ASSERT(is);
+  if( !is )
+    return "";
   is.close();
 
   return src;
@@ -253,7 +255,7 @@ std::string WindowsAPI::loadTextImpl(const char *file) {
 
 std::string WindowsAPI::loadTextImpl(const wchar_t *file) {
   HANDLE hTextFile = CreateFile( file, GENERIC_READ,
-                                 0, NULL, OPEN_ALWAYS,
+                                 0, NULL, OPEN_EXISTING,
                                  FILE_ATTRIBUTE_NORMAL, NULL);
 
   DWORD dwFileSize = GetFileSize(hTextFile, &dwFileSize);

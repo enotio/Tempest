@@ -3,7 +3,6 @@
 
 #include <string>
 #include <Tempest/AbstractAPI>
-#include <Tempest/Uniform>
 
 #include <map>
 
@@ -14,9 +13,6 @@ class FragmentShader;
 
 class Matrix4x4;
 class Texture2d;
-
-template< class T >
-class Uniform;
 
 class ShaderInput;
 

@@ -11,7 +11,6 @@
 #include <Tempest/Assert>
 
 #include "shading/uniformcash.h"
-#include <Tempest/Uniform>
 
 #include <Tempest/FragmentShader>
 

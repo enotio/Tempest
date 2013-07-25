@@ -4,21 +4,20 @@
 #include <Tempest/AbstractShadingLang>
 #include <Tempest/FragmentShaderHolder>
 
-#include "shaderinput.h"
+#include "shader.h"
 
 namespace Tempest{
 
-class FragmentShader {
+class FragmentShader : public Shader {
   public:
     FragmentShader();
 
+    bool isValid() const;
   private:
     FragmentShader( AbstractHolder< Tempest::FragmentShader,
                                     AbstractShadingLang::FragmentShader >& h );
     Detail::Ptr< AbstractShadingLang::FragmentShader*,
                  FragmentShaderHolder::ImplManip > data;
-    ShaderInput input;
-
 
   friend class AbstractShadingLang;
 
@@ -26,7 +25,6 @@ class FragmentShader {
   friend class AbstractHolderWithLoad;
 
   friend class FragmentShaderHolder;
-  friend class Device;
   };
 
 }

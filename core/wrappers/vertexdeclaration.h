@@ -87,6 +87,7 @@ class VertexDeclaration {
         std::vector< Element > data;
       };
 
+    const Declarator& declarator() const;
   private:
     struct Data{
       void* impl;

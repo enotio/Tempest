@@ -5,7 +5,6 @@
 
 #include <Tempest/AbstractShadingLang>
 #include <Tempest/AbstractAPI>
-#include <Tempest/Uniform>
 
 namespace Tempest {
 

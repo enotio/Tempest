@@ -56,15 +56,14 @@ void ShaderInput::set(const char *name, const float *v, int l) {
     }
   }
 
-void ShaderInput::set( const Uniform<float[2]> &u ) {
-  set(u.name().data(), u[0], u[1]);
+void ShaderInput::set(const char *name, const double *v, int l) {
+  switch( l ){
+    case 1: set( name, v[0] ); break;
+    case 2: set( name, v[0], v[1] ); break;
+    case 3: set( name, v[0], v[1], v[2] ); break;
+    case 4: set( name, v[0], v[1], v[2], v[3] ); break;
+    default: T_ASSERT_X(0 & l, "vector size is too long");
+    }
   }
 
-void ShaderInput::set( const Uniform<float[3]> &u ) {
-  set(u.name().data(), u[0], u[1], u[2]);
-  }
-
-void ShaderInput::set( const Uniform<Texture2d> &u ) {
-  set(u.name().data(), *u.value());
-  }
 

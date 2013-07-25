@@ -128,3 +128,8 @@ bool VertexDeclaration::Declarator::Element::operator ==(const VertexDeclaration
 bool VertexDeclaration::Declarator::Element::operator !=(const VertexDeclaration::Declarator::Element &d) const {
   return !(*this==d);
   }
+
+const Tempest::VertexDeclaration::Declarator&
+  Tempest::VertexDeclaration::declarator() const {
+  return decl->decl;
+  }

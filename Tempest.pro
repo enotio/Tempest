@@ -120,7 +120,6 @@ SOURCES += \
     shading/vertexshader.cpp \
     shading/uniformtable.cpp \
     shading/uniformcash.cpp \
-    shading/uniform.cpp \
     shading/fragmentshader.cpp \
     shading/abstractshadinglang.cpp \
     utils/tessobject.cpp \
@@ -157,7 +156,8 @@ SOURCES += \
     thirdparty/libpng/pngget.c \
     thirdparty/libpng/pngerror.c \
     thirdparty/libpng/png.c \
-    core/assert.cpp
+    core/assert.cpp \
+    shading/shader.cpp
 
 HEADERS += \
     ui/window.h \
@@ -208,7 +208,6 @@ HEADERS += \
     shading/vertexshader.h \
     shading/uniformtable.h \
     shading/uniformcash.h \
-    shading/uniform.h \
     shading/fragmentshader.h \
     shading/abstractshadinglang.h \
     utils/tessobject.h \
@@ -243,7 +242,8 @@ HEADERS += \
     thirdparty/libpng/pngconf.h \
     thirdparty/libpng/png.h \
     thirdparty/libpng/config.h \
-    core/assert.h
+    core/assert.h \
+    shading/shader.h
 
 OTHER_FILES += \
     include/Tempest/Window \

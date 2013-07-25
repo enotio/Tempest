@@ -12,7 +12,6 @@
 #include <Tempest/Texture2d>
 
 #include "shading/uniformcash.h"
-#include <Tempest/Uniform>
 
 #include <iostream>
 

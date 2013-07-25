@@ -4,14 +4,15 @@
 #include <Tempest/AbstractShadingLang>
 #include <Tempest/VertexShaderHolder>
 
-#include "shaderinput.h"
+#include "shader.h"
 
 namespace Tempest{
 
-class VertexShader {
+class VertexShader : public Shader {
   public:
     VertexShader();
 
+    bool isValid() const;
   private:
     VertexShader( AbstractHolder< Tempest::VertexShader,
                                   AbstractShadingLang::VertexShader >& h );
@@ -19,15 +20,12 @@ class VertexShader {
     Detail::Ptr< AbstractShadingLang::VertexShader*,
                  VertexShaderHolder::ImplManip > data;
 
-    ShaderInput input;
-
   friend class AbstractShadingLang;
 
   template< class Data, class APIDescriptor >
   friend class AbstractHolderWithLoad;
 
   friend class VertexShaderHolder;
-  friend class Device;
   };
 
 }

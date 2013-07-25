@@ -24,6 +24,11 @@ struct DefaultVertex{
   float x,y,z;
   float u,v;
   float normal[3];
+
+  static const Tempest::VertexDeclaration::Declarator& decl();
+
+  private:
+    static Tempest::VertexDeclaration::Declarator mkDecl();
   };
 
 struct ModelBounds{
@@ -187,12 +192,7 @@ class Model {
                Tempest::IndexBufferHolder  & iboHolder,
                const std::string&        fname ){
       Model::Raw r = loadRawData( fname );
-      Tempest::VertexDeclaration::Declarator decl;
-      decl.add( Tempest::Decl::float3, Tempest::Usage::Position )
-          .add( Tempest::Decl::float2, Tempest::Usage::TexCoord )
-          .add( Tempest::Decl::float3, Tempest::Usage::Normal   );
-
-      load( vboHolder, iboHolder, r.vertex, decl );
+      load( vboHolder, iboHolder, r.vertex, DefaultVertex::decl() );
       }
 
     void load( Tempest::VertexBuffer<ModelVertex> & v,

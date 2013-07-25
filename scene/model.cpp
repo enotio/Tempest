@@ -19,3 +19,17 @@ float ModelBounds::radius() const {
 
   return sqrt(s);
   }
+
+const VertexDeclaration::Declarator &DefaultVertex::decl() {
+  static const Tempest::VertexDeclaration::Declarator d = mkDecl();
+  return d;
+  }
+
+VertexDeclaration::Declarator DefaultVertex::mkDecl() {
+  Tempest::VertexDeclaration::Declarator decl;
+  decl.add( Tempest::Decl::float3, Tempest::Usage::Position )
+      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord )
+      .add( Tempest::Decl::float3, Tempest::Usage::Normal   );
+
+  return decl;
+  }

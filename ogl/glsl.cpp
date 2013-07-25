@@ -16,7 +16,6 @@
 #include <Tempest/Texture2d>
 
 #include "shading/uniformcash.h"
-#include <Tempest/Uniform>
 #include <Tempest/SystemAPI>
 #include "gltypes.h"
 
@@ -442,19 +441,19 @@ void GLSL::setUniforms( unsigned int s, const T & vN, int c ) const{
   }
 
 void GLSL::setUniform( unsigned int s,
-                       const Matrix4x4& mIn,
+                       const Matrix4x4& m,
                        const char *name,
                        void *&id  ) const{
-  if( id!=data->notId )
-    return;
-  Matrix4x4 m = mIn;
-
-  GLuint   prog = s;
-  GLint    prm = data->location( prog, name );
-  if( prm==-1 )
-    return;
-
-  id = (void*)size_t(prm);
+  GLint prm = -1;
+  if( id==data->notId ){
+    GLuint    prog = s;
+    prm = data->location( prog, name );
+    if( prm==-1 )
+      return;
+    id = (void*)size_t(prm);
+    } else {
+    prm = (GLint)id;
+    }
 
   if( !data->vsCash.fetch(prm, m) ){
     float r[16] = {};
@@ -469,14 +468,16 @@ void GLSL::setUniform( unsigned int s,
                        int l,
                        const char *name,
                        void *&id ) const{
-  if( id!=data->notId )
-    return;
-
-  GLuint    prog = s;
-  GLint     prm  = data->location( prog, name );
-  if( prm==-1 )
-    return;
-  id = (void*)size_t(prm);
+  GLint prm = -1;
+  if( id==data->notId ){
+    GLuint    prog = s;
+    prm = data->location( prog, name );
+    if( prm==-1 )
+      return;
+    id = (void*)size_t(prm);
+    } else {
+    prm = (GLint)id;
+    }
 
   if( !data->vsCash.fetch(prm, v, l) ){
     //Data::dbg(prm, data->context);
@@ -496,14 +497,16 @@ void GLSL::setUniform( unsigned int sh,
                        int slot,
                        void *&id,
                        std::vector<int> &loc ) const{
-  if( id!=data->notId )
-    return;
-
-  GLuint    prog = sh;
-  GLint     prm = data->location( prog, name );
-  if( prm==-1 )
-    return;
-  id = (void*)size_t(prm);
+  GLint prm = -1;
+  if( id==data->notId ){
+    GLuint    prog = sh;
+    prm = data->location( prog, name );
+    if( prm==-1 )
+      return;
+    id = (void*)size_t(prm);
+    } else {
+    prm = (GLint)id;
+    }
 
   const Texture2d::Sampler & s = u.sampler();
   //Data::dbg(prm, data->context);
