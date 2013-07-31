@@ -9,7 +9,7 @@ VertexShader::VertexShader():data( VertexShaderHolder::ImplManip(0) ){
   }
 
 bool VertexShader::isValid() const {
-  return !data.isNull();
+  return !data.isNull() && data.const_value();
   }
 
 VertexShader::VertexShader( AbstractHolder< Tempest::VertexShader,
