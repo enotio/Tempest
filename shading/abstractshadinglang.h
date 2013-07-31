@@ -38,20 +38,59 @@ class AbstractShadingLang {
     class FragmentShader;
 
     virtual void* context() const = 0;
+
+    enum ShaderType{
+      Vertex,
+      Fragment/*,
+      Geometry*/
+      };
+    virtual void* createShader( ShaderType t,
+                                const std::string& fname,
+                                std::string & outputLog ) const;
+    virtual void* createShader( ShaderType t,
+                                const std::wstring& fname,
+                                std::string & outputLog ) const;
+    virtual void* createShaderFromSource( ShaderType t,
+                                          const std::string& src,
+                                          std::string & outputLog ) const {
+      switch( t ){
+        case Vertex:
+          return createVertexShaderFromSource(src, outputLog);
+        case Fragment:
+          return createFragmentShaderFromSource(src, outputLog);
+        }
+
+      return 0;
+      }
+
     virtual VertexShader*
-                 createVertexShader( const std::string& fname ) const;
+                 createVertexShader( const std::string& fname,
+                                     std::string & outputLog ) const;
     virtual VertexShader*
-                 createVertexShader( const std::wstring& fname ) const;
+                 createVertexShader( const std::wstring& fname,
+                                     std::string & outputLog ) const;
     virtual VertexShader*
-                 createVertexShaderFromSource( const std::string& src ) const = 0;
-    virtual void deleteVertexShader( VertexShader* s ) const = 0;
+                 createVertexShaderFromSource( const std::string& src,
+                                               std::string & outputLog ) const = 0;
 
     virtual FragmentShader*
-                 createFragmentShader( const std::string& fname ) const;
+                 createFragmentShader( const std::string& fname,
+                                       std::string & outputLog ) const;
     virtual FragmentShader*
-                 createFragmentShader( const std::wstring& fname ) const;
+                 createFragmentShader( const std::wstring& fname,
+                                       std::string &log ) const;
     virtual FragmentShader*
-                 createFragmentShaderFromSource( const std::string& src ) const = 0;
+                 createFragmentShaderFromSource( const std::string& src,
+                                                 std::string & outputLog ) const = 0;
+
+    void deleteShader( VertexShader* s ) const {
+      deleteVertexShader(s);
+      }
+
+    void deleteShader( FragmentShader* s ) const {
+      deleteFragmentShader(s);
+      }
+    virtual void deleteVertexShader( VertexShader* s ) const = 0;
     virtual void deleteFragmentShader( FragmentShader* s ) const = 0;
 
   protected:

@@ -30,10 +30,12 @@ namespace Tempest {
 
       void* context() const;
 
-      VertexShader* createVertexShaderFromSource( const std::string& src ) const;
+      VertexShader* createVertexShaderFromSource( const std::string& src,
+                                                  std::string & log ) const;
       void          deleteVertexShader( VertexShader* s ) const;
 
-      FragmentShader* createFragmentShaderFromSource( const std::string& src ) const;
+      FragmentShader* createFragmentShaderFromSource( const std::string& src,
+                                                      std::string & log  ) const;
       void            deleteFragmentShader( FragmentShader* s ) const;
     private:
       struct Data;

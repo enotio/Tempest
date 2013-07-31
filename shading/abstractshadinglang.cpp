@@ -5,27 +5,29 @@
 
 #include <Tempest/Texture2d>
 #include <Tempest/SystemAPI>
+#include <Tempest/Device>
 
 using namespace Tempest;
 
 AbstractShadingLang::VertexShader*
-  AbstractShadingLang::createVertexShader(const std::string &fname) const {
-  return createVertexShaderFromSource( SystemAPI::loadText(fname) );
+  AbstractShadingLang::createVertexShader( const std::string &fname,
+                                           std::string &outputLog ) const {
+  return createVertexShaderFromSource( SystemAPI::loadText(fname), outputLog );
   }
 
 AbstractShadingLang::VertexShader*
-  AbstractShadingLang::createVertexShader(const std::wstring &fname) const {
-  return createVertexShaderFromSource( SystemAPI::loadText(fname) );
+  AbstractShadingLang::createVertexShader(const std::wstring &fname, std::string &outputLog) const {
+  return createVertexShaderFromSource( SystemAPI::loadText(fname), outputLog );
   }
 
 AbstractShadingLang::FragmentShader*
-  AbstractShadingLang::createFragmentShader(const std::wstring &fname) const {
-  return createFragmentShaderFromSource( SystemAPI::loadText(fname) );
+  AbstractShadingLang::createFragmentShader(const std::wstring &fname, std::string & log ) const {
+  return createFragmentShaderFromSource( SystemAPI::loadText(fname), log );
   }
 
 AbstractShadingLang::FragmentShader*
-  AbstractShadingLang::createFragmentShader(const std::string &fname) const {
-  return createFragmentShaderFromSource( SystemAPI::loadText(fname) );
+  AbstractShadingLang::createFragmentShader(const std::string &fname, std::string &outputLog) const {
+  return createFragmentShaderFromSource( SystemAPI::loadText(fname), outputLog );
   }
 
 AbstractShadingLang::VertexShader*
@@ -48,4 +50,17 @@ const ShaderInput &AbstractShadingLang::inputOf(const Tempest::VertexShader &s) 
 
 const ShaderInput &AbstractShadingLang::inputOf(const Tempest::FragmentShader &s) {
   return s.input;
+  }
+
+
+void *AbstractShadingLang::createShader( AbstractShadingLang::ShaderType t,
+                                         const std::string &fname,
+                                         std::string &outputLog ) const {
+  return createShaderFromSource( t, SystemAPI::loadText(fname), outputLog );
+  }
+
+void *AbstractShadingLang::createShader( AbstractShadingLang::ShaderType t,
+                                         const std::wstring &fname,
+                                         std::string &outputLog) const {
+  return createShaderFromSource( t, SystemAPI::loadText(fname), outputLog );
   }

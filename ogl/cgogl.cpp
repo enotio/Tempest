@@ -7,7 +7,7 @@
 
 #include <Tempest/Assert>
 
-#include <Tempest/VertexShader>
+#include <Tempest/Device>
 #include <Tempest/Matrix4x4>
 #include <Tempest/Texture2d>
 
@@ -155,7 +155,7 @@ void CgOGL::setDevice() const {
   }
 
 AbstractShadingLang::VertexShader*
-  CgOGL::createVertexShaderFromSource(const std::string &src) const {
+  CgOGL::createVertexShaderFromSource(const std::string &src, std::string &outputLog) const {
   CGprogram prog = cgCreateProgram( data->context,
                                     CG_SOURCE,
                                     src.data(),
@@ -180,7 +180,7 @@ void CgOGL::deleteVertexShader( VertexShader* s ) const {
   }
 
 AbstractShadingLang::FragmentShader *
-  CgOGL::createFragmentShaderFromSource(const std::string &src) const {
+  CgOGL::createFragmentShaderFromSource(const std::string &src, std::string &outputLog) const {
   CGprogram prog = cgCreateProgram( data->context,
                                     CG_SOURCE,
                                     src.data(),

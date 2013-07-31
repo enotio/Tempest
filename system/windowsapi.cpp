@@ -450,21 +450,6 @@ bool WindowsAPI::saveImageImpl( const char* file,
   return ok;
   }
 
-bool WindowsAPI::loadImageImpl( const char *file,
-                                int &w, int &h,
-                                int &bpp,
-                                std::vector<unsigned char> &out) {
-  std::wstring wstr;
-  size_t s = 0;
-
-  for( size_t i = 0; file[i]; ++i )
-    s = i;
-
-  wstr.assign(file, file+s);
-
-  return loadImageImpl(wstr.data(), w,h, bpp, out);
-  }
-
 bool WindowsAPI::saveImageImpl( const wchar_t *file,
                                 int &w, int &h,
                                 int &bpp,

@@ -248,8 +248,10 @@ class Device {
     void forceEndPaint() const;
     void applyRs() const;
 
-  friend class VertexShaderHolder;
-  friend class FragmentShaderHolder;
+  template< class Shader, class APIDescriptor, AbstractShadingLang::ShaderType >
+  friend class ShaderHolder;
+  //friend class VertexShaderHolder;
+  //friend class FragmentShaderHolder;
   friend class TextureHolder;
   friend class VertexBufferHolder;
   friend class IndexBufferHolder;

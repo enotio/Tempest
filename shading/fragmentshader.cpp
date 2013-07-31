@@ -1,5 +1,7 @@
 #include "fragmentshader.h"
 
+#include <Tempest/Device>
+
 using namespace Tempest;
 
 FragmentShader::FragmentShader():data( FragmentShaderHolder::ImplManip(0) ){

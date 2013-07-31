@@ -5,7 +5,7 @@
 #include <Tempest/SystemAPI>
 
 #include <map>
-
+/*
 using namespace Tempest;
 
 struct FragmentShaderHolder::Data {
@@ -32,23 +32,39 @@ FragmentShaderHolder::FragmentShaderHolder( const FragmentShaderHolder& h)
                    :BaseType( h.device() ) {
   }
 
+
 FragmentShader FragmentShaderHolder::loadFromSource(const std::string & src) {
   FragmentShader obj( *this );
 
-  createObjectFromSrc( obj.data.value(), src );
+  createObjectFromSrc( obj, obj.data.value(), src );
   return obj;
   }
 
-void FragmentShaderHolder::createObjectFromSrc(AbstractShadingLang::FragmentShader *&t,
-                                                const std::string &src ) {
-  t = device().shadingLang().createFragmentShaderFromSource( src );
+void FragmentShaderHolder::createObjectFromSrc( FragmentShader &obj,
+                                                AbstractShadingLang::FragmentShader *&t,
+                                                const std::string &src) {
+  t = device().shadingLang().createFragmentShaderFromSource( src, obj.logv );
   if( t )
     data->shadersSrc[t] = src;
   }
 
-void FragmentShaderHolder::createObject(AbstractShadingLang::FragmentShader*& t,
-                                       const std::wstring &fname ){
-  createObjectFromSrc( t, SystemAPI::loadText(fname) );
+void FragmentShaderHolder::createObjectFromSrc( AbstractShadingLang::FragmentShader *&t,
+                                                const std::string &src ) {
+  std::string log;
+  t = device().shadingLang().createFragmentShaderFromSource( src, log );
+  if( t )
+    data->shadersSrc[t] = src;
+  }
+
+void FragmentShaderHolder::createObject( FragmentShader &obj,
+                                         AbstractShadingLang::FragmentShader*& t,
+                                         const std::wstring &fname){
+  createObjectFromSrc( obj, t, SystemAPI::loadText(fname) );
+  }
+
+void FragmentShaderHolder::createObject( AbstractShadingLang::FragmentShader *&t,
+                                         const std::wstring &f) {
+  createObjectFromSrc(t, SystemAPI::loadText(f));
   }
 
 void FragmentShaderHolder::deleteObject( AbstractShadingLang::FragmentShader* t ){
@@ -90,3 +106,4 @@ AbstractShadingLang::FragmentShader*
   createObjectFromSrc( ret, data->shadersSrc[t] );
   return ret;
   }
+*/

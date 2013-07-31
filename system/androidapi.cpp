@@ -25,6 +25,7 @@ using namespace Tempest;
 #include <android/bitmap.h>
 
 #include <cmath>
+#include <locale>
 
 struct android_app;
 
@@ -161,7 +162,7 @@ void AndroidAPI::endApplication() {
 
   }
 
-std::string AndroidAPI::loadTextImpl( const char* file ){
+std::string AndroidAPI::loadTextImpl(const char *file ){
   //JNIEnv * env = 0;
 
   //android->activity->assetManager;
@@ -182,6 +183,10 @@ std::string AndroidAPI::loadTextImpl( const char* file ){
   return str;
   }
 
+std::string AndroidAPI::loadTextImpl( const wchar_t* file ){
+  return loadTextImpl( toUtf8(file).c_str() );
+  }
+
 std::vector<char> AndroidAPI::loadBytesImpl( const char* file ){
   AAssetManager* mgr = ((android_app*)android)->activity->assetManager;
   AAsset* asset = AAssetManager_open(mgr, file, AASSET_MODE_UNKNOWN);
@@ -196,6 +201,10 @@ std::vector<char> AndroidAPI::loadBytesImpl( const char* file ){
   AAsset_close(asset);
 
   return str;
+  }
+
+std::vector<char> AndroidAPI::loadBytesImpl(const wchar_t *file) {
+  return loadBytesImpl( toUtf8(file).c_str() );
   }
 
 int AndroidAPI::nextEvent(bool &quit) {
@@ -339,12 +348,14 @@ JNIEXPORT bool JNICALL Java_com_native_1call_TempestActivity_loadImg(
   return true;
   }
 
-bool AndroidAPI::loadImageImpl( const char* file,
+bool AndroidAPI::loadImageImpl( const wchar_t *file,
                                 int &w,
                                 int &h,
                                 int &bpp,
                                 std::vector<unsigned char>& out ){
-  LOGI("load img : %s", file);
+  const std::string u8 = toUtf8(file);
+
+  LOGI("load img : %s", u8.c_str());
   std::vector<char> imgBytes = loadBytesImpl(file);
   if( loadS3TCImpl(imgBytes,w,h,bpp,out) )
     return true;
@@ -360,7 +371,7 @@ bool AndroidAPI::loadImageImpl( const char* file,
 
   jmethodID loadImg = env->GetStaticMethodID(libClass, "loadImage", "(Ljava/lang/String;)Z");
 
-  jstring jstr = env->NewStringUTF( file );
+  jstring jstr = env->NewStringUTF( u8.c_str() );
 
   //pthread_mutex_lock( &imgMutex );
   tmpImage.data = &out;
@@ -377,7 +388,7 @@ bool AndroidAPI::loadImageImpl( const char* file,
   return ok;
   }
 
-bool AndroidAPI::saveImageImpl( const char* file,
+bool AndroidAPI::saveImageImpl( const wchar_t* file,
                                 int &w,
                                 int &h,
                                 int &bpp,

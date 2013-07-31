@@ -11,7 +11,7 @@
 
 #include <Tempest/Assert>
 
-#include <Tempest/VertexShader>
+#include <Tempest/Device>
 #include <Tempest/Matrix4x4>
 #include <Tempest/Texture2d>
 
@@ -61,7 +61,9 @@ struct GLSL::Data{
     return SystemAPI::loadText(f).data();
     }
 
-  GLuint loadShader( GLenum shaderType, const char* pSource) {
+  GLuint loadShader( GLenum shaderType,
+                     const char* pSource,
+                     std::string & log ) {
     GLuint shader = glCreateShader(shaderType);
 
     if (shader) {
@@ -74,15 +76,9 @@ struct GLSL::Data{
         GLint infoLen = 0;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
 
+        log.resize(infoLen);
         if (infoLen) {
-          char* buf = new char[infoLen];
-
-          if (buf) {
-            glGetShaderInfoLog(shader, infoLen, NULL, buf);
-            std::cerr << buf;
-            delete[] (buf);
-            }
-
+          glGetShaderInfoLog(shader, infoLen, NULL, &log[0]);
           glDeleteShader(shader);
           shader = 0;
           }
@@ -186,14 +182,14 @@ void GLSL::setDevice() const {
   }
 
 AbstractShadingLang::VertexShader*
-  GLSL::createVertexShaderFromSource(const std::string &src) const {
+  GLSL::createVertexShaderFromSource(const std::string &src, std::string &log) const {
   GLuint *prog = new GLuint(0);
-  *prog = data->loadShader( GL_VERTEX_SHADER, src.data() );
+  *prog = data->loadShader( GL_VERTEX_SHADER, src.data(), log );
 
   if( !*prog )
     {}//Data::dbgOut( data->context );
 
-  T_ASSERT( *prog );
+  //T_ASSERT( *prog );
 
   return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
   }
@@ -219,14 +215,14 @@ void GLSL::deleteVertexShader( VertexShader* s ) const {
   }
 
 AbstractShadingLang::FragmentShader *
-  GLSL::createFragmentShaderFromSource(const std::string &src) const {
+  GLSL::createFragmentShaderFromSource(const std::string &src, std::string &log) const {
   GLuint *prog = new GLuint(0);
-  *prog = data->loadShader( GL_FRAGMENT_SHADER, src.data() );
+  *prog = data->loadShader( GL_FRAGMENT_SHADER, src.data(), log );
 
   if( !*prog )
     {}//Data::dbgOut( data->context );
 
-  T_ASSERT( *prog );
+  //T_ASSERT( *prog );
 
   return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
   }

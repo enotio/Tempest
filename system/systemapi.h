@@ -75,6 +75,9 @@ class SystemAPI{
     static void activateEvent( Tempest::Window*w, bool a );
 
     virtual bool isGraphicsContextAviable( Tempest::Window *w );
+
+    static std::string  toUtf8   (const std::wstring& str);
+    static std::wstring toWstring( const std::string& str );
   protected:
     SystemAPI(){}
 
@@ -87,12 +90,12 @@ class SystemAPI{
                                 int &w,
                                 int &h,
                                 int &bpp,
-                                std::vector<unsigned char>& out ) = 0;
+                                std::vector<unsigned char>& out );
     virtual bool saveImageImpl( const char* file,
                                 int &w,
                                 int &h,
                                 int &bpp,
-                                std::vector<unsigned char>& out ) = 0;
+                                std::vector<unsigned char>& out );
 
     virtual bool loadImageImpl( const wchar_t* file,
                                 int &w,

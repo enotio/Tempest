@@ -33,15 +33,18 @@ class AndroidAPI:public SystemAPI {
     void bind(Window*, Tempest::Window * );
 
     std::string loadTextImpl( const char* file );
+    std::string loadTextImpl( const wchar_t* file );
+
     std::vector<char> loadBytesImpl( const char* file );
+    std::vector<char> loadBytesImpl( const wchar_t* file );
     
-    bool loadImageImpl( const char* file,
+    bool loadImageImpl( const wchar_t* file,
                         int &w,
                         int &h,
                         int &bpp,
                         std::vector<unsigned char>& out );
 
-    bool saveImageImpl( const char* file,
+    bool saveImageImpl( const wchar_t* file,
                         int &w,
                         int &h,
                         int &bpp,

@@ -7,6 +7,7 @@
 #include <Tempest/Window>
 #include <cstring>
 #include <iostream>
+#include <locale>
 
 #include <libpng/png.h>
 
@@ -128,6 +129,40 @@ void SystemAPI::activateEvent(Tempest::Window *w, bool a) {
 
 bool SystemAPI::isGraphicsContextAviable( Tempest::Window *) {
   return true;
+  }
+
+std::string SystemAPI::toUtf8(const std::wstring &str) {
+  std::string r;
+  r.assign( str.begin(), str.end() );
+
+  return r;
+  }
+
+std::wstring SystemAPI::toWstring(const std::string &str) {
+  std::wstring r;
+  r.assign( str.begin(), str.end() );
+
+  return r;
+  }
+
+bool SystemAPI::loadImageImpl( const char *file,
+                               int &w, int &h, int &bpp,
+                               std::vector<unsigned char> &out ) {
+  std::wstring wstr;
+  size_t s = 0;
+
+  for( size_t i = 0; file[i]; ++i )
+    s = i;
+
+  wstr.assign(file, file+s);
+
+  return loadImageImpl(wstr.data(), w,h, bpp, out);
+  }
+
+bool SystemAPI::saveImageImpl( const char *file,
+                               int &w, int &h, int &bpp,
+                               std::vector<unsigned char> &out) {
+  return saveImageImpl( toWstring(file).data(), w, h, bpp, out );
   }
 
 bool SystemAPI::loadS3TCImpl( const std::vector<char> &img,

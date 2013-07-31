@@ -19,8 +19,12 @@ class Shader {
 
     void setUniform( const char* name, const float  *xyzw, int l );
     void setUniform( const char* name, const double *xyzw, int l );
+
+    const std::string& log() const;
+    void clearLog();
   protected:
     ShaderInput input;
+    std::string logv;
 
   friend class Device;
   };

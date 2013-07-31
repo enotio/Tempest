@@ -5,7 +5,7 @@
 #include <Cg/Cg.h>
 #include <Cg/CgD3D9.h>
 
-#include <Tempest/VertexShader>
+#include <Tempest/Device>
 #include <Tempest/Matrix4x4>
 #include <Tempest/Texture2d>
 #include <Tempest/Assert>
@@ -138,7 +138,8 @@ void CgDx9::setNullDevice(){
   }
 
 AbstractShadingLang::VertexShader*
-  CgDx9::createVertexShaderFromSource(const std::string &src) const {
+  CgDx9::createVertexShaderFromSource( const std::string &src,
+                                       std::string &outputLog ) const {
   const char **vertexOptions[] =  {
     cgD3D9GetOptimalOptions( data->vertexProfile ),
     0,
@@ -152,12 +153,15 @@ AbstractShadingLang::VertexShader*
                                     "main",
                                     *vertexOptions );
 
-  if( !prog )
-    Data::dbgOut( data->context );
+  const char* str = cgGetLastListing( data->context );
+  if( str )
+    outputLog = str; else
+    outputLog = "";
 
-  cgD3D9LoadProgram( prog, false, 0 );
+  if( prog )
+    cgD3D9LoadProgram( prog, false, 0 );
 
-  T_ASSERT( prog );
+  //T_ASSERT( prog );
 
   return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
   }
@@ -169,7 +173,8 @@ void CgDx9::deleteVertexShader( VertexShader* s ) const {
   }
 
 AbstractShadingLang::FragmentShader *
-  CgDx9::createFragmentShaderFromSource(const std::string &src) const {
+  CgDx9::createFragmentShaderFromSource( const std::string &src,
+                                         std::string & outputLog ) const {
   const char **pixelOptions[] = {
     cgD3D9GetOptimalOptions( data->pixelProfile ),
     0,
@@ -183,12 +188,15 @@ AbstractShadingLang::FragmentShader *
                                     "main",
                                     *pixelOptions );
 
-  if( !prog )
-    Data::dbgOut( data->context );
+  const char* str = cgGetLastListing( data->context );
+  if( str )
+    outputLog = str; else
+    outputLog = "";
 
-  cgD3D9LoadProgram( prog, false, 0 );
+  if( prog )
+    cgD3D9LoadProgram( prog, false, 0 );
 
-  T_ASSERT( prog );
+  //T_ASSERT( prog );
 
   return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
   }

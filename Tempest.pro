@@ -96,7 +96,6 @@ SOURCES += \
     core/wrappers/pixmap.cpp \
     core/wrappers/indexbuffer.cpp \
     core/wrappers/atomic.cpp \
-    dataControl/vertexshaderholder.cpp \
     dataControl/vertexbufferholder.cpp \
     dataControl/textureholder.cpp \
     dataControl/localvertexbufferholder.cpp \
@@ -243,7 +242,8 @@ HEADERS += \
     thirdparty/libpng/png.h \
     thirdparty/libpng/config.h \
     core/assert.h \
-    shading/shader.h
+    shading/shader.h \
+    dataControl/shaderholder.h
 
 OTHER_FILES += \
     include/Tempest/Window \

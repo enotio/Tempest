@@ -38,4 +38,12 @@ void Shader::setUniform(const char *name, const double *xyzw, int l) {
   input.set(name, xyzw, l);
   }
 
+const std::string &Shader::log() const {
+  return logv;
+  }
+
+void Shader::clearLog() {
+  logv.clear();
+  }
+
 

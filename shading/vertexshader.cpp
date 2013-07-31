@@ -1,5 +1,7 @@
 #include "vertexshader.h"
 
+#include <Tempest/Device>
+
 using namespace Tempest;
 
 VertexShader::VertexShader():data( VertexShaderHolder::ImplManip(0) ){

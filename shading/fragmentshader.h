@@ -24,7 +24,8 @@ class FragmentShader : public Shader {
   template< class Data, class APIDescriptor >
   friend class AbstractHolderWithLoad;
 
-  friend class FragmentShaderHolder;
+  template< class Shader, class APIDescriptor, AbstractShadingLang::ShaderType >
+  friend class ShaderHolder;
   };
 
 }
