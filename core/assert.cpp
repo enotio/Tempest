@@ -11,7 +11,12 @@
 namespace Tempest{
   static void h_default( const char */*file*/, int /*line*/,
                          const char */*X*/, const char */*msg*/) {
-    assert(0 && "T_ASSERT failed");
+#ifdef __ANDROID__
+    assert(0);
+#else
+    __asm__("int $3");
+#endif
+    //assert(0 && "T_ASSERT failed");
     }
 
   static void (*h_assert)( const char *,

@@ -122,7 +122,7 @@ void TextureHolder::createObject( AbstractAPI::Texture*& t,
   d.usage  = u;
   d.format = f;
 
-  if( !device().hasManagedStorge() )
+  if( hasCPUStorage() )
     data->dynamic_textures[t] = d;
 
   setTextureFlag(t, AbstractAPI::TF_Inialized, false );
@@ -141,7 +141,7 @@ void TextureHolder::createObject( AbstractAPI::Texture *&t,
 
   px.owner = t;
   //data->pixmap_textures[t] = px;
-  if( !device().hasManagedStorge() )
+  if( hasCPUStorage() )
     data->pixmap_textures.push_back(px);
   }
 
@@ -150,7 +150,7 @@ void TextureHolder::recreateObject( AbstractAPI::Texture *&t,
                                     const Pixmap &p,
                                     bool mips,
                                     bool compress ) {
-  if( !device().hasManagedStorge() ){
+  if( hasCPUStorage() ){
     if( data->dynamic_textures.find(old) != data->dynamic_textures.end() )
       data->dynamic_textures.erase(old);
 
@@ -170,12 +170,12 @@ void TextureHolder::recreateObject( AbstractAPI::Texture *&t,
   t = device().recreateTexture( old, p, mips, compress );
   px.owner = t;
   //data->pixmap_textures[t] = px;
-  if( !device().hasManagedStorge() )
+  if( hasCPUStorage() )
     data->pixmap_textures.push_back(px);
   }
 
 void TextureHolder::deleteObject( AbstractAPI::Texture* t ){
-  if( !device().hasManagedStorge() ){
+  if( hasCPUStorage() ){
     if( data->dynamic_textures.find(t) != data->dynamic_textures.end() )
       data->dynamic_textures.erase(t);
 
@@ -191,12 +191,12 @@ void TextureHolder::deleteObject( AbstractAPI::Texture* t ){
   }
 
 void TextureHolder::reset( AbstractAPI::Texture* t ){
-  if( !device().hasManagedStorge() )
+  if( hasCPUStorage() )
     device().deleteTexture(t);
   }
 
 AbstractAPI::Texture* TextureHolder::restore( AbstractAPI::Texture* t ){
-  if( device().hasManagedStorge() ){
+  if( !hasCPUStorage() ){
     return t;
     }
 
@@ -222,7 +222,7 @@ AbstractAPI::Texture* TextureHolder::restore( AbstractAPI::Texture* t ){
   return 0;
   }
 
-AbstractAPI::Texture* TextureHolder::copy( AbstractAPI::Texture* t ){
+AbstractAPI::Texture* TextureHolder::copy( AbstractAPI::Texture*  ){
 #ifndef __ANDROID__
   throw std::runtime_error("TextureHolder::copy not implemented yet");
 #endif
@@ -232,4 +232,16 @@ void TextureHolder::setTextureFlag( AbstractAPI::Texture *t,
                                     AbstractAPI::TextureFlag f,
                                     bool v) {
   device().setTextureFlag(t,f,v);
+  }
+
+bool TextureHolder::hasCPUStorage() {
+  return !device().hasManagedStorge();
+  }
+
+Pixmap TextureHolder::pixmapOf( AbstractAPI::Texture *t ) {
+  for( size_t i=0; i<data->pixmap_textures.size(); ++i )
+    if( data->pixmap_textures[i].owner==t )
+      return data->pixmap_textures[i].pm;
+
+  return Pixmap();
   }

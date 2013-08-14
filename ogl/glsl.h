@@ -58,7 +58,7 @@ namespace Tempest {
                        const Texture2d& t,
                        const char* name,
                        int slot,
-                       void *& id , std::vector<int> &loc) const;
+                       void *& id ) const;
 
       template< class T >
       void setUniforms( unsigned int s, const T & vN, int c ) const;

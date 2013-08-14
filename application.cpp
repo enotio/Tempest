@@ -3,6 +3,15 @@
 #include <Tempest/SystemAPI>
 #include <Tempest/Event>
 
+#ifdef __WIN32
+#include <windows.h>
+#endif
+
+#ifdef __ANDROID__
+#include <unistd.h>
+#endif
+#include <time.h>
+
 using namespace Tempest;
 
 Application::App Application::app;
@@ -29,4 +38,16 @@ bool Application::processEvents() {
     app.ret = SystemAPI::instance().nextEvent(app.quit);
 
   return app.quit;
+  }
+
+void Application::sleep(unsigned int msec) {
+#ifdef __WIN32
+  Sleep(msec);
+#else
+  if( msec>=1000)
+    sleep(msec/1000);
+
+  if( msec%1000 )
+    usleep( 1000*(msec%1000) );
+#endif
   }

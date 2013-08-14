@@ -295,7 +295,7 @@ std::vector<char> WindowsAPI::loadBytesImpl(const char *file) {
 
 std::vector<char> WindowsAPI::loadBytesImpl(const wchar_t *file) {
   HANDLE hTextFile = CreateFile( file, GENERIC_READ,
-                                 0, NULL, OPEN_ALWAYS,
+                                 0, NULL, OPEN_EXISTING,
                                  FILE_ATTRIBUTE_NORMAL, NULL);
 
   DWORD dwFileSize = GetFileSize(hTextFile, &dwFileSize);

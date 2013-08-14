@@ -114,8 +114,6 @@ struct GLSL::Data{
     GLuint fs;
 
     GLuint linked;
-
-    std::vector<GLint> textureID;
     };
 
   std::vector<ShProgram> prog;
@@ -365,7 +363,6 @@ void GLSL::enable() const {
     s.vs = vertexShader;
     s.fs = pixelShader;
     s.linked = program;
-    s.textureID.reserve(8);
 
     data->prog.push_back( s );
 
@@ -384,9 +381,6 @@ void GLSL::enable() const {
     data->vsCash.reset();
     data->fsCash.reset();
 
-    std::fill( data->curProgram.textureID.begin(),
-               data->curProgram.textureID.end(),
-               -1 );
     }
 
   { const ShaderInput & in = inputOf( *data->currentFS );
@@ -395,8 +389,7 @@ void GLSL::enable() const {
       setUniform( program,
                   *in.tex.values[i],
                   in.tex.names[i].data(), i,
-                  in.tex.id[i],
-                  data->curProgram.textureID );
+                  in.tex.id[i] );
       }
 
     for( size_t i=0; i<in.mat.names.size(); ++i ){
@@ -491,8 +484,7 @@ void GLSL::setUniform( unsigned int sh,
                        const Texture2d& u,
                        const char *name,
                        int slot,
-                       void *&id,
-                       std::vector<int> &loc ) const{
+                       void *&id ) const{
   GLint prm = -1;
   if( id==data->notId ){
     GLuint    prog = sh;
@@ -606,14 +598,6 @@ void GLSL::setUniform( unsigned int sh,
           }
         }
 //#endif
-
-      if( int(loc.size())<=prm )
-        loc.resize( prm+1, -1 );
-
-      if( loc[prm]!=slot ){
-        glUniform1i( prm, slot );
-        loc[prm] = slot;
-        }
 
       glActiveTexture( GL_TEXTURE0 );
       }

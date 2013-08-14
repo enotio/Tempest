@@ -12,6 +12,7 @@ class Application {
 
     int exec();
     static bool processEvents();
+    static void sleep(unsigned int msec );
   private:
     static struct App{
       int  ret;

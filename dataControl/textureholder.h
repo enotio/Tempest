@@ -65,6 +65,9 @@ class TextureHolder : public AbstractHolderWithLoad
     virtual void setTextureFlag( AbstractAPI::Texture* t,
                                  AbstractAPI::TextureFlag f,
                                  bool v );
+
+    virtual bool hasCPUStorage();
+    Pixmap pixmapOf( AbstractAPI::Texture* );
   private:
     TextureHolder( const TextureHolder &h );
     void operator = ( const TextureHolder& ){}

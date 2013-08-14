@@ -1,4 +1,4 @@
-QT       -= core gui
+QT     -= core gui
 CONFIG -= app_bundle
 CONFIG -= qt
 
@@ -23,7 +23,6 @@ INCLUDEPATH += \
                "./thirdparty/fakeGL" \
                "./thirdparty/" \
                "."
-
 
 #DEFINES += D3D_DEBUG_INFO
 
