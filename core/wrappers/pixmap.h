@@ -12,7 +12,8 @@ class Pixmap {
   public:
     Pixmap();
     Pixmap( const std::string& p );
-    //Pixmap( const std::wstring& p );
+    Pixmap( const std::wstring& p );
+
     Pixmap( int w, int h, bool alpha );
 
     Pixmap( const Pixmap& p );
@@ -23,6 +24,12 @@ class Pixmap {
 
     bool load( const std::string & f );
     bool save( const std::string & f );
+
+    bool load( const char* f );
+    bool save( const char* f );
+
+    bool load( const wchar_t* f );
+    bool save( const wchar_t* f );
 
     inline int width() const { return mw; }
     inline int height() const { return mh; }
@@ -160,6 +167,11 @@ class Pixmap {
     void  addAlpha();
     void  removeAlpha();
 
+    template< class T >
+    bool implLoad( T f );
+
+    template< class T >
+    bool implSave( T f );
 
   friend class PixEditor;
   };

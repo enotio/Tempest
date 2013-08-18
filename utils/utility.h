@@ -4,7 +4,8 @@
 namespace Tempest{
 
   struct Point{
-    Point( int ix=0, int iy=0 ):x(ix), y(iy) {}
+    Point():x(0), y(0) {}
+    explicit Point( int ix, int iy=0 ):x(ix), y(iy) {}
     int x, y;
 
     Point& operator -= ( const Point & p );
@@ -13,7 +14,25 @@ namespace Tempest{
     Point operator + ( const Point & p ) const;
     Point operator - ( const Point & p ) const;
 
+    Point operator * ( double f ) const;
+    Point operator * ( float f ) const;
+    Point operator * ( int   f ) const;
+
+    Point& operator *= ( double f );
+    Point& operator *= ( float  f );
+    Point& operator *= ( int    f );
+
+    Point operator / ( double f ) const;
+    Point operator / ( float f ) const;
+    Point operator / ( int   f ) const;
+
+    Point& operator /= ( double f );
+    Point& operator /= ( float  f );
+    Point& operator /= ( int    f );
+
     Point operator - () const;
+
+    double manhattanLength() const;
 
     bool operator ==( const Point & other ) const;
     bool operator !=( const Point & other ) const;

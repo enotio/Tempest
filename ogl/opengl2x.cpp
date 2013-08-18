@@ -1537,25 +1537,15 @@ void Opengl2x::draw( AbstractAPI::Device *de,
     }
 
   static const GLenum type[] = {
-  #ifdef __ANDROID__
     GL_POINTS,         // = 1,
     GL_LINES,          // = 2,
-  #else
-    GL_POINT,         // = 1,
-    GL_LINE,          // = 2,
-  #endif
     GL_LINE_STRIP,    // = 3,
     GL_TRIANGLES,     // = 4,
     GL_TRIANGLE_STRIP,// = 5,
     GL_TRIANGLE_FAN,  // = 6
     };
 
-  int vpCount = pCount*3;
-  if( t==AbstractAPI::TriangleStrip ||
-      t==AbstractAPI::TriangleFan ||
-      t==AbstractAPI::LinesStrip  )
-    vpCount = pCount+2;
-
+  int vpCount = vertexCount(t, pCount);
   glDrawArrays( type[ t-1 ], firstVertex, vpCount );
   //setupBuffers(0, false, false);
   errCk();
@@ -1585,25 +1575,15 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
   errCk();
 
   static const GLenum type[] = {
-  #ifdef __ANDROID__
     GL_POINTS,         // = 1,
     GL_LINES,          // = 2,
-  #else
-    GL_POINT,         // = 1,
-    GL_LINE,          // = 2,
-  #endif
     GL_LINE_STRIP,    // = 3,
     GL_TRIANGLES,     // = 4,
     GL_TRIANGLE_STRIP,// = 5,
     GL_TRIANGLE_FAN,  // = 6
     };
 
-  int vpCount = pCount*3;
-  if( t==AbstractAPI::TriangleStrip ||
-      t==AbstractAPI::TriangleFan ||
-      t==AbstractAPI::LinesStrip  )
-    vpCount = pCount+2;
-
+  int vpCount = vertexCount(t, pCount);
   //if( glIsBuffer(dev->curIBO) && glIsBuffer(dev->curVBO) )
     glDrawElements( type[ t-1 ],
                     vpCount,
@@ -1619,6 +1599,11 @@ bool Opengl2x::hasManagedStorge() const {
   //return false;
 #endif
   return true;
+  }
+
+Size Opengl2x::windowSize( Tempest::AbstractAPI::Device * d ) const {
+  Device *dev = (Device*)d;
+  return Size(dev->scrW, dev->scrH);
   }
 
 void Opengl2x::setRenderState( AbstractAPI::Device *d,

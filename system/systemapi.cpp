@@ -77,27 +77,52 @@ void SystemAPI::mkMouseEvent( Tempest::Window *w, MouseEvent &e , int type ) {
   if( type==0 ){
     //++w->pressedC;
     w->pressedC = 1;
-    w->mouseDownEvent(e);
+    processEvents(w, e, 0);
+    //w->rootMouseDownEvent(e);
     }
 
   if( type==1 ){
     //--w->pressedC;
     w->pressedC = 0;
-    w->mouseUpEvent(e);
+    processEvents(w, e, 1);
+    //w->rootMouseUpEvent(e);
     }
 
   if( type==2 ){
-    //--w->pressedC;
     if( w->pressedC ){
-      w->mouseDragEvent(e);
+      processEvents(w, e, -2);
+      //w->rootMouseDragEvent(e);
 
       if( e.isAccepted() )
         return;
       }
 
-    w->mouseMoveEvent(e);
+    processEvents(w, e, 2);
+    //w->rootMouseMoveEvent(e);
+    }
+
+  if( type==3 ){
+    processEvents(w, e, 3);
+    //w->rootMouseWheelEvent(e);
     }
   //if( w-> )
+  }
+
+void SystemAPI::processEvents(Widget *w, MouseEvent &e, int type) {
+  if( type==0 )
+    return w->rootMouseDownEvent(e);
+
+  if( type==1 )
+    return w->rootMouseUpEvent(e);
+
+  if( type==2 )
+    return w->rootMouseMoveEvent(e);
+
+  if( type==3 )
+    return w->rootMouseWheelEvent(e);
+
+  if( type==-2 )
+    return w->rootMouseDragEvent(e);
   }
 
 void SystemAPI::sizeEvent( Tempest::Window *w,
@@ -151,8 +176,8 @@ bool SystemAPI::loadImageImpl( const char *file,
   std::wstring wstr;
   size_t s = 0;
 
-  for( size_t i = 0; file[i]; ++i )
-    s = i;
+  for( s = 0; file[s]; ++s )
+    ;
 
   wstr.assign(file, file+s);
 
@@ -241,9 +266,9 @@ bool SystemAPI::loadS3TCImpl( const std::vector<char> &img,
   }
 
 bool SystemAPI::loadPngImpl( const std::vector<char> &d,
-                              int &w, int &h,
-                              int &bpp,
-                              std::vector<unsigned char> &out ) {
+                             int &w, int &h,
+                             int &bpp,
+                             std::vector<unsigned char> &out ) {
   if( d.size()<8 )// 8 is the maximum size that can be checked
     return false;
 

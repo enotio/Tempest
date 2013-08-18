@@ -155,7 +155,11 @@ SOURCES += \
     thirdparty/libpng/pngerror.c \
     thirdparty/libpng/png.c \
     core/assert.cpp \
-    shading/shader.cpp
+    shading/shader.cpp \
+    2d/sprite.cpp \
+    2d/spritesholder.cpp \
+    timer.cpp \
+    2d/surface.cpp
 
 HEADERS += \
     ui/window.h \
@@ -242,7 +246,11 @@ HEADERS += \
     thirdparty/libpng/config.h \
     core/assert.h \
     shading/shader.h \
-    dataControl/shaderholder.h
+    dataControl/shaderholder.h \
+    2d/sprite.h \
+    2d/spritesholder.h \
+    timer.h \
+    2d/surface.h
 
 OTHER_FILES += \
     include/Tempest/Window \
@@ -260,5 +268,9 @@ OTHER_FILES += \
     Android.mk \
     include/Tempest/ResourceContext \
     include/Tempest/SystemAPI \
-    android/jni/Android.mk
+    android/jni/Android.mk \
+    include/Tempest/SpritesHolder \
+    include/Tempest/Sprite \
+    include/Tempest/Timer \
+    include/Tempest/Surface
 

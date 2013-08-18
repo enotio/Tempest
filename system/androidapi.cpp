@@ -82,7 +82,6 @@ static int preloadNextEvent( bool & q, android_app* state ){
       }
 
     if( state->destroyRequested != 0 ) {
-    //if( !nv_app_status_running(android) ){
       q = true;
       return 0;
       }
@@ -147,6 +146,22 @@ AndroidAPI::~AndroidAPI(){
 
   }
 
+AndroidAPI::Window *AndroidAPI::createWindow(int w, int h) {
+  return 0;
+  }
+
+AndroidAPI::Window* AndroidAPI::createWindowMaximized(){
+  return 0;
+  }
+
+AndroidAPI::Window* AndroidAPI::createWindowMinimized(){
+  return 0;
+  }
+
+AndroidAPI::Window* AndroidAPI::createWindowFullScr(){
+  return 0;
+  }
+
 bool AndroidAPI::startRender( Window * ) {
   return 1;
   }
@@ -159,52 +174,39 @@ void AndroidAPI::startApplication( ApplicationInitArgs * ) {
   }
 
 void AndroidAPI::endApplication() {
-
   }
 
 std::string AndroidAPI::loadTextImpl(const char *file ){
-  //JNIEnv * env = 0;
-
-  //android->activity->assetManager;
-  //jvm->AttachCurrentThread( &env, NULL);
-
-  AAssetManager* mgr = ((android_app*)android)->activity->assetManager;//AAssetManager_fromJava(env, assets);
-  AAsset* asset = AAssetManager_open(mgr, file, AASSET_MODE_UNKNOWN);
-
-  T_ASSERT( asset );
-
-  long size = AAsset_getLength(asset);
-  std::string str;
-  str.resize( size );
-  AAsset_read (asset, &str[0], size);
-  //__android_log_print(ANDROID_LOG_ERROR, "Tempest", buffer);
-  AAsset_close(asset);
-
-  return str;
+  return loadAssetImpl<std::string>( file );
   }
 
 std::string AndroidAPI::loadTextImpl( const wchar_t* file ){
-  return loadTextImpl( toUtf8(file).c_str() );
+  return loadAssetImpl<std::string>( toUtf8(file).c_str() );
   }
 
 std::vector<char> AndroidAPI::loadBytesImpl( const char* file ){
+  return loadAssetImpl<std::vector<char>>(file);
+  }
+
+std::vector<char> AndroidAPI::loadBytesImpl(const wchar_t *file) {
+  return loadBytesImpl( toUtf8(file).c_str() );
+  }
+
+template< class T >
+T AndroidAPI::loadAssetImpl( const char* file ){
   AAssetManager* mgr = ((android_app*)android)->activity->assetManager;
   AAsset* asset = AAssetManager_open(mgr, file, AASSET_MODE_UNKNOWN);
 
   T_ASSERT( asset );
 
   long size = AAsset_getLength(asset);
-  std::vector<char> str;
+  T str;
   str.resize( size );
   AAsset_read(asset, &str[0], size);
   //__android_log_print(ANDROID_LOG_ERROR, "Tempest", buffer);
   AAsset_close(asset);
 
   return str;
-  }
-
-std::vector<char> AndroidAPI::loadBytesImpl(const wchar_t *file) {
-  return loadBytesImpl( toUtf8(file).c_str() );
   }
 
 int AndroidAPI::nextEvent(bool &quit) {
@@ -236,22 +238,6 @@ int AndroidAPI::nextEvent(bool &quit) {
   return 0;
   }
 
-AndroidAPI::Window *AndroidAPI::createWindow(int w, int h) {
-  return 0;
-  }
-
-AndroidAPI::Window* AndroidAPI::createWindowMaximized(){
-  return 0;
-  }
-
-AndroidAPI::Window* AndroidAPI::createWindowMinimized(){
-  return 0;
-  }
-
-AndroidAPI::Window* AndroidAPI::createWindowFullScr(){
-  return 0;
-  }
-
 Size AndroidAPI::windowClientRect( Window* ){
   AEngine *e = (AEngine*)(((android_app*)android)->userData);
   return Size( e->window_w, e->window_h );
@@ -267,7 +253,6 @@ void AndroidAPI::show(Window *) {
 
   if( e->wnd && e->display!=EGL_NO_DISPLAY ){
     glViewport(0,0,e->window_w, e->window_h);
-    //e->forceToResize = true;
     e->wnd->resize( e->window_w, e->window_h );
     }
   }
@@ -464,20 +449,25 @@ static int32_t handle_input( android_app* a, AInputEvent* event) {
 
       if( action==AMOTION_EVENT_ACTION_DOWN ){
         MouseEvent ex( x, y, Tempest::Event::ButtonLeft, 0, id );
-        e->wnd->mouseDownEvent(ex);
+        SystemAPI::mkMouseEvent(e->wnd, ex, 0);
+        //e->wnd->mouseDownEvent(ex);
         }
       else
       if( action==AMOTION_EVENT_ACTION_UP ){
         MouseEvent ex( x, y, Tempest::Event::ButtonLeft, 0, id );
-        e->wnd->mouseUpEvent(ex);
+        SystemAPI::mkMouseEvent(e->wnd, ex, 1);
+        //e->wnd->mouseUpEvent(ex);
         }
       else
       if( action==AMOTION_EVENT_ACTION_MOVE ){
         MouseEvent ex( x, y, Tempest::Event::ButtonNone, 0, id );
+        SystemAPI::mkMouseEvent(e->wnd, ex, 2);
+        /*
         e->wnd->mouseDragEvent(ex);
 
         if( !ex.isAccepted() )
           e->wnd->mouseMoveEvent(ex);
+        */
         }
       }
     return 1;

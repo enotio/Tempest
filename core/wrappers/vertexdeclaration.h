@@ -88,6 +88,7 @@ class VertexDeclaration {
       };
 
     const Declarator& declarator() const;
+    bool isValid() const;
   private:
     struct Data{
       void* impl;

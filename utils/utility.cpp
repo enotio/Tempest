@@ -1,6 +1,7 @@
 #include "utility.h"
 
 #include <algorithm>
+#include <cmath>
 
 using namespace Tempest;
 
@@ -90,8 +91,78 @@ Point Point::operator -(const Point &p) const {
   return Point( x-p.x, y-p.y );
   }
 
+Point Point::operator *(double f) const {
+  return Point(x*f, y*f);
+  }
+
+Point Point::operator *(float f) const {
+  return Point(x*f, y*f);
+  }
+
+Point Point::operator *(int f) const {
+  return Point(x*f, y*f);
+  }
+
+Point &Point::operator *=(double f) {
+  x*= f;
+  y*= f;
+
+  return *this;
+  }
+
+Point &Point::operator *=(float f) {
+  x*= f;
+  y*= f;
+
+  return *this;
+  }
+
+Point &Point::operator *=(int f) {
+  x*= f;
+  y*= f;
+
+  return *this;
+  }
+
+Point Point::operator /(double f) const {
+  return Point(x/f, y/f);
+  }
+
+Point Point::operator /(float f) const {
+  return Point(x/f, y/f);
+  }
+
+Point Point::operator /(int f) const {
+  return Point(x/f, y/f);
+  }
+
+Point &Point::operator /=(double f) {
+  x/= f;
+  y/= f;
+
+  return *this;
+  }
+
+Point &Point::operator /=(float f) {
+  x/= f;
+  y/= f;
+
+  return *this;
+  }
+
+Point &Point::operator /=(int f) {
+  x/= f;
+  y/= f;
+
+  return *this;
+  }
+
 Point Point::operator -() const {
   return Point( -x, -y );
+  }
+
+double Point::manhattanLength() const {
+  return sqrt( x*x + y*y );
   }
 
 bool Point::operator ==(const Point &other) const {

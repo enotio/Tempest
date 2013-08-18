@@ -21,7 +21,7 @@ class DirectX9 : public AbstractAPI {
     void    deleteDevice( Device* d )  const;
 
     void clear( AbstractAPI::Device *d,
-                const Color& cl, float z, unsigned stencil ) const ;
+                const Color& cl, float z, unsigned stencil ) const;
 
     void clear( AbstractAPI::Device *d,  const Color& cl ) const;
     void clear( AbstractAPI::Device *d,  const Color& cl, float z ) const;
@@ -138,6 +138,8 @@ class DirectX9 : public AbstractAPI {
                       int vboOffsetIndex,
                       int iboOffsetIndex,
                       int vertexCount) const;
+
+    Size windowSize( Tempest::AbstractAPI::Device * dev ) const;
   private:
     class DirectX9Impl;
     DirectX9Impl* impl;

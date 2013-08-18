@@ -13,6 +13,8 @@ namespace Bind{
 
 class PaintEvent;
 class PainterDevice;
+class Texture2d;
+class Sprite;
 
 enum BlendMode{
   noBlend = 0,
@@ -51,6 +53,8 @@ class PainterDevice {
 
     typedef Bind::UserTexture Texture;
     virtual void setTexture( const Texture & t ) = 0;
+    virtual void setTexture( const Tempest::Texture2d& ){}
+    virtual void setTexture( const Tempest::Sprite& ){}
     virtual void unsetTexture() = 0;
 
     void quad( int x, int y, int  w, int  h){ quad(x,y,w,h,0,0); }
@@ -116,6 +120,8 @@ class Painter {
 
     typedef Bind::UserTexture Texture;
     void setTexture( const Texture & t );
+    void setTexture( const Tempest::Texture2d& );
+    void setTexture( const Tempest::Sprite& );
     void unsetTexture();
 
     void setBlendMode( BlendMode );

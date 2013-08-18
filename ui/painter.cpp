@@ -284,6 +284,14 @@ void Painter::setTexture(const Painter::Texture &t) {
   dev.setTexture(t);
   }
 
+void Painter::setTexture( const Texture2d &t ) {
+  dev.setTexture(t);
+  }
+
+void Painter::setTexture( const Tempest::Sprite &t ) {
+  dev.setTexture(t);
+  }
+
 void Painter::unsetTexture() {
   dev.unsetTexture();
   }

@@ -625,7 +625,8 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           Tempest::MouseEvent e( p.x, p.y,
                                   Tempest::Event::ButtonNone,
                                   GET_WHEEL_DELTA_WPARAM(wParam) );
-          w->mouseWheelEvent(e);
+          SystemAPI::mkMouseEvent(w, e, 3);
+          //w->mouseWheelEvent(e);
           }
         break;
 

@@ -158,6 +158,7 @@ class Opengl2x : public AbstractAPI {
 
 
     virtual bool hasManagedStorge() const;
+    virtual Size windowSize( Tempest::AbstractAPI::Device * dev ) const;
   private:
     class Opengl2xImpl;
     Opengl2xImpl* impl;

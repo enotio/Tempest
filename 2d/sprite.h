@@ -1,0 +1,39 @@
+#ifndef SPRITE_H
+#define SPRITE_H
+
+#include <Tempest/Utility>
+#include <Tempest/SpritesHolder>
+#include <vector>
+
+namespace Tempest{
+
+class Texture2d;
+
+
+class Sprite {
+  public:
+    Sprite();
+
+    int width() const;
+    int height() const;
+
+    Size size() const;
+
+    const Tempest::Texture2d& pageRawData() const;
+    Tempest::Rect pageRect() const;
+
+  private:
+    Tempest::Rect rect;
+    SpritesHolder *holder;
+
+    std::vector<SpritesHolder::Page> * tex;
+    size_t id;
+
+    Tempest::Texture2d * nonPool;
+
+  friend class SpritesHolder;
+  };
+
+}
+
+#endif // SPRITE_H

@@ -278,13 +278,14 @@ void Widget::paintEvent( PaintEvent &pe ) {
   }
 
 void Widget::mouseMoveEvent(MouseEvent &e){
-  impl_mouseEvent( e, &Widget::mouseMoveEvent, false );
+  e.ignore();
+  //impl_mouseEvent( e, &Widget::mouseMoveEvent, false );
   execDeleteRoot();
   }
 
 void Widget::mouseDragEvent(MouseEvent &e) {
-  if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
-    impl_mouseDragEvent( this, e ); else
+  //if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
+    //impl_mouseDragEvent( this, e ); else
     e.ignore();
   execDeleteRoot();
   }
@@ -351,21 +352,19 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
   }
 
 void Widget::mouseDownEvent(MouseEvent &e){
+  /*
   if( owner()==0 ){
-    if( mouseReleseReciver.size() < size_t(e.mouseID+1) )
-      mouseReleseReciver.resize( e.mouseID+1 );
-    mouseReleseReciver[e.mouseID] = impl_mouseEvent( e, &Widget::mouseDownEvent,
-                                                     true, true );
+    rootMouseDownEvent(e);
     return;
-    }
+    }*/
 
   execDeleteRoot();
   e.ignore();
   }
 
 void Widget::mouseUpEvent(MouseEvent &e) {
-  if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
-    impl_mouseUpEvent( this, e ); else
+  //if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
+    //impl_mouseUpEvent( this, e ); else
     e.ignore();
   execDeleteRoot();
   }
@@ -373,7 +372,7 @@ void Widget::mouseUpEvent(MouseEvent &e) {
 void Widget::mouseWheelEvent(MouseEvent &e){
   e.ignore();
 
-  impl_mouseEvent( e, &Widget::mouseWheelEvent );
+//  impl_mouseEvent( e, &Widget::mouseWheelEvent );
   execDeleteRoot();
   }
 
@@ -483,7 +482,51 @@ void Widget::paintNested( PaintEvent &p ){
         }
       }
     }
+  }
 
+void Widget::rootMouseDownEvent(MouseEvent &e) {
+  e.ignore();
+
+  if( mouseReleseReciver.size() < size_t(e.mouseID+1) )
+    mouseReleseReciver.resize( e.mouseID+1 );
+
+  mouseReleseReciver[e.mouseID] = impl_mouseEvent( e, &Widget::mouseDownEvent,
+                                                   true, true );
+
+  if( !e.isAccepted() )
+    this->mouseDownEvent(e);
+  }
+
+void Widget::rootMouseDragEvent(MouseEvent &e) {
+  e.ignore();
+
+  if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
+    impl_mouseDragEvent( this, e );
+
+  if( !e.isAccepted() )
+    this->mouseDragEvent(e);
+  }
+
+void Widget::rootMouseMoveEvent(MouseEvent &e) {
+  e.ignore();
+  impl_mouseEvent( e, &Widget::mouseMoveEvent, false );
+
+  if( !e.isAccepted() )
+    this->mouseMoveEvent(e);
+  }
+
+void Widget::rootMouseWheelEvent(MouseEvent &e) {
+  impl_mouseEvent( e, &Widget::mouseWheelEvent );
+  }
+
+void Widget::rootMouseUpEvent(MouseEvent &e) {
+  e.ignore();
+
+  if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
+    impl_mouseUpEvent( this, e );
+
+  if( !e.isAccepted() )
+    this->mouseUpEvent(e);
   }
 
 void Widget::impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e ){

@@ -12,6 +12,7 @@ class Color;
 class AbstractShadingLang;
 class RenderState;
 class Pixmap;
+class Size;
 
 enum TextureUsage{
   TU_Undefined,
@@ -218,7 +219,11 @@ class AbstractAPI {
                               int iboOffsetIndex,
                               int pCount ) const = 0;
 
+    virtual Size windowSize( Device * dev ) const = 0;
     virtual bool hasManagedStorge() const{ return false; }
+
+  protected:
+    static int vertexCount( PrimitiveType t, int pcount );
   };
 
 }

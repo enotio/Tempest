@@ -135,6 +135,12 @@ class Widget {
     Widget( const Widget& ){}
     Widget& operator = ( const Widget& ) { return *this; }
 
+    void rootMouseDownEvent ( Tempest::MouseEvent & e );
+    void rootMouseUpEvent   ( Tempest::MouseEvent & e );
+    void rootMouseDragEvent ( Tempest::MouseEvent & e );
+    void rootMouseMoveEvent ( Tempest::MouseEvent & e );
+    void rootMouseWheelEvent( Tempest::MouseEvent & e );
+
     void impl_mouseUpEvent( Widget* w, Tempest::MouseEvent & e );
     void impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e );
     void impl_keyPressEvent( Widget* w, Tempest::KeyEvent & e,
@@ -165,8 +171,10 @@ class Widget {
     void execDelete();
 
     std::vector<Shortcut*> skuts;
+
   friend class Layout;
   friend class Shortcut;
+  friend class SystemAPI;
   };
 
 }

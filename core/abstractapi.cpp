@@ -47,3 +47,18 @@ AbstractAPI::IndexBuffer *AbstractAPI::createIndexBuffer( AbstractAPI::Device *d
 
   return t;
   }
+
+int AbstractAPI::vertexCount(AbstractAPI::PrimitiveType t, int pCount) {
+  if( t==AbstractAPI::TriangleStrip ||
+      t==AbstractAPI::TriangleFan ||
+      t==AbstractAPI::LinesStrip  )
+    return pCount+2;
+
+  if( t==AbstractAPI::Lines )
+    return pCount*2;
+
+  if( t==Points )
+    return pCount;
+
+  return pCount*3;
+  }

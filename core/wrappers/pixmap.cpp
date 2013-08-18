@@ -44,7 +44,7 @@ Tempest::Pixmap::Pixmap(const std::string &p) {
 
   T_ASSERT( sizeof(Pixel)==4 );
   }
-/*
+
 Tempest::Pixmap::Pixmap(const std::wstring &p) {
   mw = 0;
   mh = 0;
@@ -55,7 +55,7 @@ Tempest::Pixmap::Pixmap(const std::wstring &p) {
   load(p);
 
   T_ASSERT( sizeof(Pixel)==4 );
-  }*/
+  }
 
 Pixmap::Pixmap(int iw, int ih, bool alpha) {
   mw = iw;
@@ -105,25 +105,44 @@ Pixmap &Pixmap::operator =(const Pixmap &p) {
   return *this;
   }
 
-bool Pixmap::load(const std::string &f) {
-  std::wstring str;
-  str.assign(f.begin(), f.end());
-
-  return load(str);
+bool Pixmap::save(const std::string &f) {
+  return save(f.data());
   }
 
-bool Pixmap::save(const std::string &f) {
-  std::wstring str;
-  str.assign(f.begin(), f.end());
+bool Pixmap::save(const std::wstring &f) {
+  return save(f.data());
+  }
 
-  return save(str);
+bool Pixmap::save(const char* f) {
+  return implSave<const char*>(f);
+  }
+
+bool Pixmap::save(const wchar_t* f) {
+  return implSave<const wchar_t*>(f);
+  }
+
+bool Pixmap::load(const std::string &f) {
+  return load(f.data());
   }
 
 bool Pixmap::load( const std::wstring &f ) {
+  return load(f.data());
+  }
+
+bool Pixmap::load(const wchar_t *f) {
+  return implLoad<const wchar_t*>(f);
+  }
+
+bool Pixmap::load(const char *f) {
+  return implLoad<const char*>(f);
+  }
+
+template< class T >
+bool Pixmap::implLoad( T f ) {
   int w = 0, h = 0, bpp = 0;
 
   Data * image = new Data();
-  bool ok = SystemAPI::loadImage( f.data(), w, h, bpp, image->bytes );
+  bool ok = SystemAPI::loadImage( f, w, h, bpp, image->bytes );
 
   if( !ok ){
     delete image;
@@ -294,12 +313,13 @@ void Pixmap::toETC() {
 
   }
 
-bool Pixmap::save( const std::wstring &f ) {
+template< class T >
+bool Pixmap::implSave( T f ) {
   if( data.const_value()==0 )
     return false;
 
   Tempest::Detail::Atomic::begin();
-  bool ok = SystemAPI::saveImage( f.data(),
+  bool ok = SystemAPI::saveImage( f,
                                   mw, mh, bpp,
                                   data.const_value()->bytes );
   Tempest::Detail::Atomic::end();

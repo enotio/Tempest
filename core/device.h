@@ -154,6 +154,9 @@ class Device {
 
     void drawFullScreenQuad( Tempest::VertexShader   & vs,
                              Tempest::FragmentShader & fs );
+
+    Tempest::Size windowSize() const;
+    Tempest::Size viewPortSize() const;
   private:
     void bind( const Tempest::VertexShader   &s );
     void bind( const Tempest::FragmentShader &s );

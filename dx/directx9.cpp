@@ -14,6 +14,7 @@
 
 #include <Tempest/Pixmap>
 #include <Tempest/Assert>
+#include <Tempest/Utility>
 
 using namespace Tempest;
 
@@ -21,6 +22,7 @@ struct DirectX9::Device{
   LPDIRECT3DDEVICE9 dev;
   DirectX9::IBO * curIBO;
   D3DCAPS9        caps;
+  int scrW, scrH;
 
   bool hasDepthTaget, hasStencilTaget;
 
@@ -93,6 +95,11 @@ AbstractAPI::Device* DirectX9::createDevice(void *hwnd, const Options &opt) cons
   dev->dev->GetDeviceCaps( &dev->caps );
   dev->hasDepthTaget   = 1;
   dev->hasStencilTaget = 1;
+
+  RECT rectWindow;
+  GetClientRect( HWND(hwnd), &rectWindow);
+  dev->scrW = rectWindow.right  - rectWindow.left;
+  dev->scrH = rectWindow.bottom - rectWindow.top;
 
   return (AbstractAPI::Device*)dev;
   }
@@ -948,6 +955,7 @@ void DirectX9::draw( AbstractAPI::Device *d,
     D3DPT_TRIANGLEFAN,//           = 6
     };
 
+  //int vpCount = vertexCount(t, pCount);
   dev->DrawPrimitive( type[ t-1 ], firstVertex, pCount );
   }
 
@@ -967,12 +975,7 @@ void DirectX9::drawIndexed( AbstractAPI::Device *d,
     D3DPT_TRIANGLEFAN,//           = 6
     };
 
-  int vpCount = pCount*3;
-  if( t==AbstractAPI::TriangleStrip ||
-      t==AbstractAPI::TriangleFan ||
-      t==AbstractAPI::LinesStrip  )
-    vpCount = pCount+2;
-
+  int vpCount = vertexCount(t, pCount);
   uint16_t minID = -1;
   for( size_t i=0; i<dev->curIBO->min.size(); ++i ){
     IBO::Min& m = dev->curIBO->min[i];
@@ -996,6 +999,12 @@ void DirectX9::drawIndexed( AbstractAPI::Device *d,
                                   vpCount,
                                   iboOffsetIndex,
                                   pCount );
+  }
+
+Size DirectX9::windowSize( Tempest::AbstractAPI::Device *d) const {
+  Device *dev = (Device*)( d );
+
+  return Size(dev->scrW, dev->scrH);
   }
 
 void DirectX9::setRenderState( AbstractAPI::Device *d,

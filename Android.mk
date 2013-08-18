@@ -43,5 +43,5 @@ LOCAL_STATIC_LIBRARIES := android_native_app_glue
 LOCAL_LDLIBS    := -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics -lz
 
 include $(BUILD_SHARED_LIBRARY)
-#$(call import-module,nv_and_util)
+$(call import-module,android/native_app_glue)
 

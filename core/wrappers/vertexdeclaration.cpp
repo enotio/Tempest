@@ -7,7 +7,6 @@ using namespace Tempest;
 
 VertexDeclaration::VertexDeclaration():dev(0){
   decl = 0;
-  //de.addVertexDeclaration( *this );
   }
 
 VertexDeclaration::VertexDeclaration(Device &de):dev(&de){
@@ -132,4 +131,8 @@ bool VertexDeclaration::Declarator::Element::operator !=(const VertexDeclaration
 const Tempest::VertexDeclaration::Declarator&
   Tempest::VertexDeclaration::declarator() const {
   return decl->decl;
+  }
+
+bool VertexDeclaration::isValid() const {
+  return decl;
   }

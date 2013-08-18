@@ -36,7 +36,9 @@ struct Device::Data{
 
   bool isLost;
   bool isPaintMode;
-  void * windowHwnd;  
+  void * windowHwnd;
+
+  Tempest::Size viewPortSize;
 
   struct BeginPaintArg{
     BeginPaintArg(){
@@ -238,6 +240,8 @@ void Device::init( const AbstractAPI &,
     };
 
   data->quad = data->vboH->load(q, 6);
+
+  data->viewPortSize = windowSize();
   }
 
 Device::~Device(){
@@ -291,6 +295,7 @@ void Device::beginPaint(){
 
   forceEndPaint();
   data->paintTaget.setup();
+  data->viewPortSize = windowSize();
 
   api.beginPaint(impl);
   shadingLang().beginPaint();
@@ -312,6 +317,7 @@ void Device::beginPaint( Texture2d &rt ) {
   api.setDSSurfaceTaget( impl, (AbstractAPI::Texture*)0 );
   api.setRenderTaget( impl, rt.data.value(), 0,
                       0 );
+  data->viewPortSize = rt.size();
 
   api.beginPaint(impl);
   shadingLang().beginPaint();
@@ -333,6 +339,7 @@ void Device::beginPaint( Texture2d &rt, Texture2d &depthStencil ) {
   api.setDSSurfaceTaget( impl, depthStencil.data.value() );
   api.setRenderTaget( impl, rt.data.value(), 0,
                       0 );
+  data->viewPortSize = depthStencil.size();
 
   api.beginPaint(impl);
   shadingLang().beginPaint();
@@ -356,6 +363,7 @@ void Device::beginPaint( Texture2d rt[], int count ){
     api.setRenderTaget( impl,
                         rt[i].data.value(), 0,
                         i );
+  data->viewPortSize = rt[0].size();
 
   api.beginPaint(impl);
   shadingLang().beginPaint();
@@ -381,6 +389,7 @@ void Device::beginPaint( Texture2d rt[], int count,
     api.setRenderTaget( impl,
                         rt[i].data.value(), 0,
                         i );
+  data->viewPortSize = depthStencil.size();
 
   api.beginPaint(impl);
   shadingLang().beginPaint();
@@ -390,6 +399,7 @@ void Device::endPaint  (){
   T_ASSERT_X( data->isPaintMode, "invalid endPaint call" );
   data->isPaintMode         = false;
   data->paintTaget.isDelayd = true;
+  data->viewPortSize = windowSize();
   //forceEndPaint();
   }
 
@@ -483,6 +493,14 @@ void Device::drawFullScreenQuad(VertexShader &vs, FragmentShader &fs) {
   drawPrimitive( AbstractAPI::Triangle, vs, fs,
                  data->quadDecl, data->quad,
                  0, 2 );
+  }
+
+Size Device::windowSize() const {
+  return api.windowSize(impl);
+  }
+
+Size Device::viewPortSize() const {
+  return data->viewPortSize;
   }
 
 AbstractAPI::Texture *Device::createTexture( const Pixmap &p,

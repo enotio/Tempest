@@ -8,6 +8,7 @@
 
 namespace Tempest{
 
+class Widget;
 class Window;
 class MouseEvent;
 class SizeEvent;
@@ -69,6 +70,10 @@ class SystemAPI{
     static void mkMouseEvent( Tempest::Window *w,
                               MouseEvent& e,
                               int type );
+
+    static void processEvents( Tempest::Widget *w,
+                               MouseEvent& e,
+                               int type );
 
     static void sizeEvent( Tempest::Window *w,
                            int winW , int winH, int cW, int cH);
