@@ -31,17 +31,17 @@ LOCAL_SRC_FILES := \
   $(wildcard $(LOCAL_PATH)/system/*.cpp) \
   $(wildcard $(LOCAL_PATH)/utils/*.cpp) \
   $(wildcard $(LOCAL_PATH)/ui/*.cpp) \
+  $(wildcard $(LOCAL_PATH)/2d/*.cpp) \
   $(wildcard $(LOCAL_PATH)/thirdparty/nv_math/*.cpp) \
   $(wildcard $(LOCAL_PATH)/thirdparty/libpng/*.c) \
   $(wildcard $(LOCAL_PATH)/*.cpp) )
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
 
-LOCAL_STATIC_LIBRARIES := android_native_app_glue
+#LOCAL_STATIC_LIBRARIES := android_native_app_glue
 #LOCAL_STATIC_LIBRARIES := nv_and_util
 #LOCAL_SHARED_LIBRARIES := native_subclass
 LOCAL_LDLIBS    := -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics -lz
 
 include $(BUILD_SHARED_LIBRARY)
-$(call import-module,android/native_app_glue)
 

@@ -55,10 +55,9 @@ class AndroidAPI:public SystemAPI {
     friend class SystemAPI;
     friend class Opengl2x;
 
-    void * android;
-
     template< class T >
     T loadAssetImpl( const char* file );
+
   };
 #endif
 

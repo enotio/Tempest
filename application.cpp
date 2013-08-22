@@ -11,6 +11,7 @@
 
 #ifdef __ANDROID__
 #include <unistd.h>
+#include <pthread.h>
 #endif
 #include <time.h>
 
@@ -29,10 +30,15 @@ Application::~Application() {
   } 
 
 int Application::exec() {
+  execImpl(0);
+  return app.ret;
+  }
+
+void *Application::execImpl(void *) {
   while( !app.quit ) {
     processEvents();
     }
-  return app.ret;
+  return 0;
   }
 
 bool Application::processEvents() {
@@ -56,18 +62,22 @@ void Application::sleep(unsigned int msec) {
   }
 
 uint64_t Application::tickCount() {
+  //return GetTickCount();
+
   struct timespec now;
   clock_gettime(CLOCK_MONOTONIC, &now);
-  return (uint8_t)now.tv_sec*1000000000LL + now.tv_nsec;
+  return (uint8_t)now.tv_sec*1000000LL + now.tv_nsec/1000000;
   }
 
 void Application::processTimers() {
+  Application::App &a = app;
+
   uint64_t t = tickCount();
 
-  for( size_t i=0; i<app.timer.size(); ++i ){
-    uint64_t dt = t-app.timer[i]->lastTimeout;
+  for( size_t i=0; i<a.timer.size(); ++i ){
+    uint64_t dt = (t-a.timer[i]->lastTimeout)/a.timer[i]->interval;
 
-    if( dt > app.timer[i]->interval ){
+    for( size_t r=0; r<dt && r<4; ++r ){
       app.timer[i]->lastTimeout = t;
       app.timer[i]->timeout();
       }

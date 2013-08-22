@@ -83,6 +83,8 @@ class SystemAPI{
 
     static std::string  toUtf8   (const std::wstring& str);
     static std::wstring toWstring( const std::string& str );
+
+    static const std::string& androidActivityClass();
   protected:
     SystemAPI(){}
 
@@ -124,6 +126,8 @@ class SystemAPI{
                              int &h,
                              int &bpp,
                              std::vector<unsigned char> &out );
+
+    virtual const std::string& androidActivityClassImpl();
   private:
     SystemAPI( const SystemAPI& ){}
     SystemAPI& operator = ( const SystemAPI&){return *this;}

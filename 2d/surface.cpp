@@ -56,6 +56,9 @@ void Surface::loadShader() {
         "}";
 
   const char* fs_src =
+#ifdef __ANDROID__
+      "precision mediump float;"
+#endif
       "varying vec2 tc;"
       "varying vec4 cl;"
       "uniform sampler2D texture;"

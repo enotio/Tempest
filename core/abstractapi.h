@@ -222,6 +222,7 @@ class AbstractAPI {
     virtual Size windowSize( Device * dev ) const = 0;
     virtual bool hasManagedStorge() const{ return false; }
 
+
   protected:
     static int vertexCount( PrimitiveType t, int pcount );
   };

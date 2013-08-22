@@ -297,8 +297,7 @@ void Device::beginPaint(){
   data->paintTaget.setup();
   data->viewPortSize = windowSize();
 
-  api.beginPaint(impl);
-  shadingLang().beginPaint();
+  beginPaintImpl();
   }
 
 void Device::beginPaint( Texture2d &rt ) {
@@ -312,15 +311,7 @@ void Device::beginPaint( Texture2d &rt ) {
   forceEndPaint();
   data->paintTaget.setup(rt);
 
-  data->mrtSize   = 1;
-
-  api.setDSSurfaceTaget( impl, (AbstractAPI::Texture*)0 );
-  api.setRenderTaget( impl, rt.data.value(), 0,
-                      0 );
-  data->viewPortSize = rt.size();
-
-  api.beginPaint(impl);
-  shadingLang().beginPaint();
+  beginPaintImpl();
   }
 
 void Device::beginPaint( Texture2d &rt, Texture2d &depthStencil ) {
@@ -334,15 +325,7 @@ void Device::beginPaint( Texture2d &rt, Texture2d &depthStencil ) {
   forceEndPaint();
   data->paintTaget.setup(rt, depthStencil);
 
-  data->mrtSize   = 1;
-
-  api.setDSSurfaceTaget( impl, depthStencil.data.value() );
-  api.setRenderTaget( impl, rt.data.value(), 0,
-                      0 );
-  data->viewPortSize = depthStencil.size();
-
-  api.beginPaint(impl);
-  shadingLang().beginPaint();
+  beginPaintImpl();
   }
 
 void Device::beginPaint( Texture2d rt[], int count ){
@@ -356,17 +339,7 @@ void Device::beginPaint( Texture2d rt[], int count ){
   forceEndPaint();
   data->paintTaget.setup(rt, count);
 
-  data->mrtSize   = count;
-
-  api.setDSSurfaceTaget( impl, (AbstractAPI::Texture*)0 );
-  for( int i=0; i<count; ++i )
-    api.setRenderTaget( impl,
-                        rt[i].data.value(), 0,
-                        i );
-  data->viewPortSize = rt[0].size();
-
-  api.beginPaint(impl);
-  shadingLang().beginPaint();
+  beginPaintImpl();
   }
 
 void Device::beginPaint( Texture2d rt[], int count,
@@ -381,18 +354,7 @@ void Device::beginPaint( Texture2d rt[], int count,
   forceEndPaint();
   data->paintTaget.setup(rt, count, depthStencil);
 
-  data->mrtSize   = count;
-
-  api.setDSSurfaceTaget( impl, depthStencil.data.value() );
-
-  for( int i=0; i<count; ++i )
-    api.setRenderTaget( impl,
-                        rt[i].data.value(), 0,
-                        i );
-  data->viewPortSize = depthStencil.size();
-
-  api.beginPaint(impl);
-  shadingLang().beginPaint();
+  beginPaintImpl();
   }
 
 void Device::endPaint  (){
@@ -403,10 +365,22 @@ void Device::endPaint  (){
   //forceEndPaint();
   }
 
-void Device::forceEndPaint() const {
-  if( !data->paintTaget.isDelayd )
-    return;
+void Device::beginPaintImpl() const {
+  data->mrtSize   = data->paintTaget.mrt.size();
 
+  api.setDSSurfaceTaget( impl, data->paintTaget.ds );
+
+  for( int i=0; i<data->mrtSize; ++i )
+    api.setRenderTaget( impl,
+                        data->paintTaget.mrt[i], 0,
+                        i );
+  //data->viewPortSize = depthStencil.size();
+
+  api.beginPaint(impl);
+  shadingLang().beginPaint();
+  }
+
+void Device::endPaintImpl() const {
   shadingLang().endPaint();
 
   data->paintTaget.isDelayd = false;
@@ -424,6 +398,23 @@ void Device::forceEndPaint() const {
     }
 
   api.setDSSurfaceTaget( impl, data->depthStencil );
+  }
+
+void Device::wrapPaintBegin() const {
+  if( data->isPaintMode )
+    endPaintImpl();
+  }
+
+void Device::wrapPaintEnd() const {
+  if( data->isPaintMode )
+    beginPaintImpl();
+  }
+
+void Device::forceEndPaint() const {
+  if( !data->paintTaget.isDelayd )
+    return;
+
+  endPaintImpl();
   }
 
 void Device::setRenderState( const RenderState & r ) const {

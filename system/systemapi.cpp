@@ -170,6 +170,10 @@ std::wstring SystemAPI::toWstring(const std::string &str) {
   return r;
   }
 
+const std::string &SystemAPI::androidActivityClass() {
+  return instance().androidActivityClassImpl();
+  }
+
 bool SystemAPI::loadImageImpl( const char *file,
                                int &w, int &h, int &bpp,
                                std::vector<unsigned char> &out ) {
@@ -375,5 +379,10 @@ bool SystemAPI::loadPngImpl( const std::vector<char> &d,
     }
 
   return false;
+  }
+
+const std::string &SystemAPI::androidActivityClassImpl() {
+  static const std::string cls = "com/tempest/engine/TempestActivity";
+  return cls;
   }
 

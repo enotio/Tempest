@@ -244,6 +244,12 @@ class Device {
     void invalidateDeviceObjects();
     bool restoreDeviceObjects();
 
+    void beginPaintImpl() const;
+    void endPaintImpl() const;
+
+    void wrapPaintBegin() const;
+    void wrapPaintEnd() const;
+
     void init( const AbstractAPI & dx,
                const Options & opt,
                void * windowHwnd );

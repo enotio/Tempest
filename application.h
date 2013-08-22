@@ -27,6 +27,7 @@ class Application {
       } app;
 
     static void processTimers();
+    static void* execImpl(void*);
 
     friend class Timer;
     //static bool processMessage();
