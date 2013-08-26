@@ -25,6 +25,30 @@ static LRESULT CALLBACK WindowProc( HWND   hWnd,
                                     LPARAM lParam );
 
 WindowsAPI::WindowsAPI() {
+  TranslateKeyPair k[] = {
+    { VK_LEFT,   Event::K_Left   },
+    { VK_RIGHT,  Event::K_Right  },
+    { VK_UP,     Event::K_Up     },
+    { VK_DOWN,   Event::K_Down   },
+
+    { VK_ESCAPE, Event::K_ESCAPE },
+    { VK_BACK,   Event::K_Back   },
+    { VK_DELETE, Event::K_Delete },
+    { VK_INSERT, Event::K_Insert },
+    { VK_HOME,   Event::K_Home   },
+    { VK_END,    Event::K_End    },
+    { VK_PAUSE,  Event::K_Pause  },
+    { VK_RETURN, Event::K_Return },
+
+    { VK_F1,     Event::K_F1 },
+    { 0x30,      Event::K_0  },
+    { 0x41,      Event::K_A  },
+
+    { 0,         Event::K_NoKey }
+    };
+
+  setupKeyTranslate(k);
+  setFuncKeysCount(24);
   }
 
 WindowsAPI::~WindowsAPI() {
@@ -46,8 +70,7 @@ void WindowsAPI::startApplication(ApplicationInitArgs *) {
   winClass.cbClsExtra    = 0;
   winClass.cbWndExtra    = 0;
 
-  if( !RegisterClassEx(&winClass) )
-    {};//return E_FAIL;
+  T_ASSERT_X( RegisterClassEx(&winClass), "window not initalized" );
   }
 
 void WindowsAPI::endApplication() {
@@ -476,54 +499,15 @@ static Event::MouseButton toButton( UINT msg ){
 
 static Tempest::KeyEvent makeKeyEvent( WPARAM k,
                                        bool scut = false ){
-  Tempest::KeyEvent::KeyType e = Tempest::KeyEvent::K_NoKey;
+  Tempest::KeyEvent::KeyType e = SystemAPI::translateKey(k);
+  if( !scut ){
+    if( Event::K_0<=e && e<= Event::K_9 )
+      e = Tempest::KeyEvent::K_NoKey;
 
-  if( k==VK_ESCAPE )
-    e = Tempest::KeyEvent::K_ESCAPE;//PostQuitMessage(0);
-
-  if( k==VK_BACK ){
-    e = Tempest::KeyEvent::K_Back;
+    if( Event::K_A<=e && e<= Event::K_Z )
+      e = Tempest::KeyEvent::K_NoKey;
     }
-
-  if( k==VK_DELETE ){
-    e = Tempest::KeyEvent::K_Delete;
-    }
-
-  if( k==VK_INSERT ){
-    e = Tempest::KeyEvent::K_Insert;
-    }
-
-  if( k==VK_HOME ){
-    e = Tempest::KeyEvent::K_Home;
-    }
-
-  if( k==VK_END ){
-    e = Tempest::KeyEvent::K_End;
-    }
-
-  if( k==VK_PAUSE ){
-    e = Tempest::KeyEvent::K_Pause;
-    }
-
-  if( k==VK_RETURN ){
-    e = Tempest::KeyEvent::K_Return;
-    }
-
-  if( k>=VK_LEFT && k<=VK_DOWN )
-    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_Left) + size_t(k) - VK_LEFT );
-
-  if( k>=VK_F1 && k<= VK_F24 )
-    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_F1) + size_t(k) - VK_F1 );
-
-  if( scut ){
-    if( k>=0x41 && k<=0x5A )
-      e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_A) + size_t(k) - 0x41 );
-
-    if( k>=0x30 && k<=0x39 )
-      e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_0) + size_t(k) - 0x30 );
-    }
-
-  return Tempest::KeyEvent(e);
+  return Tempest::KeyEvent( e );
   }
 
 LRESULT CALLBACK WindowProc( HWND   hWnd,
@@ -554,33 +538,29 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
            };
 
          if( 0 == *std::find( wrd, wrd+2, wParam) ){
-           w->keyDownEvent( e );
-           w->keyUpEvent( e );
+           SystemAPI::mkKeyEvent(w, e, Event::KeyDown);
+           SystemAPI::mkKeyEvent(w, e, Event::KeyUp);
            }
-         //std::cout << "wParaam = " << wParam << std::endl;
       }
       break;
 
       case WM_KEYDOWN:
       {
-         Tempest::KeyEvent sce =  makeKeyEvent(wParam, true);
-         //w->scutEvent(sce);
-         sce.ignore();
-         w->shortcutEvent(sce);
+         Tempest::KeyEvent sce = makeKeyEvent(wParam, true);
+         SystemAPI::mkKeyEvent(w, sce, Event::Shortcut);
 
          if( !sce.isAccepted() ){
            Tempest::KeyEvent e =  makeKeyEvent(wParam);
            if( e.key!=Tempest::KeyEvent::K_NoKey )
-             w->keyDownEvent( e );
+             SystemAPI::mkKeyEvent(w, e, Event::KeyDown);
            }
-         //std::cout << "wParaam = " << wParam << std::endl;
       }
       break;
 
       case WM_KEYUP:
       {
          Tempest::KeyEvent e =  makeKeyEvent(wParam);
-         w->keyUpEvent( e );
+         SystemAPI::mkKeyEvent(w, e, Event::KeyUp);
       }
       break;
 
@@ -591,8 +571,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         MouseEvent e( LOWORD (lParam),
                       HIWORD (lParam),
                       toButton(msg) );
-        //w->mouseDownEvent(e);
-        SystemAPI::mkMouseEvent(w, e, 0);
+        SystemAPI::mkMouseEvent(w, e, Event::MouseDown);
         }
         break;
 
@@ -603,7 +582,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
                       HIWORD (lParam),
                       toButton(msg) );
         //w->mouseUpEvent(e);
-        SystemAPI::mkMouseEvent(w, e, 1);
+        SystemAPI::mkMouseEvent(w, e, Event::MouseUp);
         }
         break;
 
@@ -611,7 +590,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         MouseEvent e( LOWORD (lParam),
                       HIWORD (lParam),
                       Event::ButtonNone );
-        SystemAPI::mkMouseEvent(w, e, 2);
+        SystemAPI::mkMouseEvent(w, e, Event::MouseMove);
         }
         break;
 
@@ -623,9 +602,9 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           ScreenToClient(hWnd, &p);
 
           Tempest::MouseEvent e( p.x, p.y,
-                                  Tempest::Event::ButtonNone,
-                                  GET_WHEEL_DELTA_WPARAM(wParam) );
-          SystemAPI::mkMouseEvent(w, e, 3);
+                                 Tempest::Event::ButtonNone,
+                                 GET_WHEEL_DELTA_WPARAM(wParam) );
+          SystemAPI::mkMouseEvent(w, e, Event::MouseWheel);
           //w->mouseWheelEvent(e);
           }
         break;
@@ -637,9 +616,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           int cH = rectWindow.bottom-rectWindow.top;
 
           if( w )
-            SystemAPI::sizeEvent( w,
-                                          LOWORD(lParam), HIWORD(lParam),
-                                          cW, cH );
+            SystemAPI::sizeEvent( w, cW, cH );
           }
         break;
 

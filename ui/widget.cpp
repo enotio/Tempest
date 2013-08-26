@@ -25,10 +25,7 @@ Widget::Widget(ResourceContext *context):
 #else
   mouseReleseReciver.reserve(1);
 #endif
-  //mouseReleseReciver = 0;
   wvisible = true;
-
-  //onResize.bind( *this, &Widget<Painter>::m_resized );
   lay = 0;
   setLayout( new Layout() );
 
@@ -277,19 +274,6 @@ void Widget::paintEvent( PaintEvent &pe ) {
   execDeleteRoot();
   }
 
-void Widget::mouseMoveEvent(MouseEvent &e){
-  e.ignore();
-  //impl_mouseEvent( e, &Widget::mouseMoveEvent, false );
-  execDeleteRoot();
-  }
-
-void Widget::mouseDragEvent(MouseEvent &e) {
-  //if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
-    //impl_mouseDragEvent( this, e ); else
-    e.ignore();
-  execDeleteRoot();
-  }
-
 Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
                                  void (Widget::*f)(Tempest::MouseEvent &),
                                  bool focus,
@@ -341,62 +325,58 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
       }
     }
 
-  if( focus &&
-      focusPolicy() != NoFocus &&
-      focusPolicy() != ClickFocus  ){
-    //unsetChFocus( findRoot(), this );
-    }
-
   e.ignore();
   return 0;
   }
 
-void Widget::mouseDownEvent(MouseEvent &e){
-  /*
-  if( owner()==0 ){
-    rootMouseDownEvent(e);
-    return;
-    }*/
-
-  execDeleteRoot();
+void Widget::mouseMoveEvent(MouseEvent &e){
   e.ignore();
+  execDeleteRoot();
+  }
+
+void Widget::mouseDragEvent(MouseEvent &e) {
+  e.ignore();
+  execDeleteRoot();
+  }
+
+void Widget::mouseDownEvent(MouseEvent &e){
+  e.ignore();
+  execDeleteRoot();
   }
 
 void Widget::mouseUpEvent(MouseEvent &e) {
-  //if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
-    //impl_mouseUpEvent( this, e ); else
-    e.ignore();
+  e.ignore();
   execDeleteRoot();
   }
 
 void Widget::mouseWheelEvent(MouseEvent &e){
   e.ignore();
-
-//  impl_mouseEvent( e, &Widget::mouseWheelEvent );
   execDeleteRoot();
   }
 
-void Widget::keyDownEvent(KeyEvent &e){
+void Widget::keyDownEvent(KeyEvent &e){/*
   if( chFocus && !focus ){
     impl_keyPressEvent( this, e, &Widget::keyDownEvent );
     } else {
     e.ignore();
-    }
+    }*/
+  e.ignore();
   execDeleteRoot();
   }
 
 void Widget::keyUpEvent(KeyEvent &e) {
+  /*
   if( chFocus && !focus  ){
     impl_keyPressEvent( this, e, &Widget::keyUpEvent );
     } else {
     e.ignore();
-    }
+    }*/
+  e.ignore();
   execDeleteRoot();
   }
 
 void Widget::customEvent( CustomEvent &e ) {
   execDeleteRoot();
-
   impl_customEvent(this, e);
   }
 
@@ -507,18 +487,6 @@ void Widget::rootMouseDragEvent(MouseEvent &e) {
     this->mouseDragEvent(e);
   }
 
-void Widget::rootMouseMoveEvent(MouseEvent &e) {
-  e.ignore();
-  impl_mouseEvent( e, &Widget::mouseMoveEvent, false );
-
-  if( !e.isAccepted() )
-    this->mouseMoveEvent(e);
-  }
-
-void Widget::rootMouseWheelEvent(MouseEvent &e) {
-  impl_mouseEvent( e, &Widget::mouseWheelEvent );
-  }
-
 void Widget::rootMouseUpEvent(MouseEvent &e) {
   e.ignore();
 
@@ -548,6 +516,51 @@ void Widget::impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e ){
 
     impl_mouseDragEvent( r, ex);
     }
+  }
+
+void Widget::rootMouseMoveEvent(MouseEvent &e) {
+  e.ignore();
+  impl_mouseEvent( e, &Widget::mouseMoveEvent, false, false );
+
+  if( !e.isAccepted() )
+    this->mouseMoveEvent(e);
+  }
+
+void Widget::rootMouseWheelEvent(MouseEvent &e) {
+  e.ignore();
+  impl_mouseEvent( e, &Widget::mouseWheelEvent, true, true );
+
+  if( !e.isAccepted() )
+    this->mouseWheelEvent(e);
+  }
+
+void Widget::rootKeyDownEvent(KeyEvent &e) {
+  if( chFocus && !focus ){
+    e.accept();
+    impl_keyPressEvent( this, e, &Widget::keyDownEvent );
+    } else {
+    e.ignore();
+    }
+
+  if( !e.isAccepted() )
+    this->keyDownEvent(e);
+  }
+
+void Widget::rootKeyUpEvent(KeyEvent &e) {
+  if( chFocus && !focus ){
+    e.accept();
+    impl_keyPressEvent( this, e, &Widget::keyUpEvent );
+    } else {
+    e.ignore();
+    }
+
+  if( !e.isAccepted() )
+    this->keyUpEvent(e);
+  }
+
+void Widget::rootShortcutEvent(KeyEvent &e) {
+  e.ignore();
+  this->shortcutEvent(e);
   }
 
 void Widget::impl_mouseUpEvent( Widget* w, Tempest::MouseEvent & e ){
@@ -612,7 +625,6 @@ void Widget::setContext(ResourceContext *context) {
 
 void Widget::setFocus(bool f) {
   if( focus!=f ){
-    //owner()->setFocus(0);
     if( f ){
       unsetChFocus( this, this );
 

@@ -12,6 +12,7 @@ namespace Tempest{
   static void h_default( const char */*file*/, int /*line*/,
                          const char */*X*/, const char */*msg*/) {
 #ifdef __ANDROID__
+    __android_log_assert("","","");
     assert(0);
 #else
     __asm__("int $3");

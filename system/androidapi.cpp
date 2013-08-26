@@ -117,7 +117,25 @@ void LOGE( const Args& ... args ){
 using namespace Tempest;
 
 AndroidAPI::AndroidAPI(){
+  TranslateKeyPair k[] = {
+    { AKEYCODE_DPAD_LEFT,   Event::K_Left   },
+    { AKEYCODE_DPAD_RIGHT,  Event::K_Right  },
+    { AKEYCODE_DPAD_UP,     Event::K_Up     },
+    { AKEYCODE_DPAD_DOWN,   Event::K_Down   },
 
+    //{ AKEYCODE_BACK, Event::K_ESCAPE },
+    { AKEYCODE_BACK, Event::K_Back   },
+    { AKEYCODE_DEL,  Event::K_Delete },
+    { AKEYCODE_HOME, Event::K_Home   },
+
+    { AKEYCODE_0,      Event::K_0  },
+    { AKEYCODE_A,      Event::K_A  },
+
+    { 0,         Event::K_NoKey }
+    };
+
+  setupKeyTranslate(k);
+  setFuncKeysCount(0);
   }
 
 AndroidAPI::~AndroidAPI(){
@@ -192,6 +210,18 @@ T AndroidAPI::loadAssetImpl( const char* file ){
   return str;
   }
 
+static Tempest::KeyEvent makeKeyEvent( int32_t k, bool scut = false ){
+  Tempest::KeyEvent::KeyType e = SystemAPI::translateKey(k);
+  if( !scut ){
+    if( Event::K_0<=e && e<= Event::K_9 )
+      e = Tempest::KeyEvent::K_NoKey;
+
+    if( Event::K_A<=e && e<= Event::K_Z )
+      e = Tempest::KeyEvent::K_NoKey;
+    }
+  return Tempest::KeyEvent( e );
+  }
+
 static void render();
 
 int AndroidAPI::nextEvent(bool &quit) {  
@@ -217,9 +247,31 @@ int AndroidAPI::nextEvent(bool &quit) {
       quit = true;
       break;
 
+    case Android::MSG_KEY_EVENT:{
+      Tempest::KeyEvent sce = makeKeyEvent(msg.data1, true);
+      SystemAPI::mkKeyEvent(android.wnd, sce, Event::Shortcut);
+
+      if( !sce.isAccepted() ){
+        Tempest::KeyEvent e =  makeKeyEvent(msg.data1);
+        if( e.key!=Tempest::KeyEvent::K_NoKey ){
+          SystemAPI::mkKeyEvent(android.wnd, e, Event::KeyDown);
+          SystemAPI::mkKeyEvent(android.wnd, e, Event::KeyUp);
+          }
+        }
+      }
+      break;
+
     case Android::MSG_TOUCH: {
       MouseEvent e( msg.data.x, msg.data.y, MouseEvent::ButtonLeft );
-      SystemAPI::mkMouseEvent(android.wnd, e, msg.data1);
+
+      if( msg.data1==0 )
+        SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseDown);
+
+      if( msg.data1==1 )
+        SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseUp);
+
+      if( msg.data1==2 )
+        SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseMove);
       }
       break;
 
@@ -255,7 +307,8 @@ void AndroidAPI::deleteWindow( Window */*w*/ ) {
 void AndroidAPI::show(Window *) {
   if( android.wnd && android.display!=EGL_NO_DISPLAY ){
     glViewport( 0, 0, android.window_w, android.window_h );
-    android.wnd->resize( android.window_w, android.window_h );
+    if( android.wnd )
+      SystemAPI::sizeEvent( android.wnd, android.window_w, android.window_h );
     android.isWndAviable = true;
     }
   }
@@ -388,48 +441,6 @@ bool AndroidAPI::isGraphicsContextAviable( Tempest::Window * ) {
   return 1;//isContextAviable;
   }
 
-
-static Tempest::KeyEvent makeKeyEvent( int32_t k, bool scut = false ){
-  Tempest::KeyEvent::KeyType e = Tempest::KeyEvent::K_NoKey;
-/*
-  if( k==AKEYCODE_BACK )
-    e = Tempest::KeyEvent::K_ESCAPE;//PostQuitMessage(0);
-
-  if( k==AKEYCODE_BACK ){
-    e = Tempest::KeyEvent::K_Back;
-    }
-
-  if( k==AKEYCODE_DEL ){
-    e = Tempest::KeyEvent::K_Delete;
-    }
-
-  //if( k==VK_RETURN ){
-    //e = Tempest::KeyEvent::K_Return;
-    //}
-
-  if( k==AKEYCODE_DPAD_UP  )
-    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_Up) );
-
-  if( k==AKEYCODE_DPAD_DOWN  )
-    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_Down) );
-
-  if( k==AKEYCODE_DPAD_LEFT  )
-    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_Left) );
-
-  if( k==AKEYCODE_DPAD_RIGHT  )
-    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_Right) );
-
-  if( scut ){
-    if( k>=AKEYCODE_A && k<=AKEYCODE_Z )
-      e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_A) + size_t(k) - AKEYCODE_A );
-
-    if( k>=AKEYCODE_0 && k<=AKEYCODE_9 )
-      e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_0) + size_t(k) - AKEYCODE_0 );
-    }
-*/
-  return Tempest::KeyEvent(e);
-  }
-
 static void render() {
   Android& e = android;
 
@@ -549,7 +560,7 @@ void Android::destroy( bool killContext ) {
 
 static void* tempestMainFunc(void*);
 
-void resize( JNIEnv * env, jobject obj, jint w, jint h ) {
+static void resize( JNIEnv * , jobject , jint w, jint h ) {
   Android::Message m = Android::MSG_SURFACE_RESIZE;
   m.data.w = w;
   m.data.h = h;
@@ -559,16 +570,15 @@ void resize( JNIEnv * env, jobject obj, jint w, jint h ) {
   pthread_mutex_unlock( &android.appMutex );
   }
 
-JNIEXPORT void JNICALL start(JNIEnv* jenv, jobject obj) {
+static void JNICALL start(JNIEnv* jenv, jobject obj) {
   LOGI("nativeOnStart");
   }
 
-JNIEXPORT void JNICALL stop(JNIEnv* jenv, jobject obj) {
+static void JNICALL stop(JNIEnv* jenv, jobject obj) {
   LOGI("nativeOnStop");
   }
 
-
-JNIEXPORT void JNICALL resume(JNIEnv* jenv, jobject obj) {
+static void JNICALL resume(JNIEnv* jenv, jobject obj) {
   LOGI("nativeOnResume");
   pthread_mutex_lock( &android.appMutex );
   android.msg.push_back( Android::MSG_RESUME );
@@ -577,7 +587,7 @@ JNIEXPORT void JNICALL resume(JNIEnv* jenv, jobject obj) {
   pthread_mutex_unlock( &android.appMutex );
   }
 
-JNIEXPORT void JNICALL pauseA(JNIEnv* jenv, jobject obj) {
+static void JNICALL pauseA(JNIEnv* jenv, jobject obj) {
   LOGI("nativeOnPause");
   pthread_mutex_lock( &android.appMutex );
   android.msg.push_back( Android::MSG_PAUSE );
@@ -586,12 +596,12 @@ JNIEXPORT void JNICALL pauseA(JNIEnv* jenv, jobject obj) {
   pthread_mutex_unlock( &android.appMutex );
   }
 
-JNIEXPORT void JNICALL setAssets(JNIEnv* jenv, jobject obj, jobject assets ) {
+static void JNICALL setAssets(JNIEnv* jenv, jobject obj, jobject assets ) {
   LOGI("setAssets");
   android.assets = jenv->NewGlobalRef(assets);
   }
 
-JNIEXPORT void JNICALL nativeOnTouch( JNIEnv* jenv, jobject obj, jint x, jint y, jint act ){
+static void JNICALL nativeOnTouch( JNIEnv* jenv, jobject obj, jint x, jint y, jint act ){
   pthread_mutex_lock(&android.appMutex);
   Android::Message m = Android::MSG_TOUCH;
   m.data.x = x;
@@ -603,7 +613,7 @@ JNIEXPORT void JNICALL nativeOnTouch( JNIEnv* jenv, jobject obj, jint x, jint y,
   pthread_mutex_unlock(&android.appMutex);
   }
 
-JNIEXPORT void JNICALL nativeSetSurface(JNIEnv* jenv, jobject obj, jobject surface) {
+static void JNICALL nativeSetSurface(JNIEnv* jenv, jobject obj, jobject surface) {
   if( surface ) {
     android.window = ANativeWindow_fromSurface(jenv, surface);
     LOGI("Got window %p", android.window);
@@ -622,14 +632,14 @@ JNIEXPORT void JNICALL nativeSetSurface(JNIEnv* jenv, jobject obj, jobject surfa
   return;
   }
 
-JNIEXPORT void JNICALL onCreate(JNIEnv* , jobject ) {
+static void JNICALL onCreate(JNIEnv* , jobject ) {
   LOGI("nativeOnCreate");
 
   pthread_mutex_init(&android.appMutex, 0);
   android.mainThread = 0;
   }
 
-JNIEXPORT void JNICALL onDestroy(JNIEnv* jenv, jobject obj) {
+static void JNICALL onDestroy(JNIEnv* jenv, jobject obj) {
   pthread_mutex_lock( &android.appMutex );
   android.msg.push_back( Android::MSG_RENDER_LOOP_EXIT );
   pthread_mutex_unlock( &android.appMutex );
@@ -643,7 +653,7 @@ JNIEXPORT void JNICALL onDestroy(JNIEnv* jenv, jobject obj) {
   LOGI("nativeOnDestroy");
   }
 
-JNIEXPORT void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
+static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
   LOGI("onKeyEvent");
 
   pthread_mutex_lock( &android.appMutex );
@@ -696,7 +706,7 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
   return JNI_VERSION_1_6;
   }
 
-void* tempestMainFunc(void*){
+static void* tempestMainFunc(void*){
   sleep(5);
 
   LOGI("Tempest MainFunc");

@@ -1,17 +1,17 @@
 #ifndef ABSTRACTSYSTEMAPI_H
 #define ABSTRACTSYSTEMAPI_H
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
 #include <Tempest/Utility>
+#include <Tempest/Event>
 
 namespace Tempest{
 
 class Widget;
 class Window;
-class MouseEvent;
-class SizeEvent;
 
 class SystemAPI{
   public:
@@ -67,16 +67,22 @@ class SystemAPI{
                            int &bpp,
                            std::vector<unsigned char>& in );
 
-    static void mkMouseEvent( Tempest::Window *w,
-                              MouseEvent& e,
-                              int type );
-
     static void processEvents( Tempest::Widget *w,
                                MouseEvent& e,
-                               int type );
+                               Event::Type type );
+    static void processEvents( Tempest::Widget *w,
+                               KeyEvent &e,
+                               Event::Type type );
 
-    static void sizeEvent( Tempest::Window *w,
-                           int winW , int winH, int cW, int cH);
+    static void mkMouseEvent( Tempest::Window *w,
+                              MouseEvent& e,
+                              Event::Type type );
+
+    static void mkKeyEvent( Tempest::Window *w,
+                            KeyEvent& e,
+                            Event::Type type );
+
+    static void sizeEvent( Tempest::Window *w, int cW, int cH);
     static void activateEvent( Tempest::Window*w, bool a );
 
     virtual bool isGraphicsContextAviable( Tempest::Window *w );
@@ -85,6 +91,7 @@ class SystemAPI{
     static std::wstring toWstring( const std::string& str );
 
     static const std::string& androidActivityClass();
+    static Event::KeyType translateKey( uint64_t scancode );
   protected:
     SystemAPI(){}
 
@@ -128,9 +135,27 @@ class SystemAPI{
                              std::vector<unsigned char> &out );
 
     virtual const std::string& androidActivityClassImpl();
+
+    struct TranslateKeyPair{
+      uint64_t       src;
+      Event::KeyType result;
+      };
+
+    void setupKeyTranslate( const TranslateKeyPair k[] );
+    void setFuncKeysCount( int c );
   private:
     SystemAPI( const SystemAPI& ){}
     SystemAPI& operator = ( const SystemAPI&){return *this;}
+
+    struct KeyInf{
+      KeyInf():fkeysCount(1){}
+
+      std::vector<TranslateKeyPair> keys;
+      std::vector<TranslateKeyPair> a, k0, f1;
+      int fkeysCount;
+      };
+
+    KeyInf ki;
   };
 
 }

@@ -141,10 +141,16 @@ class Widget {
     void rootMouseMoveEvent ( Tempest::MouseEvent & e );
     void rootMouseWheelEvent( Tempest::MouseEvent & e );
 
-    void impl_mouseUpEvent( Widget* w, Tempest::MouseEvent & e );
+    void rootKeyDownEvent( Tempest::KeyEvent & e );
+    void rootKeyUpEvent  ( Tempest::KeyEvent & e );
+
+    void rootShortcutEvent( Tempest::KeyEvent & e );
+
+
+    void impl_mouseUpEvent  ( Widget* w, Tempest::MouseEvent & e );
     void impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e );
-    void impl_keyPressEvent( Widget* w, Tempest::KeyEvent & e,
-                             void (Widget::*f)(Tempest::KeyEvent &) );
+    void impl_keyPressEvent ( Widget* w, Tempest::KeyEvent & e,
+                              void (Widget::*f)(Tempest::KeyEvent &) );
 
     void impl_customEvent(Widget *w, Tempest::CustomEvent & e );
 

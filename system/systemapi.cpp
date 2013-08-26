@@ -23,7 +23,7 @@ SystemAPI &SystemAPI::instance() {
 #endif
 
   return api;
- }
+  }
 
 std::string SystemAPI::loadText(const std::string &file) {
   return instance().loadText( file.data() );
@@ -73,61 +73,80 @@ bool SystemAPI::saveImage( const char *file,
   return instance().saveImageImpl( file, w, h, bpp, in );
   }
 
-void SystemAPI::mkMouseEvent( Tempest::Window *w, MouseEvent &e , int type ) {
-  if( type==0 ){
-    //++w->pressedC;
+void SystemAPI::mkKeyEvent( Tempest::Window *w,
+                            KeyEvent& e,
+                            Event::Type type ){
+  if( type==Event::KeyDown ){
+    processEvents(w, e, type);
+    }
+  if( type==Event::KeyUp ){
+    processEvents(w, e, type);
+    }
+  if( type==Event::Shortcut ){
+    processEvents(w, e, type);
+    }
+  }
+
+void SystemAPI::mkMouseEvent(Tempest::Window *w, MouseEvent &e , Event::Type type ) {
+  if( type==Event::MouseDown ){
     w->pressedC = 1;
-    processEvents(w, e, 0);
-    //w->rootMouseDownEvent(e);
+    processEvents(w, e, type);
     }
 
-  if( type==1 ){
-    //--w->pressedC;
+  if( type==Event::MouseUp ){
     w->pressedC = 0;
-    processEvents(w, e, 1);
-    //w->rootMouseUpEvent(e);
+    processEvents(w, e, type);
     }
 
-  if( type==2 ){
+  if( type==Event::MouseMove ){
     if( w->pressedC ){
-      processEvents(w, e, -2);
-      //w->rootMouseDragEvent(e);
+      processEvents(w, e, Event::MouseDrag);
 
       if( e.isAccepted() )
         return;
       }
 
-    processEvents(w, e, 2);
-    //w->rootMouseMoveEvent(e);
+    processEvents(w, e, type);
     }
 
-  if( type==3 ){
-    processEvents(w, e, 3);
-    //w->rootMouseWheelEvent(e);
+  if( type==Event::MouseWheel ){
+    processEvents(w, e, type);
     }
-  //if( w-> )
   }
 
-void SystemAPI::processEvents(Widget *w, MouseEvent &e, int type) {
-  if( type==0 )
+void SystemAPI::processEvents(Widget *w, MouseEvent &e, Event::Type type) {
+  e.setType( type );
+
+  if( type==Event::MouseDown )
     return w->rootMouseDownEvent(e);
 
-  if( type==1 )
+  if( type==Event::MouseUp )
     return w->rootMouseUpEvent(e);
 
-  if( type==2 )
+  if( type==Event::MouseMove )
     return w->rootMouseMoveEvent(e);
 
-  if( type==3 )
+  if( type==Event::MouseWheel )
     return w->rootMouseWheelEvent(e);
 
-  if( type==-2 )
+  if( type==Event::MouseDrag)
     return w->rootMouseDragEvent(e);
   }
 
-void SystemAPI::sizeEvent( Tempest::Window *w,
-                                   int /*winW*/, int /*winH*/,
-                                   int   cW, int   cH ) {
+void SystemAPI::processEvents(Widget *w, KeyEvent &e, Event::Type type) {
+  e.setType( type );
+
+  if( type==Event::KeyDown )
+    return w->rootKeyDownEvent(e);
+
+  if( type==Event::KeyUp )
+    return w->rootKeyUpEvent(e);
+
+  if( type==Event::Shortcut )
+    return w->rootShortcutEvent(e);
+  }
+
+void SystemAPI::sizeEvent( Tempest::Window *w, int cW, int cH ) {
   if( w->winW==cW &&
       w->winH==cH )
     return;
@@ -138,9 +157,6 @@ void SystemAPI::sizeEvent( Tempest::Window *w,
   if( w->isAppActive ){
     if( cW * cH ){
       w->resize( cW, cH );
-
-      //SizeEvent e( cW, cH, winW, winH );
-      //w->resizeEvent( e );
       w->resizeIntent = false;
       }
     } else {
@@ -172,6 +188,37 @@ std::wstring SystemAPI::toWstring(const std::string &str) {
 
 const std::string &SystemAPI::androidActivityClass() {
   return instance().androidActivityClassImpl();
+  }
+
+Event::KeyType SystemAPI::translateKey(uint64_t scancode) {
+  KeyInf &k = instance().ki;
+
+  for( size_t i=0; i<k.keys.size(); ++i )
+    if( k.keys[i].src==scancode )
+      return k.keys[i].result;
+
+  for( size_t i=0; i<k.k0.size(); ++i )
+    if( scancode <= k.k0[i].src &&
+                    k.k0[i].src <=scancode+9 ){
+      auto dx = ( scancode-k.k0[i].src );
+      return Event::KeyType( k.k0[i].result + dx );
+      }
+
+  for( size_t i=0; i<k.a.size(); ++i )
+    if( scancode <= k.a[i].src &&
+                    k.a[i].src <= scancode+(Event::K_Z - Event::K_A) ){
+      auto dx = ( scancode-k.a[i].src );
+      return Event::KeyType( k.a[i].result + dx );
+      }
+
+  for( size_t i=0; i<k.f1.size(); ++i )
+    if( scancode <= k.f1[i].src &&
+                    k.f1[i].src <= scancode+k.fkeysCount ){
+      auto dx = ( scancode-k.f1[i].src );
+      return Event::KeyType( k.f1[i].result + dx );
+      }
+
+  return Event::K_NoKey;
   }
 
 bool SystemAPI::loadImageImpl( const char *file,
@@ -386,3 +433,30 @@ const std::string &SystemAPI::androidActivityClassImpl() {
   return cls;
   }
 
+void SystemAPI::setupKeyTranslate( const SystemAPI::TranslateKeyPair k[] ) {
+  ki.keys.clear();
+  ki.a. clear();
+  ki.k0.clear();
+  ki.f1.clear();
+
+  for( size_t i=0; k[i].result!=Event::K_NoKey; ++i ){
+    if( k[i].result==Event::K_A )
+      ki.a.push_back(k[i]); else
+    if( k[i].result==Event::K_0 )
+      ki.k0.push_back(k[i]); else
+    if( k[i].result==Event::K_F1 )
+      ki.f1.push_back(k[i]); else
+      ki.keys.push_back( k[i] );
+    }
+
+#ifndef __ANDROID__
+  ki.keys.shrink_to_fit();
+  ki.a. shrink_to_fit();
+  ki.k0.shrink_to_fit();
+  ki.f1.shrink_to_fit();
+#endif
+  }
+
+void SystemAPI::setFuncKeysCount(int c) {
+  ki.fkeysCount = c;
+  }

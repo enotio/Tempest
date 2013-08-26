@@ -2,8 +2,7 @@
 
 using namespace Tempest;
 
-Event::Event() {
-  accept();
+Event::Event(): accepted(true), etype(NoEvent) {
   }
 
 Point MouseEvent::pos() const {

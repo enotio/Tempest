@@ -87,10 +87,11 @@ AbstractAPI::Device* DirectX9::createDevice(void *hwnd, const Options &opt) cons
   makePresentParams( &d3dpp, hwnd, opt );
 
   Device* dev = new Device;
-  //LPDIRECT3DDEVICE9  dev;
-  D3D->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hwnd,
-                     D3DCREATE_HARDWARE_VERTEXPROCESSING,
-                     &d3dpp, &dev->dev );
+  HRESULT derr = D3D->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hwnd,
+                                    D3DCREATE_HARDWARE_VERTEXPROCESSING,
+                                    &d3dpp, &dev->dev );
+
+  T_ASSERT_X( !FAILED(derr), "failed to create D3D-Device");
 
   dev->dev->GetDeviceCaps( &dev->caps );
   dev->hasDepthTaget   = 1;
@@ -1034,7 +1035,7 @@ void DirectX9::setRenderState( AbstractAPI::Device *d,
 
   dev->SetRenderState( D3DRS_CULLMODE, cull[ r.cullFaceMode() ]);
 
-  //dev->SetRenderState( D3DRS_ZENABLE,      r.isZTest() );
+  dev->SetRenderState( D3DRS_ZENABLE, D3DZB_TRUE );
   D3DCMPFUNC f = cmp[ r.getZTestMode() ] ;
   if( !r.isZTest() )
     f = D3DCMP_ALWAYS;
@@ -1076,11 +1077,7 @@ void DirectX9::setRenderState( AbstractAPI::Device *d,
 
   bool w[4];
   r.getColorMask( w[0], w[1], w[2], w[3] );
-  /*
-  dev->SetRenderState( D3DRS_COLORWRITEENABLE1, w[0] );
-  dev->SetRenderState( D3DRS_COLORWRITEENABLE2, w[1] );
-  dev->SetRenderState( D3DRS_COLORWRITEENABLE3, w[2] );
-  */
+
   DWORD flg = 0;
   if( w[0] )
     flg |= D3DCOLORWRITEENABLE_RED;

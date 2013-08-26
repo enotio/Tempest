@@ -64,6 +64,7 @@ class WindowsAPI:public SystemAPI {
 
     static void initImgLib();
 
+
   friend class SystemAPI;
   };
 #endif

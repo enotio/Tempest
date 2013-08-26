@@ -20,6 +20,21 @@ class Event {
       return accepted;
       }
 
+    enum Type {
+      NoEvent = 0,
+      MouseDown,
+      MouseUp,
+      MouseMove,
+      MouseDrag,
+      MouseWheel,
+      KeyDown,
+      KeyUp,
+      Resize,
+      Shortcut,
+      Paint,
+
+      Custom = 512
+      };
 
     enum MouseButton{
       ButtonNone = 0,
@@ -111,8 +126,15 @@ class Event {
       K_Last
       };
 
+    Type type () const{ return etype; }
+  protected:
+    void setType( Type t ){ etype = t; }
+
   private:
     bool accepted;
+    Type etype;
+
+  friend class SystemAPI;
   };
 
 class MouseEvent : public Event {
@@ -120,8 +142,11 @@ class MouseEvent : public Event {
     MouseEvent( int mx = -1, int my = -1,
                 MouseButton b = ButtonNone,
                 int mdelta = 0,
-                int mouseID = 0 )
-      :x(mx), y(my), delta(mdelta), button(b), mouseID(mouseID){}
+                int mouseID = 0,
+                Type t = MouseMove )
+      :x(mx), y(my), delta(mdelta), button(b), mouseID(mouseID){
+      setType( t );
+      }
 
     const int x, y, delta;
     const MouseButton button;
@@ -133,20 +158,26 @@ class MouseEvent : public Event {
 
 class SizeEvent : public Event {
   public:
-    SizeEvent( int w, int h ): w(w), h(h), winW(w), winH(h){}
-    SizeEvent( int w,  int h,
-               int ww, int wh): w(w), h(h), winW(ww), winH(wh){}
+    SizeEvent( int w, int h ): w(w), h(h) {
+      setType( Resize );
+      }
 
-    const int w, h, winW, winH;
+    const int w, h;
 
     Size size() const;
   };
 
 class KeyEvent: public Event {
   public:
-    KeyEvent( KeyType  k = K_NoKey ):key(k), u16(0){}
-    KeyEvent( uint32_t k ):key(K_NoKey), u16(k){}
-    KeyEvent( KeyType k, uint32_t k1 ):key(k), u16(k1){}
+    KeyEvent( KeyType  k = K_NoKey, Type t = KeyDown  ):key(k), u16(0){
+      setType( t );
+      }
+    KeyEvent( uint32_t k, Type t = KeyDown ):key(K_NoKey), u16(k){
+      setType( t );
+      }
+    KeyEvent( KeyType k, uint32_t k1, Type t = KeyDown ):key(k), u16(k1){
+      setType( t );
+      }
 
     const KeyType  key;
     const uint32_t u16;
@@ -155,7 +186,7 @@ class KeyEvent: public Event {
 class PaintEvent: public Event {
   public:
     PaintEvent( PainterDevice & p, int ppass = 0 ):painter(p), pass(ppass){
-
+      setType( Paint );
       }
 
     PainterDevice & painter;
@@ -167,7 +198,7 @@ class PaintEvent: public Event {
 
 class CustomEvent: public Event {
   public:
-    CustomEvent(){}
+  CustomEvent(){ setType(Custom); }
 
   private:
 

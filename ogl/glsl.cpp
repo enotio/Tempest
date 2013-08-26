@@ -289,12 +289,16 @@ void GLSL::enable() const {
     program = data->curProgram.linked;
     }
 
-  for( size_t i=0; !program && i<data->prog.size(); ++i )
-    if( data->prog[i].vs == vertexShader &&
-        data->prog[i].fs == pixelShader ){
-      program = data->prog[i].linked;
-      }
+  //NON-Cashed
+  if( program==0 ){
+    for( size_t i=0; i<data->prog.size(); ++i )
+      if( data->prog[i].vs == vertexShader &&
+          data->prog[i].fs == pixelShader ){
+        program = data->prog[i].linked;
+        }
+    }
 
+  //Non-Linked
   if( program==0 ){
     program = glCreateProgram();
     T_ASSERT( program );
@@ -380,7 +384,6 @@ void GLSL::enable() const {
 
     data->vsCash.reset();
     data->fsCash.reset();
-
     }
 
   { const ShaderInput & in = inputOf( *data->currentFS );
@@ -599,6 +602,7 @@ void GLSL::setUniform( unsigned int sh,
         }
 //#endif
 
+      glUniform1i( prm, slot );
       glActiveTexture( GL_TEXTURE0 );
       }
     }

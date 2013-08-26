@@ -76,6 +76,9 @@ void Tempest::Layout::removeAll() {
   }
 
 Widget *Layout::take(Widget *widget) {
+  if( widget->hasFocus() )
+    widget->setFocus(0);
+
   w.resize( std::remove( w.begin(), w.end(), widget ) - w.begin() );
   widget->parentLay = 0;
 
