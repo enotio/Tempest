@@ -2,6 +2,7 @@
 #define HALF_H
 
 #include <cstdint>
+#include <cstring>
 
 namespace Tempest{
 
@@ -19,7 +20,9 @@ class Half {
 
     uint16_t v;
     Half& operator = ( float fin ){
-      unsigned int    x = *(unsigned int *)(&fin);
+      unsigned int    x;//    = *(unsigned int *)(&fin);
+      memcpy( &x, &fin, sizeof(x) );
+
       unsigned int    sign = (unsigned short)(x >> 31);
       unsigned int    mantissa = x & ((1 << 23) - 1);
       unsigned int    exp      = x & FLOAT_MAX_BIASED_EXP;
@@ -75,7 +78,10 @@ class Half {
         }
 
       f = (sign << 31) | exp | mantissa;
-      return *((float *)&f);
+
+      float re;
+      memcpy( &re, &f, sizeof(re) );
+      return re;//*((float *)&f);
       }
   };
 

@@ -25,6 +25,10 @@ SystemAPI &SystemAPI::instance() {
   return api;
   }
 
+Size SystemAPI::screenSize() {
+  return instance().implScreenSize();
+  }
+
 std::string SystemAPI::loadText(const std::string &file) {
   return instance().loadText( file.data() );
   }
@@ -198,22 +202,23 @@ Event::KeyType SystemAPI::translateKey(uint64_t scancode) {
       return k.keys[i].result;
 
   for( size_t i=0; i<k.k0.size(); ++i )
-    if( scancode <= k.k0[i].src &&
-                    k.k0[i].src <=scancode+9 ){
+    if( k.k0[i].src <= scancode &&
+                       scancode <=k.k0[i].src+9 ){
       auto dx = ( scancode-k.k0[i].src );
       return Event::KeyType( k.k0[i].result + dx );
       }
 
+  auto literalsCount = (Event::K_Z - Event::K_A);
   for( size_t i=0; i<k.a.size(); ++i )
-    if( scancode <= k.a[i].src &&
-                    k.a[i].src <= scancode+(Event::K_Z - Event::K_A) ){
+    if( k.a[i].src <= scancode &&
+                      scancode <= k.a[i].src+literalsCount ){
       auto dx = ( scancode-k.a[i].src );
       return Event::KeyType( k.a[i].result + dx );
       }
 
   for( size_t i=0; i<k.f1.size(); ++i )
-    if( scancode <= k.f1[i].src &&
-                    k.f1[i].src <= scancode+k.fkeysCount ){
+    if( k.f1[i].src <= scancode &&
+                       scancode <= k.f1[i].src+k.fkeysCount ){
       auto dx = ( scancode-k.f1[i].src );
       return Event::KeyType( k.f1[i].result + dx );
       }

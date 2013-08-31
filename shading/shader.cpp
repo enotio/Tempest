@@ -3,8 +3,7 @@
 using namespace Tempest;
 
 Shader::~Shader() {
-
-}
+  }
 
 void Shader::setUniform(const char *name, const Texture2d &t) {
   input.set(name, t);

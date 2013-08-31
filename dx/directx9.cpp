@@ -80,6 +80,10 @@ AbstractAPI::Caps DirectX9::caps( AbstractAPI::Device *d ) const {
   return c;
   }
 
+bool DirectX9::setDisplaySettings(const DisplaySettings &d) const {
+  return AbstractAPI::setDisplaySettings(d);
+  }
+
 AbstractAPI::Device* DirectX9::createDevice(void *hwnd, const Options &opt) const {
   LPDIRECT3D9 D3D = LPDIRECT3D9(impl);
 
@@ -411,7 +415,7 @@ AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
     for( int i=0; i<p.width(); ++i )
       for( int r=0; r<p.height(); ++r ){
         unsigned char * t = &dest[ 4*(i + r*p.width()) ];
-        const Pixmap::Pixel s = p.at(i,r);
+        const Pixmap::Pixel s = p.at(i, p.height()-r-1 );
         t[2] = s.r;
         t[1] = s.g;
         t[0] = s.b;
@@ -529,7 +533,7 @@ AbstractAPI::Texture *DirectX9::recreateTexture( AbstractAPI::Device *d,
     for( int i=0; i<p.width(); ++i )
       for( int r=0; r<p.height(); ++r ){
         unsigned char       * t = &dest[   4*(i + r*p.width()) ];
-        const unsigned char * s =  &src[ bpp*(i + r*p.width()) ];
+        const unsigned char * s =  &src[ bpp*(i + (p.height()-r-1)*p.width()) ];
         /*
         const Pixmap::Pixel s = p.at(i,r);
         t[2] = s.r;

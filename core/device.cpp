@@ -285,6 +285,15 @@ void Device::clearStencil( unsigned s ) {
   api.clearStencil(impl, s);
   }
 
+bool Device::testDisplaySettings( const DisplaySettings &s ) {
+  return api.testDisplaySettings(s);
+  }
+
+bool Device::setDisplaySettings( const DisplaySettings &s ) {
+  return api.setDisplaySettings(s);
+  //data->isLost = true;
+  }
+
 void Device::beginPaint(){
   T_ASSERT_X( !data->isPaintMode, "recursive paint detected" );
   data->isPaintMode = true;
@@ -368,7 +377,9 @@ void Device::endPaint  (){
 void Device::beginPaintImpl() const {
   data->mrtSize   = data->paintTaget.mrt.size();
 
-  api.setDSSurfaceTaget( impl, data->paintTaget.ds );
+  if( data->paintTaget.ds )
+    api.setDSSurfaceTaget( impl, data->paintTaget.ds ); else
+    api.retDSSurfaceTaget( impl, data->depthStencil  );
 
   for( int i=0; i<data->mrtSize; ++i )
     api.setRenderTaget( impl,

@@ -34,13 +34,11 @@ ogl:{
 
   HEADERS +=\
     ogl/opengl2x.h \
-    ogl/cgogl.h \
     ogl/glsl.h \
     ogl/gltypes.h
 
   SOURCES += \
     ogl/opengl2x.cpp \
-    ogl/cgogl.cpp \
     ogl/glsl.cpp \
     ogl/gltypes.cpp
 
@@ -159,7 +157,8 @@ SOURCES += \
     2d/sprite.cpp \
     2d/spritesholder.cpp \
     timer.cpp \
-    2d/surface.cpp
+    2d/surface.cpp \
+    core/wrappers/displaysettings.cpp
 
 HEADERS += \
     ui/window.h \
@@ -250,7 +249,9 @@ HEADERS += \
     2d/sprite.h \
     2d/spritesholder.h \
     timer.h \
-    2d/surface.h
+    2d/surface.h \
+    core/wrappers/displaysettings.h \
+    include/Tempest/DisplaySettings
 
 OTHER_FILES += \
     include/Tempest/Window \

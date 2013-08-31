@@ -5,6 +5,7 @@
 
 #include <Tempest/Window>
 #include <Tempest/Event>
+#include <Tempest/DisplaySettings>
 
 #include <unordered_map>
 #include <fstream>
@@ -18,6 +19,9 @@
 using namespace Tempest;
 
 static std::unordered_map<WindowsAPI::Window*, Tempest::Window*> wndWx;
+
+static DEVMODE defaultMode, appMode;
+static DWORD   appDevModeFlg = 0;
 
 static LRESULT CALLBACK WindowProc( HWND   hWnd,
                                     UINT   msg,
@@ -54,12 +58,64 @@ WindowsAPI::WindowsAPI() {
 WindowsAPI::~WindowsAPI() {
   }
 
+bool WindowsAPI::testDisplaySettings( const DisplaySettings & s ) {
+  DEVMODE mode;                   // Device Mode
+  memset(&mode,0,sizeof(mode));
+  mode.dmSize=sizeof(mode);
+
+  mode.dmPelsWidth    = s.width;
+  mode.dmPelsHeight   = s.height;
+  mode.dmBitsPerPel   = s.bits;
+  mode.dmFields       = DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT;
+
+  DWORD flg = CDS_TEST;
+  if( s.fullScreen )
+    flg |= CDS_FULLSCREEN;
+
+  return ChangeDisplaySettings(&mode,flg)==DISP_CHANGE_SUCCESSFUL;
+  }
+
+bool WindowsAPI::setDisplaySettings( const DisplaySettings &s ) {
+  DEVMODE mode;                   // Device Mode
+  memset(&mode,0,sizeof(mode));
+  mode.dmSize=sizeof(mode);
+
+  mode.dmPelsWidth    = s.width;
+  mode.dmPelsHeight   = s.height;
+  mode.dmBitsPerPel   = s.bits;
+  mode.dmFields       = DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT;
+
+  DWORD flg = 0;
+  if( s.fullScreen )
+    flg |= CDS_FULLSCREEN;
+
+  if( ChangeDisplaySettings(&mode,flg)==DISP_CHANGE_SUCCESSFUL ){
+    appMode       = mode;
+    appDevModeFlg = flg;
+    return 1;
+    }
+
+  return 0;
+  }
+
+Size WindowsAPI::implScreenSize() {
+  DEVMODE mode;
+  EnumDisplaySettings( 0, ENUM_CURRENT_SETTINGS, &mode );
+  int w = mode.dmPelsWidth;
+  int h = mode.dmPelsHeight;
+
+  return Size(w,h);
+  }
+
 void WindowsAPI::startApplication(ApplicationInitArgs *) {
+  EnumDisplaySettings( 0, ENUM_CURRENT_SETTINGS, &defaultMode );
+  appMode = defaultMode;
+
   WNDCLASSEX winClass;
 
   winClass.lpszClassName = L"Tempest_Window_Class";
   winClass.cbSize        = sizeof(WNDCLASSEX);
-  winClass.style         = CS_HREDRAW | CS_VREDRAW;
+  winClass.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
   winClass.lpfnWndProc   = WindowProc;
   winClass.hInstance     = GetModuleHandle(0);
   winClass.hIcon         = LoadIcon( GetModuleHandle(0), (LPCTSTR)MAKEINTRESOURCE(32512) );
@@ -123,14 +179,19 @@ SystemAPI::Window *WindowsAPI::createWindowMaximized() {
   w = mode.dmPelsWidth;
   h = mode.dmPelsHeight;
 
-  DWORD wflags = WS_OVERLAPPEDWINDOW | WS_POPUP | WS_VISIBLE;
-  HWND hwnd = CreateWindowEx( 0,
+  DWORD wflags    = WS_OVERLAPPEDWINDOW | WS_POPUP | WS_VISIBLE;
+  DWORD dwExStyle = WS_EX_APPWINDOW;
+
+  wflags |= WS_CLIPSIBLINGS |	WS_CLIPCHILDREN;
+
+  HWND hwnd = CreateWindowEx( dwExStyle,
                               L"Tempest_Window_Class",
                               L"Tempest_Window_Class",
                               wflags,
                               0, 0,
                               w, h,
-                              NULL, NULL,
+                              NULL,
+                              NULL,
                               GetModuleHandle(0), NULL );
 
   ShowWindow( hwnd, SW_MAXIMIZE );
@@ -500,6 +561,7 @@ static Event::MouseButton toButton( UINT msg ){
 static Tempest::KeyEvent makeKeyEvent( WPARAM k,
                                        bool scut = false ){
   Tempest::KeyEvent::KeyType e = SystemAPI::translateKey(k);
+
   if( !scut ){
     if( Event::K_0<=e && e<= Event::K_9 )
       e = Tempest::KeyEvent::K_NoKey;
@@ -507,6 +569,7 @@ static Tempest::KeyEvent makeKeyEvent( WPARAM k,
     if( Event::K_A<=e && e<= Event::K_Z )
       e = Tempest::KeyEvent::K_NoKey;
     }
+
   return Tempest::KeyEvent( e );
   }
 
@@ -625,8 +688,15 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           bool a = (wParam==TRUE);
           SystemAPI::activateEvent(w,a);
 
-          if( !a && w->isFullScreenMode() )
+          if( !a && w->isFullScreenMode() ){
             ShowWindow( hWnd, SW_MINIMIZE );
+            }
+
+          if( !a ){
+            ChangeDisplaySettings(&defaultMode, 0);
+            } else {
+            ChangeDisplaySettings(&appMode, appDevModeFlg);
+            }
       }
       break;
 

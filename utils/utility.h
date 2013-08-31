@@ -44,6 +44,7 @@ namespace Tempest{
     int w, h;
 
     Point toPoint() const;
+    bool  isEmpty() const;
 
     bool operator ==( const Size & other ) const;
     bool operator !=( const Size & other ) const;

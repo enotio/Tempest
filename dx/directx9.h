@@ -17,6 +17,8 @@ class DirectX9 : public AbstractAPI {
 
     Caps caps(Device *d) const;
 
+    bool setDisplaySettings(const DisplaySettings &d) const;
+
     Device* createDevice( void * hwnd, const Options & opt ) const;
     void    deleteDevice( Device* d )  const;
 

@@ -10,12 +10,7 @@ namespace Tempest{
 
 class Opengl2x : public AbstractAPI {
   public:
-    enum ShaderLang{
-      Cg,
-      GLSL
-      };
-
-    Opengl2x( ShaderLang s = GLSL );
+    Opengl2x();
     ~Opengl2x();
 
     Caps caps(Device *d) const;
@@ -162,8 +157,6 @@ class Opengl2x : public AbstractAPI {
   private:
     class Opengl2xImpl;
     Opengl2xImpl* impl;
-
-    ShaderLang shaderLang;
 
     struct Device;
     mutable Device * dev;

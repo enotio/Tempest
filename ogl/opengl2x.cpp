@@ -16,7 +16,6 @@
 #include <GL/gl.h>
 #endif
 
-#include <Tempest/CgOGL>
 #include <Tempest/GLSL>
 #include <Tempest/RenderState>
 
@@ -149,8 +148,7 @@ void Opengl2x::errCk() const {
 #endif
   }
 
-Opengl2x::Opengl2x( ShaderLang sl ):impl(0){
-  shaderLang = sl;
+Opengl2x::Opengl2x():impl(0){
   }
 
 Opengl2x::~Opengl2x(){
@@ -1380,19 +1378,7 @@ const AbstractShadingLang*
   AbstractAPI::OpenGL2xDevice *dev =
       reinterpret_cast<AbstractAPI::OpenGL2xDevice*>(d);
 
-#ifndef __ANDROID__
-  if( shaderLang==Cg )
-    return new CgOGL( dev );
-#endif
-
-  if( shaderLang==GLSL )
-    return new Tempest::GLSL( dev );
-
-#ifndef __ANDROID__
-  throw std::logic_error("invalid shaders lang");
-#else
-  return 0;
-#endif
+  return new Tempest::GLSL( dev );
   }
 
 void Opengl2x::deleteShadingLang( const AbstractShadingLang * l ) const {

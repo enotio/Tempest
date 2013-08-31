@@ -13,6 +13,10 @@ class WindowsAPI:public SystemAPI {
     WindowsAPI();
     ~WindowsAPI();
 
+    bool testDisplaySettings( const DisplaySettings& );
+    bool setDisplaySettings( const DisplaySettings& );
+    Size implScreenSize();
+
     void startApplication( ApplicationInitArgs* );
     void endApplication();
     int  nextEvent(bool &qiut);

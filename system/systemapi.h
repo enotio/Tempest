@@ -13,6 +13,8 @@ namespace Tempest{
 class Widget;
 class Window;
 
+class DisplaySettings;
+
 class SystemAPI{
   public:
     virtual ~SystemAPI(){}
@@ -29,6 +31,8 @@ class SystemAPI{
     virtual void setGeometry( Window*, int x, int y, int w, int h ) = 0;
     virtual void show( Window* ) = 0;
     virtual void bind( Window*, Tempest::Window* ) = 0;
+
+    static Size screenSize();
 
     static SystemAPI& instance();
 
@@ -95,6 +99,10 @@ class SystemAPI{
   protected:
     SystemAPI(){}
 
+    virtual Size implScreenSize() = 0;
+    virtual bool testDisplaySettings( const DisplaySettings& ) = 0;
+    virtual bool setDisplaySettings ( const DisplaySettings& ) = 0;
+
     virtual std::string       loadTextImpl( const char* file    ) = 0;
     virtual std::string       loadTextImpl( const wchar_t* file ) = 0;
 
@@ -156,6 +164,8 @@ class SystemAPI{
       };
 
     KeyInf ki;
+
+  friend class AbstractAPI;
   };
 
 }

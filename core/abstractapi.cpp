@@ -1,6 +1,7 @@
 #include "abstractapi.h"
 
 #include <cstring>
+#include <Tempest/SystemAPI>
 
 using namespace Tempest;
 
@@ -9,6 +10,13 @@ AbstractAPI::Options::Options() {
   windowed = true;
   }
 
+bool AbstractAPI::testDisplaySettings( const DisplaySettings &d ) const {
+  return SystemAPI::instance().testDisplaySettings(d);
+  }
+
+bool AbstractAPI::setDisplaySettings(const DisplaySettings &d) const {
+  return SystemAPI::instance().setDisplaySettings(d);
+  }
 
 AbstractAPI::VertexBuffer* AbstractAPI::createVertexBuffer( AbstractAPI::Device *d,
                                                             size_t size,

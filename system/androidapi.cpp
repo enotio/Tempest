@@ -10,6 +10,7 @@ using namespace Tempest;
 #include <map>
 #include <queue>
 #include <Tempest/Assert>
+#include <Tempest/DisplaySettings>
 
 #include <EGL/egl.h>
 #include <GLES/gl.h>
@@ -44,7 +45,7 @@ static struct Android{
   jclass  tempestClass;
 
   ANativeWindow   *window;
-  pthread_mutex_t appMutex;
+  pthread_mutex_t appMutex, waitMutex;
 
   pthread_t mainThread;
 
@@ -98,10 +99,14 @@ static struct Android{
 
     isWndAviable = false;
     isPaused     = true;
+
+    mainThread = 0;
     }
 
   bool initialize();
   void destroy(bool killContext);
+
+  void waitForQueue();
   } android;
 
 template< class ... Args >
@@ -156,6 +161,21 @@ AndroidAPI::Window* AndroidAPI::createWindowMinimized(){
 
 AndroidAPI::Window* AndroidAPI::createWindowFullScr(){
   return 0;
+  }
+
+bool AndroidAPI::testDisplaySettings( const DisplaySettings & s ) {
+  return s.width ==android.window_w  &&
+         s.height==android.window_h &&
+         s.bits==16 &&
+         s.fullScreen;
+  }
+
+bool AndroidAPI::setDisplaySettings(const DisplaySettings &s) {
+  return testDisplaySettings(s);
+  }
+
+Size AndroidAPI::implScreenSize() {
+  return Size(android.window_w, android.window_h);
   }
 
 bool AndroidAPI::startRender( Window * ) {
@@ -224,6 +244,17 @@ static Tempest::KeyEvent makeKeyEvent( int32_t k, bool scut = false ){
 
 static void render();
 
+void Android::waitForQueue() {
+  while( mainThread && android.window ){
+    pthread_mutex_lock(&android.appMutex);
+    size_t s = android.msg.size();
+    pthread_mutex_unlock(&android.appMutex);
+
+    if( s==0 )
+      return;
+    }
+  }
+
 int AndroidAPI::nextEvent(bool &quit) {  
   /*
   static const int ACTION_DOWN = 0,
@@ -232,11 +263,17 @@ int AndroidAPI::nextEvent(bool &quit) {
   */
 
   pthread_mutex_lock(&android.appMutex);
+  if( android.window==0 ){
+	pthread_mutex_unlock(&android.appMutex);
+	return 1;
+    }
+
   Android::Message msg = Android::MSG_NONE;
   if( android.msg.size() ){
     msg = android.msg[0];
     android.msg.pop_front();
     }
+
   pthread_mutex_unlock(&android.appMutex);
 
   switch( msg.msg ) {
@@ -561,6 +598,8 @@ void Android::destroy( bool killContext ) {
 static void* tempestMainFunc(void*);
 
 static void resize( JNIEnv * , jobject , jint w, jint h ) {
+  pthread_mutex_lock( &android.waitMutex );
+
   Android::Message m = Android::MSG_SURFACE_RESIZE;
   m.data.w = w;
   m.data.h = h;
@@ -568,6 +607,9 @@ static void resize( JNIEnv * , jobject , jint w, jint h ) {
   pthread_mutex_lock( &android.appMutex );
   android.msg.push_back( m );
   pthread_mutex_unlock( &android.appMutex );
+
+  android.waitForQueue();
+  pthread_mutex_unlock( &android.waitMutex );
   }
 
 static void JNICALL start(JNIEnv* jenv, jobject obj) {
@@ -580,20 +622,27 @@ static void JNICALL stop(JNIEnv* jenv, jobject obj) {
 
 static void JNICALL resume(JNIEnv* jenv, jobject obj) {
   LOGI("nativeOnResume");
+  pthread_mutex_lock( &android.waitMutex );
+
   pthread_mutex_lock( &android.appMutex );
   android.msg.push_back( Android::MSG_RESUME );
-
   android.isPaused = false;
   pthread_mutex_unlock( &android.appMutex );
+
+  android.waitForQueue();
+  pthread_mutex_unlock( &android.waitMutex );
   }
 
 static void JNICALL pauseA(JNIEnv* jenv, jobject obj) {
   LOGI("nativeOnPause");
+  pthread_mutex_lock( &android.waitMutex );
   pthread_mutex_lock( &android.appMutex );
   android.msg.push_back( Android::MSG_PAUSE );
 
   android.isPaused = true;
   pthread_mutex_unlock( &android.appMutex );
+  android.waitForQueue();
+  pthread_mutex_unlock( &android.waitMutex );
   }
 
 static void JNICALL setAssets(JNIEnv* jenv, jobject obj, jobject assets ) {
@@ -601,7 +650,9 @@ static void JNICALL setAssets(JNIEnv* jenv, jobject obj, jobject assets ) {
   android.assets = jenv->NewGlobalRef(assets);
   }
 
-static void JNICALL nativeOnTouch( JNIEnv* jenv, jobject obj, jint x, jint y, jint act ){
+static void JNICALL nativeOnTouch( JNIEnv* , jobject , jint x, jint y, jint act ){
+  pthread_mutex_lock(&android.waitMutex);
+
   pthread_mutex_lock(&android.appMutex);
   Android::Message m = Android::MSG_TOUCH;
   m.data.x = x;
@@ -611,9 +662,11 @@ static void JNICALL nativeOnTouch( JNIEnv* jenv, jobject obj, jint x, jint y, ji
   android.msg.push_back(m);
 
   pthread_mutex_unlock(&android.appMutex);
+  //android.waitForQueue();
+  pthread_mutex_unlock( &android.waitMutex );
   }
 
-static void JNICALL nativeSetSurface(JNIEnv* jenv, jobject obj, jobject surface) {
+static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject obj, jobject surface) {
   if( surface ) {
     android.window = ANativeWindow_fromSurface(jenv, surface);
     LOGI("Got window %p", android.window);
@@ -626,7 +679,10 @@ static void JNICALL nativeSetSurface(JNIEnv* jenv, jobject obj, jobject surface)
       pthread_create(&android.mainThread, 0, tempestMainFunc, 0);
     } else {
     LOGI("Releasing window");
+    pthread_mutex_lock(&android.appMutex);
     ANativeWindow_release(android.window);
+    android.window = 0;
+    pthread_mutex_unlock(&android.appMutex);
     }
 
   return;
@@ -635,7 +691,9 @@ static void JNICALL nativeSetSurface(JNIEnv* jenv, jobject obj, jobject surface)
 static void JNICALL onCreate(JNIEnv* , jobject ) {
   LOGI("nativeOnCreate");
 
+  pthread_mutex_init(&android.waitMutex, 0);
   pthread_mutex_init(&android.appMutex, 0);
+
   android.mainThread = 0;
   }
 
@@ -648,6 +706,7 @@ static void JNICALL onDestroy(JNIEnv* jenv, jobject obj) {
   android.mainThread = 0;
 
   pthread_mutex_destroy(&android.appMutex);
+  pthread_mutex_destroy(&android.waitMutex);
   android.msg.clear();
 
   LOGI("nativeOnDestroy");
@@ -656,6 +715,7 @@ static void JNICALL onDestroy(JNIEnv* jenv, jobject obj) {
 static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
   LOGI("onKeyEvent");
 
+  pthread_mutex_lock( &android.waitMutex );
   pthread_mutex_lock( &android.appMutex );
 
   if( key==AKEYCODE_BACK ){
@@ -666,6 +726,8 @@ static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
     }
 
   pthread_mutex_unlock( &android.appMutex );
+  //android.waitForQueue();
+  pthread_mutex_unlock( &android.waitMutex );
   }
 
 jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
@@ -707,8 +769,6 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
   }
 
 static void* tempestMainFunc(void*){
-  sleep(5);
-
   LOGI("Tempest MainFunc");
   Android &a = android;
 

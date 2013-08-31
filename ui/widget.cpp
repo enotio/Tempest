@@ -483,8 +483,10 @@ void Widget::rootMouseDragEvent(MouseEvent &e) {
   if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
     impl_mouseDragEvent( this, e );
 
-  if( !e.isAccepted() )
+  if( !e.isAccepted() ){
+    e.accept();
     this->mouseDragEvent(e);
+    }
   }
 
 void Widget::rootMouseUpEvent(MouseEvent &e) {
@@ -493,8 +495,10 @@ void Widget::rootMouseUpEvent(MouseEvent &e) {
   if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
     impl_mouseUpEvent( this, e );
 
-  if( !e.isAccepted() )
+  if( !e.isAccepted() ){
+    e.accept();
     this->mouseUpEvent(e);
+    }
   }
 
 void Widget::impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e ){
@@ -522,16 +526,20 @@ void Widget::rootMouseMoveEvent(MouseEvent &e) {
   e.ignore();
   impl_mouseEvent( e, &Widget::mouseMoveEvent, false, false );
 
-  if( !e.isAccepted() )
+  if( !e.isAccepted() ){
+    e.accept();
     this->mouseMoveEvent(e);
+    }
   }
 
 void Widget::rootMouseWheelEvent(MouseEvent &e) {
   e.ignore();
   impl_mouseEvent( e, &Widget::mouseWheelEvent, true, true );
 
-  if( !e.isAccepted() )
+  if( !e.isAccepted() ){
+    e.accept();
     this->mouseWheelEvent(e);
+    }
   }
 
 void Widget::rootKeyDownEvent(KeyEvent &e) {
@@ -542,8 +550,10 @@ void Widget::rootKeyDownEvent(KeyEvent &e) {
     e.ignore();
     }
 
-  if( !e.isAccepted() )
+  if( !e.isAccepted() ){
+    e.accept();
     this->keyDownEvent(e);
+    }
   }
 
 void Widget::rootKeyUpEvent(KeyEvent &e) {
@@ -554,8 +564,10 @@ void Widget::rootKeyUpEvent(KeyEvent &e) {
     e.ignore();
     }
 
-  if( !e.isAccepted() )
+  if( !e.isAccepted() ){
+    e.accept();
     this->keyUpEvent(e);
+    }
   }
 
 void Widget::rootShortcutEvent(KeyEvent &e) {
@@ -578,6 +590,11 @@ void Widget::impl_mouseUpEvent( Widget* w, Tempest::MouseEvent & e ){
     Tempest::MouseEvent ex( e.x - r->x(), e.y - r->y(), e.button, e.delta );
 
     impl_mouseUpEvent( r, ex );
+
+    if( ex.isAccepted() )
+      e.accept(); else
+      e.ignore();
+
     if( size_t(e.mouseID) < w->mouseReleseReciver.size() )
       w->mouseReleseReciver[e.mouseID] = 0;
     }

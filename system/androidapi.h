@@ -13,6 +13,10 @@ class AndroidAPI:public SystemAPI {
     AndroidAPI();
     ~AndroidAPI();
 
+    bool testDisplaySettings( const DisplaySettings& );
+    bool setDisplaySettings( const DisplaySettings& );
+    Size implScreenSize();
+
     static bool startRender( Window* );
     static bool present( Window* );
 

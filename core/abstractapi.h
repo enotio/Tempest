@@ -13,6 +13,7 @@ class AbstractShadingLang;
 class RenderState;
 class Pixmap;
 class Size;
+class DisplaySettings;
 
 enum TextureUsage{
   TU_Undefined,
@@ -71,6 +72,9 @@ class AbstractAPI {
     class OpenGL2xDevice;
 
     virtual Caps caps( Device* d ) const = 0;
+
+    virtual bool testDisplaySettings( const DisplaySettings& d ) const;
+    virtual bool setDisplaySettings ( const DisplaySettings& d ) const;
 
     virtual Device* createDevice( void * hwnd, const Options & opt ) const = 0;
     virtual void    deleteDevice( Device* d )  const = 0;

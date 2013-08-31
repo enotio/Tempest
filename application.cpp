@@ -66,7 +66,7 @@ uint64_t Application::tickCount() {
 
   struct timespec now;
   clock_gettime(CLOCK_MONOTONIC, &now);
-  return (uint8_t)now.tv_sec*1000000LL + now.tv_nsec/1000000;
+  return (uint8_t)now.tv_sec*1000LL + now.tv_nsec/1000000;
   }
 
 void Application::processTimers() {
