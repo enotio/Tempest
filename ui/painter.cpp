@@ -9,7 +9,12 @@
 using namespace Tempest;
 
 PainterDevice::PainterDevice() {
-  setScissor(0,0,-1,-1);
+  State::ScissorRect & m_scissor = rstate.scissor;
+
+  m_scissor.x  = 0 + rstate.orign.x;
+  m_scissor.y  = 0 + rstate.orign.y;
+  m_scissor.x1 = m_scissor.x-1;
+  m_scissor.y1 = m_scissor.y-1;
   }
 
 PainterDevice::~PainterDevice() {
@@ -238,12 +243,8 @@ void PainterDevice::translate(int dx, int dy) {
   rstate.orign += Point(dx,dy);
   }
 
-void PainterDevice::setBlendMode(BlendMode )
-{
-}
+void PainterDevice::setBlendMode(BlendMode ) {
 
-PaintTextEngine &PainterDevice::textEngine() {
-  return tengine;
   }
 
 void PainterDevice::setState(const PainterDevice::State &s) {
@@ -280,10 +281,6 @@ Rect Painter::scissor() const {
   return dev.scissor();
   }
 
-void Painter::setTexture(const Painter::Texture &t) {
-  dev.setTexture(t);
-  }
-
 void Painter::setTexture( const Texture2d &t ) {
   dev.setTexture(t);
   }
@@ -296,6 +293,14 @@ void Painter::unsetTexture() {
   dev.unsetTexture();
   }
 
+void Painter::setColor(float r, float g, float b, float a) {
+  dev.setColor(r,g,b,a);
+  }
+
+void Painter::setFlip(bool h, bool v) {
+  dev.setFlip(h,v);
+  }
+
 void Painter::setBlendMode( BlendMode m ) {
   dev.setBlendMode(m);
   }
@@ -304,8 +309,12 @@ void Painter::setFont(const std::string &f, int sz) {
   dev.textEngine().setFont( f, sz );
   }
 
-void Painter::setFont(const Bind::UserFont &f) {
+void Painter::setFont(const Font &f) {
   dev.textEngine().setFont(f);
+  }
+
+const Font::Letter &Painter::letter(const Font &f, wchar_t c) {
+  return dev.textEngine().letter(f,c);
   }
 
 void Painter::drawText( int x, int y, int w, int h, const std::string &str,

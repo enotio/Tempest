@@ -85,7 +85,7 @@ static struct Android{
     MainThreadMessage msg;
     };
 
-  std::deque<Message> msg;
+  std::vector<Message> msg;
 
   Android(){
     display = EGL_NO_DISPLAY;
@@ -101,6 +101,7 @@ static struct Android{
     isPaused     = true;
 
     mainThread = 0;
+    msg.reserve(32);
     }
 
   bool initialize();
@@ -255,6 +256,26 @@ void Android::waitForQueue() {
     }
   }
 
+int AndroidAPI::nextEvents(bool &quit) {
+  int r = 0;
+  while( !quit ){
+    pthread_mutex_lock(&android.appMutex);
+    if( android.window==0 ){
+      pthread_mutex_unlock(&android.appMutex);
+      return 1;
+      }
+
+    int sz = android.msg.size();
+    pthread_mutex_unlock(&android.appMutex);
+
+    r = nextEvent(quit);
+    if( sz==0 )
+      return r;
+    }
+
+  return r;
+  }
+
 int AndroidAPI::nextEvent(bool &quit) {  
   /*
   static const int ACTION_DOWN = 0,
@@ -264,14 +285,14 @@ int AndroidAPI::nextEvent(bool &quit) {
 
   pthread_mutex_lock(&android.appMutex);
   if( android.window==0 ){
-	pthread_mutex_unlock(&android.appMutex);
-	return 1;
+    pthread_mutex_unlock(&android.appMutex);
+    return 1;
     }
 
   Android::Message msg = Android::MSG_NONE;
   if( android.msg.size() ){
     msg = android.msg[0];
-    android.msg.pop_front();
+    android.msg.erase( android.msg.begin() );
     }
 
   pthread_mutex_unlock(&android.appMutex);
@@ -718,7 +739,7 @@ static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
   pthread_mutex_lock( &android.waitMutex );
   pthread_mutex_lock( &android.appMutex );
 
-  if( key==AKEYCODE_BACK ){
+  if( key!=AKEYCODE_BACK ){
     android.msg.push_back( Android::MSG_KEY_EVENT );
     android.msg.back().data1 = key;
     } else {

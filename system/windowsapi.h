@@ -20,6 +20,7 @@ class WindowsAPI:public SystemAPI {
     void startApplication( ApplicationInitArgs* );
     void endApplication();
     int  nextEvent(bool &qiut);
+    int  nextEvents(bool &quit);
 
     Window* createWindow(int w, int h);
     Window* createWindowMaximized();

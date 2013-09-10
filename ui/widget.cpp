@@ -26,7 +26,7 @@ Widget::Widget(ResourceContext *context):
   mouseReleseReciver.reserve(1);
 #endif
   wvisible = true;
-  lay = 0;
+  mlay = 0;
   setLayout( new Layout() );
 
   update();
@@ -43,7 +43,7 @@ Widget::~Widget() {
     }
 
   onDestroy( this );
-  delete lay;
+  delete mlay;
   }
 
 int Widget::x() const {
@@ -180,6 +180,26 @@ void Widget::setSizePolicy(SizePolicyType f0, SizePolicyType f1) {
     owner()->layout().applyLayout();
   }
 
+void Widget::setSpacing(int s) {
+  layout().setSpacing(s);
+  }
+
+int Widget::spacing() const {
+  return layout().spacing();
+  }
+
+void Widget::setMargin(const Margin &m) {
+  return layout().setMargin(m);
+  }
+
+void Widget::setMargin(int l, int r, int t, int b) {
+  return layout().setMargin(l,r,t,b);
+  }
+
+const Margin &Widget::margin() const {
+  return layout().margin();
+  }
+
 FocusPolicy Widget::focusPolicy() const {
   return fpolicy;
   }
@@ -193,21 +213,21 @@ void Widget::setLayout(Orientation ori) {
   }
 
 void Widget::setLayout(Layout *l) {
-  l->swap( lay );
+  l->swap( mlay );
 
-  delete lay;
-  lay = l;
+  delete mlay;
+  mlay = l;
   l->rebind(this);
 
   l->applyLayout();
   }
 
 Layout &Widget::layout() {
-  return *lay;
+  return *mlay;
   }
 
 const Layout &Widget::layout() const {
-  return *lay;
+  return *mlay;
   }
 
 Layout *Widget::parentLayout() {
@@ -258,9 +278,10 @@ void Widget::paintEvent( PaintEvent &pe ) {
   if( !hasMultiPassPaint() && pe.pass )
     return;
 
-  PainterDevice & p = pe.painter;
+  //PainterDevice & p = pe.painter;
   // p.drawRect( 0, 0, wrect.w, wrect.h );
 
+  /*
   p.drawLine(       0,       0,       0, wrect.h );
   p.drawLine( wrect.w,       0, wrect.w, wrect.h );
   p.drawLine(       0,       0, wrect.w,       0 );
@@ -268,6 +289,7 @@ void Widget::paintEvent( PaintEvent &pe ) {
 
   p.drawLine(      0,       0, wrect.w, wrect.h );
   p.drawLine(      0, wrect.h, wrect.w,       0 );
+  */
 
   nToUpdate = false;
   paintNested(pe);
@@ -636,8 +658,8 @@ ResourceContext *Widget::context() const {
 void Widget::setContext(ResourceContext *context) {
   rcontext = context;
 
-  if( lay )
-    lay->rebind(this);
+  if( mlay )
+    mlay->rebind(this);
   }
 
 void Widget::setFocus(bool f) {

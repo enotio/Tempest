@@ -244,6 +244,82 @@ void GLSL::deleteFragmentShader( FragmentShader* s ) const{
   delete prog;
   }
 
+std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
+                                 const AbstractShadingLang::UiShaderOpt &opt,
+                                 bool &hasHalfpixOffset ) const {
+  hasHalfpixOffset = false;
+
+  static const std::string vs_src =
+      "attribute vec2 Position;"
+      "attribute vec2 TexCoord;"
+      "attribute vec4 TexCoord1;"
+
+      "varying vec2 tc;"
+      "varying vec4 cl;"
+
+      "void main() {"
+        "tc = TexCoord;"
+        "cl = TexCoord1;"
+        "gl_Position = vec4(Position, 0.0, 1.0);"
+        "}";
+
+  static const std::string fs_src =
+#ifdef __ANDROID__
+      "precision mediump float;"
+#endif
+      "varying vec2 tc;"
+      "varying vec4 cl;"
+      "uniform sampler2D texture;"
+
+      "void main() {"
+        "gl_FragColor = texture2D(texture, tc)*cl;"
+        "}";
+
+  static const std::string vs_src_nt =
+      "attribute vec2 Position;"
+      "attribute vec2 TexCoord;"
+      "attribute vec4 TexCoord1;"
+
+      "varying vec4 cl;"
+
+      "void main() {"
+        "cl = TexCoord1;"
+        "gl_Position = vec4(Position, 0.0, 1.0);"
+        "}";
+
+  static const std::string fs_src_nt =
+#ifdef __ANDROID__
+      "precision mediump float;"
+#endif
+      "varying vec4 cl;"
+
+      "void main() {"
+        "gl_FragColor = cl;"
+        "}";
+
+  if( opt.hasTexture ){
+    switch( t ) {
+      case Vertex:
+        return vs_src;
+        break;
+      case Fragment:
+        return fs_src;
+        break;
+      }
+    }
+
+  switch( t ) {
+    case Vertex:
+      return vs_src_nt;
+      break;
+    case Fragment:
+      return fs_src_nt;
+      break;
+    }
+
+  return fs_src;
+  }
+
 void GLSL::bind( const Tempest::VertexShader& s ) const {
   if( data->currentVS != &s ){
     data->currentVS = &s;

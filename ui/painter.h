@@ -3,6 +3,7 @@
 
 #include <Tempest/PaintTextEngine>
 #include <Tempest/Utility>
+#include <Tempest/Font>
 #include <string>
 
 namespace Tempest{
@@ -51,13 +52,15 @@ class PainterDevice {
 
     virtual void translate( int dx, int dy );
 
-    typedef Bind::UserTexture Texture;
-    virtual void setTexture( const Texture & t ) = 0;
     virtual void setTexture( const Tempest::Texture2d& ){}
     virtual void setTexture( const Tempest::Sprite& ){}
-    virtual void unsetTexture() = 0;
+    virtual void unsetTexture() = 0;    
+    virtual void setColor( float , float , float , float ){}
+    virtual void setFlip( bool /*h*/, bool /*v*/ ){}
 
-    void quad( int x, int y, int  w, int  h){ quad(x,y,w,h,0,0); }
+    virtual void quad( int x, int y, int  w, int  h){
+      quad( x, y, w, h,  0,  0, w, h);
+      }
 
     virtual void quad( int x, int y, int  w, int  h, int tx, int ty){
       quad( x, y, w, h, tx, ty, w, h );
@@ -69,7 +72,7 @@ class PainterDevice {
 
     virtual void setBlendMode( BlendMode m );
 
-    virtual PaintTextEngine& textEngine();
+    virtual PaintTextEngine& textEngine() = 0;
 
     virtual void setNullState(){}
     virtual void pushState(){}
@@ -83,7 +86,7 @@ class PainterDevice {
       Point orign;
       } rstate;
     void setState( const State & s );
-    PaintTextEngine tengine;
+    //PaintTextEngine tengine;
 
     friend class Painter;
     friend class Widget;
@@ -118,12 +121,12 @@ class Painter {
     void translate( int dx, int dy );
     void translate( const Point &p  );
 
-    typedef Bind::UserTexture Texture;
-    void setTexture( const Texture & t );
     void setTexture( const Tempest::Texture2d& );
     void setTexture( const Tempest::Sprite& );
     void unsetTexture();
 
+    void setColor( float r, float g, float b, float a = 1);
+    void setFlip( bool h, bool v );
     void setBlendMode( BlendMode );
 
     enum AlignFlag{
@@ -138,7 +141,9 @@ class Painter {
       };
 
     void setFont( const std::string & f, int sz );
-    void setFont( const Bind::UserFont & f );
+    void setFont( const Font &f );
+    const Font::Letter& letter( const Font &f, wchar_t c );
+
     void drawText( int x, int y, int w, int h, const std::string&,
                    int flag = 0 );
     void drawText( int x, int y, const std::string &, int flg = 0 );

@@ -5,7 +5,8 @@
 using namespace Tempest;
 
 Timer::Timer() {
-  interval = 0;//std::chrono::milliseconds::zero();
+  interval    = 0;//std::chrono::milliseconds::zero();
+  mrepeatCount = 4;
   }
 
 Timer::~Timer() {
@@ -32,6 +33,16 @@ void Timer::start(uint64_t t) {
 
 void Timer::stop() {
   start(0);
+  }
+
+void Timer::setRepeatCount(uint64_t c) {
+  mrepeatCount = c;
+  if( !mrepeatCount )
+    mrepeatCount = 1;
+  }
+
+uint64_t Timer::repeatCount() const {
+  return mrepeatCount;
   }
 
 void Timer::reg() {

@@ -14,7 +14,7 @@ class Application {
     ~Application();
 
     int exec();
-    static bool processEvents();
+    static bool processEvents(bool all = true);
     static void sleep(unsigned int msec );
 
     static uint64_t tickCount();

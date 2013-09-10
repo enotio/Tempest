@@ -123,7 +123,7 @@ const std::vector<Widget*> &Layout::widgets() {
   return w;
   }
 
-int Layout::spacing(){
+int Layout::spacing() const {
   return mspacing;
   }
 

@@ -24,6 +24,10 @@ INCLUDEPATH += \
                "./thirdparty/" \
                "."
 
+INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/include"
+INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/include/freetype2"
+
+LIBS += -L"C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/lib" -lfreetype
 #DEFINES += D3D_DEBUG_INFO
 
 ogl:{
@@ -158,7 +162,9 @@ SOURCES += \
     2d/spritesholder.cpp \
     timer.cpp \
     2d/surface.cpp \
-    core/wrappers/displaysettings.cpp
+    core/wrappers/displaysettings.cpp \
+    2d/surfacerender.cpp \
+    2d/font.cpp
 
 HEADERS += \
     ui/window.h \
@@ -251,7 +257,11 @@ HEADERS += \
     timer.h \
     2d/surface.h \
     core/wrappers/displaysettings.h \
-    include/Tempest/DisplaySettings
+    include/Tempest/DisplaySettings \
+    2d/surfacerender.h \
+    include/Tempest/SurfaceRender \
+    2d/font.h \
+    include/Tempest/Font
 
 OTHER_FILES += \
     include/Tempest/Window \

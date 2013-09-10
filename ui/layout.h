@@ -31,7 +31,7 @@ class Layout {
     virtual void applyLayout(){}
 
     void setSpacing( int s );
-    int  spacing();
+    int  spacing() const;
 
     void setMargin( const Margin & m );
     void setMargin( int l, int r, int t, int b );

@@ -37,6 +37,9 @@ namespace Tempest {
       FragmentShader* createFragmentShaderFromSource( const std::string& src,
                                                       std::string & log  ) const;
       void            deleteFragmentShader( FragmentShader* s ) const;
+
+      std::string surfaceShader( ShaderType t, const UiShaderOpt&,
+                                 bool& hasHalfpixOffset ) const;
     private:
       struct Data;
       Data *data;

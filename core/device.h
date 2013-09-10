@@ -98,6 +98,8 @@ class Device {
                         const Tempest::VertexDeclaration &decl,
                         const Tempest::VertexBuffer<T> & vbo,
                         int firstVertex, int pCount ){
+      assertPaint();
+
       if( pCount==0 ||
           decl.decl==0 ||
           !vs.isValid() ||
@@ -130,6 +132,8 @@ class Device {
                        int vboOffsetIndex,
                        int iboOffsetIndex,
                        int pCount ){
+      assertPaint();
+
       if( pCount==0 ||
           decl.decl==0  ||
           !vs.isValid() ||
@@ -160,9 +164,17 @@ class Device {
 
     Tempest::Size windowSize() const;
     Tempest::Size viewPortSize() const;
+
+    std::string surfaceShader( AbstractShadingLang::ShaderType t,
+                               const AbstractShadingLang::UiShaderOpt&,
+                               bool& hasHalfpixOffset );
+    std::string surfaceShader( AbstractShadingLang::ShaderType t,
+                               const AbstractShadingLang::UiShaderOpt& opt );
   private:
     void bind( const Tempest::VertexShader   &s );
     void bind( const Tempest::FragmentShader &s );
+
+    void assertPaint();
 
     void unBind( const Tempest::VertexShader   &s );
     void unBind( const Tempest::FragmentShader &s );

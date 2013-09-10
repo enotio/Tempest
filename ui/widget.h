@@ -75,6 +75,13 @@ class Widget {
     void setSizePolicy( Tempest::SizePolicyType f0,
                         Tempest::SizePolicyType f1 );
 
+    void setSpacing( int s );
+    int  spacing() const;
+
+    void setMargin( const Margin & m );
+    void setMargin( int l, int r, int t, int b );
+    const Margin& margin() const;
+
     FocusPolicy focusPolicy() const;
     void setFocusPolicy( FocusPolicy f );
 
@@ -166,7 +173,7 @@ class Widget {
 
     bool focus, chFocus, uscissor;
     std::vector<Widget*> mouseReleseReciver;
-    Layout * lay;
+    Layout * mlay;
     Layout * parentLay;
 
     ResourceContext* rcontext;

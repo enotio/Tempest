@@ -137,6 +137,20 @@ void CgDx9::setNullDevice(){
     }
   }
 
+void CgDx9::endPaint() const {
+  data->currentVS = 0;
+  data->currentProgramVS = 0;
+  data->vsCash.reset();
+  //cgGLDisableProfile( data->vertexProfile );
+
+  data->currentFS = 0;
+  data->currentProgramFS = 0;
+  data->fsCash.reset();
+
+  //data->curProgram.linked = 0;
+  //cgGLDisableProfile( data->pixelProfile );
+  }
+
 AbstractShadingLang::VertexShader*
   CgDx9::createVertexShaderFromSource( const std::string &src,
                                        std::string &outputLog ) const {
@@ -388,3 +402,113 @@ void CgDx9::setUniform( const Tempest::FragmentShader &sh,
     }
   }
 
+std::string CgDx9::surfaceShader( AbstractShadingLang::ShaderType t,
+                                  const AbstractShadingLang::UiShaderOpt &opt,
+                                  bool &hasHalfpixOffset) const {
+  hasHalfpixOffset = true;
+
+  static const std::string vs_src =
+      "struct VS_Input {"
+      "  float2 Position:  POSITION;"
+      "  float2 TexCoord:  TEXCOORD0;"
+      "  float4 TexCoord1: TEXCOORD1;"
+      "  };"
+
+      "struct FS_Input {"
+      "  float4 pos: POSITION;"
+      "  float2 tc : TEXCOORD0;"
+      "  float4 cl : COLOR;"
+      "  };"
+
+      "FS_Input main( VS_Input vs,"
+                      "uniform float2 dpos"
+        ") {"
+        "FS_Input fs;"
+        "fs.tc  = float2( vs.TexCoord.x, 1.0-vs.TexCoord.y );"
+        "fs.cl  = vs.TexCoord1;"
+        "fs.pos = float4(vs.Position+dpos, 0.0, 1.0);"
+        "return fs;"
+        "}";
+
+  static const std::string fs_src =
+      "struct FS_Input {"
+      "  float4 pos: POSITION;"
+      "  float2 tc : TEXCOORD0;"
+      "  float4 cl : COLOR;"
+      "  };"
+
+      "struct FS_Output {"
+      "  float4 color: COLOR0;"
+      "  };"
+
+      "FS_Output main("
+        "FS_Input fs,"
+        "uniform sampler2DRect texture"
+        ") {"
+        "FS_Output c;"
+        "c.color = texRECTlod(texture, float4(fs.tc, 0.0, 0.0) )*fs.cl;"
+        "return c;"
+        "}";
+
+
+  static const std::string vs_src_nt =
+      "struct VS_Input {"
+      "  float2 Position:  POSITION;"
+      "  float2 TexCoord:  TEXCOORD0;"
+      "  float4 TexCoord1: TEXCOORD1;"
+      "  };"
+
+      "struct FS_Input {"
+      "  float4 pos: POSITION;"
+      "  float4 cl : COLOR;"
+      "  };"
+
+      "FS_Input main( VS_Input vs,"
+                      "uniform float2 dpos"
+        ") {"
+        "FS_Input fs;"
+        "fs.cl  = vs.TexCoord1;"
+        "fs.pos = float4(vs.Position+dpos, 0.0, 1.0);"
+        "return fs;"
+        "}";
+
+  static const std::string fs_src_nt =
+      "struct FS_Input {"
+      "  float4 pos: POSITION;"
+      "  float4 cl : COLOR;"
+      "  };"
+
+      "struct FS_Output {"
+      "  float4 color: COLOR0;"
+      "  };"
+
+      "FS_Output main("
+        "FS_Input fs"
+        ") {"
+        "FS_Output c;"
+        "c.color = fs.cl;"
+        "return c;"
+        "}";
+
+  if( opt.hasTexture ){
+    switch( t ) {
+      case Vertex:
+        return vs_src;
+        break;
+      case Fragment:
+        return fs_src;
+        break;
+      }
+    }
+
+  switch( t ) {
+    case Vertex:
+      return vs_src_nt;
+      break;
+    case Fragment:
+      return fs_src_nt;
+      break;
+    }
+
+  return fs_src;
+  }

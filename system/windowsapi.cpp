@@ -20,9 +20,6 @@ using namespace Tempest;
 
 static std::unordered_map<WindowsAPI::Window*, Tempest::Window*> wndWx;
 
-static DEVMODE defaultMode, appMode;
-static DWORD   appDevModeFlg = 0;
-
 static LRESULT CALLBACK WindowProc( HWND   hWnd,
                                     UINT   msg,
                                     WPARAM wParam,
@@ -90,8 +87,8 @@ bool WindowsAPI::setDisplaySettings( const DisplaySettings &s ) {
     flg |= CDS_FULLSCREEN;
 
   if( ChangeDisplaySettings(&mode,flg)==DISP_CHANGE_SUCCESSFUL ){
-    appMode       = mode;
-    appDevModeFlg = flg;
+    //appMode       = mode;
+    //appDevModeFlg = flg;
     return 1;
     }
 
@@ -108,8 +105,8 @@ Size WindowsAPI::implScreenSize() {
   }
 
 void WindowsAPI::startApplication(ApplicationInitArgs *) {
-  EnumDisplaySettings( 0, ENUM_CURRENT_SETTINGS, &defaultMode );
-  appMode = defaultMode;
+  //EnumDisplaySettings( 0, ENUM_CURRENT_SETTINGS, &defaultMode );
+  //appMode = defaultMode;
 
   WNDCLASSEX winClass;
 
@@ -143,6 +140,7 @@ int WindowsAPI::nextEvent(bool &quit) {
 
     TranslateMessage( &uMsg );
     DispatchMessage ( &uMsg );
+    Sleep(0);
     return uMsg.wParam;
     } else {
     for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
@@ -150,6 +148,31 @@ int WindowsAPI::nextEvent(bool &quit) {
 
     return 0;
     }
+  }
+
+int WindowsAPI::nextEvents(bool &quit) {
+  MSG uMsg;
+  memset(&uMsg,0,sizeof(uMsg));
+  int r = 0;
+
+  while( !quit ){
+    if( PeekMessage( &uMsg, NULL, 0, 0, PM_REMOVE ) ){
+      if( uMsg.message==WM_QUIT )
+        quit = 1;
+
+      TranslateMessage( &uMsg );
+      DispatchMessage ( &uMsg );
+      Sleep(0);
+      r = uMsg.wParam;
+      } else {
+      for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
+        i->second->render();
+
+      return r;
+      }
+    }
+
+  return r;
   }
 
 WindowsAPI::Window *WindowsAPI::createWindow(int w, int h) {
@@ -693,9 +716,9 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
             }
 
           if( !a ){
-            ChangeDisplaySettings(&defaultMode, 0);
+            //ChangeDisplaySettings(&defaultMode, 0);
             } else {
-            ChangeDisplaySettings(&appMode, appDevModeFlg);
+            //ChangeDisplaySettings(&appMode, appDevModeFlg);
             }
       }
       break;

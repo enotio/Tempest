@@ -32,6 +32,15 @@ class ShaderHolder : public AbstractHolderWithLoad< Shader, APIDescriptor > {
       return obj;
       }
 
+    Shader surfaceShader( const AbstractShadingLang::UiShaderOpt &opt  ){
+      return loadFromSource( this->device().surfaceShader(type, opt) );
+      }
+
+    Shader surfaceShader( const AbstractShadingLang::UiShaderOpt &opt,
+                          bool& hasHalfpixOffset ){
+      return loadFromSource( this->device().
+                             surfaceShader(type, opt, hasHalfpixOffset) );
+      }
   protected:
     virtual void createObjectFromSrc( Shader &obj,
                                       APIDescriptor*& t,

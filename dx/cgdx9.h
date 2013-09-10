@@ -34,6 +34,8 @@ class CgDx9 : public AbstractShadingLang {
                                                     std::string & outputLog ) const;
     void            deleteFragmentShader( FragmentShader* s ) const;
 
+    std::string surfaceShader( ShaderType t, const UiShaderOpt&,
+                               bool& hasHalfpixOffset ) const;
   private:
     struct Data;
     Data *data;
@@ -41,6 +43,7 @@ class CgDx9 : public AbstractShadingLang {
     void setDevice() const;
     static void setNullDevice();
 
+    void endPaint() const;
 
     void setUniform( const Tempest::FragmentShader &s,
                      const Texture2d& t,

@@ -11,6 +11,8 @@ LOCAL_C_INCLUDES := $(Tempest_PATH)/include\
                     $(Tempest_PATH)/squish\
                     $(Tempest_PATH)/thirdparty
 
+LOCAL_C_INCLUDES += C:/Users/Try/Home/Programming/android/game_ndk/game/jni/freetype/include
+
 LOCAL_EXPORT_C_INCLUDES := $(Tempest_PATH)/include
 
 LOCAL_CFLAGS    := -std=c++0x
@@ -38,9 +40,7 @@ LOCAL_SRC_FILES := \
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
 
-#LOCAL_STATIC_LIBRARIES := android_native_app_glue
-#LOCAL_STATIC_LIBRARIES := nv_and_util
-#LOCAL_SHARED_LIBRARIES := native_subclass
+LOCAL_STATIC_LIBRARIES := freetype2
 LOCAL_LDLIBS    := -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics -lz
 
 include $(BUILD_SHARED_LIBRARY)

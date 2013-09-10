@@ -41,9 +41,12 @@ void *Application::execImpl(void *) {
   return 0;
   }
 
-bool Application::processEvents() {
-  if( !app.quit )
-    app.ret = SystemAPI::instance().nextEvent(app.quit);
+bool Application::processEvents( bool all ) {
+  if( !app.quit ){
+    if( all )
+      app.ret = SystemAPI::instance().nextEvents(app.quit); else
+      app.ret = SystemAPI::instance().nextEvent (app.quit);
+    }
 
   processTimers();
   return app.quit;
@@ -77,7 +80,7 @@ void Application::processTimers() {
   for( size_t i=0; i<a.timer.size(); ++i ){
     uint64_t dt = (t-a.timer[i]->lastTimeout)/a.timer[i]->interval;
 
-    for( size_t r=0; r<dt && r<4; ++r ){
+    for( size_t r=0; r<dt && r<app.timer[i]->mrepeatCount; ++r ){
       app.timer[i]->lastTimeout = t;
       app.timer[i]->timeout();
       }

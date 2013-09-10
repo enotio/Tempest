@@ -25,6 +25,12 @@ AbstractShadingLang::FragmentShader*
   return createFragmentShaderFromSource( SystemAPI::loadText(fname), log );
   }
 
+std::string AbstractShadingLang::surfaceShader( ShaderType t,
+                                                const UiShaderOpt &opt) const {
+  bool d = false;
+  return surfaceShader(t,opt, d);
+  }
+
 AbstractShadingLang::FragmentShader*
   AbstractShadingLang::createFragmentShader(const std::string &fname, std::string &outputLog) const {
   return createFragmentShaderFromSource( SystemAPI::loadText(fname), outputLog );
@@ -63,4 +69,8 @@ void *AbstractShadingLang::createShader( AbstractShadingLang::ShaderType t,
                                          const std::wstring &fname,
                                          std::string &outputLog) const {
   return createShaderFromSource( t, SystemAPI::loadText(fname), outputLog );
+  }
+
+AbstractShadingLang::UiShaderOpt::UiShaderOpt() {
+  hasTexture = true;
   }

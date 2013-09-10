@@ -21,12 +21,16 @@ class Timer {
 
     void start( uint64_t t );
     void stop();
+
+    void setRepeatCount( uint64_t c );
+    uint64_t repeatCount() const;
   private:
     //std::chrono::milliseconds interval;
     //std::chrono::time_point<std::chrono::steady_clock> lastTimeout;
 
     uint64_t interval;
     uint64_t lastTimeout;
+    uint64_t mrepeatCount;
 
     void reg();
     void unreg();

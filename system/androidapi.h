@@ -23,6 +23,7 @@ class AndroidAPI:public SystemAPI {
     void startApplication( ApplicationInitArgs* );
     void endApplication();
     int  nextEvent(bool &qiut);
+    int  nextEvents(bool &qiut);
 
     Window* createWindow(int w, int h);
     Window* createWindowMaximized();

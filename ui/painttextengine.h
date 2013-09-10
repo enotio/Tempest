@@ -2,6 +2,7 @@
 #define PAINTTEXTENGINE_H
 
 #include <string>
+#include <Tempest/Font>
 
 namespace Tempest {
 
@@ -28,7 +29,8 @@ class PaintTextEngine {
       (void)f;
       (void)sz;
       }
-    virtual void setFont( const Bind::UserFont & f ){ (void)f; }
+    virtual void setFont( const Font & f ){ (void)f; }
+    virtual const Font::Letter& letter( const Font &f, wchar_t c ) = 0;
 
     virtual void drawText( int x, int y, int w, int h, const std::string  &,
                            int align = NoAlign ){

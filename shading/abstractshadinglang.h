@@ -93,6 +93,14 @@ class AbstractShadingLang {
     virtual void deleteVertexShader( VertexShader* s ) const = 0;
     virtual void deleteFragmentShader( FragmentShader* s ) const = 0;
 
+    struct UiShaderOpt{
+      UiShaderOpt();
+      bool hasTexture;
+      };
+
+    virtual std::string surfaceShader( ShaderType t, const UiShaderOpt&,
+                                       bool& hasHalfpixOffset ) const = 0;
+    virtual std::string surfaceShader( ShaderType t, const UiShaderOpt& opt ) const;
   protected:
     static VertexShader*   get( const Tempest::VertexShader   & s );
     static FragmentShader* get( const Tempest::FragmentShader & s );

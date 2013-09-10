@@ -40,6 +40,7 @@ class SystemAPI{
     virtual void startApplication( ApplicationInitArgs* ) = 0;
     virtual void endApplication() = 0;
     virtual int  nextEvent(bool &qiut) = 0;
+    virtual int  nextEvents(bool &qiut) = 0;
 
     static std::string loadText( const std::string& file );
     static std::string loadText( const std::wstring& file );

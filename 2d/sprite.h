@@ -22,6 +22,7 @@ class Sprite {
     const Tempest::Texture2d& pageRawData() const;
     Tempest::Rect pageRect() const;
 
+    size_t handle() const;
   private:
     Tempest::Rect rect;
     SpritesHolder *holder;

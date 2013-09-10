@@ -926,9 +926,17 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
 
   if( p.format()==Pixmap::Format_RGB ||
       p.format()==Pixmap::Format_RGBA ){
-    glTexImage2D( GL_TEXTURE_2D, 0, tex->format,
-                  p.width(), p.height(), 0, tex->format,
-                  GL_UNSIGNED_BYTE, p.const_data() );
+    /*
+    glTexImage2D( GL_TEXTURE_2D, 0,
+                  tex->format,
+                  p.width(), p.height(), 0,
+                  tex->format,
+                  GL_UNSIGNED_BYTE, p.const_data() );*/
+    glTexSubImage2D(  GL_TEXTURE_2D, 0,
+                      0, 0,
+                      p.width(), p.height(),
+                      tex->format,
+                      GL_UNSIGNED_BYTE, p.const_data() );
     if( mips )
       glGenerateMipmap( GL_TEXTURE_2D );
     } else {

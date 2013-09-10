@@ -505,6 +505,17 @@ Size Device::viewPortSize() const {
   return data->viewPortSize;
   }
 
+std::string Device::surfaceShader( AbstractShadingLang::ShaderType t,
+                                   const AbstractShadingLang::UiShaderOpt &opt,
+                                   bool &hasHalfpixOffset) {
+  return shadingLang().surfaceShader(t, opt, hasHalfpixOffset);
+  }
+
+std::string Device::surfaceShader( AbstractShadingLang::ShaderType t,
+                                   const AbstractShadingLang::UiShaderOpt &opt ) {
+  return shadingLang().surfaceShader(t, opt);
+  }
+
 AbstractAPI::Texture *Device::createTexture( const Pixmap &p,
                                              bool mips,
                                              bool compress ) {
@@ -616,6 +627,10 @@ void Device::deleteVertexDecl( AbstractAPI::VertexDecl* d ) const {
 
   if( data->deleteDecl(d) )
     api.deleteVertexDecl( impl, d );
+  }
+
+void Device::assertPaint() {
+  T_ASSERT_X( data->isPaintMode, "Device::beginPaint not called" );
   }
 
 void Device::bind( const Tempest::VertexShader &s ){
