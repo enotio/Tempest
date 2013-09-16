@@ -187,6 +187,22 @@ void PainterDevice::drawLine( int x, int y, int x1, int y1 ) {
 
   if( m_scissor.x <= m_scissor.x1 &&
       m_scissor.y <= m_scissor.y1 ){
+    if( x  > m_scissor.x1 &&
+        x1 > m_scissor.x1 )
+      return;
+
+    if( x  < m_scissor.x &&
+        x1 < m_scissor.x )
+      return;
+
+    if( y  > m_scissor.y1 &&
+        y1 > m_scissor.y1 )
+      return;
+
+    if( y  < m_scissor.y &&
+        y1 < m_scissor.y )
+      return;
+
     if( x<m_scissor.x ){
       if( x!=x1 )
         y += (m_scissor.x-x)*(y1-y)/(x1-x); else

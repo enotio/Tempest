@@ -14,8 +14,8 @@ class Sprite {
   public:
     Sprite();
 
-    int width() const;
-    int height() const;
+    int w() const;
+    int h() const;
 
     Size size() const;
 

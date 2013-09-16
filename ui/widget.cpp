@@ -17,6 +17,7 @@ Widget::Widget(ResourceContext *context):
   uscissor     = true;
   nToUpdate    = false;
   multiPaint   = false;
+  multiTouch   = false;
 
   deleteLaterFlag = false;
 
@@ -326,7 +327,7 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
         return w;
         }
 
-      if( w->isVisible() ){
+      if( w->isVisible() && (et.mouseID==0 || multiTouch) ){
         et.accept();
         (w->*f)( et );
         }
@@ -339,7 +340,7 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
           mouseReleseReciver[et.mouseID] = w;
           }
 
-        if( focus &&  w->focusPolicy()==ClickFocus )
+        if( focus && w->focusPolicy()==ClickFocus )
           w->setFocus(1);
 
         return w;
@@ -495,7 +496,7 @@ void Widget::rootMouseDownEvent(MouseEvent &e) {
   mouseReleseReciver[e.mouseID] = impl_mouseEvent( e, &Widget::mouseDownEvent,
                                                    true, true );
 
-  if( !e.isAccepted() )
+  if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()))
     this->mouseDownEvent(e);
   }
 
@@ -505,7 +506,7 @@ void Widget::rootMouseDragEvent(MouseEvent &e) {
   if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
     impl_mouseDragEvent( this, e );
 
-  if( !e.isAccepted() ){
+  if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
     this->mouseDragEvent(e);
     }
@@ -517,7 +518,7 @@ void Widget::rootMouseUpEvent(MouseEvent &e) {
   if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
     impl_mouseUpEvent( this, e );
 
-  if( !e.isAccepted() ){
+  if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
     this->mouseUpEvent(e);
     }
@@ -548,7 +549,7 @@ void Widget::rootMouseMoveEvent(MouseEvent &e) {
   e.ignore();
   impl_mouseEvent( e, &Widget::mouseMoveEvent, false, false );
 
-  if( !e.isAccepted() ){
+  if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
     this->mouseMoveEvent(e);
     }
@@ -558,7 +559,7 @@ void Widget::rootMouseWheelEvent(MouseEvent &e) {
   e.ignore();
   impl_mouseEvent( e, &Widget::mouseWheelEvent, true, true );
 
-  if( !e.isAccepted() ){
+  if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
     this->mouseWheelEvent(e);
     }
@@ -660,6 +661,14 @@ void Widget::setContext(ResourceContext *context) {
 
   if( mlay )
     mlay->rebind(this);
+  }
+
+bool Widget::hasMultitouch() const {
+  return multiTouch;
+  }
+
+void Widget::setMultiTouchTracking( bool m ) {
+  multiTouch = m;
   }
 
 void Widget::setFocus(bool f) {

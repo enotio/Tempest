@@ -91,19 +91,22 @@ void SystemAPI::mkKeyEvent( Tempest::Window *w,
     }
   }
 
-void SystemAPI::mkMouseEvent(Tempest::Window *w, MouseEvent &e , Event::Type type ) {
+void SystemAPI::mkMouseEvent(Tempest::Window *w, MouseEvent &e , Event::Type type ){
+  if( w->pressedC.size() < size_t(e.mouseID+1) )
+    w->pressedC.resize(e.mouseID+1);
+
   if( type==Event::MouseDown ){
-    w->pressedC = 1;
+    w->pressedC[e.mouseID] = 1;
     processEvents(w, e, type);
     }
 
   if( type==Event::MouseUp ){
-    w->pressedC = 0;
+    w->pressedC[e.mouseID] = 0;
     processEvents(w, e, type);
     }
 
   if( type==Event::MouseMove ){
-    if( w->pressedC ){
+    if( w->pressedC[e.mouseID] ){
       processEvents(w, e, Event::MouseDrag);
 
       if( e.isAccepted() )

@@ -36,7 +36,7 @@ class Window : public Widget {
 
   private:
     SystemAPI::Window *wnd;
-    int  pressedC;
+    std::vector<int>   pressedC;
     bool resizeIntent, isAppActive;
 
     ShowMode smode;

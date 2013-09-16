@@ -3,15 +3,23 @@
 
 #include <Tempest/SystemAPI>
 
+#ifdef __ANDROID__
+#include <jni.h>
+
 namespace Tempest{
 
 class Window;
 
-#ifdef __ANDROID__
 class AndroidAPI:public SystemAPI {
   protected:
     AndroidAPI();
     ~AndroidAPI();
+
+    static JavaVM *jvm();
+    static jclass appClass();
+
+    static const char* internalStorage();
+    static const char* externalStorage();
 
     bool testDisplaySettings( const DisplaySettings& );
     bool setDisplaySettings( const DisplaySettings& );
@@ -64,8 +72,9 @@ class AndroidAPI:public SystemAPI {
     T loadAssetImpl( const char* file );
 
   };
-#endif
 
 }
+
+#endif
 
 #endif // ANDROIDAPI_H

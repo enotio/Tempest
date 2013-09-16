@@ -135,6 +135,9 @@ class Widget {
 
     ResourceContext* context() const;
     void setContext( ResourceContext* context );
+
+    bool hasMultitouch() const;
+    void setMultiTouchTracking( bool multiTouch );
   protected:
     virtual void paintNested( Tempest::PaintEvent & p );
 
@@ -178,7 +181,7 @@ class Widget {
 
     ResourceContext* rcontext;
 
-    bool nToUpdate, multiPaint, deleteLaterFlag;
+    bool nToUpdate, multiPaint, deleteLaterFlag, multiTouch;
 
     void execDeleteRoot();
     void execDelete();

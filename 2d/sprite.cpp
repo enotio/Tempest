@@ -6,11 +6,11 @@ Sprite::Sprite():holder(0), tex(0), id(-1), nonPool(0) {
 
   }
 
-int Sprite::width() const {
+int Sprite::w() const {
   return rect.w;
   }
 
-int Sprite::height() const {
+int Sprite::h() const {
   return rect.h;
   }
 

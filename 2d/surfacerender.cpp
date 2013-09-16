@@ -323,8 +323,8 @@ void SurfaceRender::PaintDev::setTexture(const Texture2d &t) {
   }
 
 void SurfaceRender::PaintDev::setTexture(const Sprite &t) {
-  surf.invTw = 1.0f/t.width();
-  surf.invTh = 1.0f/t.height();
+  surf.invTw = 1.0f/t.w();
+  surf.invTh = 1.0f/t.h();
 
   unsetTexture();
   surf.curTex = t;

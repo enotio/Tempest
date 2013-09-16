@@ -50,7 +50,8 @@ Window::Window( Window::ShowMode sm ) {
 
 void Window::init( int w, int h ){
   resizeIntent = false;
-  pressedC = 0;
+  pressedC.reserve(8);
+  pressedC.push_back(0);
   winW = w;
   winH = h;
   isAppActive = true;

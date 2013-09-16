@@ -53,6 +53,8 @@ static struct Android{
   bool isWndAviable;
   bool isPaused;
 
+  std::vector<char> internal, external;
+
   enum MainThreadMessage {
     MSG_NONE = 0,
     MSG_WINDOW_SET,
@@ -69,6 +71,7 @@ static struct Android{
       data.x = 0;
       data.y = 0;
       data1  = 0;
+      data2  = 0;
       }
 
     union{
@@ -81,11 +84,42 @@ static struct Android{
         };
       } data;
 
-    int data1;
+    int data1, data2;
     MainThreadMessage msg;
     };
 
   std::vector<Message> msg;
+
+  struct MousePointer{
+    int  nativeID;
+    bool valid;
+    };
+  std::vector<MousePointer> mouse;
+
+  int pointerId( int nid ){
+    for( size_t i=0; i<mouse.size(); ++i )
+      if( mouse[i].nativeID==nid &&
+          ( i>0 || mouse[i].valid ) ){
+        mouse[i].valid = true;
+        return i;
+        }
+
+    MousePointer p;
+    p.nativeID = nid;
+    p.valid    = true;
+    mouse.push_back(p);
+    return mouse.size()-1;
+    }
+
+  void unsetPointer( int nid ){
+    for( size_t i=0; i<mouse.size(); ++i )
+      if( mouse[i].nativeID==nid ){
+        mouse[i].valid = false;
+        }
+
+    while( mouse.size() && !mouse.back().valid )
+      mouse.pop_back();
+    }
 
   Android(){
     display = EGL_NO_DISPLAY;
@@ -101,7 +135,8 @@ static struct Android{
     isPaused     = true;
 
     mainThread = 0;
-    msg.reserve(32);
+    msg.  reserve(32);
+    mouse.reserve(8);
     }
 
   bool initialize();
@@ -146,6 +181,22 @@ AndroidAPI::AndroidAPI(){
 
 AndroidAPI::~AndroidAPI(){
 
+  }
+
+JavaVM *AndroidAPI::jvm() {
+  return android.vm;
+  }
+
+jclass AndroidAPI::appClass() {
+  return android.tempestClass;
+  }
+
+const char *AndroidAPI::internalStorage() {
+  return android.internal.data();
+  }
+
+const char *AndroidAPI::externalStorage() {
+  return android.external.data();
   }
 
 AndroidAPI::Window *AndroidAPI::createWindow(int w, int h) {
@@ -320,13 +371,16 @@ int AndroidAPI::nextEvent(bool &quit) {
       break;
 
     case Android::MSG_TOUCH: {
-      MouseEvent e( msg.data.x, msg.data.y, MouseEvent::ButtonLeft );
+      int id = android.pointerId( msg.data2 );
+      MouseEvent e( msg.data.x, msg.data.y, MouseEvent::ButtonLeft, 0, id );
 
       if( msg.data1==0 )
         SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseDown);
 
-      if( msg.data1==1 )
+      if( msg.data1==1 ){
         SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseUp);
+        android.unsetPointer(msg.data2);
+        }
 
       if( msg.data1==2 )
         SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseMove);
@@ -671,7 +725,8 @@ static void JNICALL setAssets(JNIEnv* jenv, jobject obj, jobject assets ) {
   android.assets = jenv->NewGlobalRef(assets);
   }
 
-static void JNICALL nativeOnTouch( JNIEnv* , jobject , jint x, jint y, jint act ){
+static void JNICALL nativeOnTouch( JNIEnv* , jobject ,
+                                   jint x, jint y, jint act, jint pid ){
   pthread_mutex_lock(&android.waitMutex);
 
   pthread_mutex_lock(&android.appMutex);
@@ -679,6 +734,7 @@ static void JNICALL nativeOnTouch( JNIEnv* , jobject , jint x, jint y, jint act 
   m.data.x = x;
   m.data.y = y;
   m.data1  = act;
+  m.data2  = pid;
 
   android.msg.push_back(m);
 
@@ -751,6 +807,32 @@ static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
   pthread_mutex_unlock( &android.waitMutex );
   }
 
+
+static void JNICALL nativeSetupStorage( JNIEnv* , jobject,
+                                        jstring internal, jstring external ) {
+  JNIEnv * env = 0;
+  android.vm->AttachCurrentThread( &env, NULL);
+
+  android.internal.clear();
+  android.external.clear();
+
+  const char* str = 0;
+
+  str = env->GetStringUTFChars( internal, 0);
+  if( str ){
+    for( int i=0; str[i]; ++i )
+      android.internal.push_back(str[i]);
+    }
+  env->ReleaseStringUTFChars( internal, str );
+
+  str = env->GetStringUTFChars( external, 0);
+  if( str ){
+    for( int i=0; str[i]; ++i )
+      android.external.push_back(str[i]);
+    }
+  env->ReleaseStringUTFChars( external, str );
+  }
+
 jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
   static JNINativeMethod methodTable[] = {
     {"nativeOnCreate",  "()V", (void *) onCreate  },
@@ -760,11 +842,13 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
     {"nativeOnResume", "()V", (void *) resume },
     {"nativeOnPause",  "()V", (void *) pauseA },
     {"nativeOnStop",   "()V", (void *) stop   },
-    {"nativeOnTouch",  "(III)V", (void *)nativeOnTouch   },
+    {"nativeOnTouch",  "(IIII)V", (void *)nativeOnTouch   },
     {"onKeyEvent",     "(I)V",   (void *)onKeyEvent      },
     {"nativeSetSurface", "(Landroid/view/Surface;)V",   (void *) nativeSetSurface   },
     {"nativeOnResize",   "(Landroid/view/Surface;II)V", (void *) resize             },
-    {"nativeSetAssets",  "(Landroid/content/res/AssetManager;)V",   (void *) setAssets          }
+    {"nativeSetAssets",  "(Landroid/content/res/AssetManager;)V",   (void *) setAssets          },
+
+    {"nativeSetupStorage",  "(Ljava/lang/String;Ljava/lang/String;)V",  (void *)nativeSetupStorage }
   };
 
   android.vm = vm;
