@@ -158,6 +158,14 @@ void Widget::setMinimumSize(int w, int h) {
   setMinimumSize( Size(w,h) );
   }
 
+Size Widget::minSize() const {
+  return sizePolicy().minSize;
+  }
+
+Size Widget::maxSize() const {
+  return sizePolicy().maxSize;
+  }
+
 const SizePolicy Widget::sizePolicy() const {
   return sp;
   }
@@ -753,6 +761,9 @@ void Widget::execDelete() {
 
 void Widget::deleteLater() {
   deleteLaterFlag = true;
+
+  if( !layout().owner() )
+    delete this;
   }
 
 void Widget::shortcutEvent(KeyEvent &e) {

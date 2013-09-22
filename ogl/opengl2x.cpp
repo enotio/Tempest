@@ -40,6 +40,7 @@
 #define GL_COLOR_BUFFER_BIT0_QCOM                     0x00000001
 #define GL_DEPTH_BUFFER_BIT0_QCOM                     0x00000100
 #define GL_STENCIL_BUFFER_BIT0_QCOM                   0x00010000
+#define GL_MAX_VARYING_VECTORS                        0x8DFC
 
 using namespace Tempest;
 typedef void (*PFNGLSTARTTILINGQCOMPROC) (GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
@@ -144,6 +145,7 @@ void Opengl2x::errCk() const {
     __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "error %p", ierr);
 #endif
     err = glGetError();
+    T_ASSERT_X(err, "OpenGL error");
     }
 #endif
   }
@@ -234,7 +236,9 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->clearS     = 0;
 
   memset( (char*)&dev->caps, 0, sizeof(dev->caps) );
-  glGetIntegerv( GL_MAX_TEXTURE_SIZE,      &dev->caps.maxTextureSize );
+  glGetIntegerv( GL_MAX_TEXTURE_SIZE,         &dev->caps.maxTextureSize );
+  glGetIntegerv( GL_MAX_VARYING_VECTORS,      &dev->caps.maxVaryingVectors );
+  dev->caps.maxVaryingComponents = dev->caps.maxVaryingVectors*4;
 
 #ifdef __ANDROID__
   dev->caps.maxRTCount = 1;

@@ -283,5 +283,6 @@ OTHER_FILES += \
     include/Tempest/SpritesHolder \
     include/Tempest/Sprite \
     include/Tempest/Timer \
-    include/Tempest/Surface
+    include/Tempest/Surface \
+    include/Tempest/Android
 

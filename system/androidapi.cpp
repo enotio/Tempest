@@ -18,6 +18,7 @@ using namespace Tempest;
 #include <pthread.h>
 #include <android/log.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #include <jni.h>
 #include <android/asset_manager.h>
@@ -41,6 +42,7 @@ static struct Android{
   Tempest::Window * wnd;
 
   JavaVM  *vm;
+  JNIEnv  *env;
   jobject assets;
   jclass  tempestClass;
 
@@ -98,9 +100,7 @@ static struct Android{
 
   int pointerId( int nid ){
     for( size_t i=0; i<mouse.size(); ++i )
-      if( mouse[i].nativeID==nid &&
-          ( i>0 || mouse[i].valid ) ){
-        mouse[i].valid = true;
+      if( mouse[i].nativeID==nid && mouse[i].valid ){
         return i;
         }
 
@@ -125,6 +125,8 @@ static struct Android{
     display = EGL_NO_DISPLAY;
     surface = 0;
     context = 0;
+
+    env     = 0;
 
     window_w = 0;
     window_h = 0;
@@ -187,15 +189,21 @@ JavaVM *AndroidAPI::jvm() {
   return android.vm;
   }
 
+JNIEnv *AndroidAPI::jenvi() {
+  return android.env;
+  }
+
 jclass AndroidAPI::appClass() {
   return android.tempestClass;
   }
 
 const char *AndroidAPI::internalStorage() {
+  mkdir( android.internal.data(), 0770 );
   return android.internal.data();
   }
 
 const char *AndroidAPI::externalStorage() {
+  mkdir( android.external.data(), 0770 );
   return android.external.data();
   }
 
@@ -822,6 +830,8 @@ static void JNICALL nativeSetupStorage( JNIEnv* , jobject,
   if( str ){
     for( int i=0; str[i]; ++i )
       android.internal.push_back(str[i]);
+    android.internal.push_back('/');
+    android.internal.push_back(0);
     }
   env->ReleaseStringUTFChars( internal, str );
 
@@ -829,6 +839,8 @@ static void JNICALL nativeSetupStorage( JNIEnv* , jobject,
   if( str ){
     for( int i=0; str[i]; ++i )
       android.external.push_back(str[i]);
+    android.external.push_back('/');
+    android.external.push_back(0);
     }
   env->ReleaseStringUTFChars( external, str );
   }
@@ -877,14 +889,13 @@ static void* tempestMainFunc(void*){
   LOGI("Tempest MainFunc");
   Android &a = android;
 
-  JNIEnv * env = 0;
-  a.vm->AttachCurrentThread( &env, NULL);
+  a.vm->AttachCurrentThread( &a.env, NULL);
 
   jclass clazz = android.tempestClass;
-  jmethodID invokeMain = env->GetStaticMethodID( clazz, "invokeMain", "()V");
+  jmethodID invokeMain = a.env->GetStaticMethodID( clazz, "invokeMain", "()V");
 
   android.initialize();
-  env->CallStaticVoidMethod(clazz, invokeMain);
+  a.env->CallStaticVoidMethod(clazz, invokeMain);
 
   LOGI("~Tempest MainFunc");
   android.destroy(true);

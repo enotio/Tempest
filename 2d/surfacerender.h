@@ -71,6 +71,9 @@ class SurfaceRender {
       BlendMode bm;
       Tempest::Color cl;
       bool flip[2];
+
+      Sprite     curTex;
+      const Texture2d* curTex2d;
       };
 
     struct PaintDev;
@@ -163,8 +166,6 @@ class SurfaceRender {
     float invW, invH, invTw, invTh;
 
     RState state;
-    Sprite     curTex;
-    const Texture2d* curTex2d;
 
     Tempest::RenderState rstate[4];
     bool dpos;

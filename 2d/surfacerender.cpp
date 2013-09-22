@@ -22,7 +22,7 @@ SurfaceRender::SurfaceRender( VertexShaderHolder &vs,
   //curTex   = 0;
   //curTex2d = 0;
 
-  sstk.reserve(32);
+  sstk.reserve(128);
   blocks.reserve(1024);
 
   rstate[1].setBlend(1);
@@ -139,9 +139,9 @@ void SurfaceRender::quad( int  x, int  y, int  w, int  h,
       v[i].v = 1.0f-v[i].v;
       }
 
-  if( !curTex.size().isEmpty() ){
-    const Tempest::Size s = curTex.pageRawData().size();
-    const Tempest::Rect r = curTex.pageRect();
+  if( !state.curTex.size().isEmpty() ){
+    const Tempest::Size s = state.curTex.pageRawData().size();
+    const Tempest::Rect r = state.curTex.pageRect();
 
     float dx = r.x/float(s.w),
           dy = r.y/float(s.h),
@@ -212,21 +212,23 @@ void SurfaceRender::updateBackBlock( bool isLine ) {
     blocks.resize(1);
 
     Block& b = blocks.back();
-    b.begin    = 0;
-    b.end      = 0;
-    b.curTex    = curTex;
-    b.curTex2d  = curTex2d;
+    b.begin     = 0;
+    b.end       = 0;
+    b.curTex    = state.curTex;
+    b.curTex2d  = state.curTex2d;
     b.isLine    = isLine;
     b.state     = state;
     }
 
-  while( blocks.size()>0 && blocks.back().end==blocks.back().begin )
+  while( blocks.size()>1 && blocks.back().end==blocks.back().begin )
     blocks.pop_back();
+
+  T_ASSERT(blocks.size());
 
   if( blocks.back().state.bm != state.bm ||
       blocks.back().state.cl != state.cl ||
-      blocks.back().curTex2d != curTex2d ||
-      blocks.back().curTex.  handle() != curTex.  handle() ||
+      blocks.back().curTex2d != state.curTex2d ||
+      blocks.back().curTex.handle() != state.curTex.handle() ||
       blocks.back().isLine   != isLine ){
     size_t e = 0;
     if( blocks.size() )
@@ -237,8 +239,8 @@ void SurfaceRender::updateBackBlock( bool isLine ) {
     Block& b  = blocks.back();
     b.end       = e;
     b.begin     = b.end;
-    b.curTex    = curTex;
-    b.curTex2d  = curTex2d;
+    b.curTex    = state.curTex;
+    b.curTex2d  = state.curTex2d;
     b.isLine    = isLine;
     b.state     = state;
     }
@@ -308,8 +310,8 @@ SurfaceRender::PaintDev::PaintDev(SurfaceRender &s,
                                   SpritesHolder &sp,
                                    int rx, int ry, int rw, int rh )
   :surf(s), sstk(sstk), te(*this), sp(sp) {
-  surf.curTex   = Tempest::Sprite();
-  surf.curTex2d = 0;
+  surf.state.curTex   = Tempest::Sprite();
+  surf.state.curTex2d = 0;
 
   setScissor(rx,ry,rw,rh);
   }
@@ -319,7 +321,7 @@ void SurfaceRender::PaintDev::setTexture(const Texture2d &t) {
   surf.invTh = 1.0f/t.height();
 
   unsetTexture();
-  surf.curTex2d = &t;
+  surf.state.curTex2d = &t;
   }
 
 void SurfaceRender::PaintDev::setTexture(const Sprite &t) {
@@ -327,12 +329,12 @@ void SurfaceRender::PaintDev::setTexture(const Sprite &t) {
   surf.invTh = 1.0f/t.h();
 
   unsetTexture();
-  surf.curTex = t;
+  surf.state.curTex = t;
   }
 
 void SurfaceRender::PaintDev::unsetTexture() {
-  surf.curTex   = Tempest::Sprite();
-  surf.curTex2d = 0;
+  surf.state.curTex   = Tempest::Sprite();
+  surf.state.curTex2d = 0;
   }
 
 

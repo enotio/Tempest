@@ -34,6 +34,9 @@ class AbstractAPI {
     struct Caps{
       int maxTextureSize;
       int maxRTCount;
+
+      int maxVaryingVectors;
+      int maxVaryingComponents;
       };
 
     enum PrimitiveType{

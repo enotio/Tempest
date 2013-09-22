@@ -11,15 +11,17 @@ namespace Tempest{
 class Window;
 
 class AndroidAPI:public SystemAPI {
-  protected:
-    AndroidAPI();
-    ~AndroidAPI();
-
+  public:
     static JavaVM *jvm();
+    static JNIEnv *jenvi();
     static jclass appClass();
 
     static const char* internalStorage();
     static const char* externalStorage();
+
+  protected:
+    AndroidAPI();
+    ~AndroidAPI();
 
     bool testDisplaySettings( const DisplaySettings& );
     bool setDisplaySettings( const DisplaySettings& );

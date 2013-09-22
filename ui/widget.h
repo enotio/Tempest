@@ -65,6 +65,9 @@ class Widget {
     void setMaximumSize( int w, int h );
     void setMinimumSize( int w, int h );
 
+    Size minSize() const;
+    Size maxSize() const;
+
     signal<int, int> onPositionChange, onResize;
     signal<bool>     onFocusChange, onChildFocusChange;
     signal<Widget*>  onDestroy;
