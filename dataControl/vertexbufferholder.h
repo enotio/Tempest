@@ -22,12 +22,13 @@ class VertexBufferHolder : public AbstractHolder
     ~VertexBufferHolder();
 
     template< class Vertex >
-    VertexBuffer<Vertex> load( const Vertex v[], int count ){
+    VertexBuffer<Vertex> load( const Vertex v[], int count,
+                               AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags ){
       VertexBuffer<Vertex> obj( *this, count );
 
       if( count > 0 ){
         createObject( obj.data.value(), (const char*)v,
-                      count, sizeof(Vertex) );
+                      count, sizeof(Vertex), flg );
         } else
         obj.data.value() = 0;
 
@@ -35,8 +36,9 @@ class VertexBufferHolder : public AbstractHolder
       }
 
     template< class Vertex >
-    VertexBuffer<Vertex> load( const std::vector<Vertex>& v ){
-      return this->load( &v[0], v.size() );
+    VertexBuffer<Vertex> load( const std::vector<Vertex>& v,
+                               AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags ){
+      return this->load( &v[0], v.size(), flg );
       }
 
   protected:
@@ -44,14 +46,16 @@ class VertexBufferHolder : public AbstractHolder
 
     virtual void createObject( AbstractAPI::VertexBuffer*& t,
                                const char *src,
-                               int size, int vsize );
+                               int size, int vsize,
+                               AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags );
     virtual void deleteObject( AbstractAPI::VertexBuffer* t );
 
     virtual AbstractAPI::VertexBuffer* allocBuffer( size_t size, size_t vsize,
                                                     const void *src );
     virtual AbstractAPI::VertexBuffer* allocBuffer( size_t size, size_t vsize,
                                                     const void *src,
-                                                    AbstractAPI::BufferUsage u);
+                                                    AbstractAPI::BufferUsage u,
+                                                    AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags);
 
 
     virtual void  reset( AbstractAPI::VertexBuffer* t );

@@ -73,4 +73,7 @@ void *AbstractShadingLang::createShader( AbstractShadingLang::ShaderType t,
 
 AbstractShadingLang::UiShaderOpt::UiShaderOpt() {
   hasTexture = true;
+  vertex     = Tempest::Decl::float2;
+  texcoord   = Tempest::Decl::float2;
+  color      = Tempest::Decl::float4;
   }

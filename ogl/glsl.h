@@ -67,6 +67,8 @@ namespace Tempest {
       void setUniforms( unsigned int s, const T & vN, int c ) const;
 
       struct Texture;
+
+      static const char* opt( const char* t, const char* f, bool v);
     };
   }
 

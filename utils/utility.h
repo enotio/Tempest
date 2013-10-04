@@ -2,6 +2,9 @@
 #define UTILITY_H
 
 namespace Tempest{
+  struct Point;
+  struct Size;
+  struct Rect;
 
   struct Point{
     Point():x(0), y(0) {}
@@ -33,6 +36,7 @@ namespace Tempest{
     Point operator - () const;
 
     double manhattanLength() const;
+    int    quadLength() const;
 
     bool operator ==( const Point & other ) const;
     bool operator !=( const Point & other ) const;
@@ -44,6 +48,7 @@ namespace Tempest{
     int w, h;
 
     Point toPoint() const;
+    Rect  toRect() const;
     bool  isEmpty() const;
 
     bool operator ==( const Size & other ) const;

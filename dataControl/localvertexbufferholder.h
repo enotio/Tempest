@@ -3,6 +3,8 @@
 
 #include <Tempest/VertexBufferHolder>
 #include <Tempest/IndexBufferHolder>
+#include <Tempest/LocalObjectPool>
+
 #include <vector>
 #include <cstring>
 
@@ -13,7 +15,6 @@ class LocalBufferHolder : public Holder {
   public:
     LocalBufferHolder( Tempest::Device &d )
       :Holder(d){
-      nonFreed.reserve(128);
       dynVBOs .reserve(2048);
 
       setReserveSize( 0xFFFF );
@@ -21,6 +22,7 @@ class LocalBufferHolder : public Holder {
       minVboSize  = 4*1024;
 
       needToRestore = false;
+      pcollect      = false;
       }
 
     ~LocalBufferHolder(){
@@ -35,6 +37,17 @@ class LocalBufferHolder : public Holder {
       maxReserved = s;
       }
 
+    int maxReservedCount() const {
+      return maxReserved;
+      }
+
+    void pauseCollect( bool p ){
+      pcollect = p;
+      }
+
+    bool isCollectPaused() const{
+      return pcollect;
+      }
   protected:
     int reserveSize, maxReserved;
     int minVboSize;
@@ -53,15 +66,7 @@ class LocalBufferHolder : public Holder {
 
     virtual void reset(){
       needToRestore = true;
-
-      for( size_t i=0; i<nonFreed.size(); ++i )
-        deleteObject( nonFreed[i] );
-
-      nonFreed.clear();
-      //dynVBOs .clear();
-      //for( size_t i=0; i<dynVBOs.size(); ++i )
-        //reset( dynVBOs[i].data.handle );
-
+      nonFreed.reset( *this, &LocalBufferHolder::deleteObject );
       Holder::BaseType::reset();
       }
 
@@ -78,23 +83,10 @@ class LocalBufferHolder : public Holder {
     using Holder::restore;
 
     virtual void presentEvent() {
-      collect( nonFreed );
-      }
+      if( pcollect )
+        return;
 
-    virtual void collect( std::vector< NonFreed >& nonFreed ) {
-      for( size_t i=0; i<nonFreed.size(); ){
-        ++nonFreed[i].collectIteration;
-
-        if( nonFreed[i].collectIteration > 3 &&
-            nonFreed[i].data.memSize > minVboSize ){
-          deleteObject( nonFreed[i] );
-          nonFreed[i] = nonFreed.back();
-          nonFreed.pop_back();
-          } else {
-          ++i;
-          }
-
-        }
+      nonFreed.collect(*this, &LocalBufferHolder::deleteObject);
       }
 
     void deleteObject( NonFreed& obj ) {
@@ -102,12 +94,22 @@ class LocalBufferHolder : public Holder {
       }
 
   private:
+    bool validAs( const NonFreedData& x, const NonFreedData &d ){
+      return d.memSize  <= x.memSize &&
+             (d.memSize <= minVboSize || d.memSize*4 >= x.memSize) &&
+             d.elSize    == x.elSize;
+      }
+
     void createObject( typename Holder::DescriptorType*& t,
                        const char *src,
-                       int size, int vsize ) {
+                       int size, int vsize,
+                       AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags ) {
+      if( flg & AbstractAPI::BF_NoReadback )
+        flg = AbstractAPI::BufferFlag(flg ^ AbstractAPI::BF_NoReadback);
+
       if( needToRestore ){
         typename Holder::DescriptorType* old = t;
-        Holder::createObject(t, src, size, vsize );
+        Holder::createObject(t, src, size, vsize, flg );
 
         for( size_t i=0; i<dynVBOs.size(); ++i )
           if( dynVBOs[i].data.handle==old &&
@@ -125,37 +127,26 @@ class LocalBufferHolder : public Holder {
       d.restoreIntent = false;
       d.elSize        = vsize;
 
-      for( size_t i=0; i<nonFreed.size(); ++i ){
-        d.handle = nonFreed[i].data.handle;
+      NonFreed x = nonFreed.find(d, *this, &LocalBufferHolder::validAs );
+      if( x.data.handle ){
+        dynVBOs.push_back( x );
+        t = dynVBOs.back().data.handle;
+        {
+          int   cpySz = size*vsize;
+          char *pVertices = this->lockBuffer( t, 0, cpySz);
 
-        NonFreedData& x = nonFreed[i].data;
-        if( d.memSize   <= x.memSize &&
-            (d.memSize <= minVboSize || d.memSize*4 >= x.memSize) &&
-            d.elSize    == x.elSize ){
-          dynVBOs.push_back( nonFreed[i] );
-          nonFreed[i] = nonFreed.back();
-          nonFreed.pop_back();
-
-          t = dynVBOs.back().data.handle;
-          {
-            int   //sz    = dynVBOs.back().data.memSize,
-                  cpySz = size*vsize;
-            char *pVertices = this->lockBuffer( t, 0, cpySz);
-
-            std::copy( src, src+cpySz, pVertices );
-            //std::fill( pVertices+cpySz, pVertices+sz, 0 );
-            this->unlockBuffer( t );
-            }
-
-          return;
+          std::copy( src, src+cpySz, pVertices );
+          this->unlockBuffer( t );
           }
+
+        return;
         }
 
       std::vector<char> tmp( d.memSize );
       std::copy( src, src+size*vsize, tmp.begin() );
       std::fill( tmp.begin()+size*vsize, tmp.end(), 0 );
 
-      Holder::createObject( t, &tmp[0], d.memSize/d.elSize, d.elSize );
+      Holder::createObject( t, &tmp[0], d.memSize/d.elSize, d.elSize, flg );
 
       if( !t )
         return;
@@ -173,15 +164,14 @@ class LocalBufferHolder : public Holder {
     void deleteObject( typename Holder::DescriptorType* t ) {
       for( size_t i=0; i<dynVBOs.size(); ++i )
         if( dynVBOs[i].data.handle==t ){
-          nonFreed.push_back( dynVBOs[i] );
-          nonFreed.back().collectIteration = 0;
+          if( maxReserved>=0 && int(nonFreed.size())>=maxReserved ){
+            Holder::deleteObject(t);
+            } else {
+            nonFreed.push( dynVBOs[i] );
+            }
 
           dynVBOs[i] = dynVBOs.back();
           dynVBOs.pop_back();
-
-          if( maxReserved>=0 && int(nonFreed.size())>maxReserved ){
-            collect(nonFreed);
-            }
 
           return;
           }
@@ -190,11 +180,13 @@ class LocalBufferHolder : public Holder {
       }
 
     typename Holder::DescriptorType* allocBuffer( size_t size, size_t vsize,
-                                                  const void *src ){
-      return Holder::allocBuffer(size, vsize, src, AbstractAPI::BU_Dynamic);
+                                                  const void *src,
+                                                  AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags ){
+      return Holder::allocBuffer(size, vsize, src, AbstractAPI::BU_Dynamic, flg);
       }
 
-    std::vector< NonFreed > nonFreed, dynVBOs;
+    std::vector< NonFreed >    dynVBOs;
+    LocalObjectPool<NonFreed>  nonFreed;
 
     int nearPOT( int x ) {
       int r = 1;
@@ -208,6 +200,7 @@ class LocalBufferHolder : public Holder {
       }
 
     bool needToRestore;
+    bool pcollect;
   };
 
 struct LocalVertexBufferHolder: LocalBufferHolder< Tempest::VertexBufferHolder > {

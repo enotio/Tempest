@@ -49,6 +49,8 @@ class SystemAPI{
     static std::string loadText( const wchar_t* file );
 
     static std::vector<char> loadBytes( const char* file );
+    static std::vector<char> loadBytes( const wchar_t* file );
+    static bool writeBytes(const wchar_t* file , const std::vector<char> &f);
 
     static bool loadImage( const wchar_t* file,
                            int &w,
@@ -108,6 +110,9 @@ class SystemAPI{
     virtual std::string       loadTextImpl( const wchar_t* file ) = 0;
 
     virtual std::vector<char> loadBytesImpl( const char* file ) = 0;
+    virtual std::vector<char> loadBytesImpl( const wchar_t* file ) = 0;
+
+    virtual bool writeBytesImpl(const wchar_t* file , const std::vector<char> &f);
 
     virtual bool loadImageImpl( const char* file,
                                 int &w,

@@ -61,6 +61,10 @@ Point Size::toPoint() const {
   return Point(w,h);
   }
 
+Rect Size::toRect() const {
+  return Rect(0,0,w,h);
+  }
+
 bool Size::isEmpty() const {
   return w<=0 && h<=0;
   }
@@ -167,6 +171,10 @@ Point Point::operator -() const {
 
 double Point::manhattanLength() const {
   return sqrt( x*x + y*y );
+  }
+
+int Point::quadLength() const {
+  return x*x + y*y;
   }
 
 bool Point::operator ==(const Point &other) const {

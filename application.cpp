@@ -15,6 +15,8 @@
 #endif
 #include <time.h>
 
+#include <iostream>
+
 using namespace Tempest;
 
 Application::App Application::app;
@@ -75,9 +77,9 @@ uint64_t Application::tickCount() {
 void Application::processTimers() {
   Application::App &a = app;
 
-  uint64_t t = tickCount();
-
   for( size_t i=0; i<a.timer.size(); ++i ){
+    uint64_t t = tickCount();
+
     uint64_t dt = (t-a.timer[i]->lastTimeout)/a.timer[i]->interval;
 
     for( size_t r=0; r<dt && r<app.timer[i]->mrepeatCount; ++r ){

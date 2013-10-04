@@ -22,28 +22,30 @@ class IndexBufferHolder : public AbstractHolder
     ~IndexBufferHolder();
 
     template< class Index >
-    IndexBuffer<Index> load( const Index v[], int count ){
+    IndexBuffer<Index> load( const Index v[], int count,
+                             AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags ){
       IndexBuffer<Index> obj( *this, count );
 
       if( count )
         createObject( obj.data.value(), (const char*)v,
-                      count, sizeof(Index) ); else
+                      count, sizeof(Index), flg ); else
         obj.data.value() = 0;
 
       return obj;
       }
 
     template< class Index >
-    IndexBuffer<Index> load( const std::vector<Index>& ibo ){
-      return this->load( &ibo[0], ibo.size() );
+    IndexBuffer<Index> load( const std::vector<Index>& ibo,
+                             AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags ){
+      return this->load( &ibo[0], ibo.size(), flg );
       }
 
   protected:
     typedef AbstractAPI::IndexBuffer DescriptorType;
 
-    virtual void createObject( AbstractAPI::IndexBuffer*& t,
+    virtual void createObject(AbstractAPI::IndexBuffer*& t,
                                const char *src,
-                               int size, int vsize );
+                               int size, int vsize , AbstractAPI::BufferFlag flg);
     virtual void deleteObject( AbstractAPI::IndexBuffer* t );
 
 
@@ -51,7 +53,8 @@ class IndexBufferHolder : public AbstractHolder
                                                    const void *src );
     virtual AbstractAPI::IndexBuffer* allocBuffer( size_t size, size_t vsize,
                                                    const void *src,
-                                                   AbstractAPI::BufferUsage u );
+                                                   AbstractAPI::BufferUsage u,
+                                                   AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags );
 
 
 

@@ -121,6 +121,9 @@ class signal{
           }
 
         bool isEq( void *t, char *f, size_t s ){
+          (void)t;
+          (void)f;
+          (void)s;
           return 0;
           }
 

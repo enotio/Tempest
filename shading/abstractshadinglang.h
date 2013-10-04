@@ -96,6 +96,7 @@ class AbstractShadingLang {
     struct UiShaderOpt{
       UiShaderOpt();
       bool hasTexture;
+      Tempest::Decl::ComponentType vertex, texcoord, color;
       };
 
     virtual std::string surfaceShader( ShaderType t, const UiShaderOpt&,

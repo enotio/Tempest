@@ -7,11 +7,12 @@
 using namespace Tempest;
 
 LocalTexturesHolder::LocalTexturesHolder( Tempest::Device &d ):Tempest::TextureHolder(d) {
-  nonFreed   .reserve(128);
   dynTextures.reserve(128);
 
   needToRestore = false;
   mmaxColletIterations = 3;
+  maxReserved = -1;
+  pcollect    = false;
   }
 
 LocalTexturesHolder::~LocalTexturesHolder() {
@@ -26,12 +27,24 @@ int LocalTexturesHolder::maxCollectIterations() const {
   return mmaxColletIterations;
   }
 
-void LocalTexturesHolder::reset() {
-  for( size_t i=0; i<nonFreed.size(); ++i )
-    deleteObject( nonFreed[i] );
+void LocalTexturesHolder::setMaxReservedCount(int s) {
+  maxReserved = s;
+  }
 
-  nonFreed.clear();
-  //dynTextures.clear();
+int LocalTexturesHolder::maxReservedCount() const {
+  return maxReserved;
+  }
+
+void LocalTexturesHolder::pauseCollect(bool p) {
+  pcollect = p;
+  }
+
+bool LocalTexturesHolder::isCollectPaused() const {
+  return pcollect;
+  }
+
+void LocalTexturesHolder::reset() {
+  nonFreed.reset(*this, &LocalTexturesHolder::deleteObject );
   TextureHolder::BaseType::reset();
   }
 
@@ -45,23 +58,10 @@ bool LocalTexturesHolder::restore() {
   }
 
 void LocalTexturesHolder::presentEvent() {
-  collect( nonFreed );
-  }
+  if( pcollect )
+    return;
 
-void LocalTexturesHolder::collect(std::vector<NonFreed> &nonFreed) {
-  for( size_t i=0; i<nonFreed.size(); ){
-    ++nonFreed[i].collectIteration;
-
-    if( nonFreed[i].collectIteration > mmaxColletIterations &&
-        mmaxColletIterations>=0 ){
-      deleteObject( nonFreed[i] );
-      nonFreed[i] = nonFreed.back();
-      nonFreed.pop_back();
-      } else {
-      ++i;
-      }
-
-    }
+  nonFreed.collect(*this, &LocalTexturesHolder::deleteObject );
   }
 
 void LocalTexturesHolder::deleteObject(LocalTexturesHolder::NonFreed &obj) {
@@ -96,19 +96,14 @@ void LocalTexturesHolder::createObject(Tempest::AbstractAPI::Texture *&t,
   d.dynamic  = true;
   d.restoreIntent = true;
 
-  for( size_t i=0; i<nonFreed.size(); ++i ){
-    d.handle = nonFreed[i].data.handle;
+  NonFreed x = nonFreed.find(d, *this, &LocalTexturesHolder::validAs);
 
-    NonFreedData& x = nonFreed[i].data;
-    if( x.cmp(d) ){
-      dynTextures.push_back( nonFreed[i] );
-      nonFreed[i] = nonFreed.back();
-      nonFreed.pop_back();
+  if( x.data.handle ){
+    dynTextures.push_back(x);
 
-      t = dynTextures.back().data.handle;
-      setTextureFlag(t, AbstractAPI::TF_Inialized, false );
-      return;
-      }
+    t = dynTextures.back().data.handle;
+    setTextureFlag(t, AbstractAPI::TF_Inialized, false );
+    return;
     }
 
   Tempest::TextureHolder::createObject(t,w,h,mips,f,u);
@@ -140,20 +135,13 @@ void LocalTexturesHolder::createObject( AbstractAPI::Texture *&t,
   d.dynamic  = false;
   d.restoreIntent = false;
 
-  for( size_t i=0; i<nonFreed.size(); ++i ){
-    d.handle = nonFreed[i].data.handle;
+  NonFreed x = nonFreed.find(d, *this, &LocalTexturesHolder::validAs);
+  if( x.data.handle ){
+    dynTextures.push_back( x );
 
-    NonFreedData& x = nonFreed[i].data;
-    if( x.cmp(d) ){
-      dynTextures.push_back( nonFreed[i] );
-      nonFreed[i] = nonFreed.back();
-      nonFreed.pop_back();
-
-      AbstractAPI::Texture * old = dynTextures.back().data.handle;
-
-      Tempest::TextureHolder::recreateObject(t, old, p, mips, compress);
-      return;
-      }
+    AbstractAPI::Texture * old = dynTextures.back().data.handle;
+    Tempest::TextureHolder::recreateObject(t, old, p, mips, compress);
+    return;
     }
 
   Tempest::TextureHolder::createObject(t,p,mips,compress);
@@ -175,14 +163,23 @@ void LocalTexturesHolder::deleteObject( Tempest::AbstractAPI::Texture *t ) {
   for( size_t i=0; i<dynTextures.size(); ++i )
     if( dynTextures[i].data.handle==t ){
       dynTextures[i].collectIteration = 0;
-      nonFreed.push_back( dynTextures[i] );
-      setTextureFlag( dynTextures[i].data.handle, AbstractAPI::TF_Inialized, false );
+
+      if( maxReserved>=0 && int(nonFreed.size())>=maxReserved ){
+        TextureHolder::deleteObject(t);
+        } else {
+        nonFreed.push( dynTextures[i] );
+        setTextureFlag( dynTextures[i].data.handle, AbstractAPI::TF_Inialized, false );
+        }
 
       dynTextures[i] = dynTextures.back();
       dynTextures.pop_back();
-
       return;
       }
 
   Tempest::TextureHolder::deleteObject(t);
+  }
+
+bool LocalTexturesHolder::validAs( const LocalTexturesHolder::NonFreedData &x,
+                                   const LocalTexturesHolder::NonFreedData &d ) {
+  return x==d;
   }

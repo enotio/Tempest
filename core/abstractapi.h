@@ -54,6 +54,11 @@ class AbstractAPI {
       TF_Inialized
       };
 
+    enum BufferFlag{
+      BF_NoFlags    = 0,
+      BF_NoReadback = 1
+      };
+
     enum BufferUsage {
       BU_Stream,
       BU_Static,

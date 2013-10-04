@@ -22,7 +22,8 @@ enum ComponentType{
   short4 = 7,
 
   half2  = 8,
-  half4  = 9
+  half4  = 9,
+  count
   };
 
 }

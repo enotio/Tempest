@@ -30,6 +30,12 @@ struct Device::Data{
     int vboSize;
 
     AbstractAPI::IndexBuffer*  ibo;
+
+    void reset(){
+      vbo = 0;
+      ibo = 0;
+      vboSize = 0;
+      }
     } cash;
 
   int mrtSize;
@@ -186,6 +192,21 @@ struct Device::Data{
 
     return 1;
     }
+
+  struct AllocCount {
+    AllocCount(){
+      vbo = 0;
+      ibo = 0;
+      tex = 0;
+      dec = 0;
+      }
+
+    ~AllocCount(){
+      T_ASSERT_X( vbo==0 && ibo==0 && tex==0 && dec==0, "resource leak detected" );
+      }
+
+    int vbo, ibo, tex, dec;
+    } allockCount;
   };
 
 
@@ -214,9 +235,7 @@ void Device::init( const AbstractAPI &,
   data->isLost = 0;
   data->isPaintMode = false;
 
-  data->cash.vbo     = 0;
-  data->cash.vboSize = 0;
-  data->cash.ibo     = 0;
+  data->cash.reset();
   data->depthStencil = api.getDSSurfaceTaget(impl);
 
   data->delaydRS = false;
@@ -389,15 +408,14 @@ void Device::beginPaintImpl() const {
 
   api.beginPaint(impl);
   shadingLang().beginPaint();
+  data->cash.reset();
   }
 
 void Device::endPaintImpl() const {
   shadingLang().endPaint();
 
   data->paintTaget.isDelayd = false;
-  data->cash.vbo     = 0;
-  data->cash.vboSize = 0;
-  data->cash.ibo     = 0;
+  data->cash.reset();
 
   if( data->mrtSize!=0 ){
     api.endPaint(impl);
@@ -520,7 +538,10 @@ AbstractAPI::Texture *Device::createTexture( const Pixmap &p,
                                              bool mips,
                                              bool compress ) {
   forceEndPaint();
-  return api.createTexture( impl, p, mips, compress );
+  AbstractAPI::Texture * t= api.createTexture( impl, p, mips, compress );
+  if( t )
+    data->allockCount.tex++;
+  return t;
   }
 
 AbstractAPI::Texture *Device::recreateTexture( AbstractAPI::Texture *t,
@@ -537,11 +558,14 @@ AbstractAPI::Texture* Device::createTexture( int w, int h,
                                              TextureUsage u ) {
   forceEndPaint();
   AbstractAPI::Texture* t = api.createTexture( impl, w, h, mips, f, u );
+  if( t )
+    data->allockCount.tex++;
   return t;
   }
 
 void Device::deleteTexture( AbstractAPI::Texture* & t ){
   forceEndPaint();
+  data->allockCount.tex--;
   api.deleteTexture( impl, t );
   }
 
@@ -552,18 +576,26 @@ void Device::setTextureFlag(AbstractAPI::Texture *t, AbstractAPI::TextureFlag f,
 AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el,
                                                        AbstractAPI::BufferUsage u ){
   forceEndPaint();
-  return api.createVertexBuffer( impl, size, el, u );
+  AbstractAPI::VertexBuffer* v = api.createVertexBuffer( impl, size, el, u );
+  if( v )
+    data->allockCount.vbo++;
+  return v;
   }
 
 AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el,
                                                        const void* src,
                                                        AbstractAPI::BufferUsage u ){
   forceEndPaint();
-  return api.createVertexBuffer( impl, size, el, src, u );
+  AbstractAPI::VertexBuffer* v =  api.createVertexBuffer( impl, size, el, src, u );
+  if( v )
+    data->allockCount.vbo++;
+
+  return v;
   }
 
 void Device::deleteVertexBuffer( AbstractAPI::VertexBuffer* vbo ){
   forceEndPaint();
+  data->allockCount.vbo--;
   api.deleteVertexBuffer( impl, vbo );
   }
 
@@ -571,7 +603,11 @@ AbstractAPI::IndexBuffer* Device::createIndexBuffer( size_t size,
                                                      size_t elSize,
                                                      AbstractAPI::BufferUsage u  ){
   forceEndPaint();
-  return api.createIndexBuffer( impl, size, elSize, u );
+  AbstractAPI::IndexBuffer* i = api.createIndexBuffer( impl, size, elSize, u );
+  if( i )
+    data->allockCount.ibo++;
+
+  return i;
   }
 
 AbstractAPI::IndexBuffer *Device::createIndexBuffer( size_t size,
@@ -579,11 +615,16 @@ AbstractAPI::IndexBuffer *Device::createIndexBuffer( size_t size,
                                                      const void *src,
                                                      AbstractAPI::BufferUsage u ) {
   forceEndPaint();
-  return api.createIndexBuffer( impl, size, elSize, src, u );
+  AbstractAPI::IndexBuffer* i =  api.createIndexBuffer( impl, size, elSize, src, u );
+  if( i )
+    data->allockCount.ibo++;
+
+  return i;
   }
 
 void Device::deleteIndexBuffer( AbstractAPI::IndexBuffer* b ){
   forceEndPaint();
+  data->allockCount.ibo--;
   api.deleteIndexBuffer( impl, b);
   }
 
@@ -619,6 +660,9 @@ AbstractAPI::VertexDecl *
     data->addDecl(de, v);
     }
 
+  if( v )
+    data->allockCount.dec++;
+
   return v;
   }
 
@@ -627,6 +671,8 @@ void Device::deleteVertexDecl( AbstractAPI::VertexDecl* d ) const {
 
   if( data->deleteDecl(d) )
     api.deleteVertexDecl( impl, d );
+
+  data->allockCount.dec--;
   }
 
 void Device::assertPaint() {

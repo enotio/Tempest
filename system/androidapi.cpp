@@ -319,7 +319,12 @@ int AndroidAPI::nextEvents(bool &quit) {
   int r = 0;
   while( !quit ){
     pthread_mutex_lock(&android.appMutex);
-    if( android.window==0 ){
+    Android::MainThreadMessage msg = Android::MSG_NONE;
+
+    if( android.msg.size() )
+      msg = android.msg[0].msg;
+
+    if( android.window==0 && msg!=Android::MSG_RENDER_LOOP_EXIT  ){
       pthread_mutex_unlock(&android.appMutex);
       return 1;
       }
@@ -342,15 +347,19 @@ int AndroidAPI::nextEvent(bool &quit) {
                    ACTION_MOVE = 2;
   */
 
-  pthread_mutex_lock(&android.appMutex);
-  if( android.window==0 ){
-    pthread_mutex_unlock(&android.appMutex);
-    return 1;
-    }
+  bool hasWindow = true;
+  pthread_mutex_lock(&android.appMutex);  
+  hasWindow = android.window;
 
   Android::Message msg = Android::MSG_NONE;
   if( android.msg.size() ){
     msg = android.msg[0];
+
+    if( !hasWindow && msg.msg!=Android::MSG_RENDER_LOOP_EXIT ){
+      pthread_mutex_unlock(&android.appMutex);
+      return 0;
+      }
+
     android.msg.erase( android.msg.begin() );
     }
 
@@ -404,7 +413,7 @@ int AndroidAPI::nextEvent(bool &quit) {
       break;
 
     case Android::MSG_NONE:
-      if( !android.isPaused )
+      if( !android.isPaused && hasWindow )
         render();
       break;
 
@@ -558,7 +567,7 @@ bool AndroidAPI::saveImageImpl( const wchar_t* file,
   }
 
 bool AndroidAPI::isGraphicsContextAviable( Tempest::Window * ) {
-  return 1;//isContextAviable;
+  return android.window;
   }
 
 static void render() {
@@ -784,6 +793,7 @@ static void JNICALL onCreate(JNIEnv* , jobject ) {
 
 static void JNICALL onDestroy(JNIEnv* jenv, jobject obj) {
   pthread_mutex_lock( &android.appMutex );
+  android.msg.clear();
   android.msg.push_back( Android::MSG_RENDER_LOOP_EXIT );
   pthread_mutex_unlock( &android.appMutex );
 
@@ -803,7 +813,7 @@ static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
   pthread_mutex_lock( &android.waitMutex );
   pthread_mutex_lock( &android.appMutex );
 
-  if( key!=AKEYCODE_BACK ){
+  if( key!=AKEYCODE_BACK || 1 ){
     android.msg.push_back( Android::MSG_KEY_EVENT );
     android.msg.back().data1 = key;
     } else {
@@ -872,6 +882,8 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
     }
 
   android.tempestClass = env->FindClass( SystemAPI::androidActivityClass().c_str() );
+  android.tempestClass = (jclass)env->NewGlobalRef(android.tempestClass);
+
   if (!android.tempestClass) {
     LOGE( "failed to get %s class reference", SystemAPI::androidActivityClass().c_str() );
     return -1;

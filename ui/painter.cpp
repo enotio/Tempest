@@ -252,7 +252,8 @@ void PainterDevice::drawLine( int x, int y, int x1, int y1 ) {
       }
     }
 
-  line(x,y,x1,y1);
+  if( !(x==x1 && y==y1) )
+    line(x,y,x1,y1);
   }
 
 void PainterDevice::translate(int dx, int dy) {

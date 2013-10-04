@@ -36,9 +36,9 @@ VertexBufferHolder::VertexBufferHolder( const VertexBufferHolder& h)
   data = new Data();
   }
 
-void VertexBufferHolder::createObject( AbstractAPI::VertexBuffer*& t,
+void VertexBufferHolder::createObject(AbstractAPI::VertexBuffer*& t,
                                        const char * src,
-                                       int size, int vsize ){
+                                       int size, int vsize , AbstractAPI::BufferFlag flg){
   t = allocBuffer( size, vsize, src );
 
   if( !t )
@@ -51,8 +51,13 @@ void VertexBufferHolder::createObject( AbstractAPI::VertexBuffer*& t,
   d->lockSize  = 0;
   //d.data  = src;
 
-  d->data.resize( size*vsize );
-  std::copy( src, src + size*vsize, d->data.begin() );
+  if( (flg & AbstractAPI::BF_NoReadback) && device().hasManagedStorge() ){
+    d->vsize = 0;
+    d->size  = 0;
+    } else {
+    d->data.resize( size*vsize );
+    std::copy( src, src + size*vsize, d->data.begin() );
+    }
 
   data->vbos[t] = d;
   }
@@ -63,10 +68,11 @@ AbstractAPI::VertexBuffer* VertexBufferHolder::allocBuffer( size_t size,
   return device().createVertexbuffer( size, vsize, src, AbstractAPI::BU_Static );
   }
 
-AbstractAPI::VertexBuffer *VertexBufferHolder::allocBuffer( size_t size,
+AbstractAPI::VertexBuffer *VertexBufferHolder::allocBuffer(size_t size,
                                                             size_t vsize,
                                                             const void *src,
-                                                            AbstractAPI::BufferUsage u) {
+                                                            AbstractAPI::BufferUsage u,
+                                                            AbstractAPI::BufferFlag /*flg*/) {
   return device().createVertexbuffer( size, vsize, src, u );
   }
 

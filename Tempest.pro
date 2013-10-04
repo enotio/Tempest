@@ -261,7 +261,9 @@ HEADERS += \
     2d/surfacerender.h \
     include/Tempest/SurfaceRender \
     2d/font.h \
-    include/Tempest/Font
+    include/Tempest/Font \
+    dataControl/localobjectpool.h \
+    include/Tempest/LocalObjectPool
 
 OTHER_FILES += \
     include/Tempest/Window \

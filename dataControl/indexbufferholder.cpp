@@ -38,19 +38,26 @@ IndexBufferHolder::IndexBufferHolder( const IndexBufferHolder& h)
 void IndexBufferHolder::createObject( AbstractAPI::IndexBuffer*& t,
                                       const char * src,
                                       int size,
-                                      int vsize ){
+                                      int vsize,
+                                      AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags ){
   t = allocBuffer( size, vsize, src );
 
   if( !t )
     return;
 
   Data::LDData *d = new Data::LDData;
+
   d->vsize = vsize;
   d->size  = size;
   //d.data  = src;
 
-  d->data.resize( size*vsize );
-  std::copy( src, src + size*vsize, d->data.begin() );
+  if( (flg & AbstractAPI::BF_NoReadback) && device().hasManagedStorge() ){
+    d->vsize = 0;
+    d->size  = 0;
+    } else {
+    d->data.resize( size*vsize );
+    std::copy( src, src + size*vsize, d->data.begin() );
+    }
 
   data->ibos[t] = d;
   }
@@ -74,7 +81,8 @@ AbstractAPI::IndexBuffer *IndexBufferHolder::allocBuffer( size_t size,
 AbstractAPI::IndexBuffer *IndexBufferHolder::allocBuffer( size_t size,
                                                           size_t vsize,
                                                           const void *src,
-                                                          AbstractAPI::BufferUsage u) {
+                                                          AbstractAPI::BufferUsage u,
+                                                          AbstractAPI::BufferFlag /*flg*/ ) {
   return device().createIndexBuffer( size, vsize, src, u );
   }
 

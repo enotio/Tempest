@@ -56,7 +56,7 @@ class SurfaceRender {
       func(surf, e);
 
       vbo = Tempest::VertexBuffer<Vertex>();
-      vbo = vbHolder.load( cpuGm );
+      vbo = vbHolder.load( cpuGm, AbstractAPI::BF_NoReadback );
 
       sp.flush();
 

@@ -40,7 +40,8 @@
 #define GL_COLOR_BUFFER_BIT0_QCOM                     0x00000001
 #define GL_DEPTH_BUFFER_BIT0_QCOM                     0x00000100
 #define GL_STENCIL_BUFFER_BIT0_QCOM                   0x00010000
-#define GL_MAX_VARYING_VECTORS                        0x8DFC
+
+//#define GL_MAX_VARYING_VECTORS                        0x8DFC
 
 using namespace Tempest;
 typedef void (*PFNGLSTARTTILINGQCOMPROC) (GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
@@ -122,35 +123,68 @@ struct Opengl2x::Device{
     return v;
     }
 
+  static const char* glErrorDesc( GLenum err ){
+    struct Err{
+      const char* str;
+      GLenum code;
+      };
+
+    Err e[] = {
+      {"GL_INVALID_ENUM",      GL_INVALID_ENUM},
+      {"GL_INVALID_VALUE",     GL_INVALID_VALUE},
+      {"GL_INVALID_OPERATION", GL_INVALID_OPERATION},
+      {"GL_STACK_OVERFLOW",    GL_STACK_OVERFLOW},
+      {"GL_STACK_UNDERFLOW",   GL_STACK_UNDERFLOW},
+      {"GL_OUT_OF_MEMORY",     GL_OUT_OF_MEMORY},
+      {"GL_INVALID_FRAMEBUFFER_OPERATION", GL_INVALID_FRAMEBUFFER_OPERATION},
+      {"", GL_NO_ERROR},
+    };
+
+    for( int i=0; e[i].code!=GL_NO_ERROR; ++i )
+      if( e[i].code==err )
+        return e[i].str;
+
+    return 0;
+    }
+
   Color clearColor;
   float clearDepth;
   unsigned  clearS;
 
-  bool hasTileBasedRender;
+  bool hasTileBasedRender, hasQCOMTiles, hasDiscardBuffers;
 
   PFNGLSTARTTILINGQCOMPROC glStartTilingQCOM;
   PFNGLENDTILINGQCOMPROC   glEndTilingQCOM;
   bool isTileRenderStarted;
   };
 
-void Opengl2x::errCk() const {
+bool Opengl2x::errCk() const {
 #ifdef OGL_DEBUG
   GLenum err = glGetError();
+  bool ok = true;
+
   while( err!=GL_NO_ERROR ){
+    const char* glErrorDesc = Device::glErrorDesc(err);
 #ifndef __ANDROID__
-    std::cout << "[OpenGL]: " << glewGetErrorString(err) <<" 0x"
-              << std::hex << err << std::dec << std::endl;
+    std::cout << "[OpenGL]: ";
+    if( glErrorDesc )
+      std::cout << glErrorDesc <<" ";
+    std::cout  <<"0x"<< std::hex << err << std::dec << std::endl;
 #else
     void* ierr = (void*)err;
-    __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "error %p", ierr);
+    if( glErrorDesc )
+      __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "error %s", glErrorDesc); else
+      __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "error %p", ierr);
 #endif
     err = glGetError();
-    T_ASSERT_X(err, "OpenGL error");
+    ok = false;
     }
 #endif
+
+  return ok;
   }
 
-Opengl2x::Opengl2x():impl(0){
+Opengl2x::Opengl2x(){
   }
 
 Opengl2x::~Opengl2x(){
@@ -205,16 +239,25 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->hasS3tcTextures =
       (strstr(ext, "GL_OES_texture_compression_S3TC")!=0) ||
       (strstr(ext, "GL_EXT_texture_compression_s3tc")!=0);
-  dev->hasHalfSupport     = strstr(ext, "GL_OES_vertex_half_float")!=0;
-  dev->hasTileBasedRender = strstr(ext, "GL_QCOM_tiled_rendering")!=0;
+#ifdef __ANDROID__
+  dev->hasHalfSupport     = strstr(ext, "GL_OES_vertex_half_float")!=0 ;
+#else
+  dev->hasHalfSupport     = 1;
+#endif
+
+  dev->hasQCOMTiles      = strstr(ext, "GL_QCOM_tiled_rendering")!=0;
+  dev->hasDiscardBuffers = strstr(ext, "GL_EXT_discard_framebuffer")!=0;
   dev->isTileRenderStarted = false;
-  //dev->hasTileBasedRender = 1;
+
+  T_ASSERT( dev->hasHalfSupport );
+  dev->hasTileBasedRender = dev->hasQCOMTiles | dev->hasDiscardBuffers;
 
 #ifdef __ANDROID__
-  if( dev->hasTileBasedRender ){
+  if( dev->hasQCOMTiles ){
     dev->glStartTilingQCOM = (PFNGLSTARTTILINGQCOMPROC)eglGetProcAddress("glStartTilingQCOM");
     dev->glEndTilingQCOM   =   (PFNGLENDTILINGQCOMPROC)eglGetProcAddress("glEndTilingQCOM");
     }
+
 #endif
 
 #ifdef __ANDROID__
@@ -236,9 +279,17 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->clearS     = 0;
 
   memset( (char*)&dev->caps, 0, sizeof(dev->caps) );
+  T_ASSERT_X( errCk(), "OpenGL error" );
   glGetIntegerv( GL_MAX_TEXTURE_SIZE,         &dev->caps.maxTextureSize );
+  T_ASSERT_X( errCk(), "OpenGL error" );
+#ifdef __ANDROID__
   glGetIntegerv( GL_MAX_VARYING_VECTORS,      &dev->caps.maxVaryingVectors );
   dev->caps.maxVaryingComponents = dev->caps.maxVaryingVectors*4;
+#else
+  glGetIntegerv( GL_MAX_VARYING_COMPONENTS,   &dev->caps.maxVaryingComponents );
+  dev->caps.maxVaryingVectors = dev->caps.maxVaryingComponents/4;
+#endif
+  T_ASSERT_X( errCk(), "OpenGL error" );
 
 #ifdef __ANDROID__
   dev->caps.maxRTCount = 1;
@@ -253,12 +304,14 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 
   reset( (AbstractAPI::Device*)dev, hwnd, opt );
   setRenderState( (AbstractAPI::Device*)dev, Tempest::RenderState() );
+
+  T_ASSERT_X( errCk(), "OpenGL error" );
   return (AbstractAPI::Device*)dev;
   }
 
 void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
   Device* dev = (Device*)d;
-  setDevice(d);
+  if( !setDevice(d) ) return;
   glDeleteFramebuffers (1, &dev->fboId);
 
 #ifndef __ANDROID__
@@ -270,14 +323,23 @@ void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
   delete dev;
   }
 
-void Opengl2x::setDevice( AbstractAPI::Device * d ) const {
+bool Opengl2x::setDevice( AbstractAPI::Device * d ) const {
   dev = (Device*)d;
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
+
+#ifdef __ANDROID__
+  bool ok =  SystemAPI::instance().isGraphicsContextAviable(0);
+  if( !ok )
+    __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "context is unaviable - android sucks");
+  return ok;
+#endif
+
+  return 1;
   }
 
 void Opengl2x::clear( AbstractAPI::Device *d,
                       const Color& cl, float z, unsigned stencil ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   if( dev->clearColor!=cl ){
     glClearColor( cl.r(), cl.g(), cl.b(), cl.a() );
@@ -308,7 +370,7 @@ void Opengl2x::clear( AbstractAPI::Device *d,
   }
 
 void Opengl2x::clear(AbstractAPI::Device *d, const Color &cl) const  {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   if( dev->clearColor!=cl ){
     glClearColor( cl.r(), cl.g(), cl.b(), cl.a() );
@@ -318,7 +380,7 @@ void Opengl2x::clear(AbstractAPI::Device *d, const Color &cl) const  {
   }
 
 void Opengl2x::clearZ(AbstractAPI::Device *d, float z ) const  {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   if( dev->clearDepth!=z ){
     dev->clearDepth = z;
@@ -339,7 +401,7 @@ void Opengl2x::clearZ(AbstractAPI::Device *d, float z ) const  {
   }
 
 void Opengl2x::clearStencil( AbstractAPI::Device *d, unsigned s ) const  {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   if( dev->clearS!=s ){
     glClearStencil( s );
@@ -350,7 +412,7 @@ void Opengl2x::clearStencil( AbstractAPI::Device *d, unsigned s ) const  {
 
 void Opengl2x::clear(AbstractAPI::Device *d,
                       float z, unsigned s ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   if( dev->clearDepth!=z ){
     dev->clearDepth = z;
@@ -376,7 +438,7 @@ void Opengl2x::clear(AbstractAPI::Device *d,
   }
 
 void Opengl2x::clear(AbstractAPI::Device *d,  const Color& cl, float z ) const{
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   if( dev->clearColor!=cl ){
     glClearColor( cl.r(), cl.g(), cl.b(), cl.a() );
@@ -402,7 +464,7 @@ void Opengl2x::clear(AbstractAPI::Device *d,  const Color& cl, float z ) const{
   }
 
 void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   T_ASSERT( !dev->isPainting );
 
@@ -410,6 +472,8 @@ void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
   dev->ibo    = 0;
   dev->curVBO = 0;
   dev->curIBO = 0;
+  dev->vbo    = 0;
+  dev->ibo    = 0;
   dev->decl   = 0;
 
   dev->curVboOffsetIndex = 0;
@@ -418,16 +482,16 @@ void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
   dev->isPainting = true;
 
   setupBuffers( 0, true, true, false );
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   T_ASSERT( setupFBO() );
 
   startTiledRender();
   }
 
 void Opengl2x::endPaint  ( AbstractAPI::Device * d ) const{
-  setDevice(d);  
+  if( !setDevice(d) ) return;
   endTiledRender();
 
   T_ASSERT( dev->isPainting );
@@ -440,7 +504,7 @@ AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
                                                     int w, int h,
                                                     AbstractTexture::Format::Type f)
   const {
-  setDevice(d);
+  if( !setDevice(d) ) return 0;
 /*
   if( dev->potFboTegraBug && dev->npotFboTegraBug ){
     w = Device::nextPot(w);
@@ -503,7 +567,7 @@ bool Opengl2x::setupFBO() const {
     }
 
   //T_ASSERT( glCheckFramebufferStatus( GL_FRAMEBUFFER )==GL_FRAMEBUFFER_COMPLETE );
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
 
   if( fbo ){
     if( *fbo==0 )
@@ -583,7 +647,7 @@ bool Opengl2x::setupFBO() const {
                                  0 );
       }
     }
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
 
   int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
   if( !(status==0 || status==GL_FRAMEBUFFER_COMPLETE) ){
@@ -598,13 +662,13 @@ bool Opengl2x::setupFBO() const {
 
 #ifdef OGL_DEBUG
   T_ASSERT( status==0 || status==GL_FRAMEBUFFER_COMPLETE );
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
 #endif
 
   glViewport( 0, 0, w, h );
   startTiledRender();
 
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   return 1;
   }
 
@@ -612,7 +676,7 @@ void Opengl2x::startTiledRender() const {
   if( dev->isTileRenderStarted )
     return;
 
-  if( dev->hasTileBasedRender ){
+  if( dev->hasQCOMTiles ){
     int w = dev->scrW, h = dev->scrH;
     (void)w;
     (void)h;
@@ -656,7 +720,7 @@ void Opengl2x::startTiledRender() const {
   }
 
 void Opengl2x::endTiledRender() const {
-  if( dev->isTileRenderStarted ){
+  if( dev->isTileRenderStarted && dev->hasQCOMTiles ){
     GLbitfield flg  = 0;
     //flg = GL_COLOR_BUFFER_BIT0_QCOM|GL_DEPTH_BUFFER_BIT0_QCOM|GL_STENCIL_BUFFER_BIT0_QCOM;
     GLbitfield nflg = GL_COLOR_BUFFER_BIT0_QCOM;
@@ -689,7 +753,7 @@ void Opengl2x::endTiledRender() const {
       }
 
     dev->glEndTilingQCOM( flg );
-    errCk();
+    T_ASSERT_X( errCk(), "OpenGL error" );
     dev->isTileRenderStarted = false;
     }
   }
@@ -698,7 +762,7 @@ void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
                                AbstractAPI::Texture *t,
                                int mip,
                                int mrtSlot ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
   Detail::GLTexture *tex = (Detail::GLTexture*)t;
   dev->target.color[mrtSlot] = tex;
   dev->target.mip  [mrtSlot] = mip;
@@ -706,7 +770,7 @@ void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
 
 void Opengl2x::unsetRenderTagets( AbstractAPI::Device *d,
                                   int /*count*/  ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
   endTiledRender();
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -714,7 +778,7 @@ void Opengl2x::unsetRenderTagets( AbstractAPI::Device *d,
   memset( &dev->target, 0, sizeof(dev->target) );
 
   glViewport( 0, 0, dev->scrW, dev->scrH );
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
 AbstractAPI::StdDSSurface *Opengl2x::getDSSurfaceTaget( AbstractAPI::Device * ) const {
@@ -723,13 +787,13 @@ AbstractAPI::StdDSSurface *Opengl2x::getDSSurfaceTaget( AbstractAPI::Device * ) 
 
 void Opengl2x::retDSSurfaceTaget( AbstractAPI::Device *d,
                                   AbstractAPI::StdDSSurface * ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
   dev->target.depth = 0;
   }
 
 void Opengl2x::setDSSurfaceTaget( AbstractAPI::Device *d,
                                   AbstractAPI::StdDSSurface *tx ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 //#ifndef __ANDROID__
   dev->target.depth = (Detail::GLTexture*)tx;
 //#endif
@@ -737,7 +801,7 @@ void Opengl2x::setDSSurfaceTaget( AbstractAPI::Device *d,
 
 void Opengl2x::setDSSurfaceTaget( AbstractAPI::Device *d,
                                   AbstractAPI::Texture *tx ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 //#ifndef __ANDROID__
   dev->target.depth = (Detail::GLTexture*)tx;
 //#endif
@@ -764,7 +828,7 @@ bool Opengl2x::present( AbstractAPI::Device *d ) const {
 bool Opengl2x::reset( AbstractAPI::Device *d,
                       void* hwnd,
                       const Options &/*opt*/ ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return 0;
 
 #ifndef __ANDROID__
   RECT rectWindow;
@@ -795,6 +859,8 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
 
   dev->curIBO = 0;
   dev->curVBO = 0;
+  dev->vbo    = 0;
+  dev->ibo    = 0;
   return 1;
   }
 
@@ -805,7 +871,7 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
   if( p.width()==0 || p.height()==0 )
     return 0;
 
-  setDevice(d);
+  if( !setDevice(d) ) return 0;
 
   Detail::GLTexture* tex = new Detail::GLTexture;
   glGenTextures(1, &tex->id);
@@ -814,8 +880,9 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
   tex->mips     = mips;
   tex->compress = compress;
 
-  tex->w = p.width();
-  tex->h = p.height();
+  tex->w            = p.width();
+  tex->h            = p.height();
+  tex->isInitalized = true;
 
   static const GLenum frm[] = {
     GL_RGB,
@@ -876,10 +943,10 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
         data += nSize;
         if(w>1) w/=2;
         if(h>1) h/=2;
-        errCk();
+        T_ASSERT_X( errCk(), "OpenGL error" );
         }
       }
-    errCk();
+    T_ASSERT_X( errCk(), "OpenGL error" );
     }
 
   glTexParameteri( GL_TEXTURE_2D,
@@ -889,7 +956,7 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
                    GL_TEXTURE_MAG_FILTER,
                    GL_NEAREST );
   
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   return ((AbstractAPI::Texture*)tex);
   }
 
@@ -901,7 +968,7 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
   if( oldT==0 )
     return createTexture(d, p, mips, compress);
 
-  setDevice(d);
+  if( !setDevice(d) ) return 0;
   Detail::GLTexture* tex = 0;
   Detail::GLTexture* old = (Detail::GLTexture*)(oldT);
 
@@ -986,10 +1053,10 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
         data += nSize;
         if(w>1) w/=2;
         if(h>1) h/=2;
-        errCk();
+        T_ASSERT_X( errCk(), "OpenGL error" );
         }
       }
-    errCk();
+    T_ASSERT_X( errCk(), "OpenGL error" );
     }
   
   return (AbstractAPI::Texture*)tex;
@@ -1004,7 +1071,7 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
     return 0;
 
   (void)u;
-  setDevice(d);
+  if( !setDevice(d) ) return 0;
 
   if( f==AbstractTexture::Format::Depth16 ||
       f==AbstractTexture::Format::Depth24 ||
@@ -1121,7 +1188,7 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
     GL_RGBA
     };
   
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
 
   tex->min = tex->mag = GL_NEAREST;
   tex->mips = mips;
@@ -1154,7 +1221,7 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
                 inputFormat[f],
                 GL_UNSIGNED_BYTE, 0 );
 #endif
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
 
   glTexParameteri( GL_TEXTURE_2D,
                    GL_TEXTURE_MIN_FILTER,
@@ -1166,7 +1233,7 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
   if( mips!=0 )
     glGenerateMipmap(GL_TEXTURE_2D);
   
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   return (AbstractAPI::Texture*)tex;
   }
 
@@ -1175,7 +1242,7 @@ void Opengl2x::deleteTexture( AbstractAPI::Device *d,
   if( !t )
     return;
 
-  setDevice(d);
+  if( !setDevice(d) ) return;
   Detail::GLTexture* tex = (Detail::GLTexture*)t;
 
   if( tex->id && glIsTexture(tex->id) )
@@ -1190,7 +1257,7 @@ void Opengl2x::deleteTexture( AbstractAPI::Device *d,
   delete tex->fboTg;
   delete tex;
   
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
 void Opengl2x::setTextureFlag( AbstractAPI::Device  *,
@@ -1215,8 +1282,7 @@ AbstractAPI::VertexBuffer *Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
                                                          size_t elSize,
                                                          const void *src,
                                                          BufferUsage u ) const {
-  setDevice(d);
-  setDevice(d);
+  if( !setDevice(d) ) return 0;
 
   static const GLenum gu[] = {
     GL_STREAM_DRAW,
@@ -1225,26 +1291,37 @@ AbstractAPI::VertexBuffer *Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
     };
 
   Detail::GLBuffer *vbo = new Detail::GLBuffer;
+  vbo->offset = 0;
+  vbo->size   = 0;
+
   glGenBuffers( 1, &vbo->id );
   glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
   glBufferData( GL_ARRAY_BUFFER,
                 size*elSize, src,
                 gu[u] );
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
 
   return (AbstractAPI::VertexBuffer*)vbo;
   }
 
 void Opengl2x::deleteVertexBuffer(  AbstractAPI::Device *d,
                                     AbstractAPI::VertexBuffer*v ) const{
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
-  if( glIsBuffer(vbo->id) )
+  if( glIsBuffer(vbo->id) ){
+    if( dev->curVBO==vbo->id ){
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      dev->curVBO = 0;
+      }
+
     glDeleteBuffers( 1, &vbo->id );
+    } else {
+    T_ASSERT_X(0, "bad glDeleteBuffers call");
+    }
   delete vbo;
 
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
 AbstractAPI::IndexBuffer*
@@ -1259,7 +1336,7 @@ AbstractAPI::IndexBuffer *Opengl2x::createIndexBuffer( AbstractAPI::Device *d,
                                                        size_t elSize,
                                                        const void *src,
                                                        BufferUsage u  ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return 0;
 
   static const GLenum gu[] = {
     GL_STREAM_DRAW,
@@ -1268,33 +1345,42 @@ AbstractAPI::IndexBuffer *Opengl2x::createIndexBuffer( AbstractAPI::Device *d,
     };
 
   Detail::GLBuffer *ibo = new Detail::GLBuffer;
+  ibo->offset = 0;
+  ibo->size   = 0;
+
   glGenBuffers( 1, &ibo->id );
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo->id );
   glBufferData( GL_ELEMENT_ARRAY_BUFFER,
                 size*elSize, src,
                 gu[u] );
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
 
   return (AbstractAPI::IndexBuffer*)ibo;
   }
 
 void Opengl2x::deleteIndexBuffer( AbstractAPI::Device *d,
                                   AbstractAPI::IndexBuffer* v) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
-  Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
-  if( glIsBuffer(vbo->id) )
-    glDeleteBuffers( 1, &vbo->id );
-  delete vbo;
+  Detail::GLBuffer *ibo = (Detail::GLBuffer*)v;
+  if( glIsBuffer(ibo->id) ){
+    if( dev->curIBO==ibo->id ){
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+      dev->curIBO = 0;
+      }
 
-  errCk();
+    glDeleteBuffers( 1, &ibo->id );
+    }
+  delete ibo;
+
+  T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
 void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
                             AbstractAPI::VertexBuffer * v,
                             unsigned offset,
                             unsigned size ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return 0;
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
 
@@ -1312,13 +1398,13 @@ void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
   vbo->offset = offset;
   vbo->size   = size;
 
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   return vbo->mappedData;
   }
 
 void Opengl2x::unlockBuffer( AbstractAPI::Device *d,
                              AbstractAPI::VertexBuffer* v) const {  
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
 
@@ -1335,7 +1421,7 @@ void Opengl2x::unlockBuffer( AbstractAPI::Device *d,
 
   //glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
   //glUnmapBuffer( GL_ARRAY_BUFFER );
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
 void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
@@ -1343,7 +1429,7 @@ void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
                             unsigned offset, unsigned size) const {
   (void)size;
 
-  setDevice(d);
+  if( !setDevice(d) ) return 0;
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
 
@@ -1358,13 +1444,13 @@ void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
   vbo->offset = offset;
   vbo->size   = size;
 
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   return vbo->mappedData;
   }
 
 void Opengl2x::unlockBuffer( AbstractAPI::Device *d,
                              AbstractAPI::IndexBuffer* v) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
 
@@ -1381,12 +1467,12 @@ void Opengl2x::unlockBuffer( AbstractAPI::Device *d,
 
   //glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, *vbo );
   //glUnmapBuffer( GL_ELEMENT_ARRAY_BUFFER );
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
 const AbstractShadingLang*
         Opengl2x::createShadingLang( AbstractAPI::Device *d ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return 0;
   AbstractAPI::OpenGL2xDevice *dev =
       reinterpret_cast<AbstractAPI::OpenGL2xDevice*>(d);
 
@@ -1412,7 +1498,7 @@ void Opengl2x::deleteVertexDecl( AbstractAPI::Device *,
 
 void Opengl2x::setVertexDeclaration( AbstractAPI::Device *d,
                                      AbstractAPI::VertexDecl* de ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   if( dev->decl==(VertexDeclaration::Declarator*)de )
     return;
@@ -1426,7 +1512,7 @@ void Opengl2x::setVertexDeclaration( AbstractAPI::Device *d,
 void Opengl2x::bindVertexBuffer( AbstractAPI::Device *d,
                                  AbstractAPI::VertexBuffer* b,
                                  int vsize ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   dev->vbo        = *(GLuint*)b;
   dev->vertexSize = vsize;
@@ -1434,7 +1520,7 @@ void Opengl2x::bindVertexBuffer( AbstractAPI::Device *d,
 
 void Opengl2x::bindIndexBuffer( AbstractAPI::Device * d,
                                 AbstractAPI::IndexBuffer * b ) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   dev->ibo = *(GLuint*)b;
   }
@@ -1452,6 +1538,7 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
     dev->curVBO            = dev->vbo;
     dev->curVboOffsetIndex = vboOffsetIndex;
 
+    T_ASSERT( glIsBuffer(dev->vbo) );
     glBindBuffer( GL_ARRAY_BUFFER, dev->vbo );
     }
 
@@ -1519,7 +1606,7 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
     stride += strides[e.component];
     }
 
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
 void Opengl2x::draw( AbstractAPI::Device *de,
@@ -1546,7 +1633,7 @@ void Opengl2x::draw( AbstractAPI::Device *de,
   int vpCount = vertexCount(t, pCount);
   glDrawArrays( type[ t-1 ], firstVertex, vpCount );
   //setupBuffers(0, false, false);
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
 //unstable
@@ -1570,7 +1657,7 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
     dev->curIboOffsetIndex = iboOffsetIndex;
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, dev->ibo );
     }
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
 
   static const GLenum type[] = {
     GL_POINTS,         // = 1,
@@ -1589,7 +1676,7 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
                     ((void*)(iboOffsetIndex*sizeof(uint16_t))) );
 
   //setupBuffers( firstIndex, false, false );
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
 bool Opengl2x::hasManagedStorge() const {
@@ -1606,7 +1693,7 @@ Size Opengl2x::windowSize( Tempest::AbstractAPI::Device * d ) const {
 
 void Opengl2x::setRenderState( AbstractAPI::Device *d,
                                const RenderState & r) const {
-  setDevice(d);
+  if( !setDevice(d) ) return;
 
   GLenum cull[] = {
     GL_NONE,
@@ -1711,5 +1798,5 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
 #endif
 
   dev->renderState = r;
-  errCk();
+  T_ASSERT_X( errCk(), "OpenGL error" );
   }

@@ -419,6 +419,25 @@ std::vector<char> WindowsAPI::loadBytesImpl(const wchar_t *file) {
   return str;
   }
 
+bool WindowsAPI::writeBytesImpl( const wchar_t *file,
+                                 const std::vector<char>& f ) {
+  HANDLE hTextFile = CreateFile( file,
+                                 GENERIC_READ|GENERIC_WRITE,
+                                 FILE_SHARE_READ, NULL,
+                                 OPEN_ALWAYS,
+                                 FILE_ATTRIBUTE_NORMAL,
+                                 NULL );
+
+  if( hTextFile==0 )
+    return 0;
+
+  DWORD dwBytesWriten;
+  WriteFile(hTextFile, &f[0], f.size(), &dwBytesWriten, NULL);
+  CloseHandle(hTextFile);
+
+  return true;
+  }
+
 void WindowsAPI::initImgLib() {
   Tempest::Detail::Atomic::begin();
 

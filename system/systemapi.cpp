@@ -49,6 +49,14 @@ std::vector<char> SystemAPI::loadBytes(const char *file) {
   return instance().loadBytesImpl(file);
   }
 
+std::vector<char> SystemAPI::loadBytes(const wchar_t *file) {
+  return instance().loadBytesImpl(file);
+  }
+
+bool SystemAPI::writeBytes(const wchar_t *file, const std::vector<char> &f) {
+  return instance().writeBytesImpl(file, f);
+  }
+
 bool SystemAPI::loadImage( const wchar_t *file,
                            int &w, int &h,
                            int &bpp,
@@ -227,6 +235,10 @@ Event::KeyType SystemAPI::translateKey(uint64_t scancode) {
       }
 
   return Event::K_NoKey;
+  }
+
+bool SystemAPI::writeBytesImpl(const wchar_t *file, const std::vector<char> &f) {
+  return 0;
   }
 
 bool SystemAPI::loadImageImpl( const char *file,

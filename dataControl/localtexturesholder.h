@@ -2,6 +2,7 @@
 #define LOCALTEXTURESHOLDER_H
 
 #include <Tempest/TextureHolder>
+#include <Tempest/LocalObjectPool>
 #include <vector>
 
 namespace Tempest {
@@ -13,6 +14,12 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
 
     void setMaxCollectIterations(int c);
     int  maxCollectIterations() const;
+
+    void setMaxReservedCount( int s );
+    int  maxReservedCount() const;
+
+    void pauseCollect( bool p );
+    bool isCollectPaused() const;
   protected:
     struct NonFreedData {
       Tempest::AbstractAPI::Texture* handle;
@@ -26,7 +33,7 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
 
       bool dynamic, restoreIntent;
 
-      bool cmp( const NonFreedData& b ) const{
+      bool operator == ( const NonFreedData& b ) const{
         return w==b.w &&
                h==b.h &&
                mip==b.mip &&
@@ -50,8 +57,6 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
     using TextureHolder::restore;
 
     virtual void presentEvent();
-    virtual void collect( std::vector< NonFreed >& nonFreed );
-
     void deleteObject( NonFreed& obj );
   private:
     void createObject( Tempest::AbstractAPI::Texture*& t,
@@ -64,10 +69,15 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
 
     void deleteObject( Tempest::AbstractAPI::Texture* t );
 
-    std::vector< NonFreed > nonFreed, dynTextures;
+    bool validAs( const NonFreedData& x, const NonFreedData &d );
+
+    std::vector< NonFreed >   dynTextures;
+    LocalObjectPool<NonFreed> nonFreed;
 
     bool needToRestore;
+    int  maxReserved;
     int  mmaxColletIterations;
+    bool pcollect;
   };
 
 }

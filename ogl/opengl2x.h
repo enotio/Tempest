@@ -154,20 +154,18 @@ class Opengl2x : public AbstractAPI {
 
     virtual bool hasManagedStorge() const;
     virtual Size windowSize( Tempest::AbstractAPI::Device * dev ) const;
-  private:
-    class Opengl2xImpl;
-    Opengl2xImpl* impl;
 
+  private:
     struct Device;
     mutable Device * dev;
 
     Opengl2x( const Opengl2x& ){}
     void operator = ( const Opengl2x& ){}
 
-    void setDevice(  AbstractAPI::Device *d ) const;
+    bool setDevice(  AbstractAPI::Device *d ) const;
     void setupBuffers(int vboOffsetIndex, bool on , bool enable, bool bind) const;
 
-    void errCk() const;
+    bool errCk() const;
 
     bool setupFBO() const;
     void startTiledRender() const;

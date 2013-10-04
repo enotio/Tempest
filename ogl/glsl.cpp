@@ -245,21 +245,21 @@ void GLSL::deleteFragmentShader( FragmentShader* s ) const{
   }
 
 std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
-                                 const AbstractShadingLang::UiShaderOpt &opt,
+                                 const AbstractShadingLang::UiShaderOpt &vopt,
                                  bool &hasHalfpixOffset ) const {
   hasHalfpixOffset = false;
 
-  static const std::string vs_src =
+  const std::string vs_src = std::string(
       "attribute vec2 Position;"
       "attribute vec2 TexCoord;"
       "attribute vec4 TexCoord1;"
+) +
+  opt("varying vec2 tc;", "", vopt.texcoord != Decl::count && vopt.hasTexture ) +
+  opt("varying vec4 cl;", "", vopt.color    != Decl::count ) +
 
-      "varying vec2 tc;"
-      "varying vec4 cl;"
-
-      "void main() {"
-        "tc = TexCoord;"
-        "cl = TexCoord1;"
+      "void main() {" +
+    opt("tc = TexCoord;",  "", vopt.texcoord!=Decl::count && vopt.hasTexture ) +
+    opt("cl = TexCoord1;", "", vopt.color   !=Decl::count ) +
         "gl_Position = vec4(Position, 0.0, 1.0);"
         "}";
 
@@ -297,7 +297,7 @@ std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
         "gl_FragColor = cl;"
         "}";
 
-  if( opt.hasTexture ){
+  if( vopt.hasTexture ){
     switch( t ) {
       case Vertex:
         return vs_src;
@@ -682,4 +682,11 @@ void GLSL::setUniform( unsigned int sh,
       glActiveTexture( GL_TEXTURE0 );
       }
     }
-}
+  }
+
+const char *GLSL::opt(const char *t, const char *f, bool v) {
+  if( v )
+    return t;
+
+  return f;
+  }
