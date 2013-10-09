@@ -30,6 +30,7 @@ using namespace Tempest;
 
 #include <android/keycodes.h>
 
+
 #include <cmath>
 #include <locale>
 
@@ -56,6 +57,7 @@ static struct Android{
   bool isPaused;
 
   std::vector<char> internal, external;
+  std::string locale;
 
   enum MainThreadMessage {
     MSG_NONE = 0,
@@ -93,8 +95,9 @@ static struct Android{
   std::vector<Message> msg;
 
   struct MousePointer{
-    int  nativeID;
-    bool valid;
+    int   nativeID;
+    bool  valid;
+    Point pos;
     };
   std::vector<MousePointer> mouse;
 
@@ -109,6 +112,10 @@ static struct Android{
     p.valid    = true;
     mouse.push_back(p);
     return mouse.size()-1;
+    }
+
+  Point& pointerPos( int id ){
+    return mouse[id].pos;
     }
 
   void unsetPointer( int nid ){
@@ -389,18 +396,25 @@ int AndroidAPI::nextEvent(bool &quit) {
 
     case Android::MSG_TOUCH: {
       int id = android.pointerId( msg.data2 );
+
       MouseEvent e( msg.data.x, msg.data.y, MouseEvent::ButtonLeft, 0, id );
 
-      if( msg.data1==0 )
+      if( msg.data1==0 ){
+        android.pointerPos(id) = Point(msg.data.x, msg.data.y);
         SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseDown);
+        }
 
       if( msg.data1==1 ){
         SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseUp);
         android.unsetPointer(msg.data2);
         }
 
-      if( msg.data1==2 )
-        SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseMove);
+      if( msg.data1==2 ){
+        if( android.pointerPos(id) != Point(msg.data.x, msg.data.y) ){
+          android.pointerPos(id) = Point(msg.data.x, msg.data.y);
+          SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseMove);
+          }
+        }
       }
       break;
 
@@ -855,6 +869,22 @@ static void JNICALL nativeSetupStorage( JNIEnv* , jobject,
   env->ReleaseStringUTFChars( external, str );
   }
 
+
+static void JNICALL nativeInitLocale( JNIEnv* , jobject,
+                                      jstring loc ){
+  JNIEnv * env = 0;
+  android.vm->AttachCurrentThread( &env, NULL);
+
+  const char* str = env->GetStringUTFChars( loc, 0);
+  if( str ){
+    android.locale = str;
+    } else {
+    android.locale = "eng";
+    }
+
+  env->ReleaseStringUTFChars( loc, str );
+  }
+
 jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
   static JNINativeMethod methodTable[] = {
     {"nativeOnCreate",  "()V", (void *) onCreate  },
@@ -864,6 +894,7 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
     {"nativeOnResume", "()V", (void *) resume },
     {"nativeOnPause",  "()V", (void *) pauseA },
     {"nativeOnStop",   "()V", (void *) stop   },
+    {"nativeInitLocale",   "(Ljava/lang/String;)V", (void *)nativeInitLocale },
     {"nativeOnTouch",  "(IIII)V", (void *)nativeOnTouch   },
     {"onKeyEvent",     "(I)V",   (void *)onKeyEvent      },
     {"nativeSetSurface", "(Landroid/view/Surface;)V",   (void *) nativeSetSurface   },
