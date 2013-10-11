@@ -120,6 +120,7 @@ class Widget {
     virtual void keyDownEvent( Tempest::KeyEvent & e );
     virtual void keyUpEvent( Tempest::KeyEvent & e );
     virtual void customEvent( Tempest::CustomEvent & e );
+    virtual void closeEvent( Tempest::CloseEvent & e );
 
     virtual void shortcutEvent( Tempest::KeyEvent & e );
     virtual void resizeEvent( Tempest::SizeEvent& e );
@@ -158,6 +159,7 @@ class Widget {
     void rootKeyUpEvent  ( Tempest::KeyEvent & e );
 
     void rootShortcutEvent( Tempest::KeyEvent & e );
+    void rootCloseEvent   ( Tempest::CloseEvent & e );
 
 
     void impl_mouseUpEvent  ( Widget* w, Tempest::MouseEvent & e );
@@ -165,7 +167,8 @@ class Widget {
     void impl_keyPressEvent ( Widget* w, Tempest::KeyEvent & e,
                               void (Widget::*f)(Tempest::KeyEvent &) );
 
-    void impl_customEvent(Widget *w, Tempest::CustomEvent & e );
+    static void impl_customEvent(Widget *w, Tempest::CustomEvent & e );
+    static void impl_closeEvent (Widget *w, Tempest::CloseEvent & e );
 
     void unsetChFocus( Widget* root, Widget* emiter );
     Widget* impl_mouseEvent( Tempest::MouseEvent & e,

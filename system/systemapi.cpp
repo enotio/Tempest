@@ -99,6 +99,12 @@ void SystemAPI::mkKeyEvent( Tempest::Window *w,
     }
   }
 
+void SystemAPI::mkCloseEvent( Tempest::Window *w,
+                              CloseEvent &e,
+                              Event::Type type) {
+  processEvents(w, e, type);
+  }
+
 void SystemAPI::mkMouseEvent(Tempest::Window *w, MouseEvent &e , Event::Type type ){
   if( w->pressedC.size() < size_t(e.mouseID+1) )
     w->pressedC.resize(e.mouseID+1);
@@ -159,6 +165,11 @@ void SystemAPI::processEvents(Widget *w, KeyEvent &e, Event::Type type) {
 
   if( type==Event::Shortcut )
     return w->rootShortcutEvent(e);
+  }
+
+void SystemAPI::processEvents(Widget *w, CloseEvent &e, Event::Type type) {
+  if( type==Event::Close )
+    return w->rootCloseEvent(e);
   }
 
 void SystemAPI::sizeEvent( Tempest::Window *w, int cW, int cH ) {

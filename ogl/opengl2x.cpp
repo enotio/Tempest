@@ -31,6 +31,11 @@
 #include <squish.h>
 #include <cstring>
 
+#ifndef GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
+#define GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER 0x8CDB
+#define GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER 0x8CDC
+#endif
+
 #define OGL_DEBUG
 
 #ifdef __ANDROID__
@@ -651,13 +656,29 @@ bool Opengl2x::setupFBO() const {
 
   int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
   if( !(status==0 || status==GL_FRAMEBUFFER_COMPLETE) ){
+    struct Err{
+      GLenum err;
+      const char* desc;
+    } err[] = {
+    {GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT,         "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT"},
+    {GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT, "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT"},
+    {GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER,        "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER"},
+    {GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER,        "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER"},
+
+    {GL_FRAMEBUFFER_UNSUPPORTED,                   "GL_FRAMEBUFFER_UNSUPPORTED"},
+    {0,0}
+    };
+    const char* desc = "unknown error";
+    for( int i=0; err[i].desc; ++i )
+      if( err[i].err==status )
+        desc = err[i].desc;
 #ifndef __ANDROID__
-    std::cout << std::hex << status << std::dec << std::endl;
+    std::cout << "fbo error" << desc <<" " << std::hex << status << std::dec << std::endl;
 #else
     void* ierr = (void*)status;
-    __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "fbo error %p", ierr);
+    __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "fbo error %s %p", desc, ierr);
 #endif
-    return 0;
+    return 1;
     }
 
 #ifdef OGL_DEBUG

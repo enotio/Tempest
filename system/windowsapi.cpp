@@ -742,7 +742,13 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       }
       break;
 
-      case WM_CLOSE:
+      case WM_CLOSE:{
+        Tempest::CloseEvent e;
+        SystemAPI::mkCloseEvent(w, e, Event::Close);
+        if( !e.isAccepted() )
+          PostQuitMessage(0);
+        }
+        break;
       case WM_DESTROY: {
         PostQuitMessage(0);
         }

@@ -310,6 +310,10 @@ void Painter::unsetTexture() {
   dev.unsetTexture();
   }
 
+void Painter::setColor( const Color &c ) {
+  dev.setColor( c.r(), c.g(), c.b(), c.a() );
+  }
+
 void Painter::setColor(float r, float g, float b, float a) {
   dev.setColor(r,g,b,a);
   }

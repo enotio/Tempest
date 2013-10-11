@@ -80,6 +80,9 @@ class SystemAPI{
     static void processEvents( Tempest::Widget *w,
                                KeyEvent &e,
                                Event::Type type );
+    static void processEvents( Tempest::Widget *w,
+                               CloseEvent &e,
+                               Event::Type type );
 
     static void mkMouseEvent( Tempest::Window *w,
                               MouseEvent& e,
@@ -88,6 +91,10 @@ class SystemAPI{
     static void mkKeyEvent( Tempest::Window *w,
                             KeyEvent& e,
                             Event::Type type );
+
+    static void mkCloseEvent( Tempest::Window *w,
+                              CloseEvent& e,
+                              Event::Type type );
 
     static void sizeEvent( Tempest::Window *w, int cW, int cH);
     static void activateEvent( Tempest::Window*w, bool a );

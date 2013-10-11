@@ -67,6 +67,7 @@ static struct Android{
     MSG_PAUSE,
     MSG_RESUME,
     MSG_KEY_EVENT,
+    MSG_CLOSE,
     MSG_RENDER_LOOP_EXIT
     };
 
@@ -100,6 +101,7 @@ static struct Android{
     Point pos;
     };
   std::vector<MousePointer> mouse;
+  bool closeRqAccepted;
 
   int pointerId( int nid ){
     for( size_t i=0; i<mouse.size(); ++i )
@@ -134,6 +136,8 @@ static struct Android{
     context = 0;
 
     env     = 0;
+
+    closeRqAccepted = 0;
 
     window_w = 0;
     window_h = 0;
@@ -415,6 +419,13 @@ int AndroidAPI::nextEvent(bool &quit) {
           SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseMove);
           }
         }
+      }
+      break;
+
+    case Android::MSG_CLOSE:  {
+      Tempest::CloseEvent e;
+      SystemAPI::mkCloseEvent(android.wnd, e, Event::Close );
+      android.closeRqAccepted = e.isAccepted();
       }
       break;
 
@@ -827,7 +838,7 @@ static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
   pthread_mutex_lock( &android.waitMutex );
   pthread_mutex_lock( &android.appMutex );
 
-  if( key!=AKEYCODE_BACK || 1 ){
+  if( key!=AKEYCODE_BACK ){
     android.msg.push_back( Android::MSG_KEY_EVENT );
     android.msg.back().data1 = key;
     } else {
@@ -839,6 +850,29 @@ static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
   pthread_mutex_unlock( &android.waitMutex );
   }
 
+static jboolean JNICALL nativeCloseEvent( JNIEnv* , jobject ){
+  pthread_mutex_lock( &android.waitMutex );
+  pthread_mutex_lock( &android.appMutex );
+
+  android.msg.push_back( Android::MSG_CLOSE );
+
+  pthread_mutex_unlock( &android.appMutex );
+  android.waitForQueue();
+  pthread_mutex_unlock( &android.waitMutex );
+
+  return android.closeRqAccepted;
+/*
+  pthread_mutex_lock( &android.waitMutex );
+  pthread_mutex_lock( &android.appMutex );
+
+  if( android.closeRqAccepted ){
+    android.msg.push_back( Android::MSG_RENDER_LOOP_EXIT );
+    }
+
+  pthread_mutex_unlock( &android.appMutex );
+  android.waitForQueue();
+  pthread_mutex_unlock( &android.waitMutex );*/
+  }
 
 static void JNICALL nativeSetupStorage( JNIEnv* , jobject,
                                         jstring internal, jstring external ) {
@@ -897,6 +931,7 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
     {"nativeInitLocale",   "(Ljava/lang/String;)V", (void *)nativeInitLocale },
     {"nativeOnTouch",  "(IIII)V", (void *)nativeOnTouch   },
     {"onKeyEvent",     "(I)V",   (void *)onKeyEvent      },
+    {"nativeCloseEvent",  "()Z", (void *) nativeCloseEvent  },
     {"nativeSetSurface", "(Landroid/view/Surface;)V",   (void *) nativeSetSurface   },
     {"nativeOnResize",   "(Landroid/view/Surface;II)V", (void *) resize             },
     {"nativeSetAssets",  "(Landroid/content/res/AssetManager;)V",   (void *) setAssets          },

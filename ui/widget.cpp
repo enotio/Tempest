@@ -407,9 +407,11 @@ void Widget::keyUpEvent(KeyEvent &e) {
   }
 
 void Widget::customEvent( CustomEvent &e ) {
-  execDeleteRoot();
-  impl_customEvent(this, e);
-  execDeleteRoot();
+  e.ignore();
+  }
+
+void Widget::closeEvent(CloseEvent &e) {
+  e.ignore();
   }
 
 void Widget::update() {
@@ -461,6 +463,19 @@ void Widget::impl_customEvent( Widget*w, CustomEvent &e ) {
     wx->customEvent(e);
     impl_customEvent( wx, e );
     }
+  }
+
+void Widget::impl_closeEvent(Widget *w, CloseEvent &e) {
+  for( size_t i=0; i<w->layout().widgets().size(); ++i ){
+    Widget *wx = w->layout().widgets()[i];
+
+    impl_closeEvent( wx, e );
+    if( e.isAccepted() )
+      return;
+    }
+
+  e.accept();
+  w->closeEvent(e);
   }
 
 void Widget::paintNested( PaintEvent &p ){
@@ -623,6 +638,12 @@ void Widget::rootShortcutEvent(KeyEvent &e) {
   execDeleteRoot();
   e.ignore();
   this->shortcutEvent(e);
+  execDeleteRoot();
+  }
+
+void Widget::rootCloseEvent(CloseEvent &e) {
+  execDeleteRoot();
+  impl_closeEvent(this, e);
   execDeleteRoot();
   }
 

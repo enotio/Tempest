@@ -32,6 +32,7 @@ class Event {
       Resize,
       Shortcut,
       Paint,
+      Close,
 
       Custom = 512
       };
@@ -199,6 +200,14 @@ class PaintEvent: public Event {
 class CustomEvent: public Event {
   public:
   CustomEvent(){ setType(Custom); }
+
+  private:
+
+  };
+
+class CloseEvent: public Event {
+  public:
+  CloseEvent(){ setType(Close); }
 
   private:
 

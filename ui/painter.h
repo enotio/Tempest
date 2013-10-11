@@ -125,6 +125,7 @@ class Painter {
     void setTexture( const Tempest::Sprite& );
     void unsetTexture();
 
+    void setColor( const Tempest::Color & cl );
     void setColor( float r, float g, float b, float a = 1);
     void setFlip( bool h, bool v );
     void setBlendMode( BlendMode );
