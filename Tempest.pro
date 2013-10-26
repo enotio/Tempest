@@ -164,7 +164,8 @@ SOURCES += \
     2d/surface.cpp \
     core/wrappers/displaysettings.cpp \
     2d/surfacerender.cpp \
-    2d/font.cpp
+    2d/font.cpp \
+    ui/gesturerecognizer.cpp
 
 HEADERS += \
     ui/window.h \
@@ -263,7 +264,8 @@ HEADERS += \
     2d/font.h \
     include/Tempest/Font \
     dataControl/localobjectpool.h \
-    include/Tempest/LocalObjectPool
+    include/Tempest/LocalObjectPool \
+    ui/gesturerecognizer.h
 
 OTHER_FILES += \
     include/Tempest/Window \
@@ -286,5 +288,6 @@ OTHER_FILES += \
     include/Tempest/Sprite \
     include/Tempest/Timer \
     include/Tempest/Surface \
-    include/Tempest/Android
+    include/Tempest/Android \
+    include/Tempest/GestureRecognizer
 

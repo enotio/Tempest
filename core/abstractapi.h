@@ -37,6 +37,8 @@ class AbstractAPI {
 
       int maxVaryingVectors;
       int maxVaryingComponents;
+
+      bool hasHalf2, hasHalf4;
       };
 
     enum PrimitiveType{

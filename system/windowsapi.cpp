@@ -643,8 +643,8 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
            };
 
          if( 0 == *std::find( wrd, wrd+2, wParam) ){
-           SystemAPI::mkKeyEvent(w, e, Event::KeyDown);
-           SystemAPI::mkKeyEvent(w, e, Event::KeyUp);
+           SystemAPI::emitEvent(w, e, Event::KeyDown);
+           SystemAPI::emitEvent(w, e, Event::KeyUp);
            }
       }
       break;
@@ -652,12 +652,12 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       case WM_KEYDOWN:
       {
          Tempest::KeyEvent sce = makeKeyEvent(wParam, true);
-         SystemAPI::mkKeyEvent(w, sce, Event::Shortcut);
+         SystemAPI::emitEvent(w, sce, Event::Shortcut);
 
          if( !sce.isAccepted() ){
            Tempest::KeyEvent e =  makeKeyEvent(wParam);
            if( e.key!=Tempest::KeyEvent::K_NoKey )
-             SystemAPI::mkKeyEvent(w, e, Event::KeyDown);
+             SystemAPI::emitEvent(w, e, Event::KeyDown);
            }
       }
       break;
@@ -665,7 +665,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       case WM_KEYUP:
       {
          Tempest::KeyEvent e =  makeKeyEvent(wParam);
-         SystemAPI::mkKeyEvent(w, e, Event::KeyUp);
+         SystemAPI::emitEvent(w, e, Event::KeyUp);
       }
       break;
 
@@ -675,8 +675,11 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       case WM_RBUTTONDOWN: {
         MouseEvent e( LOWORD (lParam),
                       HIWORD (lParam),
-                      toButton(msg) );
-        SystemAPI::mkMouseEvent(w, e, Event::MouseDown);
+                      toButton(msg),
+                      0,
+                      0,
+                      Event::MouseDown );
+        SystemAPI::emitEvent(w, e, Event::MouseDown);
         }
         break;
 
@@ -685,17 +688,23 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       case WM_MBUTTONUP: {
         MouseEvent e( LOWORD (lParam),
                       HIWORD (lParam),
-                      toButton(msg) );
+                      toButton(msg),
+                      0,
+                      0,
+                      Event::MouseUp  );
         //w->mouseUpEvent(e);
-        SystemAPI::mkMouseEvent(w, e, Event::MouseUp);
+        SystemAPI::emitEvent(w, e, Event::MouseUp);
         }
         break;
 
       case WM_MOUSEMOVE: {
         MouseEvent e( LOWORD (lParam),
                       HIWORD (lParam),
-                      Event::ButtonNone );
-        SystemAPI::mkMouseEvent(w, e, Event::MouseMove);
+                      Event::ButtonNone,
+                      0,
+                      0,
+                      Event::MouseMove  );
+        SystemAPI::emitEvent(w, e, Event::MouseMove);
         }
         break;
 
@@ -709,7 +718,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           Tempest::MouseEvent e( p.x, p.y,
                                  Tempest::Event::ButtonNone,
                                  GET_WHEEL_DELTA_WPARAM(wParam) );
-          SystemAPI::mkMouseEvent(w, e, Event::MouseWheel);
+          SystemAPI::emitEvent(w, e, Event::MouseWheel);
           //w->mouseWheelEvent(e);
           }
         break;
@@ -744,7 +753,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
       case WM_CLOSE:{
         Tempest::CloseEvent e;
-        SystemAPI::mkCloseEvent(w, e, Event::Close);
+        SystemAPI::emitEvent(w, e, Event::Close);
         if( !e.isAccepted() )
           PostQuitMessage(0);
         }

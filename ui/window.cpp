@@ -2,6 +2,64 @@
 
 using namespace Tempest;
 
+struct Window::DragGestureRecognizer : GestureRecognizer{
+  DragGestureRecognizer():state(NonActivated), pointer(-1){}
+
+  AbstractGestureEvent* event(const Event & e){
+    static const double minimumDPos = 25;
+
+    if( e.type()==Event::MouseDown &&
+        state==NonActivated ){
+      MouseEvent& me = (MouseEvent&)e;
+      if( me.button==MouseEvent::ButtonLeft ){
+        state   = Press;
+        pointer = me.mouseID;
+        spos    = me.pos();
+        pos     = spos;
+        }
+      }
+
+    if( e.type()==Event::MouseMove &&
+        state==Press ){
+      MouseEvent& me = (MouseEvent&)e;
+
+      if( me.mouseID==pointer &&
+          (me.pos() - spos).manhattanLength() > minimumDPos ){
+        state = Move;
+        }
+      }
+
+    if( e.type()==Event::MouseMove &&
+        state==Move ){
+      MouseEvent& me = (MouseEvent&)e;
+      if( me.mouseID==pointer ){
+        Point d = (me.pos()-pos);
+        pos = me.pos();
+        return new DragGesture(spos, pos, d);
+        }
+      }
+
+    if( e.type()==Event::MouseUp &&
+        state==Move ){
+      MouseEvent& me = (MouseEvent&)e;
+      if( me.mouseID==pointer )
+        state = NonActivated;
+      }
+
+    return 0;
+    }
+
+  enum State{
+    NonActivated,
+    Press,
+    Move
+    };
+
+  State state;
+  int   pointer;
+  Point spos, pos;
+  };
+
 Window::Window( int w, int h ) {
   init(w,h);
   wnd = SystemAPI::instance().createWindow(w, h);
@@ -57,6 +115,8 @@ void Window::init( int w, int h ){
   isAppActive = true;
 
   smode = Normal;
+
+  instalGestureRecognizer( new DragGestureRecognizer() );
   }
 
 Window::~Window() {
@@ -91,4 +151,15 @@ Window::ShowMode Window::showMode() const {
 
 SystemAPI::Window *Window::handle() {
   return wnd;
+  }
+
+AbstractGestureEvent *Window::sendEventToGestureRecognizer( const Event &e ) {
+  AbstractGestureEvent *x = 0;
+  for( size_t i=0; i<recognizers.size(); ++i ){
+    x = recognizers[i]->event(e);
+    if( x )
+      return x;
+    }
+
+  return 0;
   }

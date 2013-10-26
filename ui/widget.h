@@ -125,6 +125,8 @@ class Widget {
     virtual void shortcutEvent( Tempest::KeyEvent & e );
     virtual void resizeEvent( Tempest::SizeEvent& e );
 
+    virtual void gestureEvent( Tempest::AbstractGestureEvent & e );
+
     signal<> intentToUpdate;
     void update();
     bool needToUpdate() const;
@@ -161,6 +163,8 @@ class Widget {
     void rootShortcutEvent( Tempest::KeyEvent & e );
     void rootCloseEvent   ( Tempest::CloseEvent & e );
 
+    void rootGestureEvent( Tempest::AbstractGestureEvent & e );
+
 
     void impl_mouseUpEvent  ( Widget* w, Tempest::MouseEvent & e );
     void impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e );
@@ -169,6 +173,8 @@ class Widget {
 
     static void impl_customEvent(Widget *w, Tempest::CustomEvent & e );
     static void impl_closeEvent (Widget *w, Tempest::CloseEvent & e );
+
+    static void impl_gestureEvent( Widget *w, Tempest::AbstractGestureEvent & e );
 
     void unsetChFocus( Widget* root, Widget* emiter );
     Widget* impl_mouseEvent( Tempest::MouseEvent & e,

@@ -20,12 +20,12 @@ class Half {
 
     uint16_t v;
     Half& operator = ( float fin ){
-      unsigned int    x;//    = *(unsigned int *)(&fin);
+      uint32_t    x;//    = *(unsigned int *)(&fin);
       memcpy( &x, &fin, sizeof(x) );
 
-      unsigned int    sign = (unsigned short)(x >> 31);
-      unsigned int    mantissa = x & ((1 << 23) - 1);
-      unsigned int    exp      = x & FLOAT_MAX_BIASED_EXP;
+      uint32_t    sign = (uint16_t)(x >> 31);
+      uint32_t    mantissa = x & ((1 << 23) - 1);
+      uint32_t    exp      = x & FLOAT_MAX_BIASED_EXP;
 
       if (exp >= MAX_BIASED_EXP_AS_SINGLE_FP_EXP) {
         if (mantissa && (exp == FLOAT_MAX_BIASED_EXP)) {
@@ -51,10 +51,10 @@ class Half {
       }
 
     operator float() const{
-      unsigned int    sign = (unsigned int)(v >> 15);
-      unsigned int    mantissa = (unsigned int)(v & ((1 << 10) - 1));
-      unsigned int    exp = (unsigned int)(v & HALF_FLOAT_MAX_BIASED_EXP);
-      unsigned int    f;
+      uint32_t    sign     = (uint32_t)(v >> 15);
+      uint32_t    mantissa = (uint32_t)(v & ((1 << 10) - 1));
+      uint32_t    exp      = (uint32_t)(v & HALF_FLOAT_MAX_BIASED_EXP);
+      uint32_t    f;
 
       if (exp == HALF_FLOAT_MAX_BIASED_EXP) {
         exp = FLOAT_MAX_BIASED_EXP;

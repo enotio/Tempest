@@ -19,6 +19,8 @@ class AndroidAPI:public SystemAPI {
     static const char* internalStorage();
     static const char* externalStorage();
 
+    static void toast( const std::string & s );
+    static const std::string& iso3Locale();
   protected:
     AndroidAPI();
     ~AndroidAPI();

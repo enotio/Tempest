@@ -85,9 +85,9 @@ bool SystemAPI::saveImage( const char *file,
   return instance().saveImageImpl( file, w, h, bpp, in );
   }
 
-void SystemAPI::mkKeyEvent( Tempest::Window *w,
-                            KeyEvent& e,
-                            Event::Type type ){
+void SystemAPI::emitEvent( Tempest::Window *w,
+                           KeyEvent& e,
+                           Event::Type type ){
   if( type==Event::KeyDown ){
     processEvents(w, e, type);
     }
@@ -99,15 +99,23 @@ void SystemAPI::mkKeyEvent( Tempest::Window *w,
     }
   }
 
-void SystemAPI::mkCloseEvent( Tempest::Window *w,
-                              CloseEvent &e,
-                              Event::Type type) {
+void SystemAPI::emitEvent( Tempest::Window *w,
+                           CloseEvent &e,
+                           Event::Type type) {
   processEvents(w, e, type);
   }
 
-void SystemAPI::mkMouseEvent(Tempest::Window *w, MouseEvent &e , Event::Type type ){
+void SystemAPI::emitEvent(Tempest::Window *w, MouseEvent &e , Event::Type type ){
   if( w->pressedC.size() < size_t(e.mouseID+1) )
     w->pressedC.resize(e.mouseID+1);
+
+  std::unique_ptr<AbstractGestureEvent> eg;
+  eg.reset( w->sendEventToGestureRecognizer(e) );
+
+  if( eg ){
+    std::unique_ptr<AbstractGestureEvent> e = std::move(eg);
+    processEvents(w, *e, type);
+    }
 
   if( type==Event::MouseDown ){
     w->pressedC[e.mouseID] = 1;
@@ -134,6 +142,14 @@ void SystemAPI::mkMouseEvent(Tempest::Window *w, MouseEvent &e , Event::Type typ
     processEvents(w, e, type);
     }
   }
+
+void SystemAPI::processEvents( Widget *w,
+                               AbstractGestureEvent &e,
+                               Event::Type /*type*/ ) {
+  e.setType( Event::Gesture );
+  w->rootGestureEvent(e);
+  }
+
 
 void SystemAPI::processEvents(Widget *w, MouseEvent &e, Event::Type type) {
   e.setType( type );

@@ -254,7 +254,6 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->hasDiscardBuffers = strstr(ext, "GL_EXT_discard_framebuffer")!=0;
   dev->isTileRenderStarted = false;
 
-  T_ASSERT( dev->hasHalfSupport );
   dev->hasTileBasedRender = dev->hasQCOMTiles | dev->hasDiscardBuffers;
 
 #ifdef __ANDROID__
@@ -262,7 +261,6 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
     dev->glStartTilingQCOM = (PFNGLSTARTTILINGQCOMPROC)eglGetProcAddress("glStartTilingQCOM");
     dev->glEndTilingQCOM   =   (PFNGLENDTILINGQCOMPROC)eglGetProcAddress("glEndTilingQCOM");
     }
-
 #endif
 
 #ifdef __ANDROID__
@@ -283,7 +281,11 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->clearDepth = 1;
   dev->clearS     = 0;
 
+
   memset( (char*)&dev->caps, 0, sizeof(dev->caps) );
+  T_WARNING_X( dev->hasHalfSupport, "half_float not aviable on device" );
+  dev->caps.hasHalf2 = dev->hasHalfSupport;
+  dev->caps.hasHalf4 = dev->hasHalfSupport;
   T_ASSERT_X( errCk(), "OpenGL error" );
   glGetIntegerv( GL_MAX_TEXTURE_SIZE,         &dev->caps.maxTextureSize );
   T_ASSERT_X( errCk(), "OpenGL error" );
@@ -320,7 +322,6 @@ void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
   glDeleteFramebuffers (1, &dev->fboId);
 
 #ifndef __ANDROID__
-
   wglMakeCurrent( NULL, NULL );
   wglDeleteContext( dev->hRC );
 #endif

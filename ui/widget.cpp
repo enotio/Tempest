@@ -458,16 +458,18 @@ void Widget::impl_keyPressEvent( Widget *wd, KeyEvent &e,
   }
 
 void Widget::impl_customEvent( Widget*w, CustomEvent &e ) {
-  for( size_t i=0; i<w->layout().widgets().size(); ++i ){
-    Widget *wx = w->layout().widgets()[i];
+  size_t sz = w->layout().widgets().size();
+  for( size_t i=0; i<sz; ++i ){
+    Widget *wx = w->layout().widgets()[sz-i-1];
     wx->customEvent(e);
     impl_customEvent( wx, e );
     }
   }
 
 void Widget::impl_closeEvent(Widget *w, CloseEvent &e) {
-  for( size_t i=0; i<w->layout().widgets().size(); ++i ){
-    Widget *wx = w->layout().widgets()[i];
+  size_t sz = w->layout().widgets().size();
+  for( size_t i=0; i<sz; ++i ){
+    Widget *wx = w->layout().widgets()[sz-i-1];
 
     impl_closeEvent( wx, e );
     if( e.isAccepted() )
@@ -476,6 +478,27 @@ void Widget::impl_closeEvent(Widget *w, CloseEvent &e) {
 
   e.accept();
   w->closeEvent(e);
+  }
+
+void Widget::impl_gestureEvent(Widget *w, AbstractGestureEvent &e) {
+  size_t sz = w->layout().widgets().size();
+  for( size_t i=0; i<sz; ++i ){
+    Widget *wx = w->layout().widgets()[sz-i-1];
+
+    if( wx->isVisible() &&
+        (!w->isScissorUsed() ||wx->rect().contains(e.hotSpot())) ){
+      Point h = e.hotSpot();
+      e.setHotSpot( h - wx->pos() );
+      impl_gestureEvent( wx, e );
+      e.setHotSpot( h );
+
+      if( e.isAccepted() )
+        return;
+      }
+    }
+
+  e.accept();
+  w->gestureEvent(e);
   }
 
 void Widget::paintNested( PaintEvent &p ){
@@ -644,6 +667,12 @@ void Widget::rootShortcutEvent(KeyEvent &e) {
 void Widget::rootCloseEvent(CloseEvent &e) {
   execDeleteRoot();
   impl_closeEvent(this, e);
+  execDeleteRoot();
+  }
+
+void Widget::rootGestureEvent(AbstractGestureEvent &e) {
+  execDeleteRoot();
+  impl_gestureEvent(this, e);
   execDeleteRoot();
   }
 
@@ -837,6 +866,10 @@ void Widget::shortcutEvent(KeyEvent &e) {
   }
 
 void Widget::resizeEvent( SizeEvent &e ) {
+  e.ignore();
+  }
+
+void Widget::gestureEvent(AbstractGestureEvent &e) {
   e.ignore();
   }
 

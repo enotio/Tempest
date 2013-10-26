@@ -78,6 +78,8 @@ AbstractAPI::Caps DirectX9::caps( AbstractAPI::Device *d ) const {
                                dx->caps.MaxTextureHeight );
   c.maxVaryingVectors    = 8;
   c.maxVaryingComponents = c.maxVaryingVectors*4;
+  c.hasHalf2 = 1;
+  c.hasHalf4 = 1;
 
   return c;
   }

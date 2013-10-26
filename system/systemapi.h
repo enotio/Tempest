@@ -75,6 +75,9 @@ class SystemAPI{
                            std::vector<unsigned char>& in );
 
     static void processEvents( Tempest::Widget *w,
+                               AbstractGestureEvent &e,
+                               Event::Type type);
+    static void processEvents( Tempest::Widget *w,
                                MouseEvent& e,
                                Event::Type type );
     static void processEvents( Tempest::Widget *w,
@@ -84,17 +87,17 @@ class SystemAPI{
                                CloseEvent &e,
                                Event::Type type );
 
-    static void mkMouseEvent( Tempest::Window *w,
-                              MouseEvent& e,
-                              Event::Type type );
+    static void emitEvent( Tempest::Window *w,
+                           MouseEvent& e,
+                           Event::Type type );
 
-    static void mkKeyEvent( Tempest::Window *w,
-                            KeyEvent& e,
-                            Event::Type type );
+    static void emitEvent( Tempest::Window *w,
+                           KeyEvent& e,
+                           Event::Type type );
 
-    static void mkCloseEvent( Tempest::Window *w,
-                              CloseEvent& e,
-                              Event::Type type );
+    static void emitEvent( Tempest::Window *w,
+                           CloseEvent& e,
+                           Event::Type type );
 
     static void sizeEvent( Tempest::Window *w, int cW, int cH);
     static void activateEvent( Tempest::Window*w, bool a );

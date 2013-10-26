@@ -3,6 +3,7 @@
 #include <Tempest/Texture2d>
 #include <Tempest/Device>
 #include <Tempest/Pixmap>
+#include <Tempest/Assert>
 
 #include <map>
 
@@ -27,13 +28,17 @@ struct TextureHolder::Data {
 
   std::map< AbstractAPI::Texture*, DynTexture   > dynamic_textures;
   std::vector<PixmapTexture> pixmap_textures;
+
+  size_t count;
   };
 
 TextureHolder::TextureHolder( Device& d):BaseType(d) {
   data = new Data();
+  data->count = 0;
   }
 
 TextureHolder::~TextureHolder(){
+  T_WARNING( data->count==0 );
   delete data;
   }
 
@@ -115,6 +120,7 @@ void TextureHolder::createObject( AbstractAPI::Texture*& t,
   if( !t )
     return;
 
+  ++data->count;
   Data::DynTexture d;
   d.w      = w;
   d.h      = h;
@@ -139,6 +145,10 @@ void TextureHolder::createObject( AbstractAPI::Texture *&t,
 
   t = device().createTexture( p, mips, compress );
 
+  if( !t )
+    return;
+
+  ++data->count;
   px.owner = t;
   //data->pixmap_textures[t] = px;
   if( hasCPUStorage() )
@@ -187,12 +197,15 @@ void TextureHolder::deleteObject( AbstractAPI::Texture* t ){
         }
     }
 
+  --data->count;
   device().deleteTexture(t);
   }
 
 void TextureHolder::reset( AbstractAPI::Texture* t ){
-  if( hasCPUStorage() )
+  if( hasCPUStorage() ){
+    --data->count;
     device().deleteTexture(t);
+    }
   }
 
 AbstractAPI::Texture* TextureHolder::restore( AbstractAPI::Texture* t ){

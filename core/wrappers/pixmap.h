@@ -88,13 +88,7 @@ class Pixmap {
       }
 
     inline void  set(int x, int y, const Pixel & p ) {
-      verifyFormatEditable();
-
-      if( true || !mrawPtr ){
-        mrawPtr = &data.value()->bytes[0];
-        rawPtr  = mrawPtr;
-        }
-
+      setupRawPtrs();
       unsigned char * v = &mrawPtr[ (x + y*mw)*bpp ];
 
       v[0] = p.r;
@@ -126,6 +120,9 @@ class Pixmap {
     int mw, mh, bpp;
     Format      frm;
 
+    struct MemPool;
+    static MemPool pool;
+
     struct DbgManip{
       typedef Data* T;
 
@@ -148,9 +145,9 @@ class Pixmap {
         }
       };
 
-    Detail::Ptr<Data*, DbgManip> data;
-    const unsigned char * rawPtr;
-    unsigned char * mrawPtr;
+    mutable Detail::Ptr<Data*, DbgManip> data;
+    mutable const unsigned char * rawPtr;
+    mutable unsigned char * mrawPtr;
 
     void verifyFormatEditable() const {
       if( frm==Format_RGB || frm==Format_RGBA )
@@ -172,6 +169,8 @@ class Pixmap {
 
     template< class T >
     bool implSave( T f );
+
+    void setupRawPtrs() const;
 
   friend class PixEditor;
   };

@@ -67,8 +67,6 @@ void Application::sleep(unsigned int msec) {
   }
 
 uint64_t Application::tickCount() {
-  //return GetTickCount();
-
   struct timespec now;
   clock_gettime(CLOCK_MONOTONIC, &now);
   return (uint8_t)now.tv_sec*1000LL + now.tv_nsec/1000000;

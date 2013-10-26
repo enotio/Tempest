@@ -10,13 +10,64 @@
 
 using namespace Tempest;
 
+struct Pixmap::MemPool{
+  MemPool():count(0){
+    data.reserve(128);
+    }
+
+  ~MemPool(){
+    for( size_t i=0; i<data.size(); ++i )
+      delete data[i];
+
+    T_ASSERT_X( count==0, "pixmap leak detected" );
+    }
+
+  Pixmap::Data* alloc( int w, int h, int bpp ){
+    ++count;
+
+    size_t sz = w*h*bpp;
+    if( sz==0 ){
+      Pixmap::Data* d = new Pixmap::Data();
+      d->bytes.resize(w*h*bpp);
+      return d;
+      }
+
+    for( size_t i=0; i<data.size(); ++i )
+      if( data[i]->bytes.size()==sz ){
+        Pixmap::Data* r = data[i];
+        data[i] = data.back();
+        data.pop_back();
+        return r;
+        }
+
+    Pixmap::Data* d = new Pixmap::Data();
+    d->bytes.resize(w*h*bpp);
+    return d;
+    }
+
+  void free( Pixmap::Data* p ){
+    --count;
+    if( p->bytes.size() && p->bytes.size()<64*64*4 && data.size()<64 ){
+      data.push_back(p);
+      return;
+      }
+
+    delete p;
+    }
+
+  std::vector<Pixmap::Data*> data;
+  size_t count;
+  };
+
+Pixmap::MemPool Pixmap::pool;
 
 Pixmap::DbgManip::Ref * Pixmap::DbgManip::newRef( const Ref * base ){
   return new Ref( new Data(*base->data) );
   }
 
 void Pixmap::DbgManip::delRef( Ref * r ){
-  delete r->data;
+  pool.free(r->data);
+  //delete r->data;
   delete r;
   }
 
@@ -69,8 +120,10 @@ Pixmap::Pixmap(int iw, int ih, bool alpha) {
     frm = Format_RGB;
     }
 
-  data.value() = new Data();
-  data.value()->bytes.resize(mw*mh*bpp);
+  data.value() = pool.alloc(mw,mh,bpp);
+
+  //data.value() = new Data();
+  //data.value()->bytes.resize(mw*mh*bpp);
   rawPtr = &data.const_value()->bytes[0];
   mrawPtr = 0;
 
@@ -89,7 +142,7 @@ Pixmap::Pixmap(const Pixmap &p):data(p.data) {
   mrawPtr = 0;
   }
 
-Pixmap &Pixmap::operator =(const Pixmap &p) {
+Pixmap &Pixmap::operator = (const Pixmap &p) {
   data = p.data;
 
   mw  = p.mw;
@@ -141,11 +194,11 @@ template< class T >
 bool Pixmap::implLoad( T f ) {
   int w = 0, h = 0, bpp = 0;
 
-  Data * image = new Data();
+  Data * image = pool.alloc(0,0,0);
   bool ok = SystemAPI::loadImage( f, w, h, bpp, image->bytes );
 
   if( !ok ){
-    delete image;
+    pool.free(image);
     return false;
     }
 
@@ -211,6 +264,15 @@ void Pixmap::removeAlpha() {
   rawPtr  = &data.const_value()->bytes[0];
   mrawPtr = 0;
   bpp     = 3;
+  }
+
+void Pixmap::setupRawPtrs() const {
+  verifyFormatEditable();
+
+  if( true || !mrawPtr ){
+    mrawPtr = &data.value()->bytes[0];
+    rawPtr  = mrawPtr;
+    }
   }
 
 void Pixmap::setFormat( Pixmap::Format f ) {
@@ -381,10 +443,22 @@ void PixEditor::copy(int x, int y, const Pixmap &p) {
   if( p.hasAlpha() )
     out.addAlpha();
 
-  for( int i=x; i<xm; ++i, ++px ){
-    int lpy = py;
-    for( int r=y; r<ym; ++r, ++lpy ){
-      out.set(i,r, p.at(px,lpy) );
+  out.setupRawPtrs();
+  p.setupRawPtrs();
+
+  if( p.bpp==out.bpp ){
+    for( int r=y; r<ym; ++r, ++py ){
+            unsigned char * ov = &out.mrawPtr[ (x  + r *out.mw)*out.bpp ];
+      const unsigned char * iv = &  p.rawPtr [ (px + py*  p.mw)*  p.bpp ];
+
+      memcpy(ov, iv, (xm-x)*p.bpp );
+      }
+    } else {
+    for( int r=y; r<ym; ++r, ++py ){
+      int lpx = px;
+      for( int i=x; i<xm; ++i, ++lpx ){
+        out.set(i,r, p.at(lpx,py) );
+        }
       }
     }
   }
@@ -409,10 +483,10 @@ void PixEditor::draw(int x, int y, const Pixmap &p) {
 
   int xm = x+w, ym = y+h;
 
-  for( int i=x; i<xm; ++i, ++px ){
-    int lpy = py;
-    for( int r=y; r<ym; ++r, ++lpy ){
-      out.set(i,r, p.at(px,lpy) );
+  for( int r=y; r<ym; ++r, ++py ){
+    int lpx = px;
+    for( int i=x; i<xm; ++i, ++lpx ){
+      out.set(i,r, p.at(lpx,py) );
       }
     }
   }

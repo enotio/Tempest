@@ -33,6 +33,7 @@ class Event {
       Shortcut,
       Paint,
       Close,
+      Gesture,
 
       Custom = 512
       };
@@ -199,20 +200,46 @@ class PaintEvent: public Event {
 
 class CustomEvent: public Event {
   public:
-  CustomEvent(){ setType(Custom); }
-
-  private:
-
+   CustomEvent(){ setType(Custom); }
   };
 
 class CloseEvent: public Event {
   public:
-  CloseEvent(){ setType(Close); }
-
-  private:
-
+    CloseEvent(){ setType(Close); }
   };
 
+class AbstractGestureEvent: public Event {
+  protected:
+    AbstractGestureEvent();
+
+  public:
+    const Point& hotSpot() const;
+    void setHotSpot( const Point& h );
+
+    enum GestureType{
+      gtNone    = 0,
+      gtDragGesture,
+      gtUser = 1024
+      };
+
+    GestureType gestureType() const;
+    void setGestureType( GestureType t );
+  private:
+    Point hs;
+    GestureType gt;
+  };
+
+class DragGesture: public AbstractGestureEvent {
+  public:
+    DragGesture( const Point& s,
+                 const Point& p,
+                 const Point& d ):start(s), pos(p), dpos(d){
+      setGestureType(gtDragGesture);
+      setHotSpot(s);
+      }
+
+    const Point start, pos, dpos;
+  };
 }
 
 #endif // EVENT_H

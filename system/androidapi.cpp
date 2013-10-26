@@ -218,6 +218,22 @@ const char *AndroidAPI::externalStorage() {
   return android.external.data();
   }
 
+void AndroidAPI::toast( const std::string &s ) {
+  Android &a = android;
+
+  jclass clazz    = a.tempestClass;
+  jmethodID toast = a.env->GetStaticMethodID( clazz, "showToast", "(Ljava/lang/String;)V");
+
+  jstring str = a.env->NewStringUTF( s.c_str() );
+  a.env->CallStaticVoidMethod(clazz, toast, str);
+
+  a.env->DeleteLocalRef(str);
+  }
+
+const std::string &AndroidAPI::iso3Locale() {
+  return android.locale;
+  }
+
 AndroidAPI::Window *AndroidAPI::createWindow(int w, int h) {
   return 0;
   }
@@ -386,13 +402,13 @@ int AndroidAPI::nextEvent(bool &quit) {
 
     case Android::MSG_KEY_EVENT:{
       Tempest::KeyEvent sce = makeKeyEvent(msg.data1, true);
-      SystemAPI::mkKeyEvent(android.wnd, sce, Event::Shortcut);
+      SystemAPI::emitEvent(android.wnd, sce, Event::Shortcut);
 
       if( !sce.isAccepted() ){
         Tempest::KeyEvent e =  makeKeyEvent(msg.data1);
         if( e.key!=Tempest::KeyEvent::K_NoKey ){
-          SystemAPI::mkKeyEvent(android.wnd, e, Event::KeyDown);
-          SystemAPI::mkKeyEvent(android.wnd, e, Event::KeyUp);
+          SystemAPI::emitEvent(android.wnd, e, Event::KeyDown);
+          SystemAPI::emitEvent(android.wnd, e, Event::KeyUp);
           }
         }
       }
@@ -401,22 +417,29 @@ int AndroidAPI::nextEvent(bool &quit) {
     case Android::MSG_TOUCH: {
       int id = android.pointerId( msg.data2 );
 
-      MouseEvent e( msg.data.x, msg.data.y, MouseEvent::ButtonLeft, 0, id );
-
       if( msg.data1==0 ){
+        MouseEvent e( msg.data.x, msg.data.y,
+                      MouseEvent::ButtonLeft, 0, id,
+                      Event::MouseDown );
         android.pointerPos(id) = Point(msg.data.x, msg.data.y);
-        SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseDown);
+        SystemAPI::emitEvent(android.wnd, e, Event::MouseDown);
         }
 
       if( msg.data1==1 ){
-        SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseUp);
+        MouseEvent e( msg.data.x, msg.data.y,
+                      MouseEvent::ButtonLeft, 0, id,
+                      Event::MouseUp );
+        SystemAPI::emitEvent(android.wnd, e, Event::MouseUp);
         android.unsetPointer(msg.data2);
         }
 
       if( msg.data1==2 ){
+        MouseEvent e( msg.data.x, msg.data.y,
+                      MouseEvent::ButtonLeft, 0, id,
+                      Event::MouseMove );
         if( android.pointerPos(id) != Point(msg.data.x, msg.data.y) ){
           android.pointerPos(id) = Point(msg.data.x, msg.data.y);
-          SystemAPI::mkMouseEvent(android.wnd, e, Event::MouseMove);
+          SystemAPI::emitEvent(android.wnd, e, Event::MouseMove);
           }
         }
       }
@@ -424,7 +447,7 @@ int AndroidAPI::nextEvent(bool &quit) {
 
     case Android::MSG_CLOSE:  {
       Tempest::CloseEvent e;
-      SystemAPI::mkCloseEvent(android.wnd, e, Event::Close );
+      SystemAPI::emitEvent(android.wnd, e, Event::Close );
       android.closeRqAccepted = e.isAccepted();
       }
       break;
@@ -850,7 +873,7 @@ static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
   pthread_mutex_unlock( &android.waitMutex );
   }
 
-static jboolean JNICALL nativeCloseEvent( JNIEnv* , jobject ){
+static jint JNICALL nativeCloseEvent( JNIEnv* , jobject ){
   pthread_mutex_lock( &android.waitMutex );
   pthread_mutex_lock( &android.appMutex );
 
@@ -860,7 +883,7 @@ static jboolean JNICALL nativeCloseEvent( JNIEnv* , jobject ){
   android.waitForQueue();
   pthread_mutex_unlock( &android.waitMutex );
 
-  return android.closeRqAccepted;
+  return android.closeRqAccepted? 1:0;
 /*
   pthread_mutex_lock( &android.waitMutex );
   pthread_mutex_lock( &android.appMutex );
@@ -931,7 +954,7 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
     {"nativeInitLocale",   "(Ljava/lang/String;)V", (void *)nativeInitLocale },
     {"nativeOnTouch",  "(IIII)V", (void *)nativeOnTouch   },
     {"onKeyEvent",     "(I)V",   (void *)onKeyEvent      },
-    {"nativeCloseEvent",  "()Z", (void *) nativeCloseEvent  },
+    {"nativeCloseEvent",  "()I", (void *) nativeCloseEvent  },
     {"nativeSetSurface", "(Landroid/view/Surface;)V",   (void *) nativeSetSurface   },
     {"nativeOnResize",   "(Landroid/view/Surface;II)V", (void *) resize             },
     {"nativeSetAssets",  "(Landroid/content/res/AssetManager;)V",   (void *) setAssets          },

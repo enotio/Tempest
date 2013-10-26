@@ -202,7 +202,7 @@ struct Device::Data{
       }
 
     ~AllocCount(){
-      T_ASSERT_X( vbo==0 && ibo==0 && tex==0 && dec==0, "resource leak detected" );
+      T_WARNING_X( vbo==0 && ibo==0 && tex==0 && dec==0, "resource leak detected" );
       }
 
     int vbo, ibo, tex, dec;
@@ -224,7 +224,7 @@ Device::Device( const AbstractAPI & dx,
 void Device::init( const AbstractAPI &,
                    const Device::Options &opt,
                    void *windowHwnd ) {
-  impl = api.createDevice( windowHwnd, opt );
+  impl   = api.createDevice( windowHwnd, opt );
 
   shLang = api.createShadingLang( impl );
 
@@ -653,6 +653,12 @@ void Device::unlockBuffer( AbstractAPI::IndexBuffer * ibo ) {
 AbstractAPI::VertexDecl *
       Device::createVertexDecl( const VertexDeclaration::Declarator &de ) const {
   forceEndPaint();
+
+  if( !(api.caps(impl).hasHalf2 || api.caps(impl).hasHalf4) )
+    for( int i=0; i<de.size(); ++i )
+      if( de[i].component==Decl::half2 ||
+          de[i].component==Decl::half4 )
+        T_WARNING_X(0, "half float unaviable");
 
   AbstractAPI::VertexDecl * v = data->createDecl(de);
   if( !v ){
