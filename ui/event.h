@@ -223,18 +223,33 @@ class AbstractGestureEvent: public Event {
       };
 
     GestureType gestureType() const;
-    void setGestureType( GestureType t );
+
+    enum State{
+      GestureStarted,
+      GestureUpdated,
+      GestureFinished,
+      GestureCanceled
+      };
+
+    State state() const;
   private:
     Point hs;
     GestureType gt;
+    State st;
+
+  protected:
+    void setState( State s );
+    void setGestureType( GestureType t );
   };
 
 class DragGesture: public AbstractGestureEvent {
   public:
     DragGesture( const Point& s,
                  const Point& p,
-                 const Point& d ):start(s), pos(p), dpos(d){
+                 const Point& d,
+                 State st ):start(s), pos(p), dpos(d){
       setGestureType(gtDragGesture);
+      setState( st );
       setHotSpot(s);
       }
 

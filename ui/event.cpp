@@ -17,6 +17,7 @@ Size SizeEvent::size() const {
 AbstractGestureEvent::AbstractGestureEvent() {
   setType(Gesture);
   setGestureType(gtNone);
+  setState(GestureUpdated);
   }
 
 const Point &AbstractGestureEvent::hotSpot() const {
@@ -33,4 +34,12 @@ AbstractGestureEvent::GestureType AbstractGestureEvent::gestureType() const {
 
 void AbstractGestureEvent::setGestureType(AbstractGestureEvent::GestureType t) {
   gt = t;
+  }
+
+AbstractGestureEvent::State AbstractGestureEvent::state() const {
+  return st;
+  }
+
+void AbstractGestureEvent::setState(AbstractGestureEvent::State s) {
+  st = s;
   }

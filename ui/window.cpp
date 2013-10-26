@@ -26,6 +26,8 @@ struct Window::DragGestureRecognizer : GestureRecognizer{
       if( me.mouseID==pointer &&
           (me.pos() - spos).manhattanLength() > minimumDPos ){
         state = Move;
+        pos = me.pos();
+        return new DragGesture(spos, pos, Point(), AbstractGestureEvent::GestureStarted);
         }
       }
 
@@ -35,15 +37,18 @@ struct Window::DragGestureRecognizer : GestureRecognizer{
       if( me.mouseID==pointer ){
         Point d = (me.pos()-pos);
         pos = me.pos();
-        return new DragGesture(spos, pos, d);
+        return new DragGesture(spos, pos, d, AbstractGestureEvent::GestureUpdated);
         }
       }
 
     if( e.type()==Event::MouseUp &&
-        state==Move ){
+        (state==Move || state==Press) ){
       MouseEvent& me = (MouseEvent&)e;
-      if( me.mouseID==pointer )
+      if( me.mouseID==pointer ){
         state = NonActivated;
+        Point d = (me.pos()-pos);
+        return new DragGesture(spos, pos, d, AbstractGestureEvent::GestureFinished);
+        }
       }
 
     return 0;
