@@ -188,6 +188,10 @@ void SystemAPI::processEvents(Widget *w, CloseEvent &e, Event::Type type) {
     return w->rootCloseEvent(e);
   }
 
+void SystemAPI::moveEvent( Tempest::Window *w, int cX, int cY) {
+  w->setPosition(cX, cY);
+  }
+
 void SystemAPI::sizeEvent( Tempest::Window *w, int cW, int cH ) {
   if( w->winW==cW &&
       w->winH==cH )

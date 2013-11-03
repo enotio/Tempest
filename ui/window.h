@@ -29,6 +29,8 @@ class Window : public Widget {
 
     virtual void setPosition( int x, int y );
     virtual void resize(int w, int h );
+
+    using Widget::setPosition;
     using Widget::resize;
 
     virtual void render(){}

@@ -25,6 +25,7 @@ class SystemAPI{
     virtual Window* createWindowMinimized() = 0;
     virtual Window* createWindowFullScr()   = 0;
 
+    virtual Point   windowClientPos ( Window* )   = 0;
     virtual Size    windowClientRect( Window* )   = 0;
 
     virtual void deleteWindow( Window* ) = 0;
@@ -99,6 +100,7 @@ class SystemAPI{
                            CloseEvent& e,
                            Event::Type type );
 
+    static void moveEvent( Tempest::Window *w, int cX, int cY);
     static void sizeEvent( Tempest::Window *w, int cW, int cH);
     static void activateEvent( Tempest::Window*w, bool a );
 

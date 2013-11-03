@@ -9,6 +9,7 @@
 
 #include <set>
 #include <unordered_set>
+#include <sstream>
 
 using namespace Tempest;
 
@@ -202,7 +203,16 @@ struct Device::Data{
       }
 
     ~AllocCount(){
-      T_WARNING_X( vbo==0 && ibo==0 && tex==0 && dec==0, "resource leak detected" );
+      if( !(vbo==0 && ibo==0 && tex==0 && dec==0) ){
+        std::stringstream ss;
+        ss << "resource leak detected" << std::endl
+           << "vbo:  " << vbo << std::endl
+           << "ibo:  " << ibo << std::endl
+           << "tex:  " << tex << std::endl
+           << "dec:  " << dec << std::endl;
+
+        T_WARNING_X( vbo==0 && ibo==0 && tex==0 && dec==0, ss.str().c_str() );
+        }
       }
 
     int vbo, ibo, tex, dec;

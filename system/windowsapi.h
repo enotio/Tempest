@@ -27,7 +27,8 @@ class WindowsAPI:public SystemAPI {
     Window* createWindowMinimized();
     Window* createWindowFullScr();
 
-    Size windowClientRect( Window* );
+    Point windowClientPos ( Window* );
+    Size  windowClientRect( Window* );
 
     void deleteWindow( Window* );
     void show( Window* );

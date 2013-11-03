@@ -51,6 +51,9 @@ namespace Tempest{
 			//! alpha канал.
       float a() const;
 
+      float& operator[]( int i );
+      const float& operator[]( int i ) const;
+
       bool operator == ( const Color & other ) const {
         return cdata[0]==other.cdata[0] &&
                cdata[1]==other.cdata[1] &&

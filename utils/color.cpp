@@ -84,3 +84,11 @@ float Color::b() const{
 float Color::a() const{
   return data()[3];
   }
+
+float &Color::operator[](int i) {
+  return cdata[i];
+  }
+
+const float &Color::operator[](int i) const {
+  return cdata[i];
+  }

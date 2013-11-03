@@ -472,6 +472,10 @@ int AndroidAPI::nextEvent(bool &quit) {
   return 0;
   }
 
+Point AndroidAPI::windowClientPos ( Window* ){
+  return Point(0,0);
+  }
+
 Size AndroidAPI::windowClientRect( Window* ){
   Android &a = android;
   return Size(a.window_w, a.window_h);

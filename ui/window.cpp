@@ -68,6 +68,8 @@ struct Window::DragGestureRecognizer : GestureRecognizer{
 Window::Window( int w, int h ) {
   init(w,h);
   wnd = SystemAPI::instance().createWindow(w, h);
+
+  setPosition( SystemAPI::instance().windowClientPos(wnd) );
   resize( SystemAPI::instance().windowClientRect( wnd ) );
 
   SystemAPI::instance().bind(wnd, this);
@@ -77,6 +79,8 @@ Window::Window() {
   int w = 800, h=600;
   init(w,h);
   wnd = SystemAPI::instance().createWindow(w, h);
+
+  setPosition( SystemAPI::instance().windowClientPos(wnd) );
   resize( SystemAPI::instance().windowClientRect( wnd ) );
 
   SystemAPI::instance().bind(wnd, this);
@@ -92,6 +96,7 @@ Window::Window( Window::ShowMode sm ) {
     winW = s.w;
     winH = s.h;
 
+    setPosition( SystemAPI::instance().windowClientPos(wnd) );
     resize( s.w, s.h );
     }
 
@@ -105,6 +110,7 @@ Window::Window( Window::ShowMode sm ) {
     winW = s.w;
     winH = s.h;
 
+    setPosition( SystemAPI::instance().windowClientPos(wnd) );
     resize( s.w, s.h );
     }
 
@@ -132,10 +138,15 @@ void Window::show() {
   SystemAPI::instance().show( wnd );
   }
 
-void Window::setPosition(int x, int y) {
+void Window::setPosition(int ix, int iy) {
+  if( x()==ix && y()==iy ){
+    return;
+    }
+
+  Widget::setPosition(ix,iy);
+
   if( !isFullScreenMode() ){
-    Widget::setPosition(x,y);
-    SystemAPI::instance().setGeometry( wnd, x, y, w(), h() );
+    SystemAPI::instance().setGeometry( wnd, ix, iy, w(), h() );
     }
   }
 

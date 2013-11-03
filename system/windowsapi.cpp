@@ -267,6 +267,12 @@ SystemAPI::Window *WindowsAPI::createWindowFullScr() {
   return (Window*)hwnd;
   }
 
+Point WindowsAPI::windowClientPos( SystemAPI::Window * hWnd ) {
+  RECT rectWindow;
+  GetClientRect( HWND(hWnd), &rectWindow);
+  return Point(rectWindow.left,rectWindow.top);
+  }
+
 Size WindowsAPI::windowClientRect( SystemAPI::Window * hWnd ) {
   RECT rectWindow;
   GetClientRect( HWND(hWnd), &rectWindow);
@@ -729,8 +735,11 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           int cW = rectWindow.right-rectWindow.left;
           int cH = rectWindow.bottom-rectWindow.top;
 
-          if( w )
+          GetWindowRect( HWND(hWnd), &rectWindow );
+          if( w ){
+            SystemAPI::moveEvent( w, rectWindow.left, rectWindow.top );
             SystemAPI::sizeEvent( w, cW, cH );
+            }
           }
         break;
 
