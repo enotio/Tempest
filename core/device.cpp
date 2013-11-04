@@ -211,7 +211,7 @@ struct Device::Data{
            << "tex:  " << tex << std::endl
            << "dec:  " << dec << std::endl;
 
-        T_WARNING_X( vbo==0 && ibo==0 && tex==0 && dec==0, ss.str().c_str() );
+        T_ASSERT_X( vbo==0 && ibo==0 && tex==0 && dec==0, ss.str().c_str() );
         }
       }
 

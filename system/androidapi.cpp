@@ -819,15 +819,20 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject obj, jobject surface
 
     pthread_mutex_lock(&android.appMutex);
     android.msg.push_back( Android::MSG_WINDOW_SET );
+    if( android.wnd )
+      SystemAPI::activateEvent( android.wnd, true);
     pthread_mutex_unlock(&android.appMutex);
 
     if( android.mainThread==0 )
-      pthread_create(&android.mainThread, 0, tempestMainFunc, 0);
+      pthread_create(&android.mainThread, 0, tempestMainFunc, 0);    
     } else {
     LOGI("Releasing window");
     pthread_mutex_lock(&android.appMutex);
     ANativeWindow_release(android.window);
     android.window = 0;
+    if( android.wnd )
+      SystemAPI::activateEvent( android.wnd, false);
+
     pthread_mutex_unlock(&android.appMutex);
     }
 

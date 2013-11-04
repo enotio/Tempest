@@ -53,6 +53,8 @@ class Window : public Widget {
           return;
           }
       }
+
+    bool isActive() const;
   protected:
     SystemAPI::Window *handle();
 

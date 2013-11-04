@@ -3,14 +3,22 @@
 #include <Tempest/Layout>
 #include <Tempest/Painter>
 #include <Tempest/Shortcut>
+#include <Tempest/Assert>
 
 #include <algorithm>
 #include <functional>
 
 using namespace Tempest;
 
+struct Widget::DeleteGuard{
+  DeleteGuard( Widget* w):w(w){ w->lockDelete(); }
+  ~DeleteGuard(){ w->unlockDelete(); }
+
+  Widget *w;
+  };
+
 Widget::Widget(ResourceContext *context):
-        fpolicy(BackgroundFocus), rcontext(context){
+  fpolicy(BackgroundFocus), rcontext(context), deleteLaterFlagGuard(0){
   parentLay    = 0;
   focus        = false;
   chFocus      = false;
@@ -34,6 +42,8 @@ Widget::Widget(ResourceContext *context):
   }
 
 Widget::~Widget() {
+  T_ASSERT_X( deleteLaterFlagGuard==0, "bad time to delete, use deleteLater");
+
   if( parentLayout() )
     parentLayout()->take(this);
 
@@ -283,37 +293,26 @@ Point Widget::mapToRoot(const Point &p) const {
   }
 
 void Widget::paintEvent( PaintEvent &pe ) {
-  execDeleteRoot();
   if( !hasMultiPassPaint() && pe.pass )
     return;
 
-  //PainterDevice & p = pe.painter;
-  // p.drawRect( 0, 0, wrect.w, wrect.h );
-
-  /*
-  p.drawLine(       0,       0,       0, wrect.h );
-  p.drawLine( wrect.w,       0, wrect.w, wrect.h );
-  p.drawLine(       0,       0, wrect.w,       0 );
-  p.drawLine(       0, wrect.h, wrect.w, wrect.h );
-
-  p.drawLine(      0,       0, wrect.w, wrect.h );
-  p.drawLine(      0, wrect.h, wrect.w,       0 );
-  */
-
   nToUpdate = false;
   paintNested(pe);
-  execDeleteRoot();
   }
 
 Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
+                                 Widget* root,
                                  void (Widget::*f)(Tempest::MouseEvent &),
                                  bool focus,
                                  bool mpress ){
-  if( !isVisible() )
+  DeleteGuard guard(root);
+  (void)guard;
+
+  if( !root->isVisible() )
     return 0;
 
-  for( size_t i=layout().widgets().size(); i>=1; --i ){
-    Widget* w = layout().widgets()[i-1];
+  for( size_t i=root->layout().widgets().size(); i>=1; --i ){
+    Widget* w = root->layout().widgets()[i-1];
 
     if( !w->isScissorUsed() ||
         w->rect().contains( e.x, e.y, true ) ){
@@ -324,7 +323,7 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
                      e.mouseID );
       et.ignore();
 
-      Widget* deep = w->impl_mouseEvent(et, f, focus, mpress);
+      Widget* deep = impl_mouseEvent(et, w, f, focus, mpress);
       if( et.isAccepted() ){
         e.accept();
         if( mpress ){
@@ -335,7 +334,7 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
         return w;
         }
 
-      if( w->isVisible() && (et.mouseID==0 || multiTouch) ){
+      if( w->isVisible() && (et.mouseID==0 || root->multiTouch) ){
         et.accept();
         (w->*f)( et );
         }
@@ -343,9 +342,9 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
       if( et.isAccepted() ){
         e.accept();
         if( mpress ){
-          if( mouseReleseReciver.size() < size_t(et.mouseID+1) )
-            mouseReleseReciver.resize( et.mouseID+1 );
-          mouseReleseReciver[et.mouseID] = w;
+          if( root->mouseReleseReciver.size() < size_t(et.mouseID+1) )
+            root->mouseReleseReciver.resize( et.mouseID+1 );
+          root->mouseReleseReciver[et.mouseID] = w;
           }
 
         if( focus && w->focusPolicy()==ClickFocus )
@@ -360,50 +359,43 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
   return 0;
   }
 
+void Widget::lockDelete() {
+  ++deleteLaterFlagGuard;
+  }
+
+void Widget::unlockDelete() {
+  --deleteLaterFlagGuard;
+
+  if( deleteLaterFlagGuard==0 && deleteLaterFlag )
+    delete this;
+  }
+
 void Widget::mouseMoveEvent(MouseEvent &e){
   e.ignore();
-  execDeleteRoot();
   }
 
 void Widget::mouseDragEvent(MouseEvent &e) {
   e.ignore();
-  execDeleteRoot();
   }
 
 void Widget::mouseDownEvent(MouseEvent &e){
   e.ignore();
-  execDeleteRoot();
   }
 
 void Widget::mouseUpEvent(MouseEvent &e) {
   e.ignore();
-  execDeleteRoot();
   }
 
 void Widget::mouseWheelEvent(MouseEvent &e){
   e.ignore();
-  execDeleteRoot();
   }
 
-void Widget::keyDownEvent(KeyEvent &e){/*
-  if( chFocus && !focus ){
-    impl_keyPressEvent( this, e, &Widget::keyDownEvent );
-    } else {
-    e.ignore();
-    }*/
+void Widget::keyDownEvent(KeyEvent &e){
   e.ignore();
-  execDeleteRoot();
   }
 
 void Widget::keyUpEvent(KeyEvent &e) {
-  /*
-  if( chFocus && !focus  ){
-    impl_keyPressEvent( this, e, &Widget::keyUpEvent );
-    } else {
-    e.ignore();
-    }*/
   e.ignore();
-  execDeleteRoot();
   }
 
 void Widget::customEvent( CustomEvent &e ) {
@@ -439,6 +431,9 @@ bool Widget::hasMultiPassPaint() const {
 
 void Widget::impl_keyPressEvent( Widget *wd, KeyEvent &e,
                                  void (Widget::*f)(Tempest::KeyEvent &) ) {
+  DeleteGuard guard(wd);
+  (void)guard;
+
   const std::vector<Widget*> & w = wd->layout().widgets();
 
   for( size_t i=w.size(); i>0; --i ){
@@ -458,6 +453,9 @@ void Widget::impl_keyPressEvent( Widget *wd, KeyEvent &e,
   }
 
 void Widget::impl_customEvent( Widget*w, CustomEvent &e ) {
+  DeleteGuard guard(w);
+  (void)guard;
+
   size_t sz = w->layout().widgets().size();
   for( size_t i=0; i<sz; ++i ){
     Widget *wx = w->layout().widgets()[sz-i-1];
@@ -467,6 +465,9 @@ void Widget::impl_customEvent( Widget*w, CustomEvent &e ) {
   }
 
 void Widget::impl_closeEvent(Widget *w, CloseEvent &e) {
+  DeleteGuard guard(w);
+  (void)guard;
+
   size_t sz = w->layout().widgets().size();
   for( size_t i=0; i<sz; ++i ){
     Widget *wx = w->layout().widgets()[sz-i-1];
@@ -481,6 +482,9 @@ void Widget::impl_closeEvent(Widget *w, CloseEvent &e) {
   }
 
 void Widget::impl_gestureEvent(Widget *w, AbstractGestureEvent &e) {
+  DeleteGuard guard(w);
+  (void)guard;
+
   size_t sz = w->layout().widgets().size();
   for( size_t i=0; i<sz; ++i ){
     Widget *wx = w->layout().widgets()[sz-i-1];
@@ -535,23 +539,28 @@ void Widget::paintNested( PaintEvent &p ){
   }
 
 void Widget::rootMouseDownEvent(MouseEvent &e) {
-  execDeleteRoot();
+  DeleteGuard guard(this);
+  (void)guard;
+
   e.ignore();
 
   if( mouseReleseReciver.size() < size_t(e.mouseID+1) )
     mouseReleseReciver.resize( e.mouseID+1 );
 
-  mouseReleseReciver[e.mouseID] = impl_mouseEvent( e, &Widget::mouseDownEvent,
-                                                   true, true );
+  mouseReleseReciver[e.mouseID] = impl_mouseEvent( e,
+                                                   this,
+                                                   &Widget::mouseDownEvent,
+                                                   true,
+                                                   true );
 
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()))
     this->mouseDownEvent(e);
-
-  execDeleteRoot();
   }
 
 void Widget::rootMouseDragEvent(MouseEvent &e) {
-  execDeleteRoot();
+  DeleteGuard guard(this);
+  (void)guard;
+
   e.ignore();
 
   if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
@@ -561,12 +570,12 @@ void Widget::rootMouseDragEvent(MouseEvent &e) {
     e.accept();
     this->mouseDragEvent(e);
     }
-
-  execDeleteRoot();
   }
 
 void Widget::rootMouseUpEvent(MouseEvent &e) {
-  execDeleteRoot();
+  DeleteGuard guard(this);
+  (void)guard;
+
   e.ignore();
 
   if( size_t(e.mouseID) < mouseReleseReciver.size() && mouseReleseReciver[e.mouseID] )
@@ -576,11 +585,12 @@ void Widget::rootMouseUpEvent(MouseEvent &e) {
     e.accept();
     this->mouseUpEvent(e);
     }
-
-  execDeleteRoot();
   }
 
 void Widget::impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e ){
+  DeleteGuard guard(w);
+  (void)guard;
+
   if( !( size_t(e.mouseID) < w->mouseReleseReciver.size() && w->mouseReleseReciver[e.mouseID]) ){
     w->mouseDragEvent(e);
     return;
@@ -593,7 +603,7 @@ void Widget::impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e ){
   if( std::find( w->layout().widgets().begin(),
                  w->layout().widgets().end(),
                  rec )
-      !=layout().widgets().end() ){
+      !=w->layout().widgets().end() ){
     Widget * r = rec;
     Tempest::MouseEvent ex( e.x - r->x(), e.y - r->y(), e.button, e.delta, e.mouseID );
 
@@ -602,31 +612,26 @@ void Widget::impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e ){
   }
 
 void Widget::rootMouseMoveEvent(MouseEvent &e) {
-  execDeleteRoot();
   e.ignore();
-  impl_mouseEvent( e, &Widget::mouseMoveEvent, false, false );
+  impl_mouseEvent( e, this, &Widget::mouseMoveEvent, false, false );
 
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
     this->mouseMoveEvent(e);
     }
-  execDeleteRoot();
   }
 
 void Widget::rootMouseWheelEvent(MouseEvent &e) {
-  execDeleteRoot();
   e.ignore();
-  impl_mouseEvent( e, &Widget::mouseWheelEvent, true, true );
+  impl_mouseEvent( e, this, &Widget::mouseWheelEvent, true, true );
 
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
     this->mouseWheelEvent(e);
     }
-  execDeleteRoot();
   }
 
 void Widget::rootKeyDownEvent(KeyEvent &e) {
-  execDeleteRoot();
   if( chFocus && !focus ){
     e.accept();
     impl_keyPressEvent( this, e, &Widget::keyDownEvent );
@@ -638,11 +643,9 @@ void Widget::rootKeyDownEvent(KeyEvent &e) {
     e.accept();
     this->keyDownEvent(e);
     }
-  execDeleteRoot();
   }
 
 void Widget::rootKeyUpEvent(KeyEvent &e) {
-  execDeleteRoot();
   if( chFocus && !focus ){
     e.accept();
     impl_keyPressEvent( this, e, &Widget::keyUpEvent );
@@ -654,29 +657,25 @@ void Widget::rootKeyUpEvent(KeyEvent &e) {
     e.accept();
     this->keyUpEvent(e);
     }
-  execDeleteRoot();
   }
 
 void Widget::rootShortcutEvent(KeyEvent &e) {
-  execDeleteRoot();
   e.ignore();
   this->shortcutEvent(e);
-  execDeleteRoot();
   }
 
 void Widget::rootCloseEvent(CloseEvent &e) {
-  execDeleteRoot();
   impl_closeEvent(this, e);
-  execDeleteRoot();
   }
 
 void Widget::rootGestureEvent(AbstractGestureEvent &e) {
-  execDeleteRoot();
   impl_gestureEvent(this, e);
-  execDeleteRoot();
   }
 
 void Widget::impl_mouseUpEvent( Widget* w, Tempest::MouseEvent & e ){
+  DeleteGuard guard(w);
+  (void)guard;
+
   if( !( size_t(e.mouseID) < w->mouseReleseReciver.size() && w->mouseReleseReciver[e.mouseID]) ){
     w->mouseUpEvent(e);
     return;
@@ -810,35 +809,14 @@ void Widget::unsetChFocus( Widget* root, Widget* emiter ){
     unsetChFocus( root->layout().widgets()[i], emiter );    
   }
 
-void Widget::execDeleteRoot() {
-  if( owner()!=0 )
-    return;
-
-  execDelete();
-  }
-
-void Widget::execDelete() {
-  for( size_t i=0; i<mouseReleseReciver.size(); ++i )
-    if( mouseReleseReciver[i] && mouseReleseReciver[i]->deleteLaterFlag )
-      mouseReleseReciver[i] = 0;
-
-  layout().execDelete();
-
-  for( size_t i=0; i<layout().widgets().size(); ++i ){
-    layout().widgets()[i]->execDelete();
-    }
-  }
-
 void Widget::deleteLater() {
   deleteLaterFlag = true;
 
-  if( !layout().owner() )
+  if( deleteLaterFlagGuard==0 )
     delete this;
   }
 
 void Widget::shortcutEvent(KeyEvent &e) {
-  execDeleteRoot();
-
   if( !isVisible() ){
     e.ignore();
     return;

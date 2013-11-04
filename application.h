@@ -18,6 +18,7 @@ class Application {
     static void sleep(unsigned int msec );
 
     static uint64_t tickCount();
+    static void exit();
   private:
     static struct App{
       int  ret;

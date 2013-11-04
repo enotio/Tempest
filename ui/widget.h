@@ -166,10 +166,14 @@ class Widget {
     void rootGestureEvent( Tempest::AbstractGestureEvent & e );
 
 
-    void impl_mouseUpEvent  ( Widget* w, Tempest::MouseEvent & e );
-    void impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e );
-    void impl_keyPressEvent ( Widget* w, Tempest::KeyEvent & e,
-                              void (Widget::*f)(Tempest::KeyEvent &) );
+    static Widget* impl_mouseEvent( Tempest::MouseEvent & e,
+                                    Widget *root,
+                                    void (Widget::*f)(Tempest::MouseEvent &),
+                                    bool focus = true, bool mpress = false );
+    static void impl_mouseUpEvent  ( Widget* w, Tempest::MouseEvent & e );
+    static void impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e );
+    static void impl_keyPressEvent ( Widget* w, Tempest::KeyEvent & e,
+                                     void (Widget::*f)(Tempest::KeyEvent &) );
 
     static void impl_customEvent(Widget *w, Tempest::CustomEvent & e );
     static void impl_closeEvent (Widget *w, Tempest::CloseEvent & e );
@@ -177,9 +181,6 @@ class Widget {
     static void impl_gestureEvent( Widget *w, Tempest::AbstractGestureEvent & e );
 
     void unsetChFocus( Widget* root, Widget* emiter );
-    Widget* impl_mouseEvent( Tempest::MouseEvent & e,
-                             void (Widget::*f)(Tempest::MouseEvent &),
-                             bool focus = true, bool mpress = false );
 
     Rect wrect;
     bool wvisible;
@@ -195,10 +196,13 @@ class Widget {
 
     bool nToUpdate, multiPaint, deleteLaterFlag, multiTouch;
 
-    void execDeleteRoot();
-    void execDelete();
+    int  deleteLaterFlagGuard;
+    void lockDelete();
+    void unlockDelete();
 
     std::vector<Shortcut*> skuts;
+
+    struct DeleteGuard;
 
   friend class Layout;
   friend class Shortcut;

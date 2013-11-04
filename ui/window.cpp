@@ -165,6 +165,10 @@ Window::ShowMode Window::showMode() const {
   return smode;
   }
 
+bool Window::isActive() const {
+  return isAppActive;//SystemAPI::instance().isActive(wnd);
+  }
+
 SystemAPI::Window *Window::handle() {
   return wnd;
   }

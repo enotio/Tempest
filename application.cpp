@@ -72,6 +72,10 @@ uint64_t Application::tickCount() {
   return (uint8_t)now.tv_sec*1000LL + now.tv_nsec/1000000;
   }
 
+void Application::exit() {
+  app.quit = true;
+  }
+
 void Application::processTimers() {
   Application::App &a = app;
 
