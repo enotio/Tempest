@@ -291,26 +291,32 @@ AbstractAPI::Caps Device::caps() const {
   }
 
 void Device::clear(const Color &cl, float z, unsigned s) {
+  applyRs();
   api.clear(impl, cl, z, s);
   }
 
 void Device::clear( const Color& cl ) {
+  applyRs();
   api.clear(impl, cl );
   }
 
 void Device::clear( const Color& cl, float z ) {
+  applyRs();
   api.clear(impl, cl, z);
   }
 
 void Device::clear(float z, unsigned s ) {
+  applyRs();
   api.clear(impl, z, s);
   }
 
 void Device::clearZ(float z ) {
+  applyRs();
   api.clearZ(impl, z);
   }
 
 void Device::clearStencil( unsigned s ) {
+  applyRs();
   api.clearStencil(impl, s);
   }
 
@@ -503,7 +509,7 @@ bool Device::reset( const Options & opt ) {
   return 0;
   }
 
-void Device::present(){
+void Device::present( AbstractAPI::SwapBehavior b ){
   forceEndPaint();
 
   Data::HIterator end = data->holders.end();
@@ -512,7 +518,7 @@ void Device::present(){
     (*i)->presentEvent();
     }
 
-  data->isLost = api.present( impl );
+  data->isLost = api.present( impl, b );
   }
 
 bool Device::hasManagedStorge() const {

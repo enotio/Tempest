@@ -338,7 +338,7 @@ bool DirectX9::startRender( AbstractAPI::Device *d,
   return 1;
   }
 
-bool DirectX9::present( AbstractAPI::Device *d ) const {
+bool DirectX9::present(AbstractAPI::Device *d, SwapBehavior /*b*/ ) const {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   return ( D3DERR_DEVICELOST == dev->Present( NULL, NULL, NULL, NULL ) );

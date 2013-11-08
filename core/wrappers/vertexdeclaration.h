@@ -103,6 +103,45 @@ class VertexDeclaration {
     friend class Device;
   };
 
+template< class V1, class V2 >
+bool vertexCast( V1& v1,
+                 const VertexDeclaration::Declarator& v1d,
+                 const V2& v2,
+                 const VertexDeclaration::Declarator& v2d ) {
+  if( v1d.size()!=v2d.size() )
+    return 0;
+
+  static const int sz[] = {
+    0,1,2,3,4,
+    4,2,4,
+    2,4
+    };
+
+  static const int byte[] = {
+    0,1*4,2*4,3*4,4*4,
+    4,2*2,2*4,
+    2*2,2*4
+    };
+  (void)byte;
+
+  for( int i=0; i<v1d.size(); ++i ){
+    if( v1d[i].usage!=v2d[i].usage )
+      return 0;
+
+    if( sz[ v1d[i].component ] != sz[ v2d[i].component ]  )
+      return 0;
+    }
+
+  //char      * b1 = &v1;
+  //const char* b2 = &v2;
+
+  for( int i=0; i<v1d.size(); ++i ){
+    //TODO
+    }
+
+  return 1;
+  }
+
 }
 
 #endif // VERTEXDECLARATION_H

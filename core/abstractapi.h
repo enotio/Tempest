@@ -67,6 +67,11 @@ class AbstractAPI {
       BU_Dynamic
       };
 
+    enum SwapBehavior {
+      SB_BufferPreserved = 0,
+      SB_BufferDestroyed
+      };
+
     class Texture;
     class StdDSSurface;
 
@@ -131,7 +136,7 @@ class AbstractAPI {
 
     virtual bool startRender( AbstractAPI::Device *d,
                               bool isLost ) const = 0;
-    virtual bool present( AbstractAPI::Device *d ) const = 0;
+    virtual bool present( AbstractAPI::Device *d, SwapBehavior b ) const = 0;
     virtual bool reset  ( AbstractAPI::Device *d, void* hwnd,
                           const Options & opt ) const = 0;
 

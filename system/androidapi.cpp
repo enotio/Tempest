@@ -497,8 +497,9 @@ void AndroidAPI::show(Window *) {
 void AndroidAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
   }
 
-void AndroidAPI::bind( Window *w, Tempest::Window *wx ) {
+void AndroidAPI::bind( Window *, Tempest::Window *wx ) {
   android.wnd = wx;
+  SystemAPI::activateEvent( android.wnd, android.window!=0);
   }
 
 static struct TmpImg{
@@ -657,16 +658,32 @@ bool Android::initialize() {
   if( display != EGL_NO_DISPLAY )
     return true;
 
-  const EGLint attribs[] = {
+  static const EGLint attribs16[] = {
     EGL_SURFACE_TYPE,
     EGL_WINDOW_BIT,
-    EGL_BLUE_SIZE, 5,
-    EGL_GREEN_SIZE, 6,
-    EGL_RED_SIZE, 5,
+    EGL_BLUE_SIZE,    5,
+    EGL_GREEN_SIZE,   6,
+    EGL_RED_SIZE,     5,
+    EGL_ALPHA_SIZE,   0,
     EGL_DEPTH_SIZE,   16,
     EGL_STENCIL_SIZE, 0,
     EGL_NONE
   };
+
+  /*
+  static const EGLint attribs32[] = {
+    EGL_SURFACE_TYPE,
+    EGL_WINDOW_BIT,
+    EGL_BLUE_SIZE,    8,
+    EGL_GREEN_SIZE,   8,
+    EGL_RED_SIZE,     8,
+    EGL_ALPHA_SIZE,   8,
+    EGL_DEPTH_SIZE,   16,
+    EGL_STENCIL_SIZE, 0,
+    EGL_NONE
+  };*/
+
+  const EGLint* attribs = attribs16;
 
   EGLint w, h, format;
   EGLint numConfigs;
@@ -820,7 +837,7 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject obj, jobject surface
     pthread_mutex_lock(&android.appMutex);
     android.msg.push_back( Android::MSG_WINDOW_SET );
     if( android.wnd )
-      SystemAPI::activateEvent( android.wnd, true);
+      SystemAPI::activateEvent( android.wnd, android.window!=0);
     pthread_mutex_unlock(&android.appMutex);
 
     if( android.mainThread==0 )
@@ -831,7 +848,7 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject obj, jobject surface
     ANativeWindow_release(android.window);
     android.window = 0;
     if( android.wnd )
-      SystemAPI::activateEvent( android.wnd, false);
+      SystemAPI::activateEvent( android.wnd, android.window!=0);
 
     pthread_mutex_unlock(&android.appMutex);
     }

@@ -67,7 +67,7 @@ class Device {
 
     bool startRender();
     bool reset( const Options &opt = Options() );
-    void present();
+    void present( AbstractAPI::SwapBehavior b = AbstractAPI::SB_BufferPreserved );
 
     bool hasManagedStorge() const;
 

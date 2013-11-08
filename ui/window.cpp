@@ -166,7 +166,7 @@ Window::ShowMode Window::showMode() const {
   }
 
 bool Window::isActive() const {
-  return isAppActive;//SystemAPI::instance().isActive(wnd);
+  return isAppActive;
   }
 
 SystemAPI::Window *Window::handle() {

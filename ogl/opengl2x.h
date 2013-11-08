@@ -51,7 +51,7 @@ class Opengl2x : public AbstractAPI {
 
     bool startRender( AbstractAPI::Device *d,
                       bool isLost ) const;
-    bool present( AbstractAPI::Device *d ) const;
+    bool present( AbstractAPI::Device *d, SwapBehavior b ) const;
     bool reset  ( AbstractAPI::Device *d, void* hwnd,
                   const Options & opt ) const;
 

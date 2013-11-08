@@ -46,16 +46,24 @@
 #define GL_DEPTH_BUFFER_BIT0_QCOM                     0x00000100
 #define GL_STENCIL_BUFFER_BIT0_QCOM                   0x00010000
 
+#ifndef GL_COLOR_EXT
+#define GL_COLOR_EXT                                  0x1800
+#define GL_DEPTH_EXT                                  0x1801
+#define GL_STENCIL_EXT                                0x1802
+#endif
 //#define GL_MAX_VARYING_VECTORS                        0x8DFC
 
 using namespace Tempest;
 typedef void (*PFNGLSTARTTILINGQCOMPROC) (GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
 typedef void (*PFNGLENDTILINGQCOMPROC) (GLbitfield preserveMask);
 
+typedef void (*PFNGLDISCARDFRAMEBUFFERPROC)(GLenum mode, GLsizei count, const GLenum* att );
+
 struct Opengl2x::Device{
 #ifdef __ANDROID__
   EGLDisplay disp;
   EGLSurface s;
+  EGLint     swapEfect;
 #else
   HDC   hDC;
   HGLRC hRC;
@@ -160,6 +168,8 @@ struct Opengl2x::Device{
 
   PFNGLSTARTTILINGQCOMPROC glStartTilingQCOM;
   PFNGLENDTILINGQCOMPROC   glEndTilingQCOM;
+
+  PFNGLDISCARDFRAMEBUFFERPROC glDiscardFrameBuffer;
   bool isTileRenderStarted;
   };
 
@@ -238,6 +248,8 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 #else
   dev->disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   dev->s    = eglGetCurrentSurface(EGL_DRAW);
+
+  dev->swapEfect = EGL_BUFFER_PRESERVED;
 #endif
 
   const char * ext = (const char*)glGetString(GL_EXTENSIONS);
@@ -261,6 +273,10 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
     dev->glStartTilingQCOM = (PFNGLSTARTTILINGQCOMPROC)eglGetProcAddress("glStartTilingQCOM");
     dev->glEndTilingQCOM   =   (PFNGLENDTILINGQCOMPROC)eglGetProcAddress("glEndTilingQCOM");
     }
+
+  if( dev->hasDiscardBuffers ){
+    dev->glDiscardFrameBuffer = (PFNGLDISCARDFRAMEBUFFERPROC)eglGetProcAddress("glDiscardFramebufferEXT");
+    }
 #endif
 
 #ifdef __ANDROID__
@@ -281,9 +297,8 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->clearDepth = 1;
   dev->clearS     = 0;
 
-
   memset( (char*)&dev->caps, 0, sizeof(dev->caps) );
-  T_WARNING_X( dev->hasHalfSupport, "half_float not aviable on device" );
+  // T_WARNING_X( dev->hasHalfSupport, "half_float not aviable on device" );
   dev->caps.hasHalf2 = dev->hasHalfSupport;
   dev->caps.hasHalf4 = dev->hasHalfSupport;
   T_ASSERT_X( errCk(), "OpenGL error" );
@@ -655,7 +670,7 @@ bool Opengl2x::setupFBO() const {
     }
   T_ASSERT_X( errCk(), "OpenGL error" );
 
-  int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+  GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
   if( !(status==0 || status==GL_FRAMEBUFFER_COMPLETE) ){
     struct Err{
       GLenum err;
@@ -698,6 +713,20 @@ void Opengl2x::startTiledRender() const {
   if( dev->isTileRenderStarted )
     return;
 
+  if( dev->hasDiscardBuffers && (dev->target.color[1]==0) &&
+      dev->target.color[0] ){
+    GLenum flg[3] = {}, *p = flg;
+
+    if( !dev->target.color[0] || !dev->target.color[0]->isInitalized ){
+      *p = GL_COLOR_ATTACHMENT0; ++p;
+      }
+    if( !dev->target.depth || !dev->target.depth->isInitalized ){
+      *p = GL_DEPTH_ATTACHMENT;  ++p;
+      }
+
+    dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, p-flg, flg);
+    errCk();
+    } else
   if( dev->hasQCOMTiles ){
     int w = dev->scrW, h = dev->scrH;
     (void)w;
@@ -714,7 +743,6 @@ void Opengl2x::startTiledRender() const {
 
         if( dev->target.color[i]->isInitalized )
           flg |= GL_COLOR_BUFFER_BIT0_QCOM;
-        dev->target.color[i]->isInitalized = true;
         }
 
     flg|=nflg;
@@ -722,9 +750,6 @@ void Opengl2x::startTiledRender() const {
     if( (dev->target.depth && dev->target.depth->isInitalized)||
         !dev->target.depth )
       flg |= GL_DEPTH_BUFFER_BIT0_QCOM;
-
-    if( dev->target.depth )
-      dev->target.depth->isInitalized = true;
 
     GLbitfield clr = 0;
     if( !(flg & GL_COLOR_BUFFER_BIT0_QCOM) )
@@ -739,9 +764,20 @@ void Opengl2x::startTiledRender() const {
     //dev->isTileRenderStarted = true;
     //dev->glStartTilingQCOM( 0, 0, w, h, flg );
     }
+
+  for( int i=0; i<dev->caps.maxRTCount; ++i )
+    if( dev->target.color[i] ){
+      dev->target.color[i]->isInitalized = true;
+      }
+
+  if( dev->target.depth )
+    dev->target.depth->isInitalized = true;
   }
 
 void Opengl2x::endTiledRender() const {
+  if( dev->isTileRenderStarted && dev->hasDiscardBuffers ){
+    dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, 0,0);
+    } else
   if( dev->isTileRenderStarted && dev->hasQCOMTiles ){
     GLbitfield flg  = 0;
     //flg = GL_COLOR_BUFFER_BIT0_QCOM|GL_DEPTH_BUFFER_BIT0_QCOM|GL_STENCIL_BUFFER_BIT0_QCOM;
@@ -836,11 +872,19 @@ bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
   return 1;
   }
 
-bool Opengl2x::present( AbstractAPI::Device *d ) const {
+bool Opengl2x::present(AbstractAPI::Device *d, SwapBehavior b) const {
   Device* dev = (Device*)d;
 #ifndef __ANDROID__
+  (void)b;
   SwapBuffers( dev->hDC );
 #else
+  static const EGLint se[2] = {EGL_BUFFER_PRESERVED, EGL_BUFFER_DESTROYED};
+
+  if( dev->swapEfect!=se[b] ){
+    dev->swapEfect = se[b];
+    eglSurfaceAttrib( dev->disp, dev->s, EGL_SWAP_BEHAVIOR, dev->swapEfect );
+    }
+
   eglSwapBuffers( dev->disp, dev->s );
   return AndroidAPI::present(0);
 #endif
