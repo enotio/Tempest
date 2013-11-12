@@ -290,6 +290,14 @@ AbstractAPI::Caps Device::caps() const {
   return api.caps( impl );
   }
 
+std::string Device::vendor() const {
+  return api.vendor( impl );
+  }
+
+std::string Device::renderer() const {
+  return api.renderer( impl );
+  }
+
 void Device::clear(const Color &cl, float z, unsigned s) {
   applyRs();
   api.clear(impl, cl, z, s);

@@ -11,8 +11,15 @@
 using namespace Tempest;
 
 struct Widget::DeleteGuard{
-  DeleteGuard( Widget* w):w(w){ w->lockDelete(); }
-  ~DeleteGuard(){ w->unlockDelete(); }
+  DeleteGuard( Widget* w):w(w){
+    if( w->deleteLaterFlag!=-1 )
+      w->lockDelete();
+    }
+
+  ~DeleteGuard(){
+    if( w->deleteLaterFlag!=-1 )
+      w->unlockDelete();
+    }
 
   Widget *w;
   };
@@ -43,6 +50,7 @@ Widget::Widget(ResourceContext *context):
 
 Widget::~Widget() {
   T_ASSERT_X( deleteLaterFlagGuard==0, "bad time to delete, use deleteLater");
+  deleteLaterFlagGuard = -1;
 
   if( parentLayout() )
     parentLayout()->take(this);
@@ -749,6 +757,9 @@ void Widget::setMultiTouchTracking( bool m ) {
   }
 
 void Widget::setFocus(bool f) {
+  DeleteGuard g(this);
+  (void)g;
+
   if( focus!=f ){
     if( f ){
       unsetChFocus( this, this );
@@ -773,6 +784,9 @@ void Widget::setFocus(bool f) {
         }
 
       if( root->chFocus ){
+        DeleteGuard g(root);
+        (void)g;
+
         for( size_t i=0; i<root->layout().widgets().size(); ++i ){
           if( root->layout().widgets()[i]!=proot )
             unsetChFocus( root->layout().widgets()[i], root );
@@ -784,6 +798,9 @@ void Widget::setFocus(bool f) {
 
       while( root->owner() && root->owner()->chFocus ){
         root = root->owner();
+        DeleteGuard g(root);
+        (void)g;
+
         root->chFocus = 0;
         root->onChildFocusChange(0);
         }
@@ -795,6 +812,9 @@ void Widget::setFocus(bool f) {
   }
 
 void Widget::unsetChFocus( Widget* root, Widget* emiter ){  
+  DeleteGuard g(root);
+  (void)g;
+
   if( root!=emiter && root->focus ){
     root->focus = 0;
     root->onFocusChange(0);
@@ -805,8 +825,9 @@ void Widget::unsetChFocus( Widget* root, Widget* emiter ){
     root->onChildFocusChange(0);
     }
 
-  for( size_t i=0; i<root->layout().widgets().size(); ++i )
-    unsetChFocus( root->layout().widgets()[i], emiter );    
+  const std::vector<Widget*>& lx = root->layout().widgets();
+  for( size_t i=0; i<lx.size(); ++i )
+    unsetChFocus( lx[i], emiter );
   }
 
 void Widget::deleteLater() {

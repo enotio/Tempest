@@ -42,6 +42,9 @@ class Device {
 
     AbstractAPI::Caps caps() const;
 
+    std::string vendor() const;
+    std::string renderer() const;
+
     void clear(const Color& cl, float z, unsigned stemcil );
 
     void clear( const Color& cl );

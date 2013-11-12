@@ -210,6 +210,20 @@ Opengl2x::Caps Opengl2x::caps( AbstractAPI::Device* d ) const {
   return dev->caps;
   }
 
+std::string Opengl2x::vendor( AbstractAPI::Device* d ) const {
+  if( !setDevice(d) ) return "";
+
+  const GLubyte *s = glGetString(GL_VENDOR);
+  return (const char*)s;
+  }
+
+std::string Opengl2x::renderer(AbstractAPI::Device *d) const {
+  if( !setDevice(d) ) return "";
+
+  const GLubyte *s = glGetString(GL_RENDERER);
+  return (const char*)s;
+  }
+
 AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) const {
   Device * dev = new Device();
   dev->isPainting = false;
@@ -280,6 +294,8 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 #endif
 
 #ifdef __ANDROID__
+  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "vendor = %s", glGetString(GL_VENDOR) );
+  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "render = %s", glGetString(GL_RENDERER) );
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "extensions = %s", ext );
 #endif
 
@@ -384,10 +400,19 @@ void Opengl2x::clear( AbstractAPI::Device *d,
   if( !dev->renderState.isZWriting() ){
     glDepthMask( 1 );
     }
+
+  bool msk[4];
+  dev->renderState.getColorMask( msk[0], msk[1], msk[2], msk[3] );
+  if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
+    glColorMask(1,1,1,1);
+
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+
   if( !dev->renderState.isZWriting() ){
     glDepthMask( 0 );
     }
+  if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
+    glColorMask( msk[0], msk[1], msk[2], msk[3] );
   }
 
 void Opengl2x::clear(AbstractAPI::Device *d, const Color &cl) const  {
@@ -397,7 +422,16 @@ void Opengl2x::clear(AbstractAPI::Device *d, const Color &cl) const  {
     glClearColor( cl.r(), cl.g(), cl.b(), cl.a() );
     dev->clearColor = cl;
     }
+
+  bool msk[4];
+  dev->renderState.getColorMask( msk[0], msk[1], msk[2], msk[3] );
+  if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
+    glColorMask(1,1,1,1);
+
   glClear( GL_COLOR_BUFFER_BIT );
+
+  if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
+    glColorMask( msk[0], msk[1], msk[2], msk[3] );
   }
 
 void Opengl2x::clearZ(AbstractAPI::Device *d, float z ) const  {
@@ -458,7 +492,7 @@ void Opengl2x::clear(AbstractAPI::Device *d,
     }
   }
 
-void Opengl2x::clear(AbstractAPI::Device *d,  const Color& cl, float z ) const{
+void Opengl2x::clear(AbstractAPI::Device *d, const Color& cl, float z ) const{
   if( !setDevice(d) ) return;
 
   if( dev->clearColor!=cl ){
@@ -478,10 +512,18 @@ void Opengl2x::clear(AbstractAPI::Device *d,  const Color& cl, float z ) const{
   if( !dev->renderState.isZWriting() ){
     glDepthMask( 1 );
     }
+
+  bool msk[4];
+  dev->renderState.getColorMask( msk[0], msk[1], msk[2], msk[3] );
+  if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
+    glColorMask(1,1,1,1);
+
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
   if( !dev->renderState.isZWriting() ){
     glDepthMask( 0 );
     }
+  if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
+    glColorMask( msk[0], msk[1], msk[2], msk[3] );
   }
 
 void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {

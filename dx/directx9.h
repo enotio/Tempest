@@ -16,6 +16,8 @@ class DirectX9 : public AbstractAPI {
     ~DirectX9();    
 
     Caps caps(Device *d) const;
+    std::string vendor( AbstractAPI::Device* d ) const;
+    std::string renderer( AbstractAPI::Device* d ) const;
 
     bool setDisplaySettings(const DisplaySettings &d) const;
 

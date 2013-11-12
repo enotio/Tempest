@@ -14,6 +14,8 @@ class Opengl2x : public AbstractAPI {
     ~Opengl2x();
 
     Caps caps(Device *d) const;
+    std::string vendor( AbstractAPI::Device* d ) const;
+    std::string renderer( AbstractAPI::Device* d ) const;
 
     Device* createDevice( void * hwnd, const Options & opt ) const;
     void    deleteDevice( Device* d )  const;

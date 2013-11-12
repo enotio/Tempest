@@ -22,6 +22,8 @@ struct DirectX9::Device{
   LPDIRECT3DDEVICE9 dev;
   DirectX9::IBO * curIBO;
   D3DCAPS9        caps;
+  D3DADAPTER_IDENTIFIER9 adapter;
+
   int scrW, scrH;
 
   bool hasDepthTaget, hasStencilTaget;
@@ -84,6 +86,15 @@ AbstractAPI::Caps DirectX9::caps( AbstractAPI::Device *d ) const {
   return c;
   }
 
+std::string DirectX9::vendor( AbstractAPI::Device * ) const {
+  return "Direct3D";
+  }
+
+std::string DirectX9::renderer( AbstractAPI::Device *d ) const {
+  Device *dx = (Device*)d;
+  return dx->adapter.Description;
+  }
+
 bool DirectX9::setDisplaySettings(const DisplaySettings &d) const {
   return AbstractAPI::setDisplaySettings(d);
   }
@@ -102,6 +113,7 @@ AbstractAPI::Device* DirectX9::createDevice(void *hwnd, const Options &opt) cons
   T_ASSERT_X( !FAILED(derr), "failed to create D3D-Device");
 
   dev->dev->GetDeviceCaps( &dev->caps );
+  D3D->GetAdapterIdentifier( D3DADAPTER_DEFAULT, 0, &dev->adapter );
   dev->hasDepthTaget   = 1;
   dev->hasStencilTaget = 1;
 

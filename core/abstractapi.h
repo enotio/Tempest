@@ -87,6 +87,8 @@ class AbstractAPI {
     class OpenGL2xDevice;
 
     virtual Caps caps( Device* d ) const = 0;
+    virtual std::string vendor( AbstractAPI::Device* d ) const = 0;
+    virtual std::string renderer( AbstractAPI::Device* d ) const = 0;
 
     virtual bool testDisplaySettings( const DisplaySettings& d ) const;
     virtual bool setDisplaySettings ( const DisplaySettings& d ) const;
