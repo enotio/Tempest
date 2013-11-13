@@ -40,8 +40,7 @@ namespace Detail{
     GLuint id;
     GLuint depthId;
 
-    GLuint fbo;
-    RenderTg* fboTg;
+    size_t fboHash;
 
     GLenum min, mag;
     GLenum clampU,clampV, clampW;

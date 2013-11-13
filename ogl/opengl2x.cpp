@@ -82,12 +82,121 @@ struct Opengl2x::Device{
 
   int vertexSize, curVboOffsetIndex, curIboOffsetIndex;
 
-  GLuint fboId;//, rboId;
+  GLuint fboId;
   bool   isPainting;
 
   Tempest::RenderState renderState;
 
   Detail::RenderTg target;
+  struct FBOs{
+    FBOs(){
+      buckets.reserve(16);
+      }
+
+    struct Bucket{
+      int count;
+      std::vector<Detail::GLTexture*> targets;
+      std::vector<int>    mip;
+      std::vector<GLuint> fbo;
+      };
+
+    std::vector<Bucket> buckets;
+
+    void onDeleteTexture( Detail::GLTexture* t ){
+      for( size_t i=0; i<buckets.size(); ++i )
+        onDeleteTexture( buckets[i], t );
+      }
+
+    void onDeleteTexture( Bucket &b, Detail::GLTexture* t ){
+      int tgCount = b.count+1;
+      for( size_t i=0, fboI = 0; i<b.targets.size();  ){
+        bool ok = false;
+        for( int r=0; r<tgCount; ++r )
+          ok |= (b.targets[i+r]==t);
+
+        if( ok ){
+          glDeleteBuffers(1, &b.fbo[fboI]);
+
+          b.fbo[fboI] = b.fbo.back();
+          b.fbo.pop_back();
+
+          size_t bsz = b.targets.size()-tgCount;
+          for( int r=0; r<tgCount; ++r )
+            b.targets[i+r] = b.targets[bsz+r];
+
+          for( int r=0; r<tgCount; ++r )
+            b.mip[i+r] = b.mip[bsz+r];
+
+          b.targets.resize( b.targets.size()-tgCount );
+          b.mip.resize( b.targets.size() );
+          } else {
+          i+=tgCount;
+          fboI++;
+          }
+        }
+      }
+
+    bool cmpTagets( const Detail::RenderTg& tg,
+                    Detail::GLTexture** rtg,
+                    int *mip,
+                    int sz ){
+      bool ok = 1;
+      for( int r=0; ok && r<sz; ++r )
+        ok &=( tg.color[r]==rtg[r] && tg.mip[r]==mip[r]);
+
+      ok &= ( tg.depth == rtg[sz] && tg.depthMip==mip[sz] );
+
+      return ok;
+      }
+
+    GLuint& getTarget( const Detail::RenderTg& tg, int sz, size_t& hash ){
+      Bucket &b = bucket(sz);
+      int tgCount = sz+1;
+
+      if( hash < b.fbo.size() &&
+          cmpTagets(tg, &b.targets[hash*tgCount], &b.mip[hash*tgCount], sz ) )
+        return b.fbo[hash];
+
+      for( size_t i=0; i<b.targets.size(); i+=tgCount ){
+        if( cmpTagets(tg, &b.targets[i], &b.mip[i], sz ) ){
+          hash = i/tgCount;
+          return b.fbo[hash];
+          }
+        }
+
+      size_t i0 = b.targets.size();
+      b.targets.resize( b.targets.size()+tgCount );
+      for( size_t i=0; i<size_t(sz); ++i )
+        b.targets[i0+i] = tg.color[i];
+      b.targets.back() = tg.depth;
+
+      b.mip.resize( b.targets.size() );
+      for( size_t i=0; i<size_t(sz); ++i )
+        b.mip[i0+i] = tg.mip[i];
+      b.mip.back() = tg.depthMip;
+
+      hash = b.fbo.size();
+      b.fbo.push_back(0);
+      return b.fbo.back();
+      }
+
+    Bucket& bucket( int mrt ){
+      for( size_t i=0; i<buckets.size(); ++i ){
+        if( buckets[i].count==mrt )
+          return buckets[i];
+
+        if( buckets[i].count>mrt ){
+          buckets.emplace( buckets.begin()+i );
+          return buckets[i];
+          }
+        }
+
+      buckets.emplace_back();
+      buckets.back().count = mrt;
+      return buckets.back();
+      }
+    } fbo;
+
   std::vector<squish::u8> compressBuffer;
 
   std::vector<char> tmpLockBuffer;
@@ -611,92 +720,78 @@ AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
 bool Opengl2x::setupFBO() const {
   const int maxMRT = dev->caps.maxRTCount;
     
+  Detail::GLTexture* tex = 0;
   GLint w = 0, h = 0;
-  GLuint *fbo = 0;
-  Detail::GLTexture * tex = 0;
-
   for( int i=0; i<maxMRT; ++i ){
     if( dev->target.color[i] ){
       tex = dev->target.color[i];
       w = tex->w;
       h = tex->h;
-      fbo = &tex->fbo;
+      //fbo = &tex->fbo;
       break;
       }
     }
 
-  if( w==0 || h==0 ){
+  int mrtSize = 0;
+  for( int i=0; dev->target.color[i] && i<maxMRT; ++i )
+    ++mrtSize;
+
+  if( w==0 || h==0 || tex==0 ){
     return 1;
     }
 
-  //T_ASSERT( glCheckFramebufferStatus( GL_FRAMEBUFFER )==GL_FRAMEBUFFER_COMPLETE );
   T_ASSERT_X( errCk(), "OpenGL error" );
 
-  if( fbo ){
-    if( *fbo==0 )
-      glGenFramebuffers(1, fbo);
-    } else {
-    fbo = &dev->fboId;
-    }
+  GLuint & fbo = dev->fbo.getTarget(dev->target, mrtSize, tex->fboHash);
+  if( fbo==0 ){
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-  if( tex->fboTg==0 ){
-    tex->fboTg = new Detail::RenderTg();
-    memset( tex->fboTg, 0, sizeof(Detail::RenderTg) );
-    }
+    for( int i=0; i<maxMRT; ++i ){
+      if( dev->target.color[i] ){
+        // NVidia old driver bug issue
 
-  glBindFramebuffer(GL_FRAMEBUFFER, *fbo);
+        bool potW = (w&(w-1))==0,
+             potH = (h&(h-1))==0;
+        if( !( potW && potH ) &&
+            !( dev->target.color[i]->min == GL_NEAREST &&
+               dev->target.color[i]->mag == GL_NEAREST &&
+               dev->target.color[i]->clampU == GL_CLAMP_TO_EDGE &&
+               dev->target.color[i]->clampV == GL_CLAMP_TO_EDGE ) ){
+          glBindTexture( GL_TEXTURE_2D, dev->target.color[i]->id );
+          if( dev->target.color[i]->min!=GL_NEAREST )
+            glTexParameteri( GL_TEXTURE_2D,
+                             GL_TEXTURE_MIN_FILTER,
+                             GL_NEAREST );
+          if( dev->target.color[i]->mag!=GL_NEAREST )
+            glTexParameteri( GL_TEXTURE_2D,
+                             GL_TEXTURE_MAG_FILTER,
+                             GL_NEAREST );
+          //*****
+          if( dev->target.color[i]->clampU!=GL_CLAMP_TO_EDGE )
+            glTexParameteri( GL_TEXTURE_2D,
+                             GL_TEXTURE_WRAP_S,
+                             GL_CLAMP_TO_EDGE );
+          if( dev->target.color[i]->clampV!=GL_CLAMP_TO_EDGE )
+            glTexParameteri( GL_TEXTURE_2D,
+                             GL_TEXTURE_WRAP_T,
+                             GL_CLAMP_TO_EDGE );
 
-  for( int i=0; i<maxMRT; ++i ){
-    if( dev->target.color[i] ){
-      // NVidia old driver bug issue
-
-      bool potW = (w&(w-1))==0,
-           potH = (h&(h-1))==0;
-      if( !( potW && potH ) &&
-          !( dev->target.color[i]->min == GL_NEAREST &&
-             dev->target.color[i]->mag == GL_NEAREST &&
-             dev->target.color[i]->clampU == GL_CLAMP_TO_EDGE &&
-             dev->target.color[i]->clampV == GL_CLAMP_TO_EDGE ) ){
-        glBindTexture( GL_TEXTURE_2D, dev->target.color[i]->id );
-        if( dev->target.color[i]->min!=GL_NEAREST )
-          glTexParameteri( GL_TEXTURE_2D,
-                           GL_TEXTURE_MIN_FILTER,
-                           GL_NEAREST );
-        if( dev->target.color[i]->mag!=GL_NEAREST )
-          glTexParameteri( GL_TEXTURE_2D,
-                           GL_TEXTURE_MAG_FILTER,
-                           GL_NEAREST );
+          dev->target.color[i]->min    = dev->target.color[i]->mag    = GL_NEAREST;
+          dev->target.color[i]->clampU = dev->target.color[i]->clampV = GL_CLAMP_TO_EDGE;
+          glBindTexture( GL_TEXTURE_2D, 0 );
+          }
+        dev->target.color[i]->mips = false;
         //*****
-        if( dev->target.color[i]->clampU!=GL_CLAMP_TO_EDGE )
-          glTexParameteri( GL_TEXTURE_2D,
-                           GL_TEXTURE_WRAP_S,
-                           GL_CLAMP_TO_EDGE );
-        if( dev->target.color[i]->clampV!=GL_CLAMP_TO_EDGE )
-          glTexParameteri( GL_TEXTURE_2D,
-                           GL_TEXTURE_WRAP_T,
-                           GL_CLAMP_TO_EDGE );
 
-        dev->target.color[i]->min    = dev->target.color[i]->mag    = GL_NEAREST;
-        dev->target.color[i]->clampU = dev->target.color[i]->clampV = GL_CLAMP_TO_EDGE;
-        glBindTexture( GL_TEXTURE_2D, 0 );
-        }
-      dev->target.color[i]->mips = false;
-      //*****
-
-      if( tex->fboTg->color[i]!=dev->target.color[i] ){
         glFramebufferTexture2D( GL_FRAMEBUFFER,
                                 GL_COLOR_ATTACHMENT0+i,
                                 GL_TEXTURE_2D,
                                 dev->target.color[i]->id,
                                 dev->target.mip[i] );
-        tex->fboTg->color[i] = dev->target.color[i];
+        dev->target.color[i]->mips = false;
         }
-      dev->target.color[i]->mips = false;
       }
-    }
-
-  if( tex->fboTg->depth!=dev->target.depth ){
-    tex->fboTg->depth = dev->target.depth;
 
     if( dev->target.depth ){
       glFramebufferRenderbuffer( GL_FRAMEBUFFER,
@@ -709,7 +804,10 @@ bool Opengl2x::setupFBO() const {
                                  GL_RENDERBUFFER,
                                  0 );
       }
+    } else {
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     }
+
   T_ASSERT_X( errCk(), "OpenGL error" );
 
   GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
@@ -1353,16 +1451,14 @@ void Opengl2x::deleteTexture( AbstractAPI::Device *d,
   if( !setDevice(d) ) return;
   Detail::GLTexture* tex = (Detail::GLTexture*)t;
 
+  dev->fbo.onDeleteTexture( tex );
+
   if( tex->id && glIsTexture(tex->id) )
     glDeleteTextures( 1, &tex->id );
 
   if( tex->depthId && glIsRenderbuffer(tex->depthId) )
     glDeleteRenderbuffers( 1, &tex->depthId );
 
-  if( tex->fbo && glIsRenderbuffer(tex->fbo) )
-    glDeleteFramebuffers( 1, &tex->fbo );
-
-  delete tex->fboTg;
   delete tex;
   
   T_ASSERT_X( errCk(), "OpenGL error" );

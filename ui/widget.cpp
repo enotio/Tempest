@@ -794,15 +794,18 @@ void Widget::setFocus(bool f) {
         }
 
       } else {
-      Widget * root = this;
+      Widget * root = this, *root_owner = root->owner();
 
-      while( root->owner() && root->owner()->chFocus ){
-        root = root->owner();
+      while( root_owner && root_owner->chFocus ){
+        root = root_owner;
+
         DeleteGuard g(root);
         (void)g;
 
         root->chFocus = 0;
         root->onChildFocusChange(0);
+
+        root_owner = root->owner();
         }
       }
 

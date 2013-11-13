@@ -13,8 +13,8 @@ Tempest::Detail::GLTexture::GLTexture() {
   format = 0;
   anisotropyLevel = 1;
 
-  fbo    = 0;  
-  fboTg = 0;
   pixelFormat  = GL_UNSIGNED_BYTE;
   isInitalized = true;
+
+  fboHash = -1;
   }
