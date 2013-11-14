@@ -115,7 +115,7 @@ struct Opengl2x::Device{
           ok |= (b.targets[i+r]==t);
 
         if( ok ){
-          glDeleteBuffers(1, &b.fbo[fboI]);
+          glDeleteFramebuffers(1, &b.fbo[fboI]);
 
           b.fbo[fboI] = b.fbo.back();
           b.fbo.pop_back();
@@ -916,7 +916,20 @@ void Opengl2x::startTiledRender() const {
 
 void Opengl2x::endTiledRender() const {
   if( dev->isTileRenderStarted && dev->hasDiscardBuffers ){
-    dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, 0,0);
+    if( dev->target.color[1]==0 &&  dev->target.color[0] ){
+      GLenum flg[3] = {}, *p = flg;
+
+      if( !dev->target.color[0] || !dev->target.color[0]->isInitalized ){
+        *p = GL_COLOR_ATTACHMENT0; ++p;
+        }
+      if( !dev->target.depth || !dev->target.depth->isInitalized ){
+        *p = GL_DEPTH_ATTACHMENT;  ++p;
+        }
+
+      dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, p-flg, flg);
+      errCk();
+      }
+    //dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, 0,0);
     } else
   if( dev->isTileRenderStarted && dev->hasQCOMTiles ){
     GLbitfield flg  = 0;
