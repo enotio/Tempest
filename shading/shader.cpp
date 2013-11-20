@@ -9,6 +9,10 @@ void Shader::setUniform(const char *name, const Texture2d &t) {
   input.set(name, t);
   }
 
+void Shader::setUniform(const char *name, const Texture3d &t) {
+  input.set(name, t);
+  }
+
 void Shader::setUniform(const char *name, const Matrix4x4 &t) {
   input.set(name, t);
   }

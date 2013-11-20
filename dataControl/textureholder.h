@@ -69,8 +69,8 @@ class TextureHolder : public AbstractHolderWithLoad
     virtual bool hasCPUStorage();
     Pixmap pixmapOf( AbstractAPI::Texture* );
   private:
-    TextureHolder( const TextureHolder &h );
-    void operator = ( const TextureHolder& ){}
+    TextureHolder( const TextureHolder &h )  = delete;
+    void operator = ( const TextureHolder& ) = delete;
 
     struct Data;
     Data  *data;

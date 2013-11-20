@@ -3,6 +3,7 @@
 
 #include <string>
 #include <Tempest/AbstractAPI>
+#include <Tempest/Assert>
 
 #include <map>
 
@@ -13,6 +14,7 @@ class FragmentShader;
 
 class Matrix4x4;
 class Texture2d;
+class Texture3d;
 
 class ShaderInput;
 
@@ -53,6 +55,8 @@ class AbstractShadingLang {
     virtual void* createShaderFromSource( ShaderType t,
                                           const std::string& src,
                                           std::string & outputLog ) const {
+      T_WARNING_X( src.size()!=0, "shader source is empty" );
+
       switch( t ){
         case Vertex:
           return createVertexShaderFromSource(src, outputLog);
@@ -106,6 +110,7 @@ class AbstractShadingLang {
     static VertexShader*   get( const Tempest::VertexShader   & s );
     static FragmentShader* get( const Tempest::FragmentShader & s );
     static AbstractAPI::Texture* get( const Tempest::Texture2d & s );
+    static AbstractAPI::Texture* get( const Tempest::Texture3d & s );
 
     static const ShaderInput &inputOf( const Tempest::VertexShader   & s );
     static const ShaderInput &inputOf( const Tempest::FragmentShader & s );

@@ -24,8 +24,12 @@ struct Widget::DeleteGuard{
   Widget *w;
   };
 
+size_t Widget::count = 0;
+
 Widget::Widget(ResourceContext *context):
   fpolicy(BackgroundFocus), rcontext(context), deleteLaterFlagGuard(0){
+  ++Widget::count;
+
   parentLay    = 0;
   focus        = false;
   chFocus      = false;
@@ -63,6 +67,8 @@ Widget::~Widget() {
 
   onDestroy( this );
   delete mlay;
+
+  --Widget::count;
   }
 
 int Widget::x() const {

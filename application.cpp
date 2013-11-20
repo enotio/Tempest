@@ -4,6 +4,8 @@
 #include <Tempest/Event>
 
 #include <Tempest/Timer>
+#include <Tempest/Widget>
+#include <Tempest/Assert>
 
 #ifdef __WIN32
 #include <windows.h>
@@ -29,6 +31,8 @@ Application::Application() {
 
 Application::~Application() {
   SystemAPI::instance().endApplication();
+
+  T_ASSERT_X( Widget::count==0, "not all widgets was destroyed");
   } 
 
 int Application::exec() {

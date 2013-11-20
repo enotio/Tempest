@@ -56,6 +56,7 @@
 using namespace Tempest;
 typedef void (*PFNGLSTARTTILINGQCOMPROC) (GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
 typedef void (*PFNGLENDTILINGQCOMPROC) (GLbitfield preserveMask);
+typedef void (*PFNGLWGLSWAPINTERVALPROC) (GLint interval);
 
 typedef void (*PFNGLDISCARDFRAMEBUFFERPROC)(GLenum mode, GLsizei count, const GLenum* att );
 
@@ -245,6 +246,135 @@ struct Opengl2x::Device{
     return v;
     }
 
+  static void texFormat( AbstractTexture::Format::Type f,
+                         GLenum& storage, GLenum& inFrm, GLenum& inBytePkg ){
+
+#ifndef __ANDROID__
+  static const GLenum format[] = {
+    GL_LUMINANCE16,
+    GL_LUMINANCE4_ALPHA4,
+    GL_LUMINANCE8,
+    GL_LUMINANCE16,
+
+    GL_RGB8,
+    GL_RGB4,
+    GL_RGB5,
+    GL_RGB10,
+    GL_RGB12,
+    GL_RGB16,
+
+    GL_RGBA,
+    GL_RGB5_A1,
+    GL_RGBA8,
+    GL_RGB10_A2,
+    GL_RGBA12,
+    GL_RGBA16,
+
+    GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+    GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
+    GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
+    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+
+    GL_DEPTH_COMPONENT, //16
+    GL_DEPTH_COMPONENT, //24
+    GL_DEPTH_COMPONENT, //32
+    GL_DEPTH_STENCIL,
+
+    GL_RG16,
+    GL_RGBA
+    };
+#else
+  static const GLenum format[] = {
+    GL_LUMINANCE,
+    GL_LUMINANCE_ALPHA,
+    GL_LUMINANCE,
+    GL_LUMINANCE,
+
+    GL_RGB,
+    GL_RGB,
+    GL_RGB,
+    GL_RGB,
+    GL_RGB,
+    GL_RGB,
+
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+
+    GL_RGB,
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+
+    GL_LUMINANCE,
+    GL_LUMINANCE,
+    GL_LUMINANCE,
+    GL_LUMINANCE,
+
+    GL_RGB,
+    GL_RGBA
+    };
+#endif
+
+  static const GLenum inputFormat[] = {
+    GL_LUMINANCE,
+    GL_LUMINANCE_ALPHA,
+    GL_LUMINANCE,
+    GL_LUMINANCE,
+
+    GL_RGB,
+    GL_RGB,
+    GL_RGB,
+    GL_RGB,
+    GL_RGB,
+    GL_RGB,
+
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+
+    GL_RGB,
+    GL_RGBA,
+    GL_RGBA,
+    GL_RGBA,
+
+    GL_DEPTH_COMPONENT, //d
+    GL_DEPTH_COMPONENT, //d
+    GL_DEPTH_COMPONENT, //d
+    GL_DEPTH_COMPONENT, //ds
+
+    GL_RGB,
+    GL_RGBA
+    };
+
+    inBytePkg = GL_UNSIGNED_BYTE;
+#ifdef __ANDROID__
+    if( f==AbstractTexture::Format::RGB ||
+        f==AbstractTexture::Format::RGB4 )
+      inBytePkg = GL_UNSIGNED_SHORT_5_6_5;
+
+    if( f==AbstractTexture::Format::RGB5 )
+      inBytePkg = GL_UNSIGNED_SHORT_5_6_5;
+
+    if( f==AbstractTexture::Format::RGBA5 ||
+        f==AbstractTexture::Format::RGBA )
+      inBytePkg = GL_UNSIGNED_SHORT_5_5_5_1;
+#endif
+
+    storage = format[f];
+#ifdef __ANDROID__
+    inFrm = storage;
+#else
+    inFrm = inputFormat[f];
+#endif
+    }
+
   static const char* glErrorDesc( GLenum err ){
     struct Err{
       const char* str;
@@ -277,6 +407,7 @@ struct Opengl2x::Device{
 
   PFNGLSTARTTILINGQCOMPROC glStartTilingQCOM;
   PFNGLENDTILINGQCOMPROC   glEndTilingQCOM;
+  PFNGLWGLSWAPINTERVALPROC wglSwapInterval;
 
   PFNGLDISCARDFRAMEBUFFERPROC glDiscardFrameBuffer;
   bool isTileRenderStarted;
@@ -364,6 +495,8 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->hDC = hDC;
   dev->hRC = hRC;
 
+  dev->wglSwapInterval = 0;
+
   if( !GLEW_VERSION_2_1 )
     if( glewInit()!=GLEW_OK || !GLEW_VERSION_2_1) {
       return 0;
@@ -387,6 +520,13 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 
   dev->hasQCOMTiles      = strstr(ext, "GL_QCOM_tiled_rendering")!=0;
   dev->hasDiscardBuffers = strstr(ext, "GL_EXT_discard_framebuffer")!=0;
+
+#ifdef __WIN32
+  if( strstr(ext, "WGL_EXT_swap_control") ){
+    dev->wglSwapInterval = (PFNGLWGLSWAPINTERVALPROC)wglGetProcAddress("wglSwapIntervalEXT");
+    }
+#endif
+
   dev->isTileRenderStarted = false;
 
   dev->hasTileBasedRender = dev->hasQCOMTiles | dev->hasDiscardBuffers;
@@ -1046,7 +1186,7 @@ bool Opengl2x::present(AbstractAPI::Device *d, SwapBehavior b) const {
 
 bool Opengl2x::reset( AbstractAPI::Device *d,
                       void* hwnd,
-                      const Options &/*opt*/ ) const {
+                      const Options &opt ) const {
   if( !setDevice(d) ) return 0;
 
 #ifndef __ANDROID__
@@ -1059,6 +1199,9 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   dev->scrW = w;
   dev->scrH = h;
   glViewport(0,0, w,h);
+
+  if( dev->wglSwapInterval )
+    dev->wglSwapInterval( opt.vSync );
 #else
   EGLDisplay disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   EGLSurface s    = eglGetCurrentSurface(EGL_DRAW);
@@ -1298,114 +1441,12 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
     return createDepthStorage(d,w,h,f);
     }
 
+  GLenum storage, inFrm, bytePkg;
+  dev->texFormat(f, storage, inFrm, bytePkg);
+
   Detail::GLTexture* tex = new Detail::GLTexture;
   glGenTextures(1, &tex->id);
   glBindTexture(GL_TEXTURE_2D, tex->id);
-
-#ifndef __ANDROID__
-  static const GLenum format[] = {
-    GL_LUMINANCE16,
-    GL_LUMINANCE4_ALPHA4,
-    GL_LUMINANCE8,
-    GL_LUMINANCE16,
-
-    GL_RGB8,
-    GL_RGB4,
-    GL_RGB5,
-    GL_RGB10,
-    GL_RGB12,
-    GL_RGB16,
-
-    GL_RGBA,
-    GL_RGB5_A1,
-    GL_RGBA8,
-    GL_RGB10_A2,
-    GL_RGBA12,
-    GL_RGBA16,
-
-    GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
-    GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
-    GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
-    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
-
-    GL_DEPTH_COMPONENT, //16
-    GL_DEPTH_COMPONENT, //24
-    GL_DEPTH_COMPONENT, //32
-    GL_DEPTH_STENCIL,
-
-    GL_RG16,
-    GL_RGBA
-    };
-#else
-  static const GLenum format[] = {
-    GL_LUMINANCE,
-    GL_LUMINANCE_ALPHA,
-    GL_LUMINANCE,
-    GL_LUMINANCE,
-
-    GL_RGB,
-    GL_RGB,
-    GL_RGB,
-    GL_RGB,
-    GL_RGB,
-    GL_RGB,
-
-    GL_RGBA,
-    GL_RGBA,
-    GL_RGBA,
-    GL_RGBA,
-    GL_RGBA,
-    GL_RGBA,
-
-    GL_RGB,
-    GL_RGBA,
-    GL_RGBA,
-    GL_RGBA,
-
-    GL_LUMINANCE,
-    GL_LUMINANCE,
-    GL_LUMINANCE,
-    GL_LUMINANCE,
-
-    GL_RGB,
-    GL_RGBA
-    };
-#endif
-
-
-  static const GLenum inputFormat[] = {
-    GL_LUMINANCE,
-    GL_LUMINANCE_ALPHA,
-    GL_LUMINANCE,
-    GL_LUMINANCE,
-
-    GL_RGB,
-    GL_RGB,
-    GL_RGB,
-    GL_RGB,
-    GL_RGB,
-    GL_RGB,
-
-    GL_RGBA,
-    GL_RGBA,
-    GL_RGBA,
-    GL_RGBA,
-    GL_RGBA,
-    GL_RGBA,
-
-    GL_RGB,
-    GL_RGBA,
-    GL_RGBA,
-    GL_RGBA,
-
-    GL_DEPTH_COMPONENT, //d
-    GL_DEPTH_COMPONENT, //d
-    GL_DEPTH_COMPONENT, //d
-    GL_DEPTH_COMPONENT, //ds
-
-    GL_RGB,
-    GL_RGBA
-    };
   
   T_ASSERT_X( errCk(), "OpenGL error" );
 
@@ -1414,32 +1455,14 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
 
   tex->w = w;
   tex->h = h;
-  tex->format = format[f];
 
-#ifdef __ANDROID__
-  GLenum inFrm = GL_UNSIGNED_BYTE;
-  if( f==AbstractTexture::Format::RGB ||
-      f==AbstractTexture::Format::RGB4 )
-    inFrm = GL_UNSIGNED_SHORT_5_6_5;
+  tex->format = storage;
 
-  if( f==AbstractTexture::Format::RGB5 )
-    inFrm = GL_UNSIGNED_SHORT_5_6_5;
-
-  if( f==AbstractTexture::Format::RGBA5 ||
-      f==AbstractTexture::Format::RGBA )
-    inFrm = GL_UNSIGNED_SHORT_5_5_5_1;
-
-  tex->pixelFormat = inFrm;
   glTexImage2D( GL_TEXTURE_2D, 0,
-                format[f], w, h, 0,
-                format[f],
-                inFrm, 0 );
-#else
-  glTexImage2D( GL_TEXTURE_2D, 0,
-                format[f], w, h, 0,
-                inputFormat[f],
-                GL_UNSIGNED_BYTE, 0 );
-#endif
+                storage, w, h, 0,
+                inFrm,
+                bytePkg, 0 );
+
   T_ASSERT_X( errCk(), "OpenGL error" );
 
   glTexParameteri( GL_TEXTURE_2D,
@@ -1454,6 +1477,93 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
   
   T_ASSERT_X( errCk(), "OpenGL error" );
   return (AbstractAPI::Texture*)tex;
+  }
+
+void Opengl2x::generateMipmaps(AbstractAPI::Device *d, AbstractAPI::Texture *t) const {
+  if( !setDevice(d) ) return;
+
+  T_ASSERT_X( dev->isPainting==false, "cannot subdate texture while render in progress" );
+
+  Detail::GLTexture* tex = (Detail::GLTexture*)t;
+
+  GLenum texClass = GL_TEXTURE_2D;
+  if( tex->z ){
+#ifndef __ANDROID__
+    texClass = GL_TEXTURE_3D;
+#else
+    return;
+#endif
+    }
+
+  glBindTexture( texClass, tex->id );
+  glGenerateMipmap( texClass );
+
+  T_ASSERT_X( errCk(), "OpenGL error" );
+  tex->mips = true;
+  }
+
+AbstractAPI::Texture *Opengl2x::createTexture3d(AbstractAPI::Device *d,
+                                                 int x, int y, int z, bool mips,
+                                                 AbstractTexture::Format::Type f,
+                                                 TextureUsage u,
+                                                 const char* data ) const {
+  (void)d;
+  (void)x;
+  (void)y;
+  (void)z;
+  (void)mips;
+  (void)f;
+  (void)u;
+  (void)data;
+
+#ifdef __ANDROID__
+  return 0;
+#else
+  if( x==0 || y==0 || z==0 )
+    return 0;
+
+  (void)u;
+  if( !setDevice(d) ) return 0;
+
+  GLenum storage, inFrm, bytePkg;
+  dev->texFormat(f, storage, inFrm, bytePkg);
+
+  Detail::GLTexture* tex = new Detail::GLTexture;
+  glGenTextures(1, &tex->id);
+  glBindTexture(GL_TEXTURE_3D, tex->id);
+
+  T_ASSERT_X( errCk(), "OpenGL error" );
+
+  tex->min = tex->mag = GL_NEAREST;
+  tex->mips = 0;
+
+  tex->w = x;
+  tex->h = y;
+  tex->z = z;
+
+  tex->format = storage;
+
+  glTexImage3D( GL_TEXTURE_3D, 0,
+                storage, x, y, z, 0,
+                inFrm,
+                bytePkg,
+                data );
+
+  T_ASSERT_X( errCk(), "OpenGL error" );
+
+  glTexParameteri( GL_TEXTURE_3D,
+                   GL_TEXTURE_MIN_FILTER,
+                   GL_NEAREST );
+  glTexParameteri( GL_TEXTURE_3D,
+                   GL_TEXTURE_MAG_FILTER,
+                   GL_NEAREST );
+
+  if( mips!=0 )
+    glGenerateMipmap(GL_TEXTURE_3D);
+
+  T_ASSERT_X( errCk(), "OpenGL error" );
+  return (AbstractAPI::Texture*)tex;
+#endif
   }
 
 void Opengl2x::deleteTexture( AbstractAPI::Device *d,

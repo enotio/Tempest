@@ -1,6 +1,8 @@
 #include "textureholder.h"
 
 #include <Tempest/Texture2d>
+#include <Tempest/Texture3d>
+
 #include <Tempest/Device>
 #include <Tempest/Pixmap>
 #include <Tempest/Assert>
@@ -41,10 +43,6 @@ TextureHolder::~TextureHolder(){
   T_WARNING( data->count==0 );
   delete data;
   }
-
-TextureHolder::TextureHolder( const TextureHolder& h):BaseType( h.device() ) {
-  }
-
 
 Tempest::Texture2d TextureHolder::create( int w, int h,
                                           AbstractTexture::Format::Type f,

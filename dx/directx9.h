@@ -80,6 +80,15 @@ class DirectX9 : public AbstractAPI {
                                          AbstractTexture::Format::Type f,
                                          TextureUsage usage  ) const;
 
+    AbstractAPI::Texture* createTexture3d( AbstractAPI::Device *d,
+                                           int x, int y, int z, bool mips,
+                                           AbstractTexture::Format::Type f,
+                                           TextureUsage usage,
+                                           const char *data  ) const;
+
+    void generateMipmaps( AbstractAPI::Device * d,
+                          AbstractAPI::Texture* t ) const;
+
     void deleteTexture( AbstractAPI::Device *d,
                         AbstractAPI::Texture *t) const;
 

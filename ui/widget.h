@@ -202,11 +202,13 @@ class Widget {
 
     std::vector<Shortcut*> skuts;
 
+    static size_t count;
     struct DeleteGuard;
 
   friend class Layout;
   friend class Shortcut;
   friend class SystemAPI;
+  friend class Application;
   };
 
 }

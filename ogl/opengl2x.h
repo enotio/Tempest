@@ -75,6 +75,15 @@ class Opengl2x : public AbstractAPI {
                                          int w, int h, bool mips,
                                          AbstractTexture::Format::Type f,
                                          TextureUsage usage  ) const;
+    void generateMipmaps( AbstractAPI::Device * d,
+                          AbstractAPI::Texture* t ) const;
+
+    AbstractAPI::Texture* createTexture3d( AbstractAPI::Device *d,
+                                           int x, int y, int z,
+                                           bool mips,
+                                           AbstractTexture::Format::Type f,
+                                           TextureUsage usage,
+                                           const char *data ) const;
 
     void deleteTexture( AbstractAPI::Device *d,
                         AbstractAPI::Texture *t) const;

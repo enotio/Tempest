@@ -644,14 +644,6 @@ AbstractAPI::Texture* DirectX9::createTexture(AbstractAPI::Device *d,
   if( f==AbstractTexture::Format::Depth16 ||
       f==AbstractTexture::Format::Depth24 ||
       f==AbstractTexture::Format::Depth32 ){
-/*
-    LPDIRECT3DSURFACE9 surf = 0;
-
-    HRESULT hr = dev->CreateDepthStencilSurface( w, h, d3frm[f],
-                                                 D3DMULTISAMPLE_NONE,
-                                                 0, TRUE, &surf, NULL);
-    return ((AbstractAPI::Texture*)surf);*/
-
     HRESULT hr = D3DXCreateTexture(  dev,
                                      w,
                                      h,
@@ -666,7 +658,6 @@ AbstractAPI::Texture* DirectX9::createTexture(AbstractAPI::Device *d,
       return 0;
       }
     return ((AbstractAPI::Texture*)tex);
-    //data->tex.insert( surf );
     } else {
     int ww = std::max(w,h)/2, mipsc = 1;
     while( mips && ww>1 ){
@@ -690,6 +681,22 @@ AbstractAPI::Texture* DirectX9::createTexture(AbstractAPI::Device *d,
     //data->tex.insert( tex );
     return ((AbstractAPI::Texture*)tex);
     }
+  }
+
+AbstractAPI::Texture* DirectX9::createTexture3d( AbstractAPI::Device *d,
+                                                 int x, int y, int z, bool mips,
+                                                 AbstractTexture::Format::Type f,
+                                                 TextureUsage usage,
+                                                 const char *data  ) const {
+  T_WARNING_X(0, "unimplemented yet");
+  return 0;
+  }
+
+void DirectX9::generateMipmaps(AbstractAPI::Device *d, AbstractAPI::Texture *t) const {
+  //LPDIRECT3DDEVICE9  dev  = Data::dev(d);
+  LPDIRECT3DTEXTURE9 tex = (LPDIRECT3DTEXTURE9)t;
+
+  tex->GenerateMipSubLevels();
   }
 
 void DirectX9::deleteTexture( AbstractAPI::Device *,

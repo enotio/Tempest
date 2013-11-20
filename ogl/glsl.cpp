@@ -50,7 +50,7 @@ struct GLSL::Data{
   const Tempest::VertexShader*   currentVS;
   const Tempest::FragmentShader* currentFS;
 
-  Detail::UniformCash<GLuint> vsCash, fsCash;
+  Detail::UniformCash<GLuint> uCash;
   const AbstractAPI::VertexDecl* vdecl;
 
   std::string readFile( const char* f ){
@@ -90,24 +90,14 @@ struct GLSL::Data{
     }
 
   GLint location( GLuint prog, const char* name ){
-    if( !cgcgen )
-      return glGetUniformLocation( prog, name );
-
-    static std::vector<char> n;
-    size_t sz = strlen(name)+1;
-
-    if( n.size() <= sz )
-      n.resize( sz+2 );
-
-    n[0] = '_';
-    memcpy( &n[1], name, sz );
-    n[sz  ] = '1';
-    n[sz+1] = '\0';
-
-    // std::cout << n.data() << std::endl;
-
-    return glGetUniformLocation( prog, &n[0] );
+    return glGetUniformLocation( prog, name );
     }
+
+  template< class Sampler >
+  void setupSampler( GLenum texClass,
+                     GLint prm, int slot,
+                     Detail::GLTexture *tx,
+                     const Sampler &s );
 
   struct ShProgram{
     GLuint vs;
@@ -117,7 +107,6 @@ struct GLSL::Data{
     };
 
   std::vector<ShProgram> prog;
-  bool cgcgen;
   bool hasAnisotropic;
 
   //GLuint curProgram;
@@ -136,8 +125,6 @@ GLSL::GLSL( AbstractAPI::OpenGL2xDevice * dev ) {
 
   data->currentVS = 0;
   data->currentFS = 0;
-
-  data->cgcgen  = false;
 
   const char * ext = (const char*)glGetString(GL_EXTENSIONS);
   data->hasAnisotropic =
@@ -165,18 +152,14 @@ void Tempest::GLSL::endPaint() const {
   glUseProgram( 0 );
 
   data->currentVS = 0;
-  data->vsCash.reset();
-  //cgGLDisableProfile( data->vertexProfile );
-
   data->currentFS = 0;
-  data->fsCash.reset();
+  data->uCash.reset();
 
   data->curProgram.linked = 0;
   //cgGLDisableProfile( data->pixelProfile );
   }
 
 void GLSL::setDevice() const {
-
   }
 
 AbstractShadingLang::VertexShader*
@@ -184,10 +167,10 @@ AbstractShadingLang::VertexShader*
   GLuint *prog = new GLuint(0);
   *prog = data->loadShader( GL_VERTEX_SHADER, src.data(), log );
 
-  if( !*prog )
-    {}//Data::dbgOut( data->context );
-
-  //T_ASSERT( *prog );
+  if( !*prog ){
+    delete prog;
+    return 0;
+    }
 
   return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
   }
@@ -217,10 +200,10 @@ AbstractShadingLang::FragmentShader *
   GLuint *prog = new GLuint(0);
   *prog = data->loadShader( GL_FRAGMENT_SHADER, src.data(), log );
 
-  if( !*prog )
-    {}//Data::dbgOut( data->context );
-
-  //T_ASSERT( *prog );
+  if( !*prog ){
+    delete prog;
+    return 0;
+    }
 
   return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
   }
@@ -336,7 +319,7 @@ void GLSL::bind( const Tempest::FragmentShader& s ) const {
 
 void GLSL::unBind( const Tempest::VertexShader& s ) const {
   data->currentVS = 0;
-  data->vsCash.reset();
+  data->uCash.reset();
   inputOf(s).resetID();
 
   //setDevice();
@@ -345,7 +328,7 @@ void GLSL::unBind( const Tempest::VertexShader& s ) const {
 void GLSL::unBind( const Tempest::FragmentShader& s ) const {
   //CGprogram prog = CGprogram( get(s) );
   data->currentFS = 0;
-  data->fsCash.reset();
+  data->uCash.reset();
   inputOf(s).resetID();
 
   //setDevice();
@@ -458,11 +441,17 @@ void GLSL::enable() const {
     data->curProgram.vs = vertexShader;
     data->curProgram.fs = pixelShader;
 
-    data->vsCash.reset();
-    data->fsCash.reset();
+    data->uCash.reset();
     }
 
   { const ShaderInput & in = inputOf( *data->currentFS );
+
+    for( size_t i=0; i<in.tex3d.names.size(); ++i ){
+      setUniform( program,
+                  *in.tex3d.values[i],
+                  in.tex3d.names[i].data(), i,
+                  in.tex3d.id[i] );
+      }
 
     for( size_t i=0; i<in.tex.names.size(); ++i ){
       setUniform( program,
@@ -523,7 +512,7 @@ void GLSL::setUniform( unsigned int s,
     prm = (GLint)id;
     }
 
-  if( !data->vsCash.fetch(prm, m) ){
+  if( !data->uCash.fetch(prm, m) ){
     float r[16] = {};
     std::copy( m.data(), m.data()+16, r );
     glUniformMatrix4fv( prm, 1, false, r );
@@ -547,7 +536,7 @@ void GLSL::setUniform( unsigned int s,
     prm = (GLint)id;
     }
 
-  if( !data->vsCash.fetch(prm, v, l) ){
+  if( !data->uCash.fetch(prm, v, l) ){
     //Data::dbg(prm, data->context);
 
     switch(l){
@@ -575,9 +564,54 @@ void GLSL::setUniform( unsigned int sh,
     prm = (GLint)id;
     }
 
-  const Texture2d::Sampler & s = u.sampler();
-  //Data::dbg(prm, data->context);
+  if( !data->uCash.fetch(prm, u.handle()) ){
+    Detail::GLTexture* tx = (Detail::GLTexture*)get(u);
 
+    if( tx && tx->id ){
+      data->setupSampler( GL_TEXTURE_2D, prm, slot, tx, u.sampler() );
+      }
+    }
+  }
+
+void GLSL::setUniform( unsigned int sh,
+                       const Texture3d &u,
+                       const char *name,
+                       int slot, void *&id) const {
+  GLint prm = -1;
+  if( id==data->notId ){
+    GLuint    prog = sh;
+    prm = data->location( prog, name );
+    if( prm==-1 )
+      return;
+    id = (void*)size_t(prm);
+    } else {
+    prm = (GLint)id;
+    }
+
+  if( !data->uCash.fetch(prm, u.handle()) ){
+    Detail::GLTexture* tx = (Detail::GLTexture*)get(u);
+
+    if( tx && tx->id ){
+#ifndef __ANDROID__
+      data->setupSampler( GL_TEXTURE_3D, prm, slot, tx, u.sampler() );
+#endif
+      }
+    }
+  }
+
+const char *GLSL::opt(const char *t, const char *f, bool v) {
+  if( v )
+    return t;
+
+  return f;
+  }
+
+template< class Sampler >
+void GLSL::Data::setupSampler( GLenum texClass,
+                               GLint prm,
+                               int slot,
+                               Detail::GLTexture* tx,
+                               const Sampler & s ) {
   static const GLenum magFilter[] = {
     GL_NEAREST,
     GL_LINEAR,
@@ -604,89 +638,75 @@ void GLSL::setUniform( unsigned int sh,
     GL_REPEAT
     };
 
-  if( !data->fsCash.fetch(prm, u.handle()) ){
-    Detail::GLTexture* tx = (Detail::GLTexture*)get(u);
+  bool isPot = ((tx->w &(tx->w-1))==0) &&
+               ((tx->h &(tx->h-1))==0);
 
-    if( tx && tx->id ){
-      bool isPot = ((tx->w &(tx->w-1))==0) &&
-                   ((tx->h &(tx->h-1))==0);
-      //cgGLSetTextureParameter   ( prm, *tx);
-      //cgGLEnableTextureParameter( prm );
-      glActiveTexture( GL_TEXTURE0 + slot );
-      glBindTexture( GL_TEXTURE_2D, tx->id );
+  glActiveTexture( GL_TEXTURE0 + slot );
+  glBindTexture( texClass, tx->id );
 
-      if( isPot ){
-        if( tx->clampU!=clamp[ s.uClamp ] ){
-          tx->clampU = clamp[ s.uClamp ];
-          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, tx->clampU );
-          }
-        if( tx->clampV!=clamp[ s.vClamp ] ){
-          tx->clampV = clamp[ s.vClamp ];
-          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tx->clampV );
-          }
+  if( isPot ){
+    if( tx->clampU!=clamp[ s.uClamp ] ){
+      tx->clampU = clamp[ s.uClamp ];
+      glTexParameteri( texClass, GL_TEXTURE_WRAP_S, tx->clampU );
+      }
+    if( tx->clampV!=clamp[ s.vClamp ] ){
+      tx->clampV = clamp[ s.vClamp ];
+      glTexParameteri( texClass, GL_TEXTURE_WRAP_T, tx->clampV );
+      }
 
-        if( tx->mips ){
+    if( tx->mips ){
 #ifndef __ANDROID__
-          if( tx->clampW!=clamp[ s.wClamp ] ){
-            tx->clampW = clamp[ s.wClamp ];
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, tx->clampW );
-            }
+      if( tx->clampW!=clamp[ s.wClamp ] ){
+        tx->clampW = clamp[ s.wClamp ];
+        glTexParameteri( texClass, GL_TEXTURE_WRAP_R, tx->clampW );
+        }
 #endif
 
-          if( tx->min!=filter[ s.minFilter ][s.mipFilter] ){
-            glTexParameteri( GL_TEXTURE_2D,
-                             GL_TEXTURE_MIN_FILTER,
-                             filter[ s.minFilter ][s.mipFilter] );
-            tx->min = filter[ s.minFilter ][s.mipFilter];
-            }
-          } else {
-          if( tx->min!=filter[ s.minFilter ][0] ){
-            glTexParameteri( GL_TEXTURE_2D,
-                             GL_TEXTURE_MIN_FILTER,
-                             filter[ s.minFilter ][0] );
-            tx->min = filter[ s.minFilter ][0];
-            }
-          }
+      if( tx->min!=filter[ s.minFilter ][s.mipFilter] ){
+        glTexParameteri( texClass,
+                         GL_TEXTURE_MIN_FILTER,
+                         filter[ s.minFilter ][s.mipFilter] );
+        tx->min = filter[ s.minFilter ][s.mipFilter];
+        }
+      } else {
+      if( tx->min!=filter[ s.minFilter ][0] ){
+        glTexParameteri( texClass,
+                         GL_TEXTURE_MIN_FILTER,
+                         filter[ s.minFilter ][0] );
+        tx->min = filter[ s.minFilter ][0];
+        }
+      }
 
-        if( tx->mag!=magFilter[ s.magFilter ] ){
-          glTexParameteri( GL_TEXTURE_2D,
-                           GL_TEXTURE_MAG_FILTER,
-                           magFilter[ s.magFilter ] );
-          tx->mag = magFilter[ s.magFilter ];
-          }
+    if( tx->mag!=magFilter[ s.magFilter ] ){
+      glTexParameteri( texClass,
+                       GL_TEXTURE_MAG_FILTER,
+                       magFilter[ s.magFilter ] );
+      tx->mag = magFilter[ s.magFilter ];
+      }
 
 //#ifndef __ANDROID__
-        if( data->hasAnisotropic ){
-          if( s.anisotropic &&
-              isPot &&
-              tx->mips ){
-            if( tx->anisotropyLevel!=data->maxAnisotropy ){
-              glTexParameterf( GL_TEXTURE_2D,
-                               GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                               data->maxAnisotropy );
-              tx->anisotropyLevel = data->maxAnisotropy;
-              }
-            } else {
-            if( tx->anisotropyLevel!=1 ){
-              glTexParameterf( GL_TEXTURE_2D,
-                               GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                               1 );
-              tx->anisotropyLevel = 1;
-              }
-            }
+    if( hasAnisotropic ){
+      if( s.anisotropic &&
+          isPot &&
+          tx->mips ){
+        if( tx->anisotropyLevel != maxAnisotropy ){
+          glTexParameterf( texClass,
+                           GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                           maxAnisotropy );
+          tx->anisotropyLevel = maxAnisotropy;
+          }
+        } else {
+        if( tx->anisotropyLevel!=1 ){
+          glTexParameterf( texClass,
+                           GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                           1 );
+          tx->anisotropyLevel = 1;
           }
         }
-//#endif
-
-      glUniform1i( prm, slot );
-      glActiveTexture( GL_TEXTURE0 );
       }
     }
-  }
+//#endif
 
-const char *GLSL::opt(const char *t, const char *f, bool v) {
-  if( v )
-    return t;
-
-  return f;
+  glUniform1i( prm, slot );
+  glActiveTexture( GL_TEXTURE0 );
   }

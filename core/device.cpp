@@ -587,6 +587,17 @@ AbstractAPI::Texture* Device::createTexture( int w, int h,
   return t;
   }
 
+AbstractAPI::Texture *Device::createTexture3d( int x, int y, int z,
+                                               bool mips,
+                                               AbstractTexture::Format::Type f,
+                                               TextureUsage u ) {
+  forceEndPaint();
+  AbstractAPI::Texture* t = api.createTexture3d( impl, x, y, z, mips, f, u, 0 );
+  if( t )
+    data->allockCount.tex++;
+  return t;
+  }
+
 void Device::deleteTexture( AbstractAPI::Texture* & t ){
   forceEndPaint();
   data->allockCount.tex--;

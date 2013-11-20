@@ -50,6 +50,10 @@ AbstractAPI::Texture* AbstractShadingLang::get( const Tempest::Texture2d & t ){
   return t.data.const_value();
   }
 
+AbstractAPI::Texture *AbstractShadingLang::get(const Texture3d &t) {
+  return t.data.const_value();
+  }
+
 const ShaderInput &AbstractShadingLang::inputOf(const Tempest::VertexShader &s) {
   return s.input;
   }

@@ -47,7 +47,7 @@ void Layout::add(Widget *widget) {
 
 void Layout::del(Widget *widget) {
   w.resize( std::remove( w.begin(), w.end(), widget ) - w.begin() );
-  delete widget;
+  widget->deleteLater();
 
   applyLayout();
 
@@ -63,7 +63,7 @@ void Layout::del(Widget *widget) {
 void Tempest::Layout::removeAll() {
   for( size_t i=0; i<w.size(); ++i ){
     w[i]->parentLay = 0;
-    delete w[i];
+    w[i]->deleteLater();
     }
   w.clear();
 
@@ -97,28 +97,6 @@ Widget *Layout::take(Widget *widget) {
   return widget;
   }
 
-void Layout::execDelete() {
-  for( size_t i=0; i<w.size(); ++i ){
-    if( w[i]->deleteLaterFlag ){
-      Widget *widget = w[i];
-      widget->parentLay  =0;
-      delete widget;
-
-      w[i] = 0;
-      }
-    }
-
-  std::vector<Widget*>::iterator nend
-      = std::remove( w.begin(), w.end(), reinterpret_cast<Widget*>(0) );
-  if( w.end()!=nend ){
-    w.resize( nend - w.begin() );
-    applyLayout();
-
-    if( owner() )
-      owner()->update();
-    }
-  }
-
 const std::vector<Widget*> &Layout::widgets() {
   return w;
   }
@@ -130,7 +108,7 @@ int Layout::spacing() const {
 void Layout::setMargin(const Margin &m){
   mmargin = m;
   applyLayout();
-}
+  }
 
 void Layout::setMargin(int l, int r, int t, int b) {
   setMargin( Margin(l,r,t,b) );

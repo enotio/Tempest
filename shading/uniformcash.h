@@ -13,12 +13,12 @@ template< class Layout >
 class UniformCash {
   public:
     UniformCash(){
-      texture.reserve(32);
-      vec1.reserve(32);
-      vec2.reserve(32);
-      vec3.reserve(32);
-      vec4.reserve(32);
-      matrix.reserve(32);
+      texture.reserve(64);
+      vec1.reserve(64);
+      vec2.reserve(64);
+      vec3.reserve(64);
+      vec4.reserve(64);
+      matrix.reserve(64);
       }
 
     template< int s >

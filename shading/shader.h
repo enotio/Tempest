@@ -10,6 +10,7 @@ class Shader {
     virtual ~Shader();
 
     void setUniform( const char* name, const Texture2d & t );
+    void setUniform( const char* name, const Texture3d & t );
     void setUniform( const char* name, const Matrix4x4 & t );
 
     void setUniform( const char* name, float x );

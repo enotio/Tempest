@@ -206,10 +206,15 @@ class Device {
                                           bool mips = true,
                                           bool compress = true );
 
-    AbstractAPI::Texture* createTexture(int w, int h,
+    AbstractAPI::Texture* createTexture( int w, int h,
                                          bool mips,
                                          AbstractTexture::Format::Type f,
                                          TextureUsage u );
+
+    AbstractAPI::Texture* createTexture3d( int x, int y, int z, bool mips,
+                                           AbstractTexture::Format::Type f,
+                                           TextureUsage u );
+
     void deleteTexture( AbstractAPI::Texture* & t );
     void setTextureFlag( AbstractAPI::Texture* t,
                          AbstractAPI::TextureFlag f,
@@ -277,9 +282,10 @@ class Device {
 
   template< class Shader, class APIDescriptor, AbstractShadingLang::ShaderType >
   friend class ShaderHolder;
-  //friend class VertexShaderHolder;
-  //friend class FragmentShaderHolder;
+
   friend class TextureHolder;
+  friend class VolumeHolder;
+
   friend class VertexBufferHolder;
   friend class IndexBufferHolder;
 

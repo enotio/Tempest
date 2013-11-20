@@ -294,6 +294,9 @@ void SurfaceRender::PaintDev::setNullState() {
   surf.state.cl      = Tempest::Color(1);
   surf.state.flip[0] = false;
   surf.state.flip[1] = false;
+
+  surf.state.curTex   = Sprite();
+  surf.state.curTex2d = 0;
   }
 
 void SurfaceRender::PaintDev::pushState() {

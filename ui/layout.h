@@ -50,8 +50,6 @@ class Layout {
     void rebind( Widget* w);
     void swap( Layout* other );
 
-    void execDelete();
-
   friend class Widget;
   };
 

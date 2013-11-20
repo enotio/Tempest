@@ -48,7 +48,7 @@ namespace Detail{
 
     bool isInitalized;
 
-    int w,h;
+    int w,h, z;
     float anisotropyLevel;
     GLenum format, pixelFormat;
     };

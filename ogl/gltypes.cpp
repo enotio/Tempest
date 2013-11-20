@@ -5,6 +5,8 @@ Tempest::Detail::GLTexture::GLTexture() {
   depthId = 0;
   w = 0;
   h = 0;
+  z = 0;
+
   min    = mag    = GL_NEAREST;
   clampU = clampV = GL_REPEAT;
   clampW = GL_REPEAT;

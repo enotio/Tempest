@@ -5,6 +5,7 @@
 #include <string>
 
 #include <Tempest/Texture2d>
+#include <Tempest/Texture3d>
 #include <Tempest/Matrix4x4>
 
 #include <Tempest/VertexDeclaration>
@@ -14,6 +15,7 @@ namespace Tempest{
 class ShaderInput {
   public:
     void set( const char* name, const Texture2d & t );
+    void set( const char* name, const Texture3d & t );
     void set( const char* name, const Matrix4x4 & t );
 
     void set( const char* name, float x );
@@ -84,6 +86,7 @@ class ShaderInput {
     Chunk< Vec<3> >    v3;
     Chunk< Vec<4> >    v4;
     Chunk< const Texture2d* > tex;
+    Chunk< const Texture3d* > tex3d;
     Chunk< Matrix4x4 > mat;
 
     void resetID() const{

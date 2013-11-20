@@ -165,7 +165,9 @@ SOURCES += \
     core/wrappers/displaysettings.cpp \
     2d/surfacerender.cpp \
     2d/font.cpp \
-    ui/gesturerecognizer.cpp
+    ui/gesturerecognizer.cpp \
+    core/wrappers/texture3d.cpp \
+    dataControl/volumeholder.cpp
 
 HEADERS += \
     ui/window.h \
@@ -265,7 +267,9 @@ HEADERS += \
     include/Tempest/Font \
     dataControl/localobjectpool.h \
     include/Tempest/LocalObjectPool \
-    ui/gesturerecognizer.h
+    ui/gesturerecognizer.h \
+    core/wrappers/texture3d.h \
+    dataControl/volumeholder.h
 
 OTHER_FILES += \
     include/Tempest/Window \
@@ -289,5 +293,7 @@ OTHER_FILES += \
     include/Tempest/Timer \
     include/Tempest/Surface \
     include/Tempest/Android \
-    include/Tempest/GestureRecognizer
+    include/Tempest/GestureRecognizer \
+    include/Tempest/Texture3d \
+    include/Tempest/VolumeHolder
 

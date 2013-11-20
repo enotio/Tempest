@@ -39,6 +39,7 @@ class AbstractAPI {
       int maxVaryingComponents;
 
       bool hasHalf2, hasHalf4;
+      bool has3DTexture;
       };
 
     enum PrimitiveType{
@@ -157,6 +158,15 @@ class AbstractAPI {
                                 int w, int h, bool mips,
                                 AbstractTexture::Format::Type f,
                                 TextureUsage usage ) const = 0;
+
+    virtual AbstractAPI::Texture* createTexture3d( AbstractAPI::Device *d,
+                                                   int x, int y, int z, bool mips,
+                                                   AbstractTexture::Format::Type f,
+                                                   TextureUsage usage,
+                                                   const char *data  ) const  =0;
+
+    virtual void generateMipmaps( AbstractAPI::Device * d,
+                                  AbstractAPI::Texture* t ) const = 0;
 
     virtual void deleteTexture( AbstractAPI::Device *d,
                                 AbstractAPI::Texture *t) const = 0;

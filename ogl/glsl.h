@@ -57,8 +57,14 @@ namespace Tempest {
                        const char* name,
                        void *&id ) const;
 
-      void setUniform(unsigned int s,
+      void setUniform( unsigned int s,
                        const Texture2d& t,
+                       const char* name,
+                       int slot,
+                       void *& id ) const;
+
+      void setUniform( unsigned int s,
+                       const Texture3d& t,
                        const char* name,
                        int slot,
                        void *& id ) const;

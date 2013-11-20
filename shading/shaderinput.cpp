@@ -8,6 +8,10 @@ void ShaderInput::set(const char *name, const Texture2d &t) {
   tex.set( name, &t );
   }
 
+void ShaderInput::set(const char *name, const Texture3d &t) {
+  tex3d.set( name, &t );
+  }
+
 void ShaderInput::set(const char *name, const Matrix4x4 &t) {
   mat.set( name, t );
   }
