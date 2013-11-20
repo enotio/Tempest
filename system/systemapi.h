@@ -182,6 +182,7 @@ class SystemAPI{
       };
 
     KeyInf ki;
+    struct GestureDeleter;
 
   friend class AbstractAPI;
   };

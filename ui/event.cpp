@@ -14,7 +14,7 @@ Size SizeEvent::size() const {
   }
 
 
-AbstractGestureEvent::AbstractGestureEvent() {
+AbstractGestureEvent::AbstractGestureEvent(GestureRecognizer *owner): ow(owner) {
   setType(Gesture);
   setGestureType(gtNone);
   setState(GestureUpdated);
@@ -38,6 +38,14 @@ void AbstractGestureEvent::setGestureType(AbstractGestureEvent::GestureType t) {
 
 AbstractGestureEvent::State AbstractGestureEvent::state() const {
   return st;
+  }
+
+const GestureRecognizer &AbstractGestureEvent::owner() const {
+  return *ow;
+  }
+
+GestureRecognizer &AbstractGestureEvent::owner() {
+  return *ow;
   }
 
 void AbstractGestureEvent::setState(AbstractGestureEvent::State s) {

@@ -105,15 +105,21 @@ void SystemAPI::emitEvent( Tempest::Window *w,
   processEvents(w, e, type);
   }
 
-void SystemAPI::emitEvent(Tempest::Window *w, MouseEvent &e , Event::Type type ){
+struct SystemAPI::GestureDeleter {
+  void operator()( AbstractGestureEvent* x ){
+    x->owner().deleteGesture(x);
+    }
+  };
+
+void SystemAPI::emitEvent( Tempest::Window *w, MouseEvent &e, Event::Type type ){
   if( w->pressedC.size() < size_t(e.mouseID+1) )
     w->pressedC.resize(e.mouseID+1);
 
-  std::unique_ptr<AbstractGestureEvent> eg;
+  std::unique_ptr<AbstractGestureEvent, GestureDeleter> eg;
   eg.reset( w->sendEventToGestureRecognizer(e) );
 
   if( eg ){
-    std::unique_ptr<AbstractGestureEvent> e = std::move(eg);
+    std::unique_ptr<AbstractGestureEvent, GestureDeleter> e = std::move(eg);
     processEvents(w, *e, type);
     }
 

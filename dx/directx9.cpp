@@ -692,7 +692,7 @@ AbstractAPI::Texture* DirectX9::createTexture3d( AbstractAPI::Device *d,
   return 0;
   }
 
-void DirectX9::generateMipmaps(AbstractAPI::Device *d, AbstractAPI::Texture *t) const {
+void DirectX9::generateMipmaps(AbstractAPI::Device *, AbstractAPI::Texture *t) const {
   //LPDIRECT3DDEVICE9  dev  = Data::dev(d);
   LPDIRECT3DTEXTURE9 tex = (LPDIRECT3DTEXTURE9)t;
 

@@ -12,6 +12,7 @@ class GestureRecognizer {
     virtual ~GestureRecognizer();
 
     virtual AbstractGestureEvent* event( const Event & );
+    virtual void deleteGesture( AbstractGestureEvent* g );
   };
 
 }

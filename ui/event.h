@@ -208,9 +208,10 @@ class CloseEvent: public Event {
     CloseEvent(){ setType(Close); }
   };
 
+class GestureRecognizer;
 class AbstractGestureEvent: public Event {
   protected:
-    AbstractGestureEvent();
+    AbstractGestureEvent( GestureRecognizer* owner );
 
   public:
     const Point& hotSpot() const;
@@ -232,10 +233,14 @@ class AbstractGestureEvent: public Event {
       };
 
     State state() const;
+    GestureRecognizer& owner();
+    const GestureRecognizer& owner() const;
   private:
     Point hs;
     GestureType gt;
     State st;
+
+    GestureRecognizer* ow;
 
   protected:
     void setState( State s );
@@ -244,10 +249,11 @@ class AbstractGestureEvent: public Event {
 
 class DragGesture: public AbstractGestureEvent {
   public:
-    DragGesture( const Point& s,
+    DragGesture( GestureRecognizer* owner,
+                 const Point& s,
                  const Point& p,
                  const Point& d,
-                 State st ):start(s), pos(p), dpos(d){
+                 State st ):AbstractGestureEvent(owner), start(s), pos(p), dpos(d){
       setGestureType(gtDragGesture);
       setState( st );
       setHotSpot(s);

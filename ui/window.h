@@ -64,6 +64,7 @@ class Window : public Widget {
     bool resizeIntent, isAppActive;
 
     AbstractGestureEvent* sendEventToGestureRecognizer(const Event &e);
+
     std::vector< std::unique_ptr<GestureRecognizer>> recognizers;
 
     ShowMode smode;

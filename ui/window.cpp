@@ -1,9 +1,16 @@
 #include "window.h"
 
+#include "utils/mempool.h"
+
 using namespace Tempest;
 
 struct Window::DragGestureRecognizer : GestureRecognizer{
   DragGestureRecognizer():state(NonActivated), pointer(-1){}
+  MemPool<DragGesture> pool;
+
+  void deleteGesture( AbstractGestureEvent *g ){
+    pool.free( (DragGesture*)g );
+    }
 
   AbstractGestureEvent* event(const Event & e){
     static const double minimumDPos = 25;
@@ -27,7 +34,7 @@ struct Window::DragGestureRecognizer : GestureRecognizer{
           (me.pos() - spos).manhattanLength() > minimumDPos ){
         state = Move;
         pos = me.pos();
-        return new DragGesture(spos, pos, Point(), AbstractGestureEvent::GestureStarted);
+        return pool.alloc(this, spos, pos, Point(), AbstractGestureEvent::GestureStarted);
         }
       }
 
@@ -37,7 +44,7 @@ struct Window::DragGestureRecognizer : GestureRecognizer{
       if( me.mouseID==pointer ){
         Point d = (me.pos()-pos);
         pos = me.pos();
-        return new DragGesture(spos, pos, d, AbstractGestureEvent::GestureUpdated);
+        return pool.alloc(this, spos, pos, d, AbstractGestureEvent::GestureUpdated);
         }
       }
 
@@ -47,7 +54,8 @@ struct Window::DragGestureRecognizer : GestureRecognizer{
       if( me.mouseID==pointer ){
         state = NonActivated;
         Point d = (me.pos()-pos);
-        return new DragGesture(spos, pos, d, AbstractGestureEvent::GestureFinished);
+
+        return pool.alloc( this, spos, pos, d, AbstractGestureEvent::GestureFinished );
         }
       }
 
