@@ -95,10 +95,6 @@ std::string DirectX9::renderer( AbstractAPI::Device *d ) const {
   return dx->adapter.Description;
   }
 
-bool DirectX9::setDisplaySettings(const DisplaySettings &d) const {
-  return AbstractAPI::setDisplaySettings(d);
-  }
-
 AbstractAPI::Device* DirectX9::createDevice(void *hwnd, const Options &opt) const {
   LPDIRECT3D9 D3D = LPDIRECT3D9(impl);
 
@@ -141,7 +137,7 @@ void DirectX9::makePresentParams( void * p, void *hWnd,
   d3dpp.BackBufferWidth  = rectWindow.right  - rectWindow.left;
   d3dpp.BackBufferHeight = rectWindow.bottom - rectWindow.top;
 
-  d3dpp.Windowed               = opt.windowed;
+  d3dpp.Windowed               = !opt.displaySettings.fullScreen;
   d3dpp.BackBufferFormat       = d3ddm.Format;
   d3dpp.EnableAutoDepthStencil = TRUE;
   d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
@@ -159,6 +155,12 @@ void DirectX9::makePresentParams( void * p, void *hWnd,
 
     d3dpp.FullScreen_RefreshRateInHz = d3ddm.RefreshRate;
     }
+
+  if( opt.displaySettings.width>=0 )
+    d3dpp.BackBufferWidth = opt.displaySettings.width;
+
+  if( opt.displaySettings.height>=0 )
+    d3dpp.BackBufferHeight = opt.displaySettings.height;
   }
 
 void DirectX9::deleteDevice(AbstractAPI::Device *d) const {

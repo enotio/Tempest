@@ -37,16 +37,17 @@ VolumeHolder::~VolumeHolder(){
   delete data;
   }
 
-Texture3d VolumeHolder::create( int x, int y, int z,
-                                AbstractTexture::Format::Type f,
-                                TextureUsage u) {
+Texture3d VolumeHolder::load( int x, int y, int z,
+                              const char *data,
+                              AbstractTexture::Format::Type f,
+                              TextureUsage u ) {
   Tempest::Texture3d obj( *this );
   x = std::max(x,0);
   y = std::max(y,0);
   z = std::max(z,0);
 
   if( !(x==0 || y==0 || z==0) )
-    createObject( obj.data.value(), x, y, z, 0, f, u ); else
+    createObject( obj.data.value(), x, y, z, false, data, f, u ); else
     obj.data.value() = 0;
   obj.sx   = x;
   obj.sy   = y;
@@ -57,8 +58,15 @@ Texture3d VolumeHolder::create( int x, int y, int z,
   return obj;
   }
 
+Texture3d VolumeHolder::create( int x, int y, int z,
+                                AbstractTexture::Format::Type f,
+                                TextureUsage u) {
+  return load(x,y,z, 0, f,u);
+  }
+
 void VolumeHolder::createObject( AbstractAPI::Texture *&t,
                                  int x, int y, int z, bool mips,
+                                 const char* d,
                                  AbstractTexture::Format::Type f,
                                  TextureUsage u ) {
   Data::DynTexture px;
@@ -71,7 +79,7 @@ void VolumeHolder::createObject( AbstractAPI::Texture *&t,
   px.format = f;
   px.usage  = u;
 
-  t = device().createTexture3d( x, y, z, mips, f, u );
+  t = device().createTexture3d( x, y, z, mips, d, f, u );
 
   if( !t )
     return;
@@ -108,7 +116,7 @@ AbstractAPI::Texture* VolumeHolder::restore( AbstractAPI::Texture* t ){
     Data::DynTexture d = data->dynamic_textures[t];
     data->dynamic_textures.erase(t);
 
-    createObject( t, d.x, d.y, d.z, d.mip, d.format, d.usage );
+    createObject( t, d.x, d.y, d.z, d.mip, 0, d.format, d.usage );
     return t;
     }
 

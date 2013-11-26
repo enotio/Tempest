@@ -5,6 +5,7 @@
 
 #include <Tempest/VertexDeclaration>
 #include <Tempest/AbstractTexture>
+#include <Tempest/DisplaySettings>
 
 namespace Tempest{
 
@@ -13,7 +14,6 @@ class AbstractShadingLang;
 class RenderState;
 class Pixmap;
 class Size;
-class DisplaySettings;
 
 enum TextureUsage{
   TU_Undefined,
@@ -27,8 +27,9 @@ class AbstractAPI {
 
     struct Options{
       Options();
+
       bool vSync;
-      bool windowed;
+      DisplaySettings displaySettings;
       };
 
     struct Caps{
@@ -92,7 +93,7 @@ class AbstractAPI {
     virtual std::string renderer( AbstractAPI::Device* d ) const = 0;
 
     virtual bool testDisplaySettings( const DisplaySettings& d ) const;
-    virtual bool setDisplaySettings ( const DisplaySettings& d ) const;
+    bool setDisplaySettings( const DisplaySettings& d ) const;
 
     virtual Device* createDevice( void * hwnd, const Options & opt ) const = 0;
     virtual void    deleteDevice( Device* d )  const = 0;

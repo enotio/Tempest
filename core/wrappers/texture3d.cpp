@@ -12,14 +12,11 @@ Texture3d::Sampler::Sampler(){
   uClamp = Texture2d::ClampMode::Repeat;
   vClamp = Texture2d::ClampMode::Repeat;
   wClamp = Texture2d::ClampMode::ClampToEdge;
-
-  anisotropic = true;
   }
 
 Texture3d::Texture3d():data( VolumeHolder::ImplManip(0) ),
   sx(0), sy(0), sz(0),
   frm(Format::Count) {
-
   }
 
 Texture3d::Texture3d( AbstractHolder< Tempest::Texture3d,

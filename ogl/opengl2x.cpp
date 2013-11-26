@@ -1196,8 +1196,16 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   int w = rectWindow.right  - rectWindow.left;
   int h = rectWindow.bottom - rectWindow.top;
 
+  if( opt.displaySettings.width>=0 )
+    w = opt.displaySettings.width;
+
+  if( opt.displaySettings.height>=0 )
+    h = opt.displaySettings.height;
+
   dev->scrW = w;
   dev->scrH = h;
+
+  AbstractAPI::setDisplaySettings( opt.displaySettings );
   glViewport(0,0, w,h);
 
   if( dev->wglSwapInterval )
@@ -1450,9 +1458,6 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
   
   T_ASSERT_X( errCk(), "OpenGL error" );
 
-  tex->min = tex->mag = GL_NEAREST;
-  tex->mips = mips;
-
   tex->w = w;
   tex->h = h;
 
@@ -1533,9 +1538,6 @@ AbstractAPI::Texture *Opengl2x::createTexture3d(AbstractAPI::Device *d,
   glBindTexture(GL_TEXTURE_3D, tex->id);
 
   T_ASSERT_X( errCk(), "OpenGL error" );
-
-  tex->min = tex->mag = GL_NEAREST;
-  tex->mips = 0;
 
   tex->w = x;
   tex->h = y;
@@ -1975,8 +1977,6 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
     return;
 
   bool rebind = !(dev->curIBO == dev->ibo && dev->curIboOffsetIndex==iboOffsetIndex );
-  //int pCount;
-
   setupBuffers( vboOffsetIndex*dev->vertexSize, false, false, true );
 
   if( rebind ){
@@ -1996,13 +1996,11 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
     };
 
   int vpCount = vertexCount(t, pCount);
-  //if( glIsBuffer(dev->curIBO) && glIsBuffer(dev->curVBO) )
-    glDrawElements( type[ t-1 ],
-                    vpCount,
-                    GL_UNSIGNED_SHORT,
-                    ((void*)(iboOffsetIndex*sizeof(uint16_t))) );
+  glDrawElements( type[ t-1 ],
+                  vpCount,
+                  GL_UNSIGNED_SHORT,
+                  ((void*)(iboOffsetIndex*sizeof(uint16_t))) );
 
-  //setupBuffers( firstIndex, false, false );
   T_ASSERT_X( errCk(), "OpenGL error" );
   }
 

@@ -63,7 +63,12 @@ bool WindowsAPI::testDisplaySettings( const DisplaySettings & s ) {
   mode.dmPelsWidth    = s.width;
   mode.dmPelsHeight   = s.height;
   mode.dmBitsPerPel   = s.bits;
-  mode.dmFields       = DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT;
+  mode.dmFields       = DM_BITSPERPEL;
+
+  if( s.width>=0 )
+    mode.dmFields |= DM_PELSWIDTH;
+  if( s.height>=0 )
+    mode.dmFields |= DM_PELSHEIGHT;
 
   DWORD flg = CDS_TEST;
   if( s.fullScreen )
@@ -80,11 +85,18 @@ bool WindowsAPI::setDisplaySettings( const DisplaySettings &s ) {
   mode.dmPelsWidth    = s.width;
   mode.dmPelsHeight   = s.height;
   mode.dmBitsPerPel   = s.bits;
-  mode.dmFields       = DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT;
+  mode.dmFields       = DM_BITSPERPEL;
+
+  if( s.width>=0 )
+    mode.dmFields |= DM_PELSWIDTH;
+  if( s.height>=0 )
+    mode.dmFields |= DM_PELSHEIGHT;
 
   DWORD flg = 0;
   if( s.fullScreen )
     flg |= CDS_FULLSCREEN;
+
+  return 0;
 
   if( ChangeDisplaySettings(&mode,flg)==DISP_CHANGE_SUCCESSFUL ){
     //appMode       = mode;
@@ -732,13 +744,13 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       case WM_SIZE:{
           RECT rectWindow;
           GetClientRect( HWND(hWnd), &rectWindow);
-          int cW = rectWindow.right-rectWindow.left;
-          int cH = rectWindow.bottom-rectWindow.top;
+          int cW = rectWindow.right  - rectWindow.left;
+          int cH = rectWindow.bottom - rectWindow.top;
 
-          GetWindowRect( HWND(hWnd), &rectWindow );
           if( w ){
-            SystemAPI::moveEvent( w, rectWindow.left, rectWindow.top );
             SystemAPI::sizeEvent( w, cW, cH );
+            GetWindowRect( HWND(hWnd), &rectWindow );
+            SystemAPI::moveEvent( w, rectWindow.left, rectWindow.top );
             }
           }
         break;

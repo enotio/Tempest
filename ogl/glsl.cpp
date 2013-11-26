@@ -99,6 +99,22 @@ struct GLSL::Data{
                      Detail::GLTexture *tx,
                      const Sampler &s );
 
+  Texture3d::ClampMode::Type clampW( const Texture2d::Sampler& ){
+    return Texture2d::ClampMode::Repeat;
+    }
+
+  Texture3d::ClampMode::Type clampW( const Texture3d::Sampler& s ){
+    return s.wClamp;
+    }
+
+  bool isAnisotropic( const Texture2d::Sampler& s ){
+    return s.anisotropic;
+    }
+
+  bool isAnisotropic( const Texture3d::Sampler& s ){
+    return false;
+    }
+
   struct ShProgram{
     GLuint vs;
     GLuint fs;
@@ -639,7 +655,8 @@ void GLSL::Data::setupSampler( GLenum texClass,
     };
 
   bool isPot = ((tx->w &(tx->w-1))==0) &&
-               ((tx->h &(tx->h-1))==0);
+               ((tx->h &(tx->h-1))==0) &&
+               ( tx->z==0 || (tx->z &(tx->z-1))==0);
 
   glActiveTexture( GL_TEXTURE0 + slot );
   glBindTexture( texClass, tx->id );
@@ -654,14 +671,16 @@ void GLSL::Data::setupSampler( GLenum texClass,
       glTexParameteri( texClass, GL_TEXTURE_WRAP_T, tx->clampV );
       }
 
-    if( tx->mips ){
 #ifndef __ANDROID__
-      if( tx->clampW!=clamp[ s.wClamp ] ){
-        tx->clampW = clamp[ s.wClamp ];
+    if( tx->z>0 ){
+      if( tx->clampW!=clamp[ clampW(s) ] ){
+        tx->clampW = clamp[ clampW(s) ];
         glTexParameteri( texClass, GL_TEXTURE_WRAP_R, tx->clampW );
         }
+      }
 #endif
 
+    if( tx->mips ){
       if( tx->min!=filter[ s.minFilter ][s.mipFilter] ){
         glTexParameteri( texClass,
                          GL_TEXTURE_MIN_FILTER,
@@ -686,9 +705,7 @@ void GLSL::Data::setupSampler( GLenum texClass,
 
 //#ifndef __ANDROID__
     if( hasAnisotropic ){
-      if( s.anisotropic &&
-          isPot &&
-          tx->mips ){
+      if( isAnisotropic(s) && isPot && tx->mips ){
         if( tx->anisotropyLevel != maxAnisotropy ){
           glTexParameterf( texClass,
                            GL_TEXTURE_MAX_ANISOTROPY_EXT,

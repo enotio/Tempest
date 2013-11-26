@@ -96,6 +96,7 @@ class ShaderInput {
       v4.resetID();
 
       tex.resetID();
+      tex3d.resetID();
       mat.resetID();
       }
   };

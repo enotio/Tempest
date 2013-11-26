@@ -18,6 +18,12 @@ class VolumeHolder : public AbstractHolder
     VolumeHolder( Device &d );
     ~VolumeHolder();
 
+    virtual Tempest::Texture3d load( int x, int y, int z,
+                                     const char* data,
+                                      AbstractTexture::Format::Type format
+                                          = Tempest::AbstractTexture::Format::RGB,
+                                      TextureUsage u = TU_Undefined );
+
     virtual Tempest::Texture3d create( int x, int y, int z,
                                         AbstractTexture::Format::Type format
                                           = Tempest::AbstractTexture::Format::RGB,
@@ -26,6 +32,7 @@ class VolumeHolder : public AbstractHolder
   protected:
     virtual void createObject( AbstractAPI::Texture*& t,
                                int x, int y, int z, bool mips,
+                               const char *data,
                                AbstractTexture::Format::Type f,
                                TextureUsage u );
 

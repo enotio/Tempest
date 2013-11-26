@@ -18,6 +18,7 @@ struct Device::Data{
   typedef Holders::iterator HIterator;
 
   Holders holders;
+  Device::Options actualOptions;
 
   typedef std::set< VertexDeclaration* > Declarations;
   typedef Declarations::iterator VDIterator;
@@ -333,8 +334,8 @@ bool Device::testDisplaySettings( const DisplaySettings &s ) {
   }
 
 bool Device::setDisplaySettings( const DisplaySettings &s ) {
-  return api.setDisplaySettings(s);
-  //data->isLost = true;
+  data->actualOptions.displaySettings = s;
+  return reset( data->actualOptions );
   }
 
 void Device::beginPaint(){
@@ -511,6 +512,10 @@ bool Device::reset( const Options & opt ) {
       T_ASSERT_X( 0, "reset device error" );
       }
 
+    data->actualOptions = opt;
+    if( !data->isLost )
+      onRestored();
+
     return data->isLost;
     }
 
@@ -589,10 +594,11 @@ AbstractAPI::Texture* Device::createTexture( int w, int h,
 
 AbstractAPI::Texture *Device::createTexture3d( int x, int y, int z,
                                                bool mips,
+                                               const char* d,
                                                AbstractTexture::Format::Type f,
                                                TextureUsage u ) {
   forceEndPaint();
-  AbstractAPI::Texture* t = api.createTexture3d( impl, x, y, z, mips, f, u, 0 );
+  AbstractAPI::Texture* t = api.createTexture3d( impl, x, y, z, mips, f, u, d );
   if( t )
     data->allockCount.tex++;
   return t;

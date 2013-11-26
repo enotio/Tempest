@@ -4,19 +4,16 @@
 #include <Tempest/AbstractAPI>
 #include <Tempest/AbstractShadingLang>
 
-//#include <Tempest/VertexBuffer>
 #include <Tempest/VertexShader>
 #include <Tempest/FragmentShader>
+#include <Tempest/ProgramObject>
 
-#include <string>
+#include <Tempest/signal>
 
 namespace Tempest{
 
 class Color;
 class Texture2d;
-
-class VertexShader;
-class FragmentShader;
 
 class AbstractShadingLang;
 
@@ -73,6 +70,7 @@ class Device {
     void present( AbstractAPI::SwapBehavior b = AbstractAPI::SB_BufferPreserved );
 
     bool hasManagedStorge() const;
+    Tempest::signal<> onRestored;
 
     template< class S, class T >
     void setUniform( S &s, const T t[], int l, const char* name ){
@@ -121,8 +119,6 @@ class Device {
       draw( t, firstVertex + vbo.m_first, pCount );
 
       shadingLang().disable();
-      //unBind(vs);
-      //unBind(fs);
       }
 
     template< class T, class I >
@@ -157,9 +153,27 @@ class Device {
                             iboOffsetIndex + ibo.m_first,
                             pCount  );
       shadingLang().disable();
+      }
 
-      //unBind(vs);
-      //unBind(fs);
+    template< class T >
+    void drawPrimitive( AbstractAPI::PrimitiveType t,
+                        const Tempest::ProgramObject     &m,
+                        const Tempest::VertexDeclaration &decl,
+                        const Tempest::VertexBuffer<T>   & vbo,
+                        int firstVertex, int pCount ){
+      drawPrimitive( t, m.vs, m.fs, decl, vbo, firstVertex, pCount );
+      }
+
+    template< class T, class I >
+    void drawIndexed(  AbstractAPI::PrimitiveType t,
+                       const Tempest::ProgramObject   &m,
+                       const Tempest::VertexDeclaration &decl,
+                       const Tempest::VertexBuffer<T> & vbo,
+                       const Tempest::IndexBuffer<I>  & ibo,
+                       int vboOffsetIndex,
+                       int iboOffsetIndex,
+                       int pCount ){
+      drawIndexed(t, m.vs, m.fs, decl, vbo, ibo, vboOffsetIndex, iboOffsetIndex, pCount );
       }
 
     void drawFullScreenQuad( Tempest::VertexShader   & vs,
@@ -211,7 +225,7 @@ class Device {
                                          AbstractTexture::Format::Type f,
                                          TextureUsage u );
 
-    AbstractAPI::Texture* createTexture3d( int x, int y, int z, bool mips,
+    AbstractAPI::Texture* createTexture3d(int x, int y, int z, bool mips, const char *data,
                                            AbstractTexture::Format::Type f,
                                            TextureUsage u );
 

@@ -5,9 +5,9 @@
 
 using namespace Tempest;
 
-AbstractAPI::Options::Options() {
+AbstractAPI::Options::Options():displaySettings(-1, -1, 32, false){
   vSync    = false;
-  windowed = true;
+  //windowed = true;
   }
 
 bool AbstractAPI::testDisplaySettings( const DisplaySettings &d ) const {

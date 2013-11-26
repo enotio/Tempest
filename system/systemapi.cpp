@@ -107,7 +107,8 @@ void SystemAPI::emitEvent( Tempest::Window *w,
 
 struct SystemAPI::GestureDeleter {
   void operator()( AbstractGestureEvent* x ){
-    x->owner().deleteGesture(x);
+    if( x )
+      x->owner().deleteGesture(x);
     }
   };
 

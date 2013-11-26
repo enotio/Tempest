@@ -11,7 +11,6 @@ Texture2d::Sampler::Sampler(){
 
   uClamp = Texture2d::ClampMode::Repeat;
   vClamp = Texture2d::ClampMode::Repeat;
-  wClamp = Texture2d::ClampMode::ClampToEdge;
 
   anisotropic = true;
   }

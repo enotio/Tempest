@@ -168,7 +168,8 @@ SOURCES += \
     ui/gesturerecognizer.cpp \
     core/wrappers/texture3d.cpp \
     dataControl/volumeholder.cpp \
-    utils/mempool.cpp
+    utils/mempool.cpp \
+    shading/programobject.cpp
 
 HEADERS += \
     ui/window.h \
@@ -271,7 +272,8 @@ HEADERS += \
     ui/gesturerecognizer.h \
     core/wrappers/texture3d.h \
     dataControl/volumeholder.h \
-    utils/mempool.h
+    utils/mempool.h \
+    shading/programobject.h
 
 OTHER_FILES += \
     include/Tempest/Window \

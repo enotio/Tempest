@@ -19,8 +19,6 @@ class DirectX9 : public AbstractAPI {
     std::string vendor( AbstractAPI::Device* d ) const;
     std::string renderer( AbstractAPI::Device* d ) const;
 
-    bool setDisplaySettings(const DisplaySettings &d) const;
-
     Device* createDevice( void * hwnd, const Options & opt ) const;
     void    deleteDevice( Device* d )  const;
 

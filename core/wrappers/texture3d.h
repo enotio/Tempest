@@ -20,7 +20,11 @@ namespace Tempest{
         FilterType::Type minFilter, magFilter, mipFilter;
         ClampMode::Type     uClamp,    vClamp,    wClamp;
 
-        bool anisotropic;
+        void setClamping( ClampMode::Type c ){
+          uClamp = c;
+          vClamp = c;
+          wClamp = c;
+          }
         };
 
       const Sampler& sampler() const;
