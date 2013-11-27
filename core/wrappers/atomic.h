@@ -5,10 +5,33 @@ namespace Tempest{
 
 namespace Detail{
 
-struct Atomic {
-  static void begin();
-  static void end();
+struct Spin {
+  Spin();
+  void lock();
+  void unlock();
+
+  private:
+    short flag;
   };
+
+template< class T >
+struct GuardBase{
+  GuardBase( T & s ):s(s){
+    s.lock();
+    }
+  ~GuardBase(){
+    s.unlock();
+    }
+
+  GuardBase( const GuardBase& ) = delete;
+  GuardBase& operator = ( const GuardBase& ) = delete;
+
+  T& s;
+  };
+
+typedef GuardBase<Spin> Guard;
+
+int atomicInc(int &src, int add );
 
 }
 

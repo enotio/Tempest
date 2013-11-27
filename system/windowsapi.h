@@ -40,37 +40,10 @@ class WindowsAPI:public SystemAPI {
 
     std::vector<char> loadBytesImpl( const char* file );
     std::vector<char> loadBytesImpl( const wchar_t* file );
+
     bool writeBytesImpl(const wchar_t* file , const std::vector<char> &f);
-
-    bool saveImageImpl( const char* file,
-                        int &w,
-                        int &h,
-                        int &bpp,
-                        std::vector<unsigned char>& in );
-
-    bool loadImageImpl( const wchar_t* file,
-                        int &w,
-                        int &h,
-                        int &bpp,
-                        std::vector<unsigned char>& out );
-    bool saveImageImpl( const wchar_t* file,
-                        int &w,
-                        int &h,
-                        int &bpp,
-                        std::vector<unsigned char>& out );
   private:
     struct Wnd;
-
-    template< class ChanelType, int  >
-    void initRawData( std::vector<unsigned char> &d,
-                      void * input,
-                      int pixSize,
-                      int w,
-                      int h,
-                      int * ix );
-
-    static void initImgLib();
-
 
   friend class SystemAPI;
   };

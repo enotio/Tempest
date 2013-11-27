@@ -8,10 +8,6 @@
 
 namespace Tempest{
 
-namespace Bind{
-  class UserTexture;
-  }
-
 class PaintEvent;
 class PainterDevice;
 class Texture2d;

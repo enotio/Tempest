@@ -28,7 +28,7 @@ class Image : public Widget {
 
   protected:
     void paintEvent( PaintEvent &pe ){
-      PainterDevice & p = pe.painter;
+      Painter p(pe);
 
       p.setTexture( texture );
       p.drawRect(0, 0, this->w(), this->h() );

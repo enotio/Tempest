@@ -3,6 +3,8 @@
 
 #include <Tempest/CopyWhenNeedPtr>
 #include <Tempest/Color>
+#include "../utils/mempool.h"
+
 #include <vector>
 #include <string>
 
@@ -31,8 +33,8 @@ class Pixmap {
     bool load( const wchar_t* f );
     bool save( const wchar_t* f );
 
-    inline int width() const { return mw; }
-    inline int height() const { return mh; }
+    inline int width()  const { return info.w; }
+    inline int height() const { return info.h; }
 
     struct Pixel{
       unsigned char r,g,b,a;
@@ -63,14 +65,14 @@ class Pixmap {
     inline Pixel at( int x, int y ) const {
       verifyFormatEditable();
 
-      const unsigned char * p = &rawPtr[ (x + y*mw)*bpp ];
+      const unsigned char * p = &rawPtr[ (x + y*info.w)*info.bpp ];
       Pixel r;
 
       r.r = p[0];
       r.g = p[1];
       r.b = p[2];
 
-      if( bpp==4 )
+      if( info.bpp==4 )
         r.a = p[3]; else
         r.a = 255;
 
@@ -89,13 +91,13 @@ class Pixmap {
 
     inline void  set(int x, int y, const Pixel & p ) {
       setupRawPtrs();
-      unsigned char * v = &mrawPtr[ (x + y*mw)*bpp ];
+      unsigned char * v = &mrawPtr[ (x + y*info.w)*info.bpp ];
 
       v[0] = p.r;
       v[1] = p.g;
       v[2] = p.b;
 
-      if( bpp==4 )
+      if( info.bpp==4 )
         v[3] = p.a;
       }
 
@@ -107,18 +109,26 @@ class Pixmap {
       Format_DXT1,
       Format_DXT3,
       Format_DXT5,
-      Format_ETC1_RGB8
+      Format_ETC1_RGB8,
+
+      Format_User = 1024
       };
 
-    Format format() const{ return frm; }
+    Format format() const{ return info.format; }
     void setFormat( Format f );
+
+    struct ImgInfo{
+      ImgInfo();
+      int w, h, bpp;
+      Pixmap::Format format;
+      };
   private:
     struct Data{
       std::vector<unsigned char> bytes;
       // std::vector<unsigned char> dxt;
       };
-    int mw, mh, bpp;
-    Format      frm;
+
+    ImgInfo info;
 
     struct MemPool;
     static MemPool pool;
@@ -131,18 +141,18 @@ class Pixmap {
 
         T   data;
         int count;
+        Detail::Spin spin;
         };
 
-      Ref * newRef(){
-        return new Ref( T() );
-        }
-
+      Ref * newRef();
       Ref * newRef( const Ref * base );
       void delRef( Ref * r );
 
       bool isValid() const {
         return true;
         }
+
+      static Tempest::MemPool<Ref> ref_pool;
       };
 
     mutable Detail::Ptr<Data*, DbgManip> data;
@@ -150,7 +160,7 @@ class Pixmap {
     mutable unsigned char * mrawPtr;
 
     void verifyFormatEditable() const {
-      if( frm==Format_RGB || frm==Format_RGBA )
+      if( info.format==Format_RGB || info.format==Format_RGBA )
         return;
 
       Pixmap* p = const_cast<Pixmap*>(this);

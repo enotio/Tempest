@@ -169,7 +169,8 @@ SOURCES += \
     core/wrappers/texture3d.cpp \
     dataControl/volumeholder.cpp \
     utils/mempool.cpp \
-    shading/programobject.cpp
+    shading/programobject.cpp \
+    core/imagecodec.cpp
 
 HEADERS += \
     ui/window.h \
@@ -273,7 +274,8 @@ HEADERS += \
     core/wrappers/texture3d.h \
     dataControl/volumeholder.h \
     utils/mempool.h \
-    shading/programobject.h
+    shading/programobject.h \
+    core/imagecodec.h
 
 OTHER_FILES += \
     include/Tempest/Window \
@@ -299,5 +301,6 @@ OTHER_FILES += \
     include/Tempest/Android \
     include/Tempest/GestureRecognizer \
     include/Tempest/Texture3d \
-    include/Tempest/VolumeHolder
+    include/Tempest/VolumeHolder \
+    include/Tempest/ImageCodec
 

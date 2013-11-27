@@ -4,9 +4,11 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <Tempest/Utility>
 #include <Tempest/Event>
+#include <Tempest/ImageCodec>
 
 namespace Tempest{
 
@@ -54,25 +56,17 @@ class SystemAPI{
     static bool writeBytes(const wchar_t* file , const std::vector<char> &f);
 
     static bool loadImage( const wchar_t* file,
-                           int &w,
-                           int &h,
-                           int &bpp,
+                           ImageCodec::ImgInfo &info,
                            std::vector<unsigned char>& out );
     static bool saveImage( const wchar_t* file,
-                           int &w,
-                           int &h,
-                           int &bpp,
+                           ImageCodec::ImgInfo &info,
                            std::vector<unsigned char>& in );
 
     static bool loadImage( const char* file,
-                           int &w,
-                           int &h,
-                           int &bpp,
+                           ImageCodec::ImgInfo &info,
                            std::vector<unsigned char>& out );
     static bool saveImage( const char* file,
-                           int &w,
-                           int &h,
-                           int &bpp,
+                           ImageCodec::ImgInfo &info,
                            std::vector<unsigned char>& in );
 
     static void processEvents( Tempest::Widget *w,
@@ -111,8 +105,11 @@ class SystemAPI{
 
     static const std::string& androidActivityClass();
     static Event::KeyType translateKey( uint64_t scancode );
+
+    void installImageCodec( ImageCodec* codec );
   protected:
-    SystemAPI(){}
+    SystemAPI();
+
 
     virtual Size implScreenSize() = 0;
     virtual bool testDisplaySettings( const DisplaySettings& ) = 0;
@@ -127,38 +124,22 @@ class SystemAPI{
     virtual bool writeBytesImpl(const wchar_t* file , const std::vector<char> &f);
 
     virtual bool loadImageImpl( const char* file,
-                                int &w,
-                                int &h,
-                                int &bpp,
-                                std::vector<unsigned char>& out );
-    virtual bool saveImageImpl( const char* file,
-                                int &w,
-                                int &h,
-                                int &bpp,
+                                ImageCodec::ImgInfo &info,
                                 std::vector<unsigned char>& out );
 
     virtual bool loadImageImpl( const wchar_t* file,
-                                int &w,
-                                int &h,
-                                int &bpp,
-                                std::vector<unsigned char>& out ) = 0;
+                                ImageCodec::ImgInfo &info,
+                                std::vector<unsigned char>& out );
+    virtual bool loadImageImpl( const std::vector<char>& imgBytes,
+                                ImageCodec::ImgInfo &info,
+                                std::vector<unsigned char>& out );
+
+    virtual bool saveImageImpl( const char* file,
+                                ImageCodec::ImgInfo &info,
+                                std::vector<unsigned char>& out );
     virtual bool saveImageImpl( const wchar_t* file,
-                                int &w,
-                                int &h,
-                                int &bpp,
-                                std::vector<unsigned char>& out ) = 0;
-
-    virtual bool loadS3TCImpl(const std::vector<char> &data,
-                               int &w,
-                               int &h,
-                               int &bpp,
-                               std::vector<unsigned char> &out );
-
-    virtual bool loadPngImpl(const std::vector<char> &data,
-                             int &w,
-                             int &h,
-                             int &bpp,
-                             std::vector<unsigned char> &out );
+                                ImageCodec::ImgInfo &info,
+                                std::vector<unsigned char>& out );
 
     virtual const std::string& androidActivityClassImpl();
 
@@ -183,6 +164,10 @@ class SystemAPI{
 
     KeyInf ki;
     struct GestureDeleter;
+
+    std::vector<std::unique_ptr<ImageCodec>> codecs;
+    Detail::Spin  byteBuffer;
+    std::vector<char> buffer;
 
   friend class AbstractAPI;
   };

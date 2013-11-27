@@ -5,6 +5,8 @@
 #include <memory>
 #include <vector>
 
+#include "../core/wrappers/atomic.h"
+
 namespace Tempest {
 
 template< class T >
@@ -21,6 +23,9 @@ class MemPool {
 
     template< class ... Args >
     T* alloc( Args... a ){
+      Detail::Guard guard(spin);
+      (void)guard;
+
       for( size_t i=data.size(); i>0; ){
         --i;
         if( data[i]->freedCount>0 ){
@@ -39,6 +44,9 @@ class MemPool {
       }
 
     void free( T* t ){
+      Detail::Guard guard(spin);
+      (void)guard;
+
       for( size_t i=data.size(); i>0; ){
         --i;
         if( data[i]->free(t) ){
@@ -99,6 +107,7 @@ class MemPool {
         }
       };
     std::vector< Block* > data;
+    Detail::Spin spin;
     };
 
 }

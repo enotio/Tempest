@@ -1,5 +1,7 @@
 #include "gesturerecognizer.h"
 
+#include <Tempest/Event>
+
 using namespace Tempest;
 
 GestureRecognizer::GestureRecognizer() {

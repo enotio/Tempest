@@ -12,6 +12,7 @@ using namespace Tempest;
 
 struct Pixmap::MemPool{
   MemPool():count(0){
+    T_ASSERT( sizeof(Pixmap::Pixel)==4 );
     data.reserve(128);
     }
 
@@ -61,66 +62,56 @@ struct Pixmap::MemPool{
 
 Pixmap::MemPool Pixmap::pool;
 
+Tempest::MemPool<Pixmap::DbgManip::Ref> Pixmap::DbgManip::ref_pool;
+
+
+Pixmap::DbgManip::Ref * Pixmap::DbgManip::newRef(){
+  return ref_pool.alloc( T() );//new Ref( T() );
+  }
+
 Pixmap::DbgManip::Ref * Pixmap::DbgManip::newRef( const Ref * base ){
-  return new Ref( new Data(*base->data) );
+  Ref *r = newRef();
+  r->data = pool.alloc( base->data->bytes.size(), 1, 1 );
+
+  std::copy( base->data->bytes.begin(),
+             base->data->bytes.end(),
+             r->data->bytes.begin() );
+  return r;
   }
 
 void Pixmap::DbgManip::delRef( Ref * r ){
   pool.free(r->data);
   //delete r->data;
-  delete r;
+  ref_pool.free(r);
+  //delete r;
   }
 
 Pixmap::Pixmap() {
-  mw = 0;
-  mh = 0;
-
-  bpp = 3;
   rawPtr  = 0;
   mrawPtr = 0;
-
-  frm = Format_RGB;
-
-  T_ASSERT( sizeof(Pixel)==4 );
   }
 
 Tempest::Pixmap::Pixmap(const std::string &p) {
-  mw = 0;
-  mh = 0;
-
-  bpp = 3;
-  frm = Format_RGB;
-
   load(p);
-
-  T_ASSERT( sizeof(Pixel)==4 );
   }
 
 Tempest::Pixmap::Pixmap(const std::wstring &p) {
-  mw = 0;
-  mh = 0;
-
-  bpp = 3;
-  frm = Format_RGB;
-
   load(p);
-
-  T_ASSERT( sizeof(Pixel)==4 );
   }
 
 Pixmap::Pixmap(int iw, int ih, bool alpha) {
-  mw = iw;
-  mh = ih;
+  info.w = iw;
+  info.h = ih;
 
   if( alpha ){
-    bpp = 4;
-    frm = Format_RGBA;
+    info.bpp    = 4;
+    info.format = Format_RGBA;
     }else{
-    bpp = 3;
-    frm = Format_RGB;
+    info.bpp    = 3;
+    info.format = Format_RGB;
     }
 
-  data.value() = pool.alloc(mw,mh,bpp);
+  data.value() = pool.alloc(info.w,info.h,info.bpp);
 
   //data.value() = new Data();
   //data.value()->bytes.resize(mw*mh*bpp);
@@ -131,12 +122,9 @@ Pixmap::Pixmap(int iw, int ih, bool alpha) {
   }
 
 Pixmap::Pixmap(const Pixmap &p):data(p.data) {
-  mw   = p.mw;
-  mh   = p.mh;
-  bpp  = p.bpp;
-  frm  = p.frm;
+  info   = p.info;
 
-  if( mw>0 && mh>0 )
+  if( info.w>0 && info.h>0 )
     rawPtr = &data.const_value()->bytes[0]; else
     rawPtr = 0;
   mrawPtr = 0;
@@ -144,13 +132,9 @@ Pixmap::Pixmap(const Pixmap &p):data(p.data) {
 
 Pixmap &Pixmap::operator = (const Pixmap &p) {
   data = p.data;
+  info = p.info;
 
-  mw  = p.mw;
-  mh  = p.mh;
-  bpp = p.bpp;
-  frm = p.frm;
-
-  if( mw>0 && mh>0 )
+  if( info.w>0 && info.h>0 )
     rawPtr = &data.const_value()->bytes[0]; else
     rawPtr = 0;
   mrawPtr = 0;
@@ -192,31 +176,19 @@ bool Pixmap::load(const char *f) {
 
 template< class T >
 bool Pixmap::implLoad( T f ) {
-  int w = 0, h = 0, bpp = 0;
-
   Data * image = pool.alloc(0,0,0);
-  bool ok = SystemAPI::loadImage( f, w, h, bpp, image->bytes );
+  ImgInfo tmpInfo;
+  bool ok = SystemAPI::loadImage( f, tmpInfo, image->bytes );
 
   if( !ok ){
     pool.free(image);
     return false;
     }
 
-  switch( bpp ){
-    case -5: frm = Format_DXT5; break;
-    case -3: frm = Format_DXT3; break;
-    case -1: frm = Format_DXT1; break;
-    case  3: frm = Format_RGB;  break;
-    case  4: frm = Format_RGBA; break;
-    }
-
-  this->mw  = w;
-  this->mh  = h;
-  this->bpp = bpp;
-
+  info = tmpInfo;
   this->data.value() = image;
 
-  if( w>0 && h>0 )
+  if( info.w>0 && info.h>0 )
     rawPtr = &this->data.const_value()->bytes[0]; else
     rawPtr = 0;
   mrawPtr = 0;
@@ -224,17 +196,18 @@ bool Pixmap::implLoad( T f ) {
   }
 
 bool Pixmap::hasAlpha() const {
-  return frm!=Format_RGB;
+  return info.format!=Format_RGB;
   }
 
 void Pixmap::addAlpha() {
   if( hasAlpha() )
     return;
+  makeEditable();
 
-  data.value()->bytes.resize(mw*mh*4);
+  data.value()->bytes.resize( info.w*info.h*4);
   unsigned char * v = &data.value()->bytes[0];
 
-  for( size_t i=mw*mh; i>0; --i ){
+  for( size_t i=info.w*info.h; i>0; --i ){
     unsigned char * p = &v[ 4*i-4 ];
     unsigned char * s = &v[ 3*i-3 ];
     for( int r=0; r<3; ++r )
@@ -242,28 +215,29 @@ void Pixmap::addAlpha() {
     p[3] = 255;
     }
 
-  rawPtr  = &data.const_value()->bytes[0];
-  mrawPtr = 0;
-  bpp     = 4;
+  rawPtr   = &data.const_value()->bytes[0];
+  mrawPtr  = 0;
+  info.bpp = 4;
   }
 
 void Pixmap::removeAlpha() {
   if( !hasAlpha() )
     return;
+  makeEditable();
 
   unsigned char * v = &data.value()->bytes[0];
 
-  for( int i=0; i<mw*mh; ++i ){
+  for( int i=0; i<info.w*info.h; ++i ){
     unsigned char * p = &v[ 3*i ];
     unsigned char * s = &v[ 4*i ];
     for( int r=0; r<3; ++r )
       p[r] = s[r];
     }
 
-  data.value()->bytes.resize(mw*mh*3);
-  rawPtr  = &data.const_value()->bytes[0];
-  mrawPtr = 0;
-  bpp     = 3;
+  data.value()->bytes.resize(info.w*info.h*3);
+  rawPtr   = &data.const_value()->bytes[0];
+  mrawPtr  = 0;
+  info.bpp = 3;
   }
 
 void Pixmap::setupRawPtrs() const {
@@ -276,46 +250,50 @@ void Pixmap::setupRawPtrs() const {
   }
 
 void Pixmap::setFormat( Pixmap::Format f ) {
-  if( frm==f )
+  if( info.format==f )
     return;
 
-  if( frm==Format_RGB && f==Format_RGBA )
+  (void)data.value();
+
+  if( info.format==Format_RGB && f==Format_RGBA )
     addAlpha();
 
-  if( frm==Format_RGBA && f==Format_RGB )
+  if( info.format==Format_RGBA && f==Format_RGB )
     removeAlpha();
 
-  if( frm>=Format_DXT1 && frm<=Format_DXT5 &&
+  if( info.format>=Format_DXT1 && info.format<=Format_DXT5 &&
       f==Format_RGB ){
     makeEditable();
     removeAlpha();
     }
 
-  if( frm>=Format_DXT1 && frm<=Format_DXT5 &&
+  if( info.format>=Format_DXT1 && info.format<=Format_DXT5 &&
       f==Format_RGBA ){
     makeEditable();
     addAlpha();
     }
 
-  if( ( frm == Format_RGB || frm == Format_RGBA ) &&
+  if( ( info.format == Format_RGB || info.format == Format_RGBA ) &&
       f>=Format_DXT1 && f<=Format_DXT5 ){
     toS3tc(f);
     }
 
-  frm = f;
+  info.format = f;
   }
 
 void Pixmap::makeEditable() {
+  (void)data.value();
+
   squish::u8 pixels[4][4][4];
   int compressType = squish::kDxt1;
 
-  size_t sz = mw*mh, s = sz;
-  if( frm==Format_DXT1 ){
+  size_t sz = info.w*info.h, s = sz;
+  if( info.format==Format_DXT1 ){
     compressType = squish::kDxt1;
     sz /= 2;
     s *= 4;
     } else {
-    if( frm==Format_DXT5 )
+    if( info.format==Format_DXT5 )
       compressType = squish::kDxt5; else
       compressType = squish::kDxt3;
     s *= 4;
@@ -326,7 +304,7 @@ void Pixmap::makeEditable() {
 
   unsigned char* px  = (&data.value()->bytes[0]);
   unsigned char* dds = (&ddsv[0]);
-  bpp = 4;
+  info.bpp = 4;
 
   for( int i=0; i<width(); i+=4 )
     for( int r=0; r<height(); r+=4 ){
@@ -336,14 +314,14 @@ void Pixmap::makeEditable() {
 
       for( int x=0; x<4; ++x )
         for( int y=0; y<4; ++y ){
-          unsigned char * v = &px[ (i+x + (mh-(r+y)-1)*mw)*bpp ];
+          unsigned char * v = &px[ (i+x + (info.h-(r+y)-1)*info.w)*info.bpp ];
           std::copy( pixels[y][x], pixels[y][x]+4, v);
           }
       }
 
-  rawPtr  = &data.value()->bytes[0];
-  mrawPtr = &data.value()->bytes[0];
-  frm = Format_RGBA;
+  rawPtr      = &data.value()->bytes[0];
+  mrawPtr     = &data.value()->bytes[0];
+  info.format = Format_RGBA;
   }
 
 void Pixmap::toS3tc( Format /*f*/ ) {
@@ -351,24 +329,24 @@ void Pixmap::toS3tc( Format /*f*/ ) {
   unsigned char* p  = (&data.value()->bytes[0]);
 
   std::vector<squish::u8> d;
-  d.resize( mw*mh/2 );
+  d.resize( info.w*info.h/2 );
 
-  for( int i=0; i<mw; i+=4 )
-    for( int r=0; r<mh; r+=4 ){
+  for( int i=0; i<info.w; i+=4 )
+    for( int r=0; r<info.h; r+=4 ){
       for( int y=0; y<4; ++y )
         for( int x=0; x<4; ++x ){
-          std::copy( p+((x + i + (y+r)*mw)*bpp),
-                     p+((x + i + (y+r)*mw)*bpp)+bpp,
+          std::copy( p+((x + i + (y+r)*info.w)*info.bpp),
+                     p+((x + i + (y+r)*info.w)*info.bpp)+info.bpp,
                      px[y][x] );
           }
 
-      int pos = ((i/4) + (r/4)*mw/4)*8;
+      int pos = ((i/4) + (r/4)*info.w/4)*8;
       squish::Compress( (squish::u8*)px,
                         &d[pos], squish::kDxt1 );
       }
 
   data.value()->bytes = d;
-  frm = Format_DXT1;
+  info.format = Format_DXT1;
   }
 
 void Pixmap::toETC() {
@@ -380,16 +358,17 @@ bool Pixmap::implSave( T f ) {
   if( data.const_value()==0 )
     return false;
 
-  Tempest::Detail::Atomic::begin();
+  Tempest::Detail::GuardBase< Detail::Ptr<Data*, DbgManip> > guard( data );
+  (void)guard;
+
   bool ok = SystemAPI::saveImage( f,
-                                  mw, mh, bpp,
+                                  info,
                                   data.const_value()->bytes );
-  Tempest::Detail::Atomic::end();
   return ok;
   }
 
 void Pixmap::fill(const Pixmap::Pixel &p) {
-  if( mw==0 || mh==0 )
+  if( info.w==0 || info.h==0 )
     return;
 
   verifyFormatEditable();
@@ -400,7 +379,7 @@ void Pixmap::fill(const Pixmap::Pixel &p) {
 
   unsigned char px[] = {p.r, p.g, p.b, p.a};
 
-  if( bpp==3 ){
+  if( info.bpp==3 ){
     for( size_t i=0; i<sz; i+=3 ){
       mrawPtr[i+0] = px[0];
       mrawPtr[i+1] = px[1];
@@ -446,12 +425,12 @@ void PixEditor::copy(int x, int y, const Pixmap &p) {
   out.setupRawPtrs();
   p.setupRawPtrs();
 
-  if( p.bpp==out.bpp ){
+  if( p.info.bpp==out.info.bpp ){
     for( int r=y; r<ym; ++r, ++py ){
-            unsigned char * ov = &out.mrawPtr[ (x  + r *out.mw)*out.bpp ];
-      const unsigned char * iv = &  p.rawPtr [ (px + py*  p.mw)*  p.bpp ];
+            unsigned char * ov = &out.mrawPtr[ (x  + r *out.info.w)*out.info.bpp ];
+      const unsigned char * iv = &  p.rawPtr [ (px + py*  p.info.w)*  p.info.bpp ];
 
-      memcpy(ov, iv, (xm-x)*p.bpp );
+      memcpy(ov, iv, (xm-x)*p.info.bpp );
       }
     } else {
     for( int r=y; r<ym; ++r, ++py ){
@@ -491,4 +470,6 @@ void PixEditor::draw(int x, int y, const Pixmap &p) {
     }
   }
 
+Pixmap::ImgInfo::ImgInfo():w(0), h(0), bpp(0), format(Format_RGB) {
 
+  }

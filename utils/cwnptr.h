@@ -15,6 +15,11 @@ struct PtrManip{
 
     T   data;
     int count;
+
+    Detail::Spin spin;
+
+    void lock(){ spin.lock(); }
+    void unlock(){ spin.unlock(); }
     };
 
   Ref * newRef(){
@@ -41,26 +46,33 @@ class Ptr {
     Ptr():r( 0 ){}
     Ptr( const Manip & m ):manip(m), r( 0 ){}
 
-    Ptr( const Ptr& c ):manip( c.manip ){ // atomic
-      Atomic::begin();
+    Ptr( const Ptr& c ):manip( c.manip ){
+      Guard guardc( c.r->spin );
+      (void)guardc;
+
+      Guard guardr( r->spin );
+      (void)guardr;
+
       r = c.r;
 
       if( !isNull() )
-        ++r->count;
-      Atomic::end();
+        atomicInc( r->count, 1 );
       }
 
     ~Ptr(){
-      if( !isNull() ){ // atomic
-        Atomic::begin();
+      if( !isNull() ){
         delRef();
-        Atomic::end();
         }
       }
 
-    Ptr& operator = ( const Ptr& c ){ // atomic
-      Atomic::begin();
+    Ptr& operator = ( const Ptr& c ){
       if( this != &c ){
+        Guard guardc( c.r->spin );
+        (void)guardc;
+
+        Guard guardr( r->spin );
+        (void)guardr;
+
         if( r!=0 )
           delRef();
 
@@ -68,24 +80,19 @@ class Ptr {
         manip = c.manip;
 
         if( !isNull() )
-          ++r->count;
+          atomicInc( r->count, 1 );
         }
-
-      Atomic::end();
       return *this;
       }
 
-    T & value(){ // atomic
-      Atomic::begin();
+    T & value(){
       if( isNull() && manip.isValid() )
         makeInstance();
 
-      Atomic::end();
       return nonConstData();
       }
 
-    const T& const_value() const { // atomic
-      Atomic::begin();
+    const T& const_value() const {
       if( r==0 ){
         nullValue = 0;
         return nullValue;
@@ -94,13 +101,15 @@ class Ptr {
       if( isNull() && manip.isValid() )
         makeInstance();
 
-      Atomic::end();
       return r->data;
       }
 
     bool isNull() const{
       return r==0;
       }
+
+    void lock(){ r->spin.lock(); }
+    void unlock(){ r->spin.unlock(); }
 
     mutable Manip manip;
   private:
@@ -111,25 +120,25 @@ class Ptr {
       }
 
     T& nonConstData(){
-      Atomic::begin();
+      Guard guard( r->spin );
+      (void)guard;
+
       if( r==0 ){
         nullValue = 0;
         return nullValue;
         }
 
       if( r->count!=1 ){
-        --r->count;
+        auto nr = r;
         r = manip.newRef( r );
+        atomicInc( nr->count, -1 );
         }
 
-      Atomic::end();
       return r->data;
       }
 
     void delRef(){
-      --r->count;
-
-      if( r->count==0 )
+      if( atomicInc( r->count, -1 )==1 )
         manip.delRef(r);
       }
 

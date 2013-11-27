@@ -11,6 +11,7 @@ using namespace Tempest;
 SpritesHolder::SpritesHolder(Tempest::TextureHolder &h):holder(h) {
   needToflush = true;
   pageSize    = std::min( h.device().caps().maxTextureSize, 2048 );
+  page.reserve(2);
   addPage();
   }
 
@@ -97,8 +98,6 @@ Sprite SpritesHolder::add(const Tempest::Pixmap &px, Page & page ) {
 
   page.t = Tempest::Texture2d();
 
-  Tempest::PixEditor p( page.p );
-
   size_t id = 0, sq = 0;
   for( size_t i=0; i<page.rects.size(); ++i ){
     const Tempest::Rect r = page.rects[i];
@@ -119,6 +118,7 @@ Sprite SpritesHolder::add(const Tempest::Pixmap &px, Page & page ) {
     return n;
     }
 
+  Tempest::PixEditor p( page.p );
   Tempest::Rect r = page.rects[id];
   p.copy( r.x, r.y, px );
 

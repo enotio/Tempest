@@ -57,15 +57,11 @@ class AndroidAPI:public SystemAPI {
     std::vector<char> loadBytesImpl( const wchar_t* file );
     
     bool loadImageImpl( const wchar_t* file,
-                        int &w,
-                        int &h,
-                        int &bpp,
+                        ImageCodec::ImgInfo &info,
                         std::vector<unsigned char>& out );
 
     bool saveImageImpl( const wchar_t* file,
-                        int &w,
-                        int &h,
-                        int &bpp,
+                        ImageCodec::ImgInfo &info,
                         std::vector<unsigned char>& in );
 
     bool isGraphicsContextAviable( Tempest::Window *w );

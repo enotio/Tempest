@@ -2,6 +2,7 @@
 #define ABSTRACTTEXTUREHOLDER_H
 
 #include <Tempest/AbstractAPI>
+#include "../core/wrappers/atomic.h"
 
 #include <string>
 #include <set>
@@ -47,6 +48,8 @@ class AbstractHolder : public AbstractHolderBase {
 
         APIDescriptor*  data;
         int count;
+
+        Detail::Spin spin;
         };
 
       Ref * newRef(){

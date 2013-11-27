@@ -571,20 +571,13 @@ JNIEXPORT bool JNICALL Java_com_native_1call_TempestActivity_loadImg(
   }
 
 bool AndroidAPI::loadImageImpl( const wchar_t *file,
-                                int &w,
-                                int &h,
-                                int &bpp,
+                                ImageCodec::ImgInfo &info,
                                 std::vector<unsigned char>& out ){
   const std::string u8 = toUtf8(file);
 
   LOGI("load img : %s", u8.c_str());
-  std::vector<char> imgBytes = loadBytesImpl(file);
-  if( loadS3TCImpl(imgBytes,w,h,bpp,out) )
-    return true;
+  return SystemAPI::loadImageImpl( file, info, out );
 
-  if( loadPngImpl(imgBytes,w,h,bpp,out) )
-    return true;
-  //LOGI("load img end  : %s", file);
 /*
   JNIEnv * env = 0;
   ((android_app*)android)->activity->vm->AttachCurrentThread( &env, NULL);
@@ -612,9 +605,7 @@ bool AndroidAPI::loadImageImpl( const wchar_t *file,
   }
 
 bool AndroidAPI::saveImageImpl( const wchar_t* file,
-                                int &w,
-                                int &h,
-                                int &bpp,
+                                ImageCodec::ImgInfo &info,
                                 std::vector<unsigned char>& in ){
 
   }
