@@ -143,6 +143,8 @@ Pixmap::Pixmap(int iw, int ih, bool alpha) {
     info.format = Format_RGB;
     }
 
+  info.alpha = alpha;
+
   data.value() = pool.alloc(info.w,info.h,info.bpp);
 
   //data.value() = new Data();
@@ -346,18 +348,27 @@ void Pixmap::setFormat( Pixmap::Format f ) {
 void Pixmap::makeEditable() {
   (void)data.value();
 
+  if( info.format==Format_RGB ||
+      info.format==Format_RGBA ){
+    setupRawPtrs();
+    return;
+    }
+
   SystemAPI& api = SystemAPI::instance();
   for( size_t i=0; i<api.imageCodecCount(); ++i ){
     if( api.imageCodec(i).canConvertTo(info, Format_RGB) ){
       api.imageCodec(i).toRGB(info, data.value()->bytes, false);
+      setupRawPtrs();
       return;
       }
 
     if( api.imageCodec(i).canConvertTo(info, Format_RGBA) ){
       api.imageCodec(i).toRGB(info, data.value()->bytes, true);
+      setupRawPtrs();
       return;
       }
     }
+
   T_WARNING_X(0, "Pixmap::makeEditable : no convarsion found");
   }
 

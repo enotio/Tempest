@@ -11,10 +11,9 @@
 #include <libpng/png.h>
 #include "../system/ddsdef.h"
 #include <squish/squish.h>
-#include <ktx/ktx_image.h>
 #include <cstdint>
 
-#include "../thirdparty/ktx/etcpack.cxx"
+#include "thirdparty/ktx/etc_dec.h"
 
 namespace Tempest {
 
@@ -459,7 +458,7 @@ struct ETCCodec:ImageCodec{
     if( info.format==Pixmap::Format_RGBA )
       removeAlpha(info, img);
 
-    readCompressParamsEnc();
+    //readCompressParamsEnc();
 
     int expandedwidth  = ((info.w+3)/4)*4,
         expandedheight = ((info.h+3)/4)*4;
@@ -479,10 +478,10 @@ struct ETCCodec:ImageCodec{
                                              block[0], block[1]);
 
         for( int i=0; i<2; ++i ){
-          bytes[0] = (block[i] >> 24) & 0xff;
-          bytes[1] = (block[i] >> 16) & 0xff;
-          bytes[2] = (block[i] >> 8)  & 0xff;
-          bytes[3] = (block[i] >> 0)  & 0xff;
+          for( int r=0; r<4; ++r ){
+            bytes[3-r] = block[i]%256;
+            block[i] /= 256;
+            }
 
           out.push_back( bytes[0] );
           out.push_back( bytes[1] );
@@ -509,13 +508,12 @@ struct ETCCodec:ImageCodec{
       for(int x=0;x<info.w/4;x++) {
         for( int i=0; i<2; ++i ){
           block[i] = 0;
-
           block[i] |= bytes[0];
-          block[i] = block[i] << 8;
+          block[i]*=256;
           block[i] |= bytes[1];
-          block[i] = block[i] << 8;
+          block[i]*=256;
           block[i] |= bytes[2];
-          block[i]= block[i] << 8;
+          block[i]*=256;
           block[i] |= bytes[3];
 
           bytes+=4;
@@ -543,6 +541,8 @@ struct ETCCodec:ImageCodec{
     std::vector<char> buf;
 
     KTX_header header;
+    static const uint8_t ktx_identifier[12] = { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A };
+
     for(int i=0; i<12; i++) {
       header.identifier[i]=ktx_identifier[i];
       }
@@ -564,8 +564,8 @@ struct ETCCodec:ImageCodec{
     header.bytesOfKeyValueData=0;
 
     int halfbytes=1;
-    header.glBaseInternalFormat = GL_RGB;
-    header.glInternalFormat     = GL_ETC1_RGB8_OES;
+    header.glBaseInternalFormat = 0x1907;//GL_RGB;
+    header.glInternalFormat     = 0x8D64;//GL_ETC1_RGB8_OES;
 
     //write header
     buf.insert(buf.end(), (char*)&header, (char*)&header+sizeof(header) );
@@ -587,6 +587,7 @@ struct ETCCodec:ImageCodec{
       return 0;
 
     const KTX_header& h = (*(const KTX_header*)&data[0]);
+    static const uint8_t ktx_identifier[12] = { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A };
 
     for(int i=0; i<=11; i++) {
       if( h.identifier[i]!=ktx_identifier[i] )

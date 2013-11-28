@@ -1242,11 +1242,24 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
     GL_RGBA,
     0x83F1,
     0x83F2,
-    0x83F3
+    0x83F3,
+    0x8D64//ETC1_RGB8_OES
     };
 
   tex->format = frm[p.format()];
 
+  if( p.format()==Pixmap::Format_ETC1_RGB8 ){
+    glCompressedTexImage2D( GL_TEXTURE_2D, 0,
+                            tex->format,//tex->format,
+                            p.width(),
+                            p.height(),
+                            0,
+                            size_t((p.width()/4)*(p.height()/4)*8),
+                            p.const_data() );
+    T_ASSERT_X( errCk(), "OpenGL error" );
+    glGenerateMipmap(GL_TEXTURE_2D);
+    T_ASSERT_X( errCk(), "OpenGL error" );
+    } else
   if( p.format()==Pixmap::Format_RGB ||
       p.format()==Pixmap::Format_RGBA ){
     glTexImage2D( GL_TEXTURE_2D, 0, tex->format, p.width(), p.height(), 0,tex->format,

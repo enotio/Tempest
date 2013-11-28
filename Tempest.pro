@@ -171,8 +171,7 @@ SOURCES += \
     utils/mempool.cpp \
     shading/programobject.cpp \
     core/imagecodec.cpp \
-    thirdparty/ktx/etcdec.cxx \
-    thirdparty/ktx/ktx_image.cxx
+    thirdparty/ktx/etc_dec.cpp
 
 HEADERS += \
     ui/window.h \
@@ -278,7 +277,7 @@ HEADERS += \
     utils/mempool.h \
     shading/programobject.h \
     core/imagecodec.h \
-    thirdparty/ktx/ktx_image.h
+    thirdparty/ktx/etc_dec.h
 
 OTHER_FILES += \
     include/Tempest/Window \
