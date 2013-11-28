@@ -198,41 +198,8 @@ struct Opengl2x::Device{
       }
     } fbo;
 
-  std::vector<squish::u8> compressBuffer;
-
   std::vector<char> tmpLockBuffer;
   bool lbUseed;
-
-  static void toU8( squish::u8 * out, const Pixmap::Pixel & c ){
-    out[0] = c.r;
-    out[1] = c.g;
-    out[2] = c.b;
-    out[3] = c.a;
-    }
-
-  bool canCompress( const Pixmap & p ){
-    return false;
-    return p.width()%4==0 && p.height()%4==0 && p.width()>=4 && p.height()>=4;
-    }
-
-  void compress( const Pixmap & p ){
-    squish::u8 px[4][4][4];
-
-    std::vector<squish::u8>& data = compressBuffer;
-    data.resize( p.width()*p.height()/2 );
-
-    for( int i=0; i<p.width(); i+=4 )
-      for( int r=0; r<p.height(); r+=4 ){
-        for( int x=0; x<4; ++x )
-          for( int y=0; y<4; ++y ){
-            Device::toU8( px[y][x], p.at(i+x,r+y) );
-            }
-
-        int pos = ((i/4) + (r/4)*p.width()/4)*8;
-        squish::Compress( (squish::u8*)px,
-                          &data[pos], squish::kDxt1 );
-        }
-    }
 
   inline static uint32_t nextPot( uint32_t v ){
     v--;
@@ -468,7 +435,6 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   Device * dev = new Device();
   dev->isPainting = false;
   memset( &dev->target, 0, sizeof(dev->target) );
-  dev->compressBuffer.reserve(512*512*2);
   dev->lbUseed = false;
   dev->tmpLockBuffer.reserve( 8096*32 );
 
@@ -1234,10 +1200,27 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   return 1;
   }
 
+bool Opengl2x::isFormatSupported(AbstractAPI::Device *d, Pixmap::Format f) const {
+  Device* dev = (Device*)d;
+
+  if( f==Pixmap::Format_RGB || f==Pixmap::Format_RGBA )
+    return 1;
+
+  if( dev->hasS3tcTextures && Pixmap::Format_DXT1 <=f && f<= Pixmap::Format_DXT5 )
+    return 1;
+
+#ifdef __ANDROID__
+  if( 0&& f==Pixmap::Format_ETC1_RGB8 )
+    return 1;
+#endif
+
+  return 0;
+  }
+
 AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
                                                const Pixmap &p,
                                                bool  mips,
-                                               bool  compress ) const {
+                                               bool  /*compress*/ ) const {
   if( p.width()==0 || p.height()==0 )
     return 0;
 
@@ -1248,7 +1231,7 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
   glBindTexture(GL_TEXTURE_2D, tex->id);
 
   tex->mips     = mips;
-  tex->compress = compress;
+  tex->compress = false;
 
   tex->w            = p.width();
   tex->h            = p.height();

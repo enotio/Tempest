@@ -170,7 +170,9 @@ SOURCES += \
     dataControl/volumeholder.cpp \
     utils/mempool.cpp \
     shading/programobject.cpp \
-    core/imagecodec.cpp
+    core/imagecodec.cpp \
+    thirdparty/ktx/etcdec.cxx \
+    thirdparty/ktx/ktx_image.cxx
 
 HEADERS += \
     ui/window.h \
@@ -275,7 +277,8 @@ HEADERS += \
     dataControl/volumeholder.h \
     utils/mempool.h \
     shading/programobject.h \
-    core/imagecodec.h
+    core/imagecodec.h \
+    thirdparty/ktx/ktx_image.h
 
 OTHER_FILES += \
     include/Tempest/Window \

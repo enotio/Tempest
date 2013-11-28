@@ -288,11 +288,11 @@ std::string AndroidAPI::loadTextImpl( const wchar_t* file ){
   }
 
 std::vector<char> AndroidAPI::loadBytesImpl( const char* file ){
-  return loadAssetImpl<std::vector<char>>(file);
+  return std::move( loadAssetImpl<std::vector<char>>(file) );
   }
 
 std::vector<char> AndroidAPI::loadBytesImpl(const wchar_t *file) {
-  return loadBytesImpl( toUtf8(file).c_str() );
+  return std::move( loadBytesImpl( toUtf8(file).c_str() ) );
   }
 
 template< class T >
@@ -314,7 +314,7 @@ T AndroidAPI::loadAssetImpl( const char* file ){
   //__android_log_print(ANDROID_LOG_ERROR, "Tempest", buffer);
   AAsset_close(asset);
 
-  return str;
+  return std::move(str);
   }
 
 static Tempest::KeyEvent makeKeyEvent( int32_t k, bool scut = false ){

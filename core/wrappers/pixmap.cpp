@@ -14,11 +14,15 @@ struct Pixmap::MemPool{
   MemPool():count(0){
     T_ASSERT( sizeof(Pixmap::Pixel)==4 );
     data.reserve(128);
+    ldata.reserve(8);
     }
 
   ~MemPool(){
     for( size_t i=0; i<data.size(); ++i )
-      delete data[i];
+      pool.free( data[i] );
+
+    for( size_t i=0; i<ldata.size(); ++i )
+      pool.free( ldata[i] );
 
     T_ASSERT_X( count==0, "pixmap leak detected" );
     }
@@ -26,38 +30,66 @@ struct Pixmap::MemPool{
   Pixmap::Data* alloc( int w, int h, int bpp ){
     ++count;
 
-    size_t sz = w*h*bpp;
+    size_t sz = w*h*bpp, sz64 = std::max<size_t>(64*64*4, sz);
     if( sz==0 ){
-      Pixmap::Data* d = new Pixmap::Data();
-      d->bytes.resize(w*h*bpp);
+      Pixmap::Data* d = pool.alloc();
+      //d->bytes.reserve( 64*64*4 );
       return d;
       }
 
-    for( size_t i=0; i<data.size(); ++i )
-      if( data[i]->bytes.size()==sz ){
+    for( size_t i=0; i<data.size(); ++i ){
+      std::vector<unsigned char>& b = data[i]->bytes;
+      if( b.size()<=sz64 && sz64<=b.capacity()  ){
         Pixmap::Data* r = data[i];
         data[i] = data.back();
         data.pop_back();
+        b.resize(sz);
         return r;
         }
+      }
 
-    Pixmap::Data* d = new Pixmap::Data();
-    d->bytes.resize(w*h*bpp);
+    for( size_t i=0; i<ldata.size(); ++i ){
+      std::vector<unsigned char>& b = ldata[i]->bytes;
+      if( b.size()<=sz64 && sz64<=b.capacity() ){
+        Pixmap::Data* r = ldata[i];
+        ldata[i] = ldata.back();
+        ldata.pop_back();
+        b.resize(sz);
+        return r;
+        }
+      }
+
+    Pixmap::Data* d = pool.alloc();
+
+    if( w*h*bpp<=64*64*4 ){
+      d->bytes.reserve( 64*64*4 );
+      d->bytes.resize(w*h*bpp);
+      } else {
+      d->bytes.resize(w*h*bpp);
+      d->bytes.reserve( 64*64*4 );
+      }
     return d;
     }
 
   void free( Pixmap::Data* p ){
     --count;
-    if( p->bytes.size() && p->bytes.size()<64*64*4 && data.size()<64 ){
+    if( p->bytes.size() && p->bytes.capacity()<=64*64*4 && data.size()<128 ){
       data.push_back(p);
       return;
       }
 
-    delete p;
+    if( p->bytes.size() && p->bytes.capacity()<=512*512*4 && ldata.size()<16 ){
+      ldata.push_back(p);
+      return;
+      }
+
+    pool.free(p);
     }
 
-  std::vector<Pixmap::Data*> data;
+  std::vector<Pixmap::Data*> data, ldata;
   size_t count;
+
+  Tempest::MemPool<Pixmap::Data> pool;
   };
 
 Pixmap::MemPool Pixmap::pool;
@@ -196,7 +228,7 @@ bool Pixmap::implLoad( T f ) {
   }
 
 bool Pixmap::hasAlpha() const {
-  return info.format!=Format_RGB;
+  return info.alpha;
   }
 
 void Pixmap::addAlpha() {
@@ -218,6 +250,7 @@ void Pixmap::addAlpha() {
   rawPtr   = &data.const_value()->bytes[0];
   mrawPtr  = 0;
   info.bpp = 4;
+  info.alpha = true;
   }
 
 void Pixmap::removeAlpha() {
@@ -238,6 +271,7 @@ void Pixmap::removeAlpha() {
   rawPtr   = &data.const_value()->bytes[0];
   mrawPtr  = 0;
   info.bpp = 3;
+  info.alpha = true;
   }
 
 void Pixmap::setupRawPtrs() const {
@@ -253,104 +287,78 @@ void Pixmap::setFormat( Pixmap::Format f ) {
   if( info.format==f )
     return;
 
+  if( data.isNull() ){
+    info.format = f;
+    return;
+    }
+
   (void)data.value();
 
-  if( info.format==Format_RGB && f==Format_RGBA )
+  if( info.format==Format_RGB && f==Format_RGBA ){
     addAlpha();
+    return;
+    }
 
-  if( info.format==Format_RGBA && f==Format_RGB )
+  if( info.format==Format_RGBA && f==Format_RGB ){
     removeAlpha();
+    return;
+    }
 
   if( info.format>=Format_DXT1 && info.format<=Format_DXT5 &&
       f==Format_RGB ){
     makeEditable();
     removeAlpha();
+    return;
     }
 
   if( info.format>=Format_DXT1 && info.format<=Format_DXT5 &&
       f==Format_RGBA ){
     makeEditable();
     addAlpha();
+    return;
     }
 
-  if( ( info.format == Format_RGB || info.format == Format_RGBA ) &&
-      f>=Format_DXT1 && f<=Format_DXT5 ){
-    toS3tc(f);
+  if( info.format==Format_ETC1_RGB8 && f==Format_RGB ){
+    makeEditable();
+    return;
     }
 
-  info.format = f;
+  if( info.format==Format_ETC1_RGB8 && f==Format_RGBA ){
+    makeEditable();
+    addAlpha();
+    return;
+    }
+
+  SystemAPI &api = SystemAPI::instance();
+
+  if( info.format==Format_RGB || info.format==Format_RGBA ){
+    for( size_t i=0; i<api.imageCodecCount(); ++i ){
+      if( api.imageCodec(i).canConvertTo(info, f) ){
+        api.imageCodec(i).fromRGB(info, data.value()->bytes);
+        return;
+        }
+      }
+    }
+
+  T_WARNING_X(0, "Pixmap::makeEditable : no convarsion found");
   }
 
 void Pixmap::makeEditable() {
   (void)data.value();
 
-  squish::u8 pixels[4][4][4];
-  int compressType = squish::kDxt1;
+  SystemAPI& api = SystemAPI::instance();
+  for( size_t i=0; i<api.imageCodecCount(); ++i ){
+    if( api.imageCodec(i).canConvertTo(info, Format_RGB) ){
+      api.imageCodec(i).toRGB(info, data.value()->bytes, false);
+      return;
+      }
 
-  size_t sz = info.w*info.h, s = sz;
-  if( info.format==Format_DXT1 ){
-    compressType = squish::kDxt1;
-    sz /= 2;
-    s *= 4;
-    } else {
-    if( info.format==Format_DXT5 )
-      compressType = squish::kDxt5; else
-      compressType = squish::kDxt3;
-    s *= 4;
+    if( api.imageCodec(i).canConvertTo(info, Format_RGBA) ){
+      api.imageCodec(i).toRGB(info, data.value()->bytes, true);
+      return;
+      }
     }
-
-  std::vector<unsigned char> ddsv = data.value()->bytes;
-  data.value()->bytes.resize(s);
-
-  unsigned char* px  = (&data.value()->bytes[0]);
-  unsigned char* dds = (&ddsv[0]);
-  info.bpp = 4;
-
-  for( int i=0; i<width(); i+=4 )
-    for( int r=0; r<height(); r+=4 ){
-      int pos = ((i/4) + (r/4)*width()/4)*8;
-      squish::Decompress( (squish::u8*)pixels,
-                          &dds[pos], compressType );
-
-      for( int x=0; x<4; ++x )
-        for( int y=0; y<4; ++y ){
-          unsigned char * v = &px[ (i+x + (info.h-(r+y)-1)*info.w)*info.bpp ];
-          std::copy( pixels[y][x], pixels[y][x]+4, v);
-          }
-      }
-
-  rawPtr      = &data.value()->bytes[0];
-  mrawPtr     = &data.value()->bytes[0];
-  info.format = Format_RGBA;
-  }
-
-void Pixmap::toS3tc( Format /*f*/ ) {
-  squish::u8 px[4][4][4];
-  unsigned char* p  = (&data.value()->bytes[0]);
-
-  std::vector<squish::u8> d;
-  d.resize( info.w*info.h/2 );
-
-  for( int i=0; i<info.w; i+=4 )
-    for( int r=0; r<info.h; r+=4 ){
-      for( int y=0; y<4; ++y )
-        for( int x=0; x<4; ++x ){
-          std::copy( p+((x + i + (y+r)*info.w)*info.bpp),
-                     p+((x + i + (y+r)*info.w)*info.bpp)+info.bpp,
-                     px[y][x] );
-          }
-
-      int pos = ((i/4) + (r/4)*info.w/4)*8;
-      squish::Compress( (squish::u8*)px,
-                        &d[pos], squish::kDxt1 );
-      }
-
-  data.value()->bytes = d;
-  info.format = Format_DXT1;
-  }
-
-void Pixmap::toETC() {
-
+  T_WARNING_X(0, "Pixmap::makeEditable : no convarsion found");
   }
 
 template< class T >
@@ -470,6 +478,6 @@ void PixEditor::draw(int x, int y, const Pixmap &p) {
     }
   }
 
-Pixmap::ImgInfo::ImgInfo():w(0), h(0), bpp(0), format(Format_RGB) {
+Pixmap::ImgInfo::ImgInfo():w(0), h(0), bpp(0), alpha(false), format(Format_RGB) {
 
   }

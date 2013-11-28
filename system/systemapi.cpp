@@ -7,6 +7,7 @@
 #include <cstring>
 #include <iostream>
 #include <locale>
+#include <fstream>
 
 
 using namespace Tempest;
@@ -33,19 +34,19 @@ Size SystemAPI::screenSize() {
   }
 
 std::string SystemAPI::loadText(const std::string &file) {
-  return instance().loadText( file.data() );
+  return std::move( instance().loadText( file.data() ));
   }
 
 std::string SystemAPI::loadText(const std::wstring &file) {
-  return instance().loadText( file.data() );
+  return std::move( instance().loadText( file.data() ));
   }
 
 std::string SystemAPI::loadText(const char *file) {
-  return instance().loadTextImpl(file);
+  return std::move( instance().loadTextImpl(file) );
   }
 
 std::string SystemAPI::loadText(const wchar_t *file) {
-  return instance().loadTextImpl(file);
+  return std::move( instance().loadTextImpl(file) );
   }
 
 std::vector<char> SystemAPI::loadBytes(const char *file) {
@@ -54,6 +55,10 @@ std::vector<char> SystemAPI::loadBytes(const char *file) {
 
 std::vector<char> SystemAPI::loadBytes(const wchar_t *file) {
   return std::move( instance().loadBytesImpl(file) );
+  }
+
+bool SystemAPI::writeBytes(const char *file, const std::vector<char> &f) {
+  return instance().writeBytesImpl(file, f);
   }
 
 bool SystemAPI::writeBytes(const wchar_t *file, const std::vector<char> &f) {
@@ -278,6 +283,14 @@ void SystemAPI::installImageCodec( ImageCodec *codec ) {
   codecs.emplace_back( codec );
   }
 
+bool SystemAPI::writeBytesImpl( const char *file,
+                                const std::vector<char> &f ) {
+  std::ofstream fout(file, std::ios::binary);
+  if( fout )
+    fout.write( f.data(), f.size() );
+  return bool(fout);
+  }
+
 bool SystemAPI::writeBytesImpl( const wchar_t *file,
                                 const std::vector<char> &f ) {
   return 0;
@@ -380,4 +393,12 @@ void SystemAPI::setupKeyTranslate( const SystemAPI::TranslateKeyPair k[] ) {
 
 void SystemAPI::setFuncKeysCount(int c) {
   ki.fkeysCount = c;
+  }
+
+size_t SystemAPI::imageCodecCount() const {
+  return codecs.size();
+  }
+
+ImageCodec &SystemAPI::imageCodec(size_t id) {
+  return *codecs[id];
   }

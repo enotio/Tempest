@@ -57,6 +57,7 @@ class Opengl2x : public AbstractAPI {
     bool reset  ( AbstractAPI::Device *d, void* hwnd,
                   const Options & opt ) const;
 
+    bool isFormatSupported( AbstractAPI::Device *d, Pixmap::Format f ) const;
     AbstractAPI::Texture* createTexture( AbstractAPI::Device *d,
                                          const std::string& ) const;
 

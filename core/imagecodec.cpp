@@ -10,6 +10,11 @@
 
 #include <libpng/png.h>
 #include "../system/ddsdef.h"
+#include <squish/squish.h>
+#include <ktx/ktx_image.h>
+#include <cstdint>
+
+#include "../thirdparty/ktx/etcpack.cxx"
 
 namespace Tempest {
 
@@ -97,6 +102,8 @@ struct DevILCodec:ImageCodec {
       if( info.bpp==4 )
         info.format = Pixmap::Format_RGBA;
 
+      info.alpha  = (info.format==Pixmap::Format_RGBA);
+
       if( ok ){
         ILubyte * data = ilGetData();
         //Data * image = new Data();
@@ -120,6 +127,9 @@ struct DevILCodec:ImageCodec {
   bool save( const char *file,
              ImgInfo &info,
              std::vector<unsigned char> &in ){
+    if( !(info.format==Pixmap::Format_RGB || info.format==Pixmap::Format_RGBA) )
+      return 0;
+
     initImgLib();
 
     ILuint	id;
@@ -131,18 +141,6 @@ struct DevILCodec:ImageCodec {
                 (info.bpp==4)? IL_RGBA : IL_RGB,
                 IL_UNSIGNED_BYTE,
                 in.data() );
-
-    ILubyte * img = ilGetData();
-
-    int h2 = info.h/2;
-    for( int i=0; i<info.w; ++i )
-      for( int r=0; r<h2; ++r ){
-        ILubyte * raw1 = &img[ info.bpp*(i+r*info.w) ];
-        ILubyte * raw2 = &img[ info.bpp*(i+(info.h-r-1)*info.w) ];
-
-        for( int q=0; q<info.bpp; ++q )
-          std::swap( raw1[q], raw2[q] );
-        }
 
     bool ok = ilSaveImage( file );
     ilDeleteImages( 1, &id );
@@ -244,6 +242,7 @@ struct PngCodec:ImageCodec {
       info.bpp=4;
       info.format = Pixmap::Format_RGBA;
       }
+    info.alpha  = (info.format == Pixmap::Format_RGBA);
 
     if( ( color_type==PNG_COLOR_TYPE_RGB ||
           color_type==PNG_COLOR_TYPE_RGB_ALPHA ) &&
@@ -351,8 +350,262 @@ struct S3TCCodec:ImageCodec {
     out.reserve( bufferSize );
     out.resize ( bufferSize );
     memcpy( &out[0], pos, bufferSize );
+    info.alpha  = (info.format!=Pixmap::Format_DXT1);
 
     return true;
+    }
+
+  static bool dxtFrm( Pixmap::Format fout ){
+    return fout==Pixmap::Format_DXT1 ||
+           fout==Pixmap::Format_DXT3 ||
+           fout==Pixmap::Format_DXT5;
+    }
+
+  bool canConvertTo( ImgInfo &info, Pixmap::Format fout ) const{
+    return ( info.format==Pixmap::Format_RGB  && dxtFrm(fout) ) ||
+           ( info.format==Pixmap::Format_RGBA && dxtFrm(fout) ) ||
+           ( dxtFrm(info.format) && fout==Pixmap::Format_RGBA );
+    }
+
+  void fromRGB( ImageCodec::ImgInfo &info,
+                std::vector<unsigned char> &bytes ) {
+    squish::u8 px[4][4][4];
+    unsigned char* p  = &bytes[0];
+
+    std::vector<squish::u8> d;
+    d.resize( info.w*info.h/2 );
+
+    for( int i=0; i<info.w; i+=4 )
+      for( int r=0; r<info.h; r+=4 ){
+        for( int y=0; y<4; ++y )
+          for( int x=0; x<4; ++x ){
+            px[y][x][3] = 255;
+            std::copy( p+((x + i + (y+r)*info.w)*info.bpp),
+                       p+((x + i + (y+r)*info.w)*info.bpp)+info.bpp,
+                       px[y][x] );
+            }
+
+        int pos = ((i/4) + (r/4)*info.w/4)*8;
+        squish::Compress( (squish::u8*)px,
+                          &d[pos], squish::kDxt1 );
+        }
+
+    bytes = d;
+    info.format = Pixmap::Format_DXT1;
+    info.alpha  = (info.format!=Pixmap::Format_DXT1);
+    }
+
+  void toRGB( ImageCodec::ImgInfo &info,
+              std::vector<unsigned char> &bytes,
+              bool a ) {
+    squish::u8 pixels[4][4][4];
+    int compressType = squish::kDxt1;
+
+    size_t sz = info.w*info.h, s = sz;
+    if( info.format==Pixmap::Format_DXT1 ){
+      compressType = squish::kDxt1;
+      sz /= 2;
+      s *= 4;
+      } else {
+      if( info.format==Pixmap::Format_DXT5 )
+        compressType = squish::kDxt5; else
+        compressType = squish::kDxt3;
+      s *= 4;
+      }
+
+    std::vector<unsigned char> ddsv = bytes;
+    bytes.resize(s);
+
+    unsigned char* px  = &bytes[0];
+    unsigned char* dds = &ddsv[0];
+    info.bpp = 4;
+
+    for( int i=0; i<info.w; i+=4 )
+      for( int r=0; r<info.h; r+=4 ){
+        int pos = ((i/4) + (r/4)*info.w/4)*8;
+        squish::Decompress( (squish::u8*)pixels,
+                            &dds[pos], compressType );
+
+        for( int x=0; x<4; ++x )
+          for( int y=0; y<4; ++y ){
+            unsigned char * v = &px[ (i+x + (r+y)*info.w)*info.bpp ];
+            std::copy( pixels[y][x], pixels[y][x]+4, v);
+            }
+        }
+
+    info.format = Pixmap::Format_RGBA;
+    info.alpha  = a;
+    if( !a )
+      removeAlpha(info, bytes);
+    }
+  };
+
+struct ETCCodec:ImageCodec{
+  static bool etcFrm( Pixmap::Format fout ){
+    return fout==Pixmap::Format_ETC1_RGB8;
+    }
+
+  bool canConvertTo( ImgInfo &info, Pixmap::Format fout ) const{
+    return ( info.format==Pixmap::Format_RGB   && etcFrm(fout) ) ||
+           ( info.format==Pixmap::Format_RGBA  && etcFrm(fout) ) ||
+           ( etcFrm(info.format) && fout==Pixmap::Format_RGB );
+    }
+
+  bool canSave(ImgInfo &inf) const{
+    return etcFrm(inf.format);
+    }
+
+  void fromRGB(ImgInfo &info, std::vector<unsigned char> &img){
+    if( info.format==Pixmap::Format_RGBA )
+      removeAlpha(info, img);
+
+    readCompressParamsEnc();
+
+    int expandedwidth  = ((info.w+3)/4)*4,
+        expandedheight = ((info.h+3)/4)*4;
+
+    std::vector<unsigned char> out;
+    uint32_t block[2];
+    uint8_t  bytes[4];
+
+    std::unique_ptr<uint8_t[]> imgdec;
+    imgdec.reset( new unsigned char[expandedwidth*expandedheight*3] );
+
+    for(int y=0;y<expandedheight/4;y++)
+      for(int x=0;x<expandedwidth/4;x++) {
+        compressBlockDiffFlipFastPerceptual( img.data(), imgdec.get(),
+                                             expandedwidth,expandedheight,
+                                             4*x,4*y,
+                                             block[0], block[1]);
+
+        for( int i=0; i<2; ++i ){
+          bytes[0] = (block[i] >> 24) & 0xff;
+          bytes[1] = (block[i] >> 16) & 0xff;
+          bytes[2] = (block[i] >> 8)  & 0xff;
+          bytes[3] = (block[i] >> 0)  & 0xff;
+
+          out.push_back( bytes[0] );
+          out.push_back( bytes[1] );
+          out.push_back( bytes[2] );
+          out.push_back( bytes[3] );
+          }
+        }
+
+    img = std::move(out);
+    info.alpha  = false;
+    info.format = Pixmap::Format_ETC1_RGB8;
+    }
+
+  void toRGB( ImgInfo &info,
+              std::vector<unsigned char> &inout,
+              bool alpha ){
+    uint8_t *bytes = ((uint8_t*)(&inout[0]));
+    std::vector<uint8_t> img;
+    img.resize( info.w*info.h*3 );
+
+    uint32_t block[2];
+
+    for(int y=0;y<info.h/4;y++) {
+      for(int x=0;x<info.w/4;x++) {
+        for( int i=0; i<2; ++i ){
+          block[i] = 0;
+
+          block[i] |= bytes[0];
+          block[i] = block[i] << 8;
+          block[i] |= bytes[1];
+          block[i] = block[i] << 8;
+          block[i] |= bytes[2];
+          block[i]= block[i] << 8;
+          block[i] |= bytes[3];
+
+          bytes+=4;
+          }
+
+        decompressBlockDiffFlip( block[0], block[1], &img[0], info.w, info.h, 4*x,4*y);
+        }
+      }
+
+    inout       = std::move(img);
+    info.bpp    = 3;
+    info.format = Pixmap::Format_RGB;
+
+    if( alpha ){
+      addAlpha(info, img);
+      }
+    }
+
+  bool save( const char *file,
+             ImgInfo &info,
+             std::vector<unsigned char> &img){
+    if( info.format!=Pixmap::Format_ETC1_RGB8 )
+      return 0;
+
+    std::vector<char> buf;
+
+    KTX_header header;
+    for(int i=0; i<12; i++) {
+      header.identifier[i]=ktx_identifier[i];
+      }
+
+    header.endianness=KTX_ENDIAN_REF;
+
+    header.glType=0;
+    header.glTypeSize=1;
+    header.glFormat=0;
+
+    header.pixelWidth  = info.w;
+    header.pixelHeight = info.h;
+    header.pixelDepth=0;
+
+    header.numberOfArrayElements=0;
+    header.numberOfFaces=1;
+    header.numberOfMipmapLevels=1;
+
+    header.bytesOfKeyValueData=0;
+
+    int halfbytes=1;
+    header.glBaseInternalFormat = GL_RGB;
+    header.glInternalFormat     = GL_ETC1_RGB8_OES;
+
+    //write header
+    buf.insert(buf.end(), (char*)&header, (char*)&header+sizeof(header) );
+
+    //write size of compressed data.. which depend on the expanded size..
+    uint32_t imagesize=(info.w*info.h*halfbytes)/2;
+    buf.insert(buf.end(), (char*)&imagesize, (char*)&imagesize+sizeof(imagesize) );
+
+    buf.insert(buf.end(), img.begin(), img.end() );
+    SystemAPI::writeBytes(file, buf);
+    return 1;
+    }
+
+  bool load( const std::vector<char> &data,
+             ImgInfo &info,
+             std::vector<unsigned char> & out ) {
+    static const size_t hsz = sizeof(KTX_header)+sizeof(uint32_t);
+    if( data.size()<hsz )
+      return 0;
+
+    const KTX_header& h = (*(const KTX_header*)&data[0]);
+
+    for(int i=0; i<=11; i++) {
+      if( h.identifier[i]!=ktx_identifier[i] )
+        return 0;
+      }
+
+    info.w      = h.pixelWidth;
+    info.h      = h.pixelHeight;
+
+    if( (data.size()-hsz)!=size_t((info.w/4)*(info.h/4)*8) )
+      return 0;
+
+    info.alpha  = false;
+    info.format = Pixmap::Format_ETC1_RGB8;
+    info.bpp    = 3;
+
+    out.resize( data.size()-hsz );
+    std::copy( data.begin()+hsz, data.end(), out.begin() );
+    return 1;
     }
   };
 
@@ -361,6 +614,21 @@ ImageCodec::~ImageCodec() {
 
 bool ImageCodec::canSave(ImageCodec::ImgInfo &) const {
   return 0;
+  }
+
+bool ImageCodec::canConvertTo(ImageCodec::ImgInfo &, Pixmap::Format ) const {
+  return 0;
+  }
+
+void ImageCodec::toRGB( ImageCodec::ImgInfo &/*info*/,
+                        std::vector<unsigned char> &/*inout*/,
+                        bool /*alpha*/ ) {
+  T_WARNING_X(0, "overload for ImageCodec::toRGB is unimplemented");
+  }
+
+void ImageCodec::fromRGB( ImageCodec::ImgInfo &/*info*/,
+                          std::vector<unsigned char> &/*inout*/ ) {
+  T_WARNING_X(0, "overload for ImageCodec::fromRGB is unimplemented");
   }
 
 bool ImageCodec::load( const char *file,
@@ -400,10 +668,44 @@ bool ImageCodec::save( const wchar_t *,
 
 void ImageCodec::installStdCodecs(SystemAPI &s) {
   s.installImageCodec( new PngCodec() );
+  s.installImageCodec( new ETCCodec() );
   s.installImageCodec( new S3TCCodec() );
 #ifndef __ANDROID__
   s.installImageCodec( new DevILCodec() );
 #endif
+  }
+
+void ImageCodec::addAlpha( ImgInfo& info, std::vector<unsigned char> &rgb) {
+  rgb.resize( info.w*info.h*4);
+  unsigned char * v = &rgb[0];
+
+  for( size_t i=info.w*info.h; i>0; --i ){
+    unsigned char * p = &v[ 4*i-4 ];
+    unsigned char * s = &v[ 3*i-3 ];
+    for( int r=0; r<3; ++r )
+      p[r] = s[r];
+    p[3] = 255;
+    }
+
+  info.bpp    = 4;
+  info.alpha  = true;
+  info.format = Pixmap::Format_RGBA;
+  }
+
+void ImageCodec::removeAlpha(ImageCodec::ImgInfo &info, std::vector<unsigned char> &rgba) {
+  unsigned char * v = &rgba[0];
+
+  for( int i=0; i<info.w*info.h; ++i ){
+    unsigned char * p = &v[ 3*i ];
+    unsigned char * s = &v[ 4*i ];
+    for( int r=0; r<3; ++r )
+      p[r] = s[r];
+    }
+
+  rgba.resize(info.w*info.h*3);
+  info.bpp    = 3;
+  info.alpha  = false;
+  info.format = Pixmap::Format_RGB;
   }
 
 }

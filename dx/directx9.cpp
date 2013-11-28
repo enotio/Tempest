@@ -374,10 +374,20 @@ bool DirectX9::reset( AbstractAPI::Device *d, void* hwnd,
     return 1;
   }
 
+bool DirectX9::isFormatSupported( AbstractAPI::Device *, Pixmap::Format f) const {
+  if( f==Pixmap::Format_RGB || f==Pixmap::Format_RGBA )
+    return 1;
+
+  if( Pixmap::Format_DXT1 <=f && f<= Pixmap::Format_DXT5 )
+    return 1;
+
+  return 0;
+  }
+
 AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
                                                const Pixmap &p,
                                                bool mips,
-                                               bool compress ) const {
+                                               bool /*compress*/ ) const {
   if( p.width()==0 || p.height()==0 )
     return 0;
 

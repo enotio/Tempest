@@ -6,13 +6,13 @@
 #include <Tempest/VertexDeclaration>
 #include <Tempest/AbstractTexture>
 #include <Tempest/DisplaySettings>
+#include <Tempest/Pixmap>
 
 namespace Tempest{
 
 class Color;
 class AbstractShadingLang;
 class RenderState;
-class Pixmap;
 class Size;
 
 enum TextureUsage{
@@ -144,6 +144,7 @@ class AbstractAPI {
     virtual bool reset  ( AbstractAPI::Device *d, void* hwnd,
                           const Options & opt ) const = 0;
 
+    virtual bool isFormatSupported( AbstractAPI::Device *d, Pixmap::Format f ) const  = 0;
     virtual AbstractAPI::Texture* createTexture( AbstractAPI::Device *d,
                                                  const Pixmap& p,
                                                  bool mips,

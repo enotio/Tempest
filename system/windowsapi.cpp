@@ -375,7 +375,7 @@ std::string WindowsAPI::loadTextImpl(const char *file) {
     return "";
   is.close();
 
-  return src;
+  return std::move(src);
   }
 
 std::string WindowsAPI::loadTextImpl(const wchar_t *file) {
@@ -394,7 +394,7 @@ std::string WindowsAPI::loadTextImpl(const wchar_t *file) {
   ReadFile(hTextFile, &str[0], dwFileSize, &dwBytesRead, NULL);
   CloseHandle(hTextFile);
 
-  return str;
+  return std::move(str);
   }
 
 std::vector<char> WindowsAPI::loadBytesImpl(const char *file) {
@@ -415,7 +415,7 @@ std::vector<char> WindowsAPI::loadBytesImpl(const char *file) {
     return src;
   is.close();
 
-  return src;
+  return std::move(src);
   }
 
 std::vector<char> WindowsAPI::loadBytesImpl(const wchar_t *file) {
@@ -434,7 +434,7 @@ std::vector<char> WindowsAPI::loadBytesImpl(const wchar_t *file) {
   ReadFile(hTextFile, &str[0], dwFileSize, &dwBytesRead, NULL);
   CloseHandle(hTextFile);
 
-  return str;
+  return std::move(str);
   }
 
 bool WindowsAPI::writeBytesImpl( const wchar_t *file,

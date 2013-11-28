@@ -567,7 +567,15 @@ AbstractAPI::Texture *Device::createTexture( const Pixmap &p,
                                              bool mips,
                                              bool compress ) {
   forceEndPaint();
-  AbstractAPI::Texture * t= api.createTexture( impl, p, mips, compress );
+  AbstractAPI::Texture * t = 0;
+  if( api.isFormatSupported(impl, p.format()) ){
+    t = api.createTexture( impl, p, mips, compress );
+    } else {
+    Pixmap px = p;
+    px.setFormat( p.hasAlpha() ? Pixmap::Format_RGBA:Pixmap::Format_RGB );
+    t = api.createTexture( impl, px, mips, compress );
+    }
+
   if( t )
     data->allockCount.tex++;
   return t;

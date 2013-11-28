@@ -146,20 +146,23 @@ const Tempest::Font::Letter&
   FT_Bitmap& bmap = slot->bitmap;
 
   letter.dpos = Tempest::Point( slot->bitmap_left,
-                                 key.size - slot->bitmap_top );
+                                key.size - slot->bitmap_top );
 
-  Tempest::Pixmap pixmap( bmap.width, bmap.rows, true );
+  if( bmap.width!=0 && bmap.rows!=0 ){
+    Tempest::Pixmap pixmap( bmap.width, bmap.rows, true );
 
-  for( int i=0; i<pixmap.width(); ++i )
-    for( int r=0; r<pixmap.height(); ++r ){
-      uint8_t lum = bmap.buffer[r * bmap.width + i];
-      Tempest::Pixmap::Pixel p = {255, 255, 255, lum};
-      pixmap.set( i,r, p );
-      }
+    for( int i=0; i<pixmap.width(); ++i )
+      for( int r=0; r<pixmap.height(); ++r ){
+        uint8_t lum = bmap.buffer[r * bmap.width + i];
+        Tempest::Pixmap::Pixel p = {255, 255, 255, lum};
+        pixmap.set( i,r, p );
+        }
 
-  //pixmap.save("./l.png");
-  letter.surf      = res.load( pixmap );
-  letter.size      = Tempest::Size( pixmap.width(), pixmap.height() );
+    //pixmap.save("./l.png");
+    letter.surf      = res.load( pixmap );
+    }
+
+  letter.size      = Tempest::Size( bmap.width, bmap.rows );
   letter.advance   = Tempest::Point( slot->advance.x >> 6,
                                      slot->advance.y >> 6 );
 

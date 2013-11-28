@@ -119,7 +119,8 @@ class Pixmap {
 
     struct ImgInfo{
       ImgInfo();
-      int w, h, bpp;
+      int  w, h, bpp;
+      bool alpha;
       Pixmap::Format format;
       };
   private:
@@ -168,8 +169,6 @@ class Pixmap {
       }
 
     void makeEditable();
-    void toS3tc(Format f);
-    void toETC();
 
     void  addAlpha();
     void  removeAlpha();

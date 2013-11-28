@@ -53,7 +53,8 @@ class SystemAPI{
 
     static std::vector<char> loadBytes( const char* file );
     static std::vector<char> loadBytes( const wchar_t* file );
-    static bool writeBytes(const wchar_t* file , const std::vector<char> &f);
+    static bool writeBytes(const char* file, const std::vector<char> &f);
+    static bool writeBytes(const wchar_t* file, const std::vector<char> &f);
 
     static bool loadImage( const wchar_t* file,
                            ImageCodec::ImgInfo &info,
@@ -107,6 +108,8 @@ class SystemAPI{
     static Event::KeyType translateKey( uint64_t scancode );
 
     void installImageCodec( ImageCodec* codec );
+    size_t imageCodecCount() const;
+    ImageCodec& imageCodec( size_t id );
   protected:
     SystemAPI();
 
@@ -121,6 +124,7 @@ class SystemAPI{
     virtual std::vector<char> loadBytesImpl( const char* file ) = 0;
     virtual std::vector<char> loadBytesImpl( const wchar_t* file ) = 0;
 
+    virtual bool writeBytesImpl(const char* file , const std::vector<char> &f);
     virtual bool writeBytesImpl(const wchar_t* file , const std::vector<char> &f);
 
     virtual bool loadImageImpl( const char* file,
@@ -149,7 +153,7 @@ class SystemAPI{
       };
 
     void setupKeyTranslate( const TranslateKeyPair k[] );
-    void setFuncKeysCount( int c );
+    void setFuncKeysCount( int c );    
   private:
     SystemAPI( const SystemAPI& ){}
     SystemAPI& operator = ( const SystemAPI&){return *this;}
