@@ -18,6 +18,25 @@ bool AbstractAPI::setDisplaySettings(const DisplaySettings &d) const {
   return SystemAPI::instance().setDisplaySettings(d);
   }
 
+int AbstractAPI::mipCount(int width, int height, int depth) {
+  return std::max( mipCount(width, height), mipCount(depth) );
+  }
+
+int AbstractAPI::mipCount(int width, int height) {
+  return std::max(mipCount(width), mipCount(height));
+  }
+
+int AbstractAPI::mipCount(int width) {
+  int mipCount = 0;
+
+  while( width>1 ){
+    width/=2;
+    ++mipCount;
+    }
+
+  return mipCount;
+  }
+
 AbstractAPI::VertexBuffer* AbstractAPI::createVertexBuffer( AbstractAPI::Device *d,
                                                             size_t size,
                                                             size_t vsize,

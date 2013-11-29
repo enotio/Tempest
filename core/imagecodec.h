@@ -45,8 +45,10 @@ class ImageCodec {
     static void installStdCodecs( SystemAPI& s );
 
   protected:
-    void addAlpha   (ImgInfo &info, std::vector<unsigned char>& rgb );
-    void removeAlpha(ImgInfo &info, std::vector<unsigned char>& rgba );
+    static void addAlpha   (ImgInfo &info, std::vector<unsigned char>& rgb );
+    static void removeAlpha(ImgInfo &info, std::vector<unsigned char>& rgba );
+
+    static void downsample(ImgInfo &info, std::vector<unsigned char>& rgb );
   };
 
 }

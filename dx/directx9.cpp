@@ -409,13 +409,7 @@ AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
     int mipCount = 0;
 
     if( mips ){
-      int w = std::max(1, p.width() ),
-          h = std::max(1, p.height());
-      while( w>1||h>1){
-        if(w>1) w/=2;
-        if(h>1) h/=2;
-        ++mipCount;
-        }
+      mipCount = AbstractAPI::mipCount(p.width(),p.height());
       }
 
     if (FAILED(dev->CreateTexture( p.width(), p.height(), mipCount,
@@ -521,13 +515,7 @@ AbstractAPI::Texture *DirectX9::recreateTexture( AbstractAPI::Device *d,
       int mipCount = 0;
 
       if( mips ){
-        int w = std::max(1, p.width() ),
-            h = std::max(1, p.height());
-        while( w>1||h>1){
-          if(w>1) w/=2;
-          if(h>1) h/=2;
-          ++mipCount;
-          }
+        mipCount = AbstractAPI::mipCount(p.width(), p.height());
         }
 
       if (FAILED(dev->CreateTexture( p.width(), p.height(), mipCount,

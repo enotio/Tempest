@@ -167,6 +167,9 @@ class AbstractAPI {
                                                    TextureUsage usage,
                                                    const char *data  ) const  =0;
 
+    static int mipCount( int width, int height, int depth );
+    static int mipCount( int width, int height );
+    static int mipCount( int width );
     virtual void generateMipmaps( AbstractAPI::Device * d,
                                   AbstractAPI::Texture* t ) const = 0;
 

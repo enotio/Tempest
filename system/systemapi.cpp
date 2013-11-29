@@ -354,6 +354,7 @@ bool SystemAPI::loadImageImpl(const std::vector<char> &imgBytes,
                                ImageCodec::ImgInfo &info,
                                std::vector<unsigned char> &out ) {
   for( size_t i=0; i<codecs.size(); ++i ){
+    info = ImageCodec::ImgInfo();
     if( codecs[i]->load(imgBytes, info, out) ){
       return 1;
       }

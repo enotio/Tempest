@@ -167,15 +167,19 @@ class Opengl2x : public AbstractAPI {
     virtual bool hasManagedStorge() const;
     virtual Size windowSize( Tempest::AbstractAPI::Device * dev ) const;
 
-  private:
-    struct Device;
-    mutable Device * dev;
-
-    Opengl2x( const Opengl2x& ){}
-    void operator = ( const Opengl2x& ){}
+  protected:
+    void loadTextureS3TC( AbstractAPI::Device *d,
+                          Texture *t,
+                          const Pixmap& p,
+                          bool mips,
+                          bool compress ) const;
+    void loadTextureETC( AbstractAPI::Device *d,
+                         Texture *t,
+                         const Pixmap& p,
+                         bool mips,
+                         bool compress ) const;
 
     bool setDevice(  AbstractAPI::Device *d ) const;
-    void setupBuffers(int vboOffsetIndex, bool on , bool enable, bool bind) const;
 
     bool errCk() const;
 
@@ -186,6 +190,13 @@ class Opengl2x : public AbstractAPI {
     AbstractAPI::Texture* createDepthStorage( AbstractAPI::Device *d,
                                               int w, int h,
                                               AbstractTexture::Format::Type f ) const;
+  private:
+    struct Device;
+    mutable Device * dev;
+    void setupBuffers(int vboOffsetIndex, bool on , bool enable, bool bind) const;
+
+    Opengl2x( const Opengl2x& ){}
+    void operator = ( const Opengl2x& ){}
   };
 
 }

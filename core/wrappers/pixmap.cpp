@@ -215,11 +215,13 @@ bool Pixmap::implLoad( T f ) {
   bool ok = SystemAPI::loadImage( f, tmpInfo, image->bytes );
 
   if( !ok ){
+    *this = Pixmap();
     pool.free(image);
     return false;
     }
 
   info = tmpInfo;
+  this->data = Detail::Ptr<Data*, DbgManip>();
   this->data.value() = image;
 
   if( info.w>0 && info.h>0 )
@@ -358,12 +360,14 @@ void Pixmap::makeEditable() {
   for( size_t i=0; i<api.imageCodecCount(); ++i ){
     if( api.imageCodec(i).canConvertTo(info, Format_RGB) ){
       api.imageCodec(i).toRGB(info, data.value()->bytes, false);
+      info.mipLevels = 0;
       setupRawPtrs();
       return;
       }
 
     if( api.imageCodec(i).canConvertTo(info, Format_RGBA) ){
       api.imageCodec(i).toRGB(info, data.value()->bytes, true);
+      info.mipLevels = 0;
       setupRawPtrs();
       return;
       }
@@ -489,6 +493,7 @@ void PixEditor::draw(int x, int y, const Pixmap &p) {
     }
   }
 
-Pixmap::ImgInfo::ImgInfo():w(0), h(0), bpp(0), alpha(false), format(Format_RGB) {
+Pixmap::ImgInfo::ImgInfo()
+  :w(0), h(0), bpp(0), mipLevels(0), alpha(false), format(Format_RGB) {
 
   }

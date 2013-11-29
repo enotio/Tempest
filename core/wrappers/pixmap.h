@@ -36,6 +36,8 @@ class Pixmap {
     inline int width()  const { return info.w; }
     inline int height() const { return info.h; }
 
+    inline int mipsCount() const{ return info.mipLevels; }
+
     struct Pixel{
       unsigned char r,g,b,a;
 
@@ -119,7 +121,7 @@ class Pixmap {
 
     struct ImgInfo{
       ImgInfo();
-      int  w, h, bpp;
+      int  w, h, bpp, mipLevels;
       bool alpha;
       Pixmap::Format format;
       };

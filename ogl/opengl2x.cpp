@@ -70,6 +70,7 @@ struct Opengl2x::Device{
   HGLRC hRC;
 #endif
   bool hasS3tcTextures,
+       hasETC1Textures,
        hasHalfSupport;
 
   int scrW, scrH;
@@ -478,6 +479,8 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->hasS3tcTextures =
       (strstr(ext, "GL_OES_texture_compression_S3TC")!=0) ||
       (strstr(ext, "GL_EXT_texture_compression_s3tc")!=0);
+  dev->hasETC1Textures = (strstr(ext, "GL_OES_compressed_ETC1_RGB8_texture")!=0);
+
 #ifdef __ANDROID__
   dev->hasHalfSupport     = strstr(ext, "GL_OES_vertex_half_float")!=0 ;
 #else
@@ -1209,10 +1212,8 @@ bool Opengl2x::isFormatSupported(AbstractAPI::Device *d, Pixmap::Format f) const
   if( dev->hasS3tcTextures && Pixmap::Format_DXT1 <=f && f<= Pixmap::Format_DXT5 )
     return 1;
 
-#ifdef __ANDROID__
-  if( 0&& f==Pixmap::Format_ETC1_RGB8 )
+  if( dev->hasETC1Textures && Pixmap::Format_ETC1_RGB8==f )
     return 1;
-#endif
 
   return 0;
   }
@@ -1220,7 +1221,7 @@ bool Opengl2x::isFormatSupported(AbstractAPI::Device *d, Pixmap::Format f) const
 AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
                                                const Pixmap &p,
                                                bool  mips,
-                                               bool  /*compress*/ ) const {
+                                               bool  compress ) const {
   if( p.width()==0 || p.height()==0 )
     return 0;
 
@@ -1249,16 +1250,7 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
   tex->format = frm[p.format()];
 
   if( p.format()==Pixmap::Format_ETC1_RGB8 ){
-    glCompressedTexImage2D( GL_TEXTURE_2D, 0,
-                            tex->format,//tex->format,
-                            p.width(),
-                            p.height(),
-                            0,
-                            size_t((p.width()/4)*(p.height()/4)*8),
-                            p.const_data() );
-    T_ASSERT_X( errCk(), "OpenGL error" );
-    glGenerateMipmap(GL_TEXTURE_2D);
-    T_ASSERT_X( errCk(), "OpenGL error" );
+    loadTextureETC(d, (AbstractAPI::Texture*)tex, p, mips, compress);
     } else
   if( p.format()==Pixmap::Format_RGB ||
       p.format()==Pixmap::Format_RGBA ){
@@ -1267,52 +1259,7 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
     if( mips )
       glGenerateMipmap( GL_TEXTURE_2D );
     } else {
-    int nBlockSize = 16;
-    if( p.format() == Pixmap::Format_DXT1 )
-        nBlockSize = 8;
-
-    int nSize = ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
-    glCompressedTexImage2D( GL_TEXTURE_2D, 0,
-                            tex->format,//tex->format,
-                            p.width(),
-                            p.height(),
-                            0,
-                            nSize,
-                            p.const_data() );
-    if( mips ){
-      int mipCount = 0;
-      int w = std::max(1, p.width() /2),
-          h = std::max(1, p.height()/2);
-      while( w>1||h>1){
-        if(w>1) w/=2;
-        if(h>1) h/=2;
-        ++mipCount;
-        }
-      glTexParameteri( GL_TEXTURE_2D,
-                       0x813D,//GL_TEXTURE_MAX_LEVEL,
-                       mipCount );
-
-      w = std::max(1, p.width() /2);
-      h = std::max(1, p.height()/2);
-      const unsigned char * data =
-          p.const_data() + ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
-      for( int i=1; w>1||h>1; ++i ){
-        int nSize = ((w+3)/4) * ((h+3)/4) * nBlockSize;
-        glCompressedTexImage2D( GL_TEXTURE_2D,
-                                i,
-                                tex->format,//tex->format,
-                                w,
-                                h,
-                                0,
-                                nSize,
-                                data );
-        data += nSize;
-        if(w>1) w/=2;
-        if(h>1) h/=2;
-        T_ASSERT_X( errCk(), "OpenGL error" );
-        }
-      }
-    T_ASSERT_X( errCk(), "OpenGL error" );
+    loadTextureS3TC(d, (AbstractAPI::Texture*)tex, p, mips, compress);
     }
 
   glTexParameteri( GL_TEXTURE_2D,
@@ -1326,11 +1273,112 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
   return ((AbstractAPI::Texture*)tex);
   }
 
-AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
+void Opengl2x::loadTextureETC( AbstractAPI::Device *d,
+                               Texture *t,
+                               const Pixmap& p,
+                               bool mips,
+                               bool /*compress*/ ) const {
+  setDevice(d);
+  Detail::GLTexture *tex = (Detail::GLTexture*)t;
+
+  const int nBlockSize = 8;
+
+  glCompressedTexImage2D( GL_TEXTURE_2D, 0,
+                          tex->format,//tex->format,
+                          p.width(),
+                          p.height(),
+                          0,
+                          size_t((p.width()/4)*(p.height()/4)*nBlockSize),
+                          p.const_data() );
+  T_ASSERT_X( errCk(), "OpenGL error" );
+
+  tex->mips = false;
+  if( mips && p.mipsCount()!=1 ){
+    tex->mips = true;
+    int mipCount = p.mipsCount();
+#ifndef __ANDROID__
+    glTexParameteri( GL_TEXTURE_2D,
+                     0x813D,//GL_TEXTURE_MAX_LEVEL,
+                     mipCount );
+#endif
+    T_ASSERT_X( errCk(), "OpenGL error" );
+
+    int w = std::max(1, p.width() /2);
+    int h = std::max(1, p.height()/2);
+    const unsigned char * data =
+        p.const_data() + ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
+    for( int i=1; i<=mipCount; ++i ){
+      int nSize = ((w+3)/4) * ((h+3)/4) * nBlockSize;
+      glCompressedTexImage2D( GL_TEXTURE_2D,
+                              i,
+                              tex->format,//tex->format,
+                              w,
+                              h,
+                              0,
+                              nSize,
+                              data );
+      data += nSize;
+      if(w>1) w/=2;
+      if(h>1) h/=2;
+      T_ASSERT_X( errCk(), "OpenGL error" );
+      }
+    }
+  }
+
+void Opengl2x::loadTextureS3TC( AbstractAPI::Device  *d,
+                                AbstractAPI::Texture* t,
+                                const Pixmap& p,
+                                bool mips,
+                                bool /*compress*/ ) const{
+  setDevice(d);
+  Detail::GLTexture *tex = (Detail::GLTexture*)t;
+
+  int nBlockSize = 16;
+  if( p.format() == Pixmap::Format_DXT1 )
+      nBlockSize = 8;
+
+  int nSize = ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
+  glCompressedTexImage2D( GL_TEXTURE_2D, 0,
+                          tex->format,//tex->format,
+                          p.width(),
+                          p.height(),
+                          0,
+                          nSize,
+                          p.const_data() );
+  if( mips ){
+    int mipCount = p.mipsCount();//AbstractAPI::mipCount(p.width(),p.height());
+    glTexParameteri( GL_TEXTURE_2D,
+                     0x813D,//GL_TEXTURE_MAX_LEVEL,
+                     mipCount );
+
+    int w = std::max(1, p.width() /2);
+    int h = std::max(1, p.height()/2);
+    const unsigned char * data =
+        p.const_data() + ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
+    for( int i=1; i<mipCount; ++i ){
+      int nSize = ((w+3)/4) * ((h+3)/4) * nBlockSize;
+      glCompressedTexImage2D( GL_TEXTURE_2D,
+                              i,
+                              tex->format,//tex->format,
+                              w,
+                              h,
+                              0,
+                              nSize,
+                              data );
+      data += nSize;
+      if(w>1) w/=2;
+      if(h>1) h/=2;
+      T_ASSERT_X( errCk(), "OpenGL error" );
+      }
+    }
+  T_ASSERT_X( errCk(), "OpenGL error" );
+  }
+
+AbstractAPI::Texture *Opengl2x::recreateTexture( AbstractAPI::Device *d,
                                                  AbstractAPI::Texture *oldT,
                                                  const Pixmap &p,
                                                  bool mips,
-                                                bool compress) const {
+                                                 bool compress) const {
   if( oldT==0 )
     return createTexture(d, p, mips, compress);
 
@@ -1343,7 +1391,8 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
     GL_RGBA,
     0x83F1,
     0x83F2,
-    0x83F3
+    0x83F3,
+    0x8D64//ETC1_RGB8_OES
     };
 
   GLenum format = frm[p.format()];
@@ -1361,14 +1410,11 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
 
   glBindTexture(GL_TEXTURE_2D, tex->id);
 
+  if( p.format()==Pixmap::Format_ETC1_RGB8 ){
+    loadTextureETC(d, (AbstractAPI::Texture*)tex, p, mips, compress);
+    } else
   if( p.format()==Pixmap::Format_RGB ||
       p.format()==Pixmap::Format_RGBA ){
-    /*
-    glTexImage2D( GL_TEXTURE_2D, 0,
-                  tex->format,
-                  p.width(), p.height(), 0,
-                  tex->format,
-                  GL_UNSIGNED_BYTE, p.const_data() );*/
     glTexSubImage2D(  GL_TEXTURE_2D, 0,
                       0, 0,
                       p.width(), p.height(),
@@ -1377,52 +1423,7 @@ AbstractAPI::Texture *Opengl2x::recreateTexture(AbstractAPI::Device *d,
     if( mips )
       glGenerateMipmap( GL_TEXTURE_2D );
     } else {
-    int nBlockSize = 16;
-    if( p.format() == Pixmap::Format_DXT1 )
-        nBlockSize = 8;
-
-    int nSize = ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
-    glCompressedTexImage2D( GL_TEXTURE_2D, 0,
-                            tex->format,//tex->format,
-                            p.width(),
-                            p.height(),
-                            0,
-                            nSize,
-                            p.const_data() );
-    if( mips ){
-      int mipCount = 0;
-      int w = std::max(1, p.width() /2),
-          h = std::max(1, p.height()/2);
-      while( w>1||h>1){
-        if(w>1) w/=2;
-        if(h>1) h/=2;
-        ++mipCount;
-        }
-      glTexParameteri( GL_TEXTURE_2D,
-                       0x813D,//GL_TEXTURE_MAX_LEVEL,
-                       mipCount );
-
-      w = std::max(1, p.width() /2);
-      h = std::max(1, p.height()/2);
-      const unsigned char * data =
-          p.const_data() + ((p.width()+3)/4) * ((p.height()+3)/4) * nBlockSize;
-      for( int i=1; w>1||h>1; ++i ){
-        int nSize = ((w+3)/4) * ((h+3)/4) * nBlockSize;
-        glCompressedTexImage2D( GL_TEXTURE_2D,
-                                i,
-                                tex->format,//tex->format,
-                                w,
-                                h,
-                                0,
-                                nSize,
-                                data );
-        data += nSize;
-        if(w>1) w/=2;
-        if(h>1) h/=2;
-        T_ASSERT_X( errCk(), "OpenGL error" );
-        }
-      }
-    T_ASSERT_X( errCk(), "OpenGL error" );
+    loadTextureS3TC(d, (AbstractAPI::Texture*)tex, p, mips, compress);
     }
   
   return (AbstractAPI::Texture*)tex;

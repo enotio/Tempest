@@ -141,6 +141,16 @@ struct DevILCodec:ImageCodec {
                 IL_UNSIGNED_BYTE,
                 in.data() );
 
+    ILubyte * img = ilGetData();
+    int h2 = info.h/2;
+    for( int i=0; i<info.w; ++i )
+      for( int r=0; r<h2; ++r ){
+        ILubyte * raw1 = &img[ info.bpp*(i+r*info.w) ];
+        ILubyte * raw2 = &img[ info.bpp*(i+(info.h-r-1)*info.w) ];
+        for( int q=0; q<info.bpp; ++q )
+          std::swap( raw1[q], raw2[q] );
+        }
+
     bool ok = ilSaveImage( file );
     ilDeleteImages( 1, &id );
 
@@ -189,11 +199,11 @@ struct PngCodec:ImageCodec {
       static void read( png_structp png_ptr,
                         png_bytep   outBytes,
                         png_size_t  byteCountToRead ){
-        if( !png_ptr->io_ptr ){
+        if( !png_get_io_ptr(png_ptr) ){
           return;
           }
 
-        Reader& r = *(Reader*)png_ptr->io_ptr;
+        Reader& r = *(Reader*)png_get_io_ptr(png_ptr);
 
         if( r.sz<byteCountToRead ){
           r.err = true;
@@ -337,6 +347,8 @@ struct S3TCCodec:ImageCodec {
 
         bufferSize += mipW*mipH/factor;
         }
+
+      info.mipLevels = ddsd.dwMipMapCount;
       }
     //if( ddsd.dwMipMapCount > 1 )
     //  bufferSize = ddsd.dwLinearSize * factor; else
@@ -454,26 +466,22 @@ struct ETCCodec:ImageCodec{
     return etcFrm(inf.format);
     }
 
-  void fromRGB(ImgInfo &info, std::vector<unsigned char> &img){
-    if( info.format==Pixmap::Format_RGBA )
-      removeAlpha(info, img);
-
-    //readCompressParamsEnc();
-
-    int expandedwidth  = ((info.w+3)/4)*4,
-        expandedheight = ((info.h+3)/4)*4;
-
-    std::vector<unsigned char> out;
+  void compressLayer( std::vector<unsigned char> &img,
+                      std::vector<unsigned char> &out,
+                      int w, int h ){
     uint32_t block[2];
     uint8_t  bytes[4];
 
     std::unique_ptr<uint8_t[]> imgdec;
-    imgdec.reset( new unsigned char[expandedwidth*expandedheight*3] );
+    imgdec.reset( new unsigned char[w*h*3] );
 
-    for(int y=0;y<expandedheight/4;y++)
-      for(int x=0;x<expandedwidth/4;x++) {
+    out.resize( out.size()+ (w/4)*(h/4)*8 );
+    uint8_t *pix = &out[ out.size() - (w/4)*(h/4)*8 ];
+
+    for(int y=0;y<h/4;y++)
+      for(int x=0;x<w/4;x++) {
         compressBlockDiffFlipFastPerceptual( img.data(), imgdec.get(),
-                                             expandedwidth,expandedheight,
+                                             w,h,
                                              4*x,4*y,
                                              block[0], block[1]);
 
@@ -483,12 +491,42 @@ struct ETCCodec:ImageCodec{
             block[i] /= 256;
             }
 
-          out.push_back( bytes[0] );
-          out.push_back( bytes[1] );
-          out.push_back( bytes[2] );
-          out.push_back( bytes[3] );
+          pix[0] = bytes[0];
+          pix[1] = bytes[1];
+          pix[2] = bytes[2];
+          pix[3] = bytes[3];
+          pix += 4;
           }
         }
+    }
+
+  void fromRGB(ImgInfo &info, std::vector<unsigned char> &img){
+    if( info.format==Pixmap::Format_RGBA )
+      removeAlpha(info, img);
+
+    int expandedwidth  = ((info.w+3)/4)*4,
+        expandedheight = ((info.h+3)/4)*4;
+
+    std::vector<unsigned char> out;
+    compressLayer(img, out, expandedwidth, expandedheight);
+
+    bool isPot = ((expandedwidth  & (expandedwidth-1) )==0) &&
+                 ((expandedheight & (expandedheight-1))==0);
+
+    if( isPot && expandedwidth==expandedheight ){
+      info.mipLevels = 0;
+      Pixmap::ImgInfo inf = info;
+      while( expandedheight>=2 ){
+        if( expandedwidth>4 )
+          downsample(inf, img);
+
+        ++info.mipLevels;
+        expandedwidth  /= 2;
+        expandedheight /= 2;
+
+        compressLayer(img, out, expandedwidth, expandedheight);
+        }
+      }
 
     img = std::move(out);
     info.alpha  = false;
@@ -559,7 +597,7 @@ struct ETCCodec:ImageCodec{
 
     header.numberOfArrayElements=0;
     header.numberOfFaces=1;
-    header.numberOfMipmapLevels=1;
+    header.numberOfMipmapLevels= std::max(1, info.mipLevels);
 
     header.bytesOfKeyValueData=0;
 
@@ -597,12 +635,23 @@ struct ETCCodec:ImageCodec{
     info.w      = h.pixelWidth;
     info.h      = h.pixelHeight;
 
-    if( (data.size()-hsz)!=size_t((info.w/4)*(info.h/4)*8) )
-      return 0;
+    size_t pos = hsz;
+    uint32_t mips = std::max<uint32_t>(h.numberOfMipmapLevels, 1);
 
-    info.alpha  = false;
-    info.format = Pixmap::Format_ETC1_RGB8;
-    info.bpp    = 3;
+    int wx = info.w, hx = info.h;
+    for( uint32_t i=0; i<mips; ++i ){
+      if( (data.size()-pos) < size_t((wx/4)*(hx/4)*8) )
+        return 0;
+      pos += size_t((wx/4)*(hx/4)*8);
+
+      if(wx>1) wx /= 2;
+      if(hx>1) hx /= 2;
+      }
+
+    info.mipLevels = h.numberOfMipmapLevels;
+    info.alpha     = false;
+    info.format    = Pixmap::Format_ETC1_RGB8;
+    info.bpp       = 3;
 
     out.resize( data.size()-hsz );
     std::copy( data.begin()+hsz, data.end(), out.begin() );
@@ -707,6 +756,34 @@ void ImageCodec::removeAlpha(ImageCodec::ImgInfo &info, std::vector<unsigned cha
   info.bpp    = 3;
   info.alpha  = false;
   info.format = Pixmap::Format_RGB;
+  }
+
+void ImageCodec::downsample( ImageCodec::ImgInfo &info,
+                             std::vector<unsigned char> &rgb ) {
+  T_ASSERT( info.w%2==0 && info.h%2==0 );
+  T_ASSERT( info.format==Pixmap::Format_RGB || info.format==Pixmap::Format_RGBA );
+
+  int bpp = info.bpp, iw = info.w, w = info.w/2, h = info.h/2;
+
+  unsigned char *p = &rgb[0];
+  for( int r=0; r<h; ++r)
+    for( int i=0; i<w; ++i ){
+      int pix[4] = {};
+      int x0 = i*2, y0 = r*2;
+
+      for( int r0=0; r0<2; ++r0)
+        for( int i0=0; i0<2; ++i0)
+          for( int q=0; q<bpp; ++q ){
+            pix[q] += p[ (x0+i0 + (y0+r0)*iw)*bpp + q ];
+            }
+
+      for( int q=0; q<bpp; ++q )
+        p[ (i + r*w)*bpp + q ] = pix[q]/4;
+      }
+
+  rgb.resize( rgb.size()/4 );
+  info.w = w;
+  info.h = h;
   }
 
 }
