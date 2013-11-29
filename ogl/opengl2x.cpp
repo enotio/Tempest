@@ -31,6 +31,8 @@
 #include <squish.h>
 #include <cstring>
 
+#include "../utils/mempool.h"
+
 #ifndef GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
 #define GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER 0x8CDB
 #define GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER 0x8CDC
@@ -379,6 +381,10 @@ struct Opengl2x::Device{
 
   PFNGLDISCARDFRAMEBUFFERPROC glDiscardFrameBuffer;
   bool isTileRenderStarted;
+
+  MemPool<Detail::GLTexture> texPool;
+  MemPool<Detail::GLBuffer>  bufPool;
+  MemPool<VertexDeclaration::Declarator> declPool;
   };
 
 bool Opengl2x::errCk() const {
@@ -806,7 +812,7 @@ AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
     };
 #endif
 
-  Detail::GLTexture * tex = new Detail::GLTexture;
+  Detail::GLTexture * tex = dev->texPool.alloc();
   tex->w  = w;
   tex->h  = h;
   tex->id = 0;
@@ -1227,7 +1233,7 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
 
   if( !setDevice(d) ) return 0;
 
-  Detail::GLTexture* tex = new Detail::GLTexture;
+  Detail::GLTexture* tex = dev->texPool.alloc();
   glGenTextures(1, &tex->id);
   glBindTexture(GL_TEXTURE_2D, tex->id);
 
@@ -1449,7 +1455,7 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
   GLenum storage, inFrm, bytePkg;
   dev->texFormat(f, storage, inFrm, bytePkg);
 
-  Detail::GLTexture* tex = new Detail::GLTexture;
+  Detail::GLTexture* tex = dev->texPool.alloc();
   glGenTextures(1, &tex->id);
   glBindTexture(GL_TEXTURE_2D, tex->id);
   
@@ -1530,7 +1536,7 @@ AbstractAPI::Texture *Opengl2x::createTexture3d(AbstractAPI::Device *d,
   GLenum storage, inFrm, bytePkg;
   dev->texFormat(f, storage, inFrm, bytePkg);
 
-  Detail::GLTexture* tex = new Detail::GLTexture;
+  Detail::GLTexture* tex = dev->texPool.alloc();
   glGenTextures(1, &tex->id);
   glBindTexture(GL_TEXTURE_3D, tex->id);
 
@@ -1581,7 +1587,7 @@ void Opengl2x::deleteTexture( AbstractAPI::Device *d,
   if( tex->depthId && glIsRenderbuffer(tex->depthId) )
     glDeleteRenderbuffers( 1, &tex->depthId );
 
-  delete tex;
+  dev->texPool.free(tex);
   
   T_ASSERT_X( errCk(), "OpenGL error" );
   }
@@ -1616,7 +1622,7 @@ AbstractAPI::VertexBuffer *Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
     GL_STATIC_DRAW
     };
 
-  Detail::GLBuffer *vbo = new Detail::GLBuffer;
+  Detail::GLBuffer *vbo = dev->bufPool.alloc();
   vbo->offset = 0;
   vbo->size   = 0;
 
@@ -1645,7 +1651,7 @@ void Opengl2x::deleteVertexBuffer(  AbstractAPI::Device *d,
     } else {
     T_ASSERT_X(0, "bad glDeleteBuffers call");
     }
-  delete vbo;
+  dev->bufPool.free(vbo);
 
   T_ASSERT_X( errCk(), "OpenGL error" );
   }
@@ -1670,7 +1676,7 @@ AbstractAPI::IndexBuffer *Opengl2x::createIndexBuffer( AbstractAPI::Device *d,
     GL_STATIC_DRAW
     };
 
-  Detail::GLBuffer *ibo = new Detail::GLBuffer;
+  Detail::GLBuffer *ibo = dev->bufPool.alloc();
   ibo->offset = 0;
   ibo->size   = 0;
 
@@ -1697,7 +1703,7 @@ void Opengl2x::deleteIndexBuffer( AbstractAPI::Device *d,
 
     glDeleteBuffers( 1, &ibo->id );
     }
-  delete ibo;
+  dev->bufPool.free(ibo);
 
   T_ASSERT_X( errCk(), "OpenGL error" );
   }
@@ -1810,16 +1816,18 @@ void Opengl2x::deleteShadingLang( const AbstractShadingLang * l ) const {
   }
 
 AbstractAPI::VertexDecl*
-      Opengl2x::createVertexDecl( AbstractAPI::Device *,
+      Opengl2x::createVertexDecl( AbstractAPI::Device *d,
                                   const VertexDeclaration::Declarator &de ) const {
-  VertexDeclaration::Declarator *d = new VertexDeclaration::Declarator(de);
-  return (AbstractAPI::VertexDecl*)d;
+  Device* dev = (Device*)d;
+  VertexDeclaration::Declarator *dx = dev->declPool.alloc(de);
+  return (AbstractAPI::VertexDecl*)dx;
   }
 
-void Opengl2x::deleteVertexDecl( AbstractAPI::Device *,
+void Opengl2x::deleteVertexDecl( AbstractAPI::Device *d,
                                  AbstractAPI::VertexDecl* de ) const {
-  VertexDeclaration::Declarator *d = (VertexDeclaration::Declarator*)(de);
-  delete d;
+  Device* dev = (Device*)d;
+  VertexDeclaration::Declarator *dx = (VertexDeclaration::Declarator*)(de);
+  dev->declPool.free(dx);
   }
 
 void Opengl2x::setVertexDeclaration( AbstractAPI::Device *d,
