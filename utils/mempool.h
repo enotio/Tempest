@@ -36,6 +36,7 @@ class MemPool {
         }
 
       data.push_back( new Block() );
+      aviable.push_back( data.back() );
       return data.back()->alloc(a...);
       }
 
