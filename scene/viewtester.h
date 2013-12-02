@@ -8,7 +8,6 @@ namespace Tempest{
 class AbstractSceneObject;
 
 class Matrix4x4;
-class Scene;
 class AbstractCamera;
 
 class ViewTester {

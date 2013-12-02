@@ -14,8 +14,6 @@ class AbstractMaterial;
 
 template< class V >
 class Model;
-
-class Scene;
 class Render;
 
 class AbstractSceneObject {

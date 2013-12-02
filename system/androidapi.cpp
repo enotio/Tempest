@@ -34,6 +34,18 @@ using namespace Tempest;
 #include <cmath>
 #include <locale>
 
+struct Guard {
+  Guard( pthread_mutex_t& m ):m(m){
+    pthread_mutex_lock(&m);
+    }
+
+  ~Guard(){
+    pthread_mutex_unlock(&m);
+    }
+
+  pthread_mutex_t& m;
+  };
+
 static struct Android{
   EGLDisplay display;
   EGLSurface surface;
@@ -95,6 +107,24 @@ static struct Android{
 
   std::vector<Message> msg;
 
+  void pushMsg( const Message& m ){
+    Guard g( appMutex );
+    msg.push_back(m);
+    }
+
+  size_t msgSize(){
+    Guard g( appMutex );
+    return msg.size();
+    }
+
+  Message takeMsg(){
+    Guard g( appMutex );
+    if(msg.size())
+      return msg[0];
+
+    return MSG_NONE;
+    }
+
   struct MousePointer{
     int   nativeID;
     bool  valid;
@@ -139,6 +169,7 @@ static struct Android{
 
     closeRqAccepted = 0;
 
+    window     = 0;
     window_w = 0;
     window_h = 0;
     wnd           = 0;
@@ -333,10 +364,7 @@ static void render();
 
 void Android::waitForQueue() {
   while( mainThread && android.window ){
-    pthread_mutex_lock(&android.appMutex);
-    size_t s = android.msg.size();
-    pthread_mutex_unlock(&android.appMutex);
-
+    size_t s = android.msgSize();
     if( s==0 )
       return;
     }
@@ -345,19 +373,16 @@ void Android::waitForQueue() {
 int AndroidAPI::nextEvents(bool &quit) {
   int r = 0;
   while( !quit ){
-    pthread_mutex_lock(&android.appMutex);
-    Android::MainThreadMessage msg = Android::MSG_NONE;
+    int sz = 0;
+    {
+      Android::MainThreadMessage msg = android.takeMsg().msg;
 
-    if( android.msg.size() )
-      msg = android.msg[0].msg;
+      if( android.window==0 && msg!=Android::MSG_RENDER_LOOP_EXIT  ){
+        return 1;
+        }
 
-    if( android.window==0 && msg!=Android::MSG_RENDER_LOOP_EXIT  ){
-      pthread_mutex_unlock(&android.appMutex);
-      return 1;
+      sz = msg!=Android::MSG_NONE;
       }
-
-    int sz = android.msg.size();
-    pthread_mutex_unlock(&android.appMutex);
 
     r = nextEvent(quit);
     if( sz==0 )
@@ -375,22 +400,22 @@ int AndroidAPI::nextEvent(bool &quit) {
   */
 
   bool hasWindow = true;
-  pthread_mutex_lock(&android.appMutex);  
+  Android::Message msg = Android::MSG_NONE;
+  {
+  Guard g(android.appMutex);
+  (void)g;
   hasWindow = android.window;
 
-  Android::Message msg = Android::MSG_NONE;
   if( android.msg.size() ){
     msg = android.msg[0];
 
     if( !hasWindow && msg.msg!=Android::MSG_RENDER_LOOP_EXIT ){
-      pthread_mutex_unlock(&android.appMutex);
       return 0;
       }
 
     android.msg.erase( android.msg.begin() );
     }
-
-  pthread_mutex_unlock(&android.appMutex);
+  }
 
   switch( msg.msg ) {
     case Android::MSG_SURFACE_RESIZE:
@@ -750,18 +775,15 @@ void Android::destroy( bool killContext ) {
 static void* tempestMainFunc(void*);
 
 static void resize( JNIEnv * , jobject , jint w, jint h ) {
-  pthread_mutex_lock( &android.waitMutex );
+  Guard wm( android.waitMutex );
+  (void)wm;
 
   Android::Message m = Android::MSG_SURFACE_RESIZE;
   m.data.w = w;
   m.data.h = h;
-
-  pthread_mutex_lock( &android.appMutex );
-  android.msg.push_back( m );
-  pthread_mutex_unlock( &android.appMutex );
+  android.pushMsg(m);
 
   android.waitForQueue();
-  pthread_mutex_unlock( &android.waitMutex );
   }
 
 static void JNICALL start(JNIEnv* jenv, jobject obj) {
@@ -774,27 +796,30 @@ static void JNICALL stop(JNIEnv* jenv, jobject obj) {
 
 static void JNICALL resume(JNIEnv* jenv, jobject obj) {
   LOGI("nativeOnResume");
-  pthread_mutex_lock( &android.waitMutex );
+  Guard w( android.waitMutex );
+  (void)w;
 
-  pthread_mutex_lock( &android.appMutex );
-  android.msg.push_back( Android::MSG_RESUME );
-  android.isPaused = false;
-  pthread_mutex_unlock( &android.appMutex );
+  {
+    Guard g(android.appMutex);
+    (void)g;
+    android.msg.push_back( Android::MSG_RESUME );
+    android.isPaused = false;
+    }
 
   android.waitForQueue();
-  pthread_mutex_unlock( &android.waitMutex );
   }
 
 static void JNICALL pauseA(JNIEnv* jenv, jobject obj) {
   LOGI("nativeOnPause");
-  pthread_mutex_lock( &android.waitMutex );
-  pthread_mutex_lock( &android.appMutex );
-  android.msg.push_back( Android::MSG_PAUSE );
-
-  android.isPaused = true;
-  pthread_mutex_unlock( &android.appMutex );
+  Guard w( android.waitMutex );
+  (void)w;
+  {
+    Guard g( android.appMutex );
+    (void)g;
+    android.msg.push_back( Android::MSG_PAUSE );
+    android.isPaused = true;
+    }
   android.waitForQueue();
-  pthread_mutex_unlock( &android.waitMutex );
   }
 
 static void JNICALL setAssets(JNIEnv* jenv, jobject obj, jobject assets ) {
@@ -804,20 +829,13 @@ static void JNICALL setAssets(JNIEnv* jenv, jobject obj, jobject assets ) {
 
 static void JNICALL nativeOnTouch( JNIEnv* , jobject ,
                                    jint x, jint y, jint act, jint pid ){
-  pthread_mutex_lock(&android.waitMutex);
-
-  pthread_mutex_lock(&android.appMutex);
   Android::Message m = Android::MSG_TOUCH;
   m.data.x = x;
   m.data.y = y;
   m.data1  = act;
   m.data2  = pid;
 
-  android.msg.push_back(m);
-
-  pthread_mutex_unlock(&android.appMutex);
-  //android.waitForQueue();
-  pthread_mutex_unlock( &android.waitMutex );
+  android.pushMsg(m);
   }
 
 static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject obj, jobject surface) {
@@ -825,23 +843,26 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject obj, jobject surface
     android.window = ANativeWindow_fromSurface(jenv, surface);
     LOGI("Got window %p", android.window);
 
-    pthread_mutex_lock(&android.appMutex);
-    android.msg.push_back( Android::MSG_WINDOW_SET );
-    if( android.wnd )
-      SystemAPI::activateEvent( android.wnd, android.window!=0);
-    pthread_mutex_unlock(&android.appMutex);
+    {
+      Guard g( android.appMutex );
+      (void)g;
+      android.msg.push_back( Android::MSG_WINDOW_SET );
+      if( android.wnd )
+        SystemAPI::activateEvent( android.wnd, android.window!=0);
+      }
 
     if( android.mainThread==0 )
       pthread_create(&android.mainThread, 0, tempestMainFunc, 0);    
     } else {
     LOGI("Releasing window");
-    pthread_mutex_lock(&android.appMutex);
-    ANativeWindow_release(android.window);
-    android.window = 0;
-    if( android.wnd )
-      SystemAPI::activateEvent( android.wnd, android.window!=0);
-
-    pthread_mutex_unlock(&android.appMutex);
+    {
+      Guard g( android.appMutex );
+      (void)g;
+      ANativeWindow_release(android.window);
+      android.window = 0;
+      if( android.wnd )
+        SystemAPI::activateEvent( android.wnd, android.window!=0);
+      }
     }
 
   return;
@@ -857,10 +878,12 @@ static void JNICALL onCreate(JNIEnv* , jobject ) {
   }
 
 static void JNICALL onDestroy(JNIEnv* jenv, jobject obj) {
-  pthread_mutex_lock( &android.appMutex );
+  {
+  Guard g( android.appMutex );
+  (void)g;
   android.msg.clear();
   android.msg.push_back( Android::MSG_RENDER_LOOP_EXIT );
-  pthread_mutex_unlock( &android.appMutex );
+  }
 
   pthread_join(android.mainThread,0);
   android.mainThread = 0;
@@ -875,43 +898,26 @@ static void JNICALL onDestroy(JNIEnv* jenv, jobject obj) {
 static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
   LOGI("onKeyEvent");
 
-  pthread_mutex_lock( &android.waitMutex );
-  pthread_mutex_lock( &android.appMutex );
+  Guard w( android.waitMutex );
+  (void)w;
 
   if( key!=AKEYCODE_BACK ){
-    android.msg.push_back( Android::MSG_KEY_EVENT );
-    android.msg.back().data1 = key;
+    Android::Message m = Android::MSG_KEY_EVENT;
+    m.data1 = key;
+    android.pushMsg(m);
     } else {
-    android.msg.push_back( Android::MSG_RENDER_LOOP_EXIT );
+    android.pushMsg( Android::MSG_RENDER_LOOP_EXIT );
     }
-
-  pthread_mutex_unlock( &android.appMutex );
-  //android.waitForQueue();
-  pthread_mutex_unlock( &android.waitMutex );
   }
 
 static jint JNICALL nativeCloseEvent( JNIEnv* , jobject ){
-  pthread_mutex_lock( &android.waitMutex );
-  pthread_mutex_lock( &android.appMutex );
+  Guard w( android.waitMutex );
+  (void)w;
 
-  android.msg.push_back( Android::MSG_CLOSE );
-
-  pthread_mutex_unlock( &android.appMutex );
+  android.pushMsg( Android::MSG_CLOSE );
   android.waitForQueue();
-  pthread_mutex_unlock( &android.waitMutex );
 
   return android.closeRqAccepted? 1:0;
-/*
-  pthread_mutex_lock( &android.waitMutex );
-  pthread_mutex_lock( &android.appMutex );
-
-  if( android.closeRqAccepted ){
-    android.msg.push_back( Android::MSG_RENDER_LOOP_EXIT );
-    }
-
-  pthread_mutex_unlock( &android.appMutex );
-  android.waitForQueue();
-  pthread_mutex_unlock( &android.waitMutex );*/
   }
 
 static void JNICALL nativeSetupStorage( JNIEnv* , jobject,
