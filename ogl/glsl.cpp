@@ -111,7 +111,7 @@ struct GLSL::Data{
     return s.anisotropic;
     }
 
-  bool isAnisotropic( const Texture3d::Sampler& s ){
+  bool isAnisotropic( const Texture3d::Sampler&  ){
     return false;
     }
 
@@ -402,15 +402,23 @@ void GLSL::enable() const {
     std::string tc = "TexCoord*";
     const Tempest::VertexDeclaration::Declarator& vd
         = *(const Tempest::VertexDeclaration::Declarator*)data->vdecl;
+
+    int usrAttr = -1;
     for( int i=0; i<vd.size(); ++i ){
-      if( vd[i].usage!=Usage::TexCoord ){
+      if( vd[i].usage!=Usage::TexCoord && vd[i].attrName.size()==0 ){
         glBindAttribLocation( program, i, uType[vd[i].usage] );
-        } else {
+        } else
+      if( vd[i].usage==Usage::TexCoord ){
         tc[ tc.size()-1 ] = vd[i].index+'0';
         glBindAttribLocation( program, vd.size()+vd[i].index, tc.data() );
 
         if( vd[i].index==0 )
           glBindAttribLocation( program, vd.size()+vd[i].index, "TexCoord" );
+        } else {
+        glBindAttribLocation( program,
+                              vd.size()+vd.texCoordCount()+usrAttr,
+                              vd[i].attrName.c_str() );
+        ++usrAttr;
         }
       }
 

@@ -76,9 +76,12 @@ void VertexDeclaration::delRef() {
   }
 
 
+VertexDeclaration::Declarator::Declarator():maxTexId(0){
+  }
+
 VertexDeclaration::Declarator&
   VertexDeclaration::Declarator::operator <<( const Element & t ){
-  data.push_back( t );
+  add( t );
 
   return *this;
   }
@@ -87,17 +90,53 @@ VertexDeclaration::Declarator &
   VertexDeclaration::Declarator::add(const Element &e) {
   data.push_back( e );
 
+  if( e.usage==Usage::TexCoord ){
+    maxTexId = std::max<size_t>( maxTexId, e.index+1 );
+    }
+
   return *this;
   }
 
 VertexDeclaration::Declarator &
   VertexDeclaration::Declarator::add( Tempest::Decl::ComponentType c,
-                                      Usage::UsageType u,
-                                      int id ) {
+                                      Tempest::Usage::UsageType attrName, int id ) {
   Element e;
   e.component = c;
-  e.usage     = u;
+  e.usage     = attrName;
   e.index     = id;
+  return add( e );
+  }
+
+VertexDeclaration::Declarator &
+  VertexDeclaration::Declarator::add(Tempest::Decl::ComponentType c,
+                                      const char *attrName) {
+  static const char* uType[] = {
+    "Position",
+    "BlendWeight",   // 1
+    "BlendIndices",  // 2
+    "Normal",        // 3
+    "PSize",         // 4
+    "TexCoord",      // 5
+    "Tangent",       // 6
+    "BiNormal",      // 7
+    "TessFactor",    // 8
+    "PositionT",     // 9
+    "Color",         // 10
+    "Fog",           // 11
+    "Depth",         // 12
+    "Sample",        // 13
+    ""
+    };
+
+  for( int i=0; uType[i]; ++i )
+    if( strcmp(uType[i],attrName)==0 ){
+      return add( c, Usage::UsageType(i) );
+      }
+
+  Element e;
+  e.component = c;
+  e.attrName  = attrName;
+  e.index     = 0;
   return add( e );
   }
 
@@ -116,6 +155,14 @@ bool VertexDeclaration::Declarator::operator ==(const VertexDeclaration::Declara
 
 bool VertexDeclaration::Declarator::operator !=(const VertexDeclaration::Declarator &d) const {
   return data!=d.data;
+  }
+
+size_t VertexDeclaration::Declarator::texCoordCount() const {
+  return maxTexId;
+  }
+
+VertexDeclaration::Declarator::Element::Element()
+  :component(Decl::count), usage(Usage::Count), index(0) {
   }
 
 bool VertexDeclaration::Declarator::Element::operator ==(const VertexDeclaration::Declarator::Element &d) const {

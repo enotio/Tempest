@@ -1906,9 +1906,14 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
   for( int i=0; i<vd.size(); ++i ){
     const VertexDeclaration::Declarator::Element & e = vd[i];
 
+    int usrAttr = -1;
     int loc = i;
     if( vd[i].usage==Usage::TexCoord ){
       loc = vd.size()+vd[i].index;
+      } else
+    if( vd[i].attrName.size() ){
+      loc = vd.size()+vd.texCoordCount()+usrAttr;
+      ++usrAttr;
       }
 
     int count  = counts[e.component];

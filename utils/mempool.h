@@ -13,7 +13,8 @@ template< class T >
 class MemPool {
   public:
     MemPool(){
-
+      aviable.reserve(32);
+      data.reserve(32);
       }
 
     ~MemPool(){
@@ -26,17 +27,12 @@ class MemPool {
       Detail::Guard guard(spin);
       (void)guard;
 
-      for( size_t i=data.size(); i>0; ){
-        --i;
-        if( data[i]->freedCount>0 ){
-          Block *b = data[i];
-          T* tmp = b->alloc(a...);
-          for( size_t r=i; r+1<data.size(); ++r )
-            data[r] = data[r+1];
-
-          data.back() = b;
-          return tmp;
-          }
+      if( aviable.size() ){
+        Block *b = aviable.back();
+        T* tmp = b->alloc(a...);
+        if( b->freedCount==0 )
+          aviable.pop_back();
+        return tmp;
         }
 
       data.push_back( new Block() );
@@ -50,6 +46,8 @@ class MemPool {
       for( size_t i=data.size(); i>0; ){
         --i;
         if( data[i]->free(t) ){
+          if( data[i]->freedCount==1 )
+            aviable.push_back( data[i] );
           return;
           }
         }
@@ -106,7 +104,7 @@ class MemPool {
         return false;
         }
       };
-    std::vector< Block* > data;
+    std::vector< Block* > data, aviable;
     Detail::Spin spin;
     };
 
