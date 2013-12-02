@@ -127,6 +127,8 @@ struct GLSL::Data{
 
   //GLuint curProgram;
   ShProgram curProgram;
+
+  char  texAttrName[14];
   void* notId;
   };
 
@@ -136,6 +138,12 @@ void* GLSL::context() const{
 
 GLSL::GLSL( AbstractAPI::OpenGL2xDevice * dev ) {
   data = new Data();
+
+  const char* Tc = "TexCoord";
+  memset( data->texAttrName, 0, sizeof(data->texAttrName) );
+  for( int i=0; Tc[i]; ++i )
+    data->texAttrName[i] = Tc[i];
+
   data->context = dev;
   data->notId = (void*)size_t(-1);
 
@@ -409,8 +417,18 @@ void GLSL::enable() const {
         glBindAttribLocation( program, i, uType[vd[i].usage] );
         } else
       if( vd[i].usage==Usage::TexCoord ){
-        tc[ tc.size()-1 ] = vd[i].index+'0';
-        glBindAttribLocation( program, vd.size()+vd[i].index, tc.data() );
+        int id = vd[i].index;
+        data->texAttrName[8] = '0';
+        data->texAttrName[9] = 0;
+
+        for( int r=8; id>0; ++r ){
+          data->texAttrName[r] = id%10;
+          id/=10;
+          if( id==0 )
+            data->texAttrName[r+1] = 0;
+          }
+
+        glBindAttribLocation( program, vd.size()+vd[i].index, data->texAttrName );
 
         if( vd[i].index==0 )
           glBindAttribLocation( program, vd.size()+vd[i].index, "TexCoord" );

@@ -88,6 +88,42 @@ VertexDeclaration::Declarator&
 
 VertexDeclaration::Declarator &
   VertexDeclaration::Declarator::add(const Element &e) {
+  for( size_t i=0; i<data.size(); ++i ){
+    const Element& ex = data[i];
+
+    if( ex.usage==e.usage &&
+        ex.index==e.index ){
+      T_ASSERT_X(0, "Duplicate vertex declaration");
+      }
+
+    if( ex.usage==Usage::Count ){
+      T_ASSERT_X(ex.attrName==e.attrName, "Duplicate vertex declaration");
+
+      if( e.usage==Usage::TexCoord ){
+        std::string tc = "TexCoord";
+
+        int id = e.index;
+        while( id>0 ){
+          tc.push_back('0'+e.index%10);
+          id /= 10;
+          }
+        T_ASSERT_X(tc==ex.attrName, "Duplicate vertex declaration");
+        }
+      }
+
+    if( e.usage==Usage::Count && ex.usage==Usage::TexCoord ){
+      std::string tc = "TexCoord";
+
+      int id = ex.index;
+      while( id>0 ){
+        tc.push_back('0'+ex.index%10);
+        id /= 10;
+        }
+
+      T_ASSERT_X(tc==e.attrName, "Duplicate vertex declaration");
+      }
+    }
+
   data.push_back( e );
 
   if( e.usage==Usage::TexCoord ){
