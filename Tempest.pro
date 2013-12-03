@@ -18,8 +18,8 @@ QMAKE_CXXFLAGS += -std=gnu++0x -Wall
 
 INCLUDEPATH += \
                "$$(CG_INC_PATH)"\
-               "$$(DEVIL_INC_PATH)"\
-               "$$(GLEW_PATH)/include"\
+               "C:/Users/Try/Home/Programming/SharedLibs/DevIL-SDK-x86-1.7.8/include"\
+               "C:/Users/Try/Home/Programming/SharedLibs/glew-1.5.4-mingw32/include"\
                "./thirdparty/fakeGL" \
                "./thirdparty/" \
                "."
@@ -28,11 +28,14 @@ INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_wi
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/include/freetype2"
 
 LIBS += -L"C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/lib" -lfreetype
+LIBS += -L"C:/Users/Try/Home/Programming/SharedLibs/DevIL-SDK-x86-1.7.8/lib" -l"DevIL"
+LIBS += -l"gdi32" -l"z"
+
 #DEFINES += D3D_DEBUG_INFO
 
 ogl:{
   LIBS += -L"$$(CG_LIB_PATH)"
-  LIBS += -L"$$(GLEW_PATH)/lib"
+  LIBS += -L"C:/Users/Try/Home/Programming/SharedLibs/glew-1.5.4-mingw32/lib"
 
   LIBS += -l"opengl32" -l"cg" -l"cgGL" -l"glew32"
 
@@ -71,8 +74,6 @@ ogl:{
     }
   }
 
-LIBS += -L"$$(DEVIL_LIB_PATH)" -l"DevIL"
-LIBS += -l"gdi32" -l"z"
 
 SOURCES += \
     ui/window.cpp \
@@ -171,7 +172,8 @@ SOURCES += \
     utils/mempool.cpp \
     shading/programobject.cpp \
     core/imagecodec.cpp \
-    thirdparty/ktx/etc_dec.cpp
+    thirdparty/ktx/etc_dec.cpp \
+    utils/log.cpp
 
 HEADERS += \
     ui/window.h \
@@ -277,7 +279,8 @@ HEADERS += \
     utils/mempool.h \
     shading/programobject.h \
     core/imagecodec.h \
-    thirdparty/ktx/etc_dec.h
+    thirdparty/ktx/etc_dec.h \
+    utils/log.h
 
 OTHER_FILES += \
     include/Tempest/Window \
@@ -304,5 +307,6 @@ OTHER_FILES += \
     include/Tempest/GestureRecognizer \
     include/Tempest/Texture3d \
     include/Tempest/VolumeHolder \
-    include/Tempest/ImageCodec
+    include/Tempest/ImageCodec \
+    include/Tempest/Log
 

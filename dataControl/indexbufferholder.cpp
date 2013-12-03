@@ -3,7 +3,7 @@
 #include <Tempest/Texture2d>
 #include <Tempest/Device>
 
-#include <map>
+#include <unordered_map>
 
 #include <cstring>
 
@@ -18,8 +18,8 @@ struct IndexBufferHolder::Data {
     // const void * data;
     };
 
-  std::map< AbstractAPI::IndexBuffer*, LDData* > ibos, restore;
-  typedef std::map< AbstractAPI::IndexBuffer*, LDData* >::iterator Iterator;
+  std::unordered_map< AbstractAPI::IndexBuffer*, LDData* > ibos, restore;
+  typedef std::unordered_map< AbstractAPI::IndexBuffer*, LDData* >::iterator Iterator;
   };
 
 IndexBufferHolder::IndexBufferHolder( Device& d):BaseType(d) {

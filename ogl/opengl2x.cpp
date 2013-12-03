@@ -1826,7 +1826,9 @@ AbstractAPI::VertexDecl*
 void Opengl2x::deleteVertexDecl( AbstractAPI::Device *d,
                                  AbstractAPI::VertexDecl* de ) const {
   Device* dev = (Device*)d;
+
   VertexDeclaration::Declarator *dx = (VertexDeclaration::Declarator*)(de);
+  T_ASSERT( dev->decl!=dx );
   dev->declPool.free(dx);
   }
 

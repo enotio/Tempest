@@ -493,7 +493,12 @@ void PixEditor::draw(int x, int y, const Pixmap &p) {
     }
   }
 
+void Tempest::Pixmap::downsample() {
+  verifyFormatEditable();
+  ImageCodec::downsample(info, data.value()->bytes);
+  }
+
+
 Pixmap::ImgInfo::ImgInfo()
   :w(0), h(0), bpp(0), mipLevels(0), alpha(false), format(Format_RGB) {
-
   }

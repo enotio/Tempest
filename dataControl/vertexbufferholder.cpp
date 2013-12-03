@@ -3,7 +3,7 @@
 #include <Tempest/Texture2d>
 #include <Tempest/Device>
 
-#include <map>
+#include <unordered_map>
 #include <iostream>
 
 #include <cstring>
@@ -19,8 +19,8 @@ struct VertexBufferHolder::Data {
     // const void * data;
     };
 
-  std::map< AbstractAPI::VertexBuffer*, LDData* > vbos, restore;
-  typedef std::map< AbstractAPI::VertexBuffer*, LDData* >::iterator Iterator;
+  std::unordered_map< AbstractAPI::VertexBuffer*, LDData* > vbos, restore;
+  typedef std::unordered_map< AbstractAPI::VertexBuffer*, LDData* >::iterator Iterator;
   };
 
 VertexBufferHolder::VertexBufferHolder( Device& d):BaseType(d) {

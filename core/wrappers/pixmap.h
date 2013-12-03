@@ -38,6 +38,8 @@ class Pixmap {
 
     inline int mipsCount() const{ return info.mipLevels; }
 
+    void downsample();
+
     struct Pixel{
       unsigned char r,g,b,a;
 

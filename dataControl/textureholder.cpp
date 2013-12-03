@@ -20,6 +20,7 @@ struct TextureHolder::Data {
     int w, h, mip;
     TextureUsage usage;
     AbstractTexture::Format::Type format;
+    AbstractAPI::Texture* owner;
     };
 
   struct PixmapTexture{
@@ -28,8 +29,24 @@ struct TextureHolder::Data {
     AbstractAPI::Texture* owner;
     };
 
-  std::map< AbstractAPI::Texture*, DynTexture   > dynamic_textures;
+  std::vector<DynTexture   > dynamic_textures;
   std::vector<PixmapTexture> pixmap_textures;
+
+  void removeTex( AbstractAPI::Texture* t ){
+    for( size_t i=0; i<dynamic_textures.size(); ++i )
+      if( dynamic_textures[i].owner==t ){
+        dynamic_textures[i] = dynamic_textures.back();
+        dynamic_textures.pop_back();
+        return;
+        }
+
+    for( size_t i=0; i<pixmap_textures.size(); ++i )
+      if( pixmap_textures[i].owner==t ){
+        pixmap_textures[i] = pixmap_textures.back();
+        pixmap_textures.pop_back();
+        return;
+        }
+    }
 
   size_t count;
   };
@@ -125,9 +142,10 @@ void TextureHolder::createObject( AbstractAPI::Texture*& t,
   d.mip    = mips;
   d.usage  = u;
   d.format = f;
+  d.owner  = t;
 
   if( hasCPUStorage() )
-    data->dynamic_textures[t] = d;
+    data->dynamic_textures.push_back(d);
 
   setTextureFlag(t, AbstractAPI::TF_Inialized, false );
   }
@@ -159,15 +177,7 @@ void TextureHolder::recreateObject( AbstractAPI::Texture *&t,
                                     bool mips,
                                     bool compress ) {
   if( hasCPUStorage() ){
-    if( data->dynamic_textures.find(old) != data->dynamic_textures.end() )
-      data->dynamic_textures.erase(old);
-
-    for( size_t i=0; i<data->pixmap_textures.size(); ++i )
-      if( data->pixmap_textures[i].owner==old ){
-        data->pixmap_textures[i] = data->pixmap_textures.back();
-        data->pixmap_textures.pop_back();
-        i = -1;
-        }
+    data->removeTex(old);
     }
 
   Data::PixmapTexture px;
@@ -184,15 +194,7 @@ void TextureHolder::recreateObject( AbstractAPI::Texture *&t,
 
 void TextureHolder::deleteObject( AbstractAPI::Texture* t ){
   if( hasCPUStorage() ){
-    if( data->dynamic_textures.find(t) != data->dynamic_textures.end() )
-      data->dynamic_textures.erase(t);
-
-    for( size_t i=0; i<data->pixmap_textures.size(); ++i )
-      if( data->pixmap_textures[i].owner==t ){
-        data->pixmap_textures[i] = data->pixmap_textures.back();
-        data->pixmap_textures.pop_back();
-        i = -1;
-        }
+    data->removeTex(t);
     }
 
   --data->count;
@@ -211,13 +213,15 @@ AbstractAPI::Texture* TextureHolder::restore( AbstractAPI::Texture* t ){
     return t;
     }
 
-  if( data->dynamic_textures.find(t)!=data->dynamic_textures.end() ){
-    Data::DynTexture d = data->dynamic_textures[t];
-    data->dynamic_textures.erase(t);
+  for( size_t i=0; i<data->dynamic_textures.size(); ++i )
+    if( data->dynamic_textures[i].owner==t ){
+      Data::DynTexture d = data->dynamic_textures[i];
+      data->dynamic_textures[i] = data->dynamic_textures.back();
+      data->dynamic_textures.pop_back();
 
-    createObject( t, d.w, d.h, d.mip, d.format, d.usage );
-    return t;
-    }
+      createObject( t, d.w, d.h, d.mip, d.format, d.usage );
+      return t;
+      }
 
   for( size_t i=0; i<data->pixmap_textures.size(); ++i )
     if( data->pixmap_textures[i].owner==t ){

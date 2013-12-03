@@ -181,6 +181,14 @@ static struct Android{
     mainThread = 0;
     msg.  reserve(32);
     mouse.reserve(8);
+
+    pthread_mutex_init(&waitMutex, 0);
+    pthread_mutex_init(&appMutex, 0);
+    }
+
+  ~Android(){
+    pthread_mutex_destroy(&appMutex);
+    pthread_mutex_destroy(&waitMutex);
     }
 
   bool initialize();
@@ -188,6 +196,18 @@ static struct Android{
 
   void waitForQueue();
   } android;
+
+struct SyncMethod{
+  SyncMethod():g(android.waitMutex){
+
+    }
+
+  ~SyncMethod(){
+    android.waitForQueue();
+    }
+
+  Guard g;
+  };
 
 template< class ... Args >
 void LOGI( const Args& ... args ){
@@ -363,7 +383,7 @@ static Tempest::KeyEvent makeKeyEvent( int32_t k, bool scut = false ){
 static void render();
 
 void Android::waitForQueue() {
-  while( mainThread && android.window ){
+  while( mainThread && android.window && android.wnd ){
     size_t s = android.msgSize();
     if( s==0 )
       return;
@@ -774,16 +794,14 @@ void Android::destroy( bool killContext ) {
 
 static void* tempestMainFunc(void*);
 
-static void resize( JNIEnv * , jobject , jint w, jint h ) {
-  Guard wm( android.waitMutex );
+static void resize( JNIEnv * , jobject, jobject, jint w, jint h ) {
+  SyncMethod wm;
   (void)wm;
 
   Android::Message m = Android::MSG_SURFACE_RESIZE;
   m.data.w = w;
   m.data.h = h;
   android.pushMsg(m);
-
-  android.waitForQueue();
   }
 
 static void JNICALL start(JNIEnv* jenv, jobject obj) {
@@ -796,30 +814,20 @@ static void JNICALL stop(JNIEnv* jenv, jobject obj) {
 
 static void JNICALL resume(JNIEnv* jenv, jobject obj) {
   LOGI("nativeOnResume");
-  Guard w( android.waitMutex );
-  (void)w;
+  SyncMethod wm;
+  (void)wm;
 
-  {
-    Guard g(android.appMutex);
-    (void)g;
-    android.msg.push_back( Android::MSG_RESUME );
-    android.isPaused = false;
-    }
-
-  android.waitForQueue();
+  android.pushMsg( Android::MSG_RESUME );
+  android.isPaused = false;
   }
 
 static void JNICALL pauseA(JNIEnv* jenv, jobject obj) {
   LOGI("nativeOnPause");
-  Guard w( android.waitMutex );
-  (void)w;
-  {
-    Guard g( android.appMutex );
-    (void)g;
-    android.msg.push_back( Android::MSG_PAUSE );
-    android.isPaused = true;
-    }
-  android.waitForQueue();
+  SyncMethod wm;
+  (void)wm;
+
+  android.msg.push_back( Android::MSG_PAUSE );
+  android.isPaused = true;
   }
 
 static void JNICALL setAssets(JNIEnv* jenv, jobject obj, jobject assets ) {
@@ -870,10 +878,6 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject obj, jobject surface
 
 static void JNICALL onCreate(JNIEnv* , jobject ) {
   LOGI("nativeOnCreate");
-
-  pthread_mutex_init(&android.waitMutex, 0);
-  pthread_mutex_init(&android.appMutex, 0);
-
   android.mainThread = 0;
   }
 
@@ -886,10 +890,7 @@ static void JNICALL onDestroy(JNIEnv* jenv, jobject obj) {
   }
 
   pthread_join(android.mainThread,0);
-  android.mainThread = 0;
 
-  pthread_mutex_destroy(&android.appMutex);
-  pthread_mutex_destroy(&android.waitMutex);
   android.msg.clear();
 
   LOGI("nativeOnDestroy");
@@ -911,12 +912,10 @@ static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
   }
 
 static jint JNICALL nativeCloseEvent( JNIEnv* , jobject ){
-  Guard w( android.waitMutex );
-  (void)w;
+  SyncMethod wm;
+  (void)wm;
 
   android.pushMsg( Android::MSG_CLOSE );
-  android.waitForQueue();
-
   return android.closeRqAccepted? 1:0;
   }
 
@@ -1019,6 +1018,7 @@ static void* tempestMainFunc(void*){
   jmethodID invokeMain = a.env->GetStaticMethodID( clazz, "invokeMain", "()V");
 
   android.initialize();
+  LOGI("Tempest MainFunc[1]");
   a.env->CallStaticVoidMethod(clazz, invokeMain);
 
   LOGI("~Tempest MainFunc");
@@ -1026,6 +1026,7 @@ static void* tempestMainFunc(void*){
 
   a.vm->DetachCurrentThread();
 
+  android.mainThread = 0;
   pthread_exit(0);
   return 0;
   }

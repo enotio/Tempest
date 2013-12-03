@@ -3,6 +3,7 @@
 
 #include <Tempest/AbstractAPI>
 #include "../core/wrappers/atomic.h"
+#include "../utils/cwnptr.h"
 
 #include <string>
 #include <set>
@@ -34,12 +35,12 @@ class AbstractHolder : public AbstractHolderBase {
   protected:
     AbstractHolder( Device & d ):AbstractHolderBase(d){
       references.reserve(4096);
-      freed.reserve(4096);
+      //freed.reserve(4096);
       }
 
     ~AbstractHolder(){
-      for( size_t i=0; i<freed.size(); ++i )
-        delete freed[i];
+      //for( size_t i=0; i<freed.size(); ++i )
+        //delete freed[i];
       }
 
     struct ImplManip{
@@ -98,6 +99,10 @@ class AbstractHolder : public AbstractHolderBase {
     typedef typename ImplManip::Ref Ref;
 
     Ref* addRef( const Ref& re ){
+      Ref* r = pool.alloc(re);
+      references.push_back(r);
+      return r;
+      /*
       Ref *r = 0;
       if( freed.size() ){
         r = freed.back();
@@ -108,7 +113,7 @@ class AbstractHolder : public AbstractHolderBase {
         }
 
       references.push_back( r );
-      return references.back();
+      return references.back();*/
       }
 
     Ref* copyRef( const Ref* re ){
@@ -116,6 +121,13 @@ class AbstractHolder : public AbstractHolderBase {
       }
 
     void delRef( Ref * re ){
+      for( size_t i=0; i<references.size(); ++i )
+        if( references[i]==re ){
+          references[i] = references.back();
+          references.pop_back();
+          }
+      pool.free(re);
+      /*
       for( size_t i=0; i<references.size(); ++i ){
         size_t id = references.size()-i-1;
         if( references[id]==re ){
@@ -136,11 +148,12 @@ class AbstractHolder : public AbstractHolderBase {
           }
         }
 
-      delete re;
+      delete re;*/
       }
 
   protected:
-    std::vector< Ref* > references, freed;
+    std::vector< Ref* > references;//, freed;
+    MemPool<Ref> pool;
 
     void reset(){
       typename std::vector< Ref* >::iterator i = this->references.begin(),

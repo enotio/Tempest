@@ -6,62 +6,54 @@ using namespace Tempest;
 
 
 VertexDeclaration::VertexDeclaration():dev(0){
-  decl = 0;
   }
 
 VertexDeclaration::VertexDeclaration(Device &de):dev(&de){
-  decl = 0;
   dev->addVertexDeclaration( *this );
   }
 
 VertexDeclaration::VertexDeclaration( Device &de, const Declarator &d )
-                  : dev(&de) {
-  decl = new Data();
-
-  decl->count = 1;
+                  : decl( new Data() ), dev(&de) {
   decl->impl  = dev->createVertexDecl( d );
   decl->decl  = d;
 
   dev->addVertexDeclaration( *this );
   }
 
-VertexDeclaration::VertexDeclaration(const VertexDeclaration &d):dev( d.dev ) {
-  decl = d.decl;
-
-  if( decl )
-    ++decl->count;
-
-  dev = d.dev;
+VertexDeclaration::VertexDeclaration(const VertexDeclaration &d)
+  : decl(d.decl), dev( d.dev ) {
   if( dev )
     dev->addVertexDeclaration( *this );
   }
 
 VertexDeclaration::~VertexDeclaration(){
-  delRef();
-
-  if( dev )
+  if( dev ){
+    if( decl.unique() )
+      dev->deleteVertexDecl( (Tempest::AbstractAPI::VertexDecl*)decl->impl );
     dev->delVertexDeclaration( *this );
+    }
   }
 
 VertexDeclaration &VertexDeclaration::operator = ( const VertexDeclaration& v) {
   if( this==&v )
     return *this;
-  if( dev )
+
+  if( dev ){
     dev->delVertexDeclaration( *this );
 
-  delRef();
+    if( decl.unique() )
+      dev->deleteVertexDecl( (Tempest::AbstractAPI::VertexDecl*)decl->impl );
+    }
+
   decl = v.decl;
-
-  if( decl )
-    ++decl->count;
-
-  dev = v.dev;
+  dev  = v.dev;
 
   if( dev )
     dev->addVertexDeclaration( *this );
   return *this;
   }
 
+/*
 void VertexDeclaration::delRef() {
   if( decl==0 )
     return;
@@ -74,7 +66,7 @@ void VertexDeclaration::delRef() {
     delete decl;
     }
   }
-
+*/
 
 VertexDeclaration::Declarator::Declarator():maxTexId(0){
   }
@@ -116,7 +108,15 @@ VertexDeclaration::Declarator &
 
       int id = ex.index;
       while( id>0 ){
-        tc.push_back('0'+ex.index%10);
+        tc.push_back('0');
+        id /= 10;
+        }
+
+      id = ex.index;
+      size_t ix = tc.size()-1;
+      while( id>0 ){
+        tc[ix] = ('0'+id%10);
+        --ix;
         id /= 10;
         }
 
@@ -217,5 +217,5 @@ const Tempest::VertexDeclaration::Declarator&
   }
 
 bool VertexDeclaration::isValid() const {
-  return decl;
+  return decl.get();
   }

@@ -407,7 +407,6 @@ void GLSL::enable() const {
       ""
       };
 
-    std::string tc = "TexCoord*";
     const Tempest::VertexDeclaration::Declarator& vd
         = *(const Tempest::VertexDeclaration::Declarator*)data->vdecl;
 
@@ -417,15 +416,24 @@ void GLSL::enable() const {
         glBindAttribLocation( program, i, uType[vd[i].usage] );
         } else
       if( vd[i].usage==Usage::TexCoord ){
-        int id = vd[i].index;
         data->texAttrName[8] = '0';
         data->texAttrName[9] = 0;
 
-        for( int r=8; id>0; ++r ){
-          data->texAttrName[r] = id%10;
-          id/=10;
-          if( id==0 )
-            data->texAttrName[r+1] = 0;
+        int id = vd[i].index;
+        if( id ){
+          int idx = 0;
+          while( id>0 ){
+            ++idx;
+            id/=10;
+            }
+
+          id = vd[i].index;
+          for( int r=0; id>0; ++r ){
+            data->texAttrName[7+idx-r] = '0'+id%10;
+            id/=10;
+            }
+
+          data->texAttrName[8+idx] = 0;
           }
 
         glBindAttribLocation( program, vd.size()+vd[i].index, data->texAttrName );

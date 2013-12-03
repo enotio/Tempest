@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include <memory>
 
 #include <Tempest/Half>
 
@@ -76,7 +77,6 @@ class VertexDeclaration {
           std::string attrName;
           int index;
 
-
           bool operator == ( const Element& d ) const;
           bool operator != ( const Element& d ) const;
           };
@@ -108,11 +108,9 @@ class VertexDeclaration {
     struct Data{
       void* impl;
       Declarator decl;
-      int count;
-      } * decl;
+      };
+    std::shared_ptr<Data> decl;
     Device * dev;
-
-    void delRef();
 
     friend class Device;
   };

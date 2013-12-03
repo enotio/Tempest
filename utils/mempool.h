@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+#include <Tempest/Assert>
 #include "../core/wrappers/atomic.h"
 
 namespace Tempest {
@@ -52,6 +53,8 @@ class MemPool {
           return;
           }
         }
+
+      T_WARNING_X(0, "bad free");
       }
 
   private:

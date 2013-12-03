@@ -69,7 +69,6 @@ void decompressBlockDiffFlipC( uint32_t block_part1,
   signed char diff[3];
   int table;
   int index,shift;
-  int r,g,b;
   int diffbit;
   int flipbit;
 
@@ -111,9 +110,9 @@ void decompressBlockDiffFlipC( uint32_t block_part1,
           shift++;
           index=unscramble[index];
 
-          r=RED_CHANNEL  (img,width,x,y,channels) = CLAMP(0,avg_color[0]+compressParams[table][index],255);
-          g=GREEN_CHANNEL(img,width,x,y,channels) = CLAMP(0,avg_color[1]+compressParams[table][index],255);
-          b=BLUE_CHANNEL (img,width,x,y,channels) = CLAMP(0,avg_color[2]+compressParams[table][index],255);
+          RED_CHANNEL  (img,width,x,y,channels) = CLAMP(0,avg_color[0]+compressParams[table][index],255);
+          GREEN_CHANNEL(img,width,x,y,channels) = CLAMP(0,avg_color[1]+compressParams[table][index],255);
+          BLUE_CHANNEL (img,width,x,y,channels) = CLAMP(0,avg_color[2]+compressParams[table][index],255);
         }
       }
     }
@@ -130,9 +129,9 @@ void decompressBlockDiffFlipC( uint32_t block_part1,
           shift++;
           index=unscramble[index];
 
-          r=RED_CHANNEL(img,width,x,y,channels)  =CLAMP(0,avg_color[0]+compressParams[table][index],255);
-          g=GREEN_CHANNEL(img,width,x,y,channels)=CLAMP(0,avg_color[1]+compressParams[table][index],255);
-          b=BLUE_CHANNEL(img,width,x,y,channels) =CLAMP(0,avg_color[2]+compressParams[table][index],255);
+          RED_CHANNEL(img,width,x,y,channels)  =CLAMP(0,avg_color[0]+compressParams[table][index],255);
+          GREEN_CHANNEL(img,width,x,y,channels)=CLAMP(0,avg_color[1]+compressParams[table][index],255);
+          BLUE_CHANNEL(img,width,x,y,channels) =CLAMP(0,avg_color[2]+compressParams[table][index],255);
         }
         shift+=2;
       }
@@ -167,9 +166,9 @@ void decompressBlockDiffFlipC( uint32_t block_part1,
           shift++;
           index=unscramble[index];
 
-          r=RED_CHANNEL(img,width,x,y,channels)  =CLAMP(0,avg_color[0]+compressParams[table][index],255);
-          g=GREEN_CHANNEL(img,width,x,y,channels)=CLAMP(0,avg_color[1]+compressParams[table][index],255);
-          b=BLUE_CHANNEL(img,width,x,y,channels) =CLAMP(0,avg_color[2]+compressParams[table][index],255);
+          RED_CHANNEL(img,width,x,y,channels)  =CLAMP(0,avg_color[0]+compressParams[table][index],255);
+          GREEN_CHANNEL(img,width,x,y,channels)=CLAMP(0,avg_color[1]+compressParams[table][index],255);
+          BLUE_CHANNEL(img,width,x,y,channels) =CLAMP(0,avg_color[2]+compressParams[table][index],255);
         }
       }
     }
@@ -186,9 +185,9 @@ void decompressBlockDiffFlipC( uint32_t block_part1,
           shift++;
           index=unscramble[index];
 
-          r=RED_CHANNEL(img,width,x,y,channels)  =CLAMP(0,avg_color[0]+compressParams[table][index],255);
-          g=GREEN_CHANNEL(img,width,x,y,channels)=CLAMP(0,avg_color[1]+compressParams[table][index],255);
-          b=BLUE_CHANNEL(img,width,x,y,channels) =CLAMP(0,avg_color[2]+compressParams[table][index],255);
+          RED_CHANNEL(img,width,x,y,channels)  =CLAMP(0,avg_color[0]+compressParams[table][index],255);
+          GREEN_CHANNEL(img,width,x,y,channels)=CLAMP(0,avg_color[1]+compressParams[table][index],255);
+          BLUE_CHANNEL(img,width,x,y,channels) =CLAMP(0,avg_color[2]+compressParams[table][index],255);
         }
         shift += 2;
       }
@@ -243,9 +242,9 @@ void decompressBlockDiffFlipC( uint32_t block_part1,
           shift++;
           index=unscramble[index];
 
-          r=RED_CHANNEL(img,width,x,y,channels)  =CLAMP(0,avg_color[0]+compressParams[table][index],255);
-          g=GREEN_CHANNEL(img,width,x,y,channels)=CLAMP(0,avg_color[1]+compressParams[table][index],255);
-          b=BLUE_CHANNEL(img,width,x,y,channels) =CLAMP(0,avg_color[2]+compressParams[table][index],255);
+          RED_CHANNEL(img,width,x,y,channels)  =CLAMP(0,avg_color[0]+compressParams[table][index],255);
+          GREEN_CHANNEL(img,width,x,y,channels)=CLAMP(0,avg_color[1]+compressParams[table][index],255);
+          BLUE_CHANNEL(img,width,x,y,channels) =CLAMP(0,avg_color[2]+compressParams[table][index],255);
         }
       }
     }
@@ -262,9 +261,9 @@ void decompressBlockDiffFlipC( uint32_t block_part1,
           shift++;
           index=unscramble[index];
 
-          r=RED_CHANNEL(img,width,x,y,channels)  =CLAMP(0,avg_color[0]+compressParams[table][index],255);
-          g=GREEN_CHANNEL(img,width,x,y,channels)=CLAMP(0,avg_color[1]+compressParams[table][index],255);
-          b=BLUE_CHANNEL(img,width,x,y,channels) =CLAMP(0,avg_color[2]+compressParams[table][index],255);
+          RED_CHANNEL(img,width,x,y,channels)  =CLAMP(0,avg_color[0]+compressParams[table][index],255);
+          GREEN_CHANNEL(img,width,x,y,channels)=CLAMP(0,avg_color[1]+compressParams[table][index],255);
+          BLUE_CHANNEL(img,width,x,y,channels) =CLAMP(0,avg_color[2]+compressParams[table][index],255);
         }
         shift+=2;
       }
@@ -310,9 +309,9 @@ void decompressBlockDiffFlipC( uint32_t block_part1,
           shift++;
           index=unscramble[index];
 
-          r=RED_CHANNEL(img,width,x,y,channels)  =CLAMP(0,avg_color[0]+compressParams[table][index],255);
-          g=GREEN_CHANNEL(img,width,x,y,channels)=CLAMP(0,avg_color[1]+compressParams[table][index],255);
-          b=BLUE_CHANNEL(img,width,x,y,channels) =CLAMP(0,avg_color[2]+compressParams[table][index],255);
+          RED_CHANNEL(img,width,x,y,channels)  =CLAMP(0,avg_color[0]+compressParams[table][index],255);
+          GREEN_CHANNEL(img,width,x,y,channels)=CLAMP(0,avg_color[1]+compressParams[table][index],255);
+          BLUE_CHANNEL(img,width,x,y,channels) =CLAMP(0,avg_color[2]+compressParams[table][index],255);
         }
       }
     }
@@ -327,9 +326,9 @@ void decompressBlockDiffFlipC( uint32_t block_part1,
           shift++;
           index=unscramble[index];
 
-          r=RED_CHANNEL(img,width,x,y,channels)  = CLAMP(0,avg_color[0]+compressParams[table][index],255);
-          g=GREEN_CHANNEL(img,width,x,y,channels)= CLAMP(0,avg_color[1]+compressParams[table][index],255);
-          b=BLUE_CHANNEL(img,width,x,y,channels) = CLAMP(0,avg_color[2]+compressParams[table][index],255);
+          RED_CHANNEL(img,width,x,y,channels)  = CLAMP(0,avg_color[0]+compressParams[table][index],255);
+          GREEN_CHANNEL(img,width,x,y,channels)= CLAMP(0,avg_color[1]+compressParams[table][index],255);
+          BLUE_CHANNEL(img,width,x,y,channels) = CLAMP(0,avg_color[2]+compressParams[table][index],255);
           }
         shift += 2;
         }
