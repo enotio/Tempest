@@ -46,9 +46,10 @@ class AbstractHolder : public AbstractHolderBase {
     struct ImplManip{
       struct Ref{
         Ref( APIDescriptor* t ):data(t), count(1){}
+        Ref( const Ref& r ):data(r.data), count(1){}
 
         APIDescriptor*  data;
-        int count;
+        Detail::atomic_counter count;
 
         Detail::Spin spin;
         };
@@ -102,18 +103,6 @@ class AbstractHolder : public AbstractHolderBase {
       Ref* r = pool.alloc(re);
       references.push_back(r);
       return r;
-      /*
-      Ref *r = 0;
-      if( freed.size() ){
-        r = freed.back();
-        *r = Ref(re);
-        freed.pop_back();
-        } else {
-        r = new Ref(re);
-        }
-
-      references.push_back( r );
-      return references.back();*/
       }
 
     Ref* copyRef( const Ref* re ){
@@ -127,28 +116,6 @@ class AbstractHolder : public AbstractHolderBase {
           references.pop_back();
           }
       pool.free(re);
-      /*
-      for( size_t i=0; i<references.size(); ++i ){
-        size_t id = references.size()-i-1;
-        if( references[id]==re ){
-          references[id] = references.back();
-          references.pop_back();
-          //delete re;
-
-          if( freed.size()<references.size() )
-            freed.push_back( re ); else
-            delete re;
-
-          while( freed.size()>2*references.size() ){
-            delete freed.back();
-            freed.pop_back();
-            }
-
-          return;
-          }
-        }
-
-      delete re;*/
       }
 
   protected:

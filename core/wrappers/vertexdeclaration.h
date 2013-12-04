@@ -69,6 +69,7 @@ class VertexDeclaration {
     class Declarator{
       public:
         Declarator();
+        ~Declarator();
 
         struct Element{
           Element();

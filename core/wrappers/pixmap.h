@@ -145,7 +145,7 @@ class Pixmap {
         Ref( const T& t ):data(t), count(1){}
 
         T   data;
-        int count;
+        Detail::atomic_counter count;
         Detail::Spin spin;
         };
 

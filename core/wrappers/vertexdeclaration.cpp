@@ -69,7 +69,10 @@ void VertexDeclaration::delRef() {
 */
 
 VertexDeclaration::Declarator::Declarator():maxTexId(0){
-  }
+}
+
+VertexDeclaration::Declarator::~Declarator(){
+}
 
 VertexDeclaration::Declarator&
   VertexDeclaration::Declarator::operator <<( const Element & t ){

@@ -14,7 +14,7 @@ struct PtrManip{
     Ref( const T& t ):data(t), count(1){}
 
     T   data;
-    int count;
+    atomic_counter count;
 
     Detail::Spin spin;
 
@@ -47,16 +47,14 @@ class Ptr {
     Ptr( const Manip & m ):manip(m), r( 0 ){}
 
     Ptr( const Ptr& c ):manip( c.manip ){
-      Guard guardc( c.r->spin );
-      (void)guardc;
-
-      Guard guardr( r->spin );
-      (void)guardr;
-
+      if( c.r )
+        atomicInc( c.r->count, 1 );
       r = c.r;
 
+      /*
       if( !isNull() )
         atomicInc( r->count, 1 );
+        */
       }
 
     ~Ptr(){
@@ -67,12 +65,6 @@ class Ptr {
 
     Ptr& operator = ( const Ptr& c ){
       if( this != &c ){
-        Guard guardc( c.r->spin );
-        (void)guardc;
-
-        Guard guardr( r->spin );
-        (void)guardr;
-
         if( r!=0 )
           delRef();
 

@@ -1,6 +1,10 @@
 #ifndef ATOMIC_H
 #define ATOMIC_H
 
+#ifdef TEMPEST_M_TREADS
+#include <atomic>
+#endif
+
 namespace Tempest{
 
 namespace Detail{
@@ -11,7 +15,9 @@ struct Spin {
   void unlock();
 
   private:
-    short flag;
+#ifdef TEMPEST_M_TREADS
+    std::atomic_flag flag;
+#endif
   };
 
 template< class T >
@@ -30,8 +36,9 @@ struct GuardBase{
   };
 
 typedef GuardBase<Spin> Guard;
+typedef long atomic_counter;
 
-int atomicInc(int &src, int add );
+atomic_counter atomicInc(volatile atomic_counter &src, atomic_counter add );
 
 }
 
