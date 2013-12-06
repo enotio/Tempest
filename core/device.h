@@ -108,17 +108,17 @@ class Device {
         return;
 
       applyRs();
-      bind(vs);
-      bind(fs);
+      bindShaders(vs, fs);
       bind(decl);
 
-      shadingLang().setVertexDecl( (AbstractAPI::VertexDecl*)(decl.decl->impl) );
-      shadingLang().enable();
+      const AbstractShadingLang& sh = shadingLang();
+      sh.setVertexDecl( (AbstractAPI::VertexDecl*)(decl.decl->impl) );
+      sh.enable();
       bind( vbo.data.const_value(), sizeof(T) );
  
       draw( t, firstVertex + vbo.m_first, pCount );
 
-      shadingLang().disable();
+      sh.disable();
       }
 
     template< class T, class I >
@@ -140,19 +140,19 @@ class Device {
         return;
 
       applyRs();
-      bind(vs);
-      bind(fs);
+      bindShaders(vs, fs);
       bind(decl);
       bind( vbo.data.const_value(), sizeof(T) );
       bind( ibo.data.const_value() );
 
-      shadingLang().setVertexDecl( (AbstractAPI::VertexDecl*)(decl.decl->impl) );
-      shadingLang().enable();
+      const AbstractShadingLang& sh = shadingLang();
+      sh.setVertexDecl( (AbstractAPI::VertexDecl*)(decl.decl->impl) );
+      sh.enable();
       drawIndexedPrimitive( t,
                             vboOffsetIndex + vbo.m_first,
                             iboOffsetIndex + ibo.m_first,
                             pCount  );
-      shadingLang().disable();
+      sh.disable();
       }
 
     template< class T >
@@ -192,6 +192,8 @@ class Device {
     void bind( const Tempest::FragmentShader &s );
 
     void assertPaint();
+    void bindShaders(const Tempest::VertexShader   &vs,
+                      const Tempest::FragmentShader &fs);
 
     void unBind( const Tempest::VertexShader   &s );
     void unBind( const Tempest::FragmentShader &s );

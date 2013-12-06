@@ -48,6 +48,21 @@ class MemPool {
       for( size_t i=data.size(); i>0; ){
         --i;
         if( data[i]->free(t) ){
+          if( aviable.size()>1 && data[i]->freedCount==256 ){
+            for( size_t r=0; r<aviable.size(); ++r )
+              if( aviable[r]==data[i] ){
+                aviable[r] = aviable.back();
+                aviable.pop_back();
+
+                delete data[i];
+                for( size_t q=i; q+1<data.size(); ++q )
+                  data[q] = data[q+1];
+
+                data.pop_back();
+                return;
+                }
+            }
+
           if( data[i]->freedCount==1 )
             aviable.push_back( data[i] );
           return;

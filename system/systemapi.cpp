@@ -221,6 +221,10 @@ void SystemAPI::sizeEvent( Tempest::Window *w, int cW, int cH ) {
     }
   }
 
+void SystemAPI::setShowMode(Tempest::Window *w, int mode) {
+  w->smode = Tempest::Window::ShowMode(mode);
+  }
+
 void SystemAPI::activateEvent(Tempest::Window *w, bool a) {
   w->isAppActive = a;
   }

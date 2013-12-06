@@ -28,12 +28,12 @@ class TextureHolder : public AbstractHolderWithLoad
     virtual Tempest::Texture2d create( Size wh,
                                         AbstractTexture::Format::Type format
                                           = Tempest::AbstractTexture::Format::RGB,
-                                        TextureUsage u = TU_Undefined );
+                                        TextureUsage u = TU_RenderTaget );
 
     virtual Tempest::Texture2d create( int w, int h,
                                         AbstractTexture::Format::Type format
                                           = Tempest::AbstractTexture::Format::RGB,
-                                        TextureUsage u = TU_Undefined );
+                                        TextureUsage u = TU_RenderTaget );
 
     Tempest::Texture2d load( const std::wstring & fname );
     Tempest::Texture2d load( const std::string & fname );

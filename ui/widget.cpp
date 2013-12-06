@@ -504,7 +504,7 @@ void Widget::impl_gestureEvent(Widget *w, AbstractGestureEvent &e) {
     Widget *wx = w->layout().widgets()[sz-i-1];
 
     if( wx->isVisible() &&
-        (!w->isScissorUsed() ||wx->rect().contains(e.hotSpot())) ){
+        (!w->isScissorUsed() || wx->rect().contains(e.hotSpot())) ){
       Point h = e.hotSpot();
       e.setHotSpot( h - wx->pos() );
       impl_gestureEvent( wx, e );
@@ -515,8 +515,10 @@ void Widget::impl_gestureEvent(Widget *w, AbstractGestureEvent &e) {
       }
     }
 
-  e.accept();
-  w->gestureEvent(e);
+  if( !e.isAccepted() ){
+    e.accept();
+    w->gestureEvent(e);
+    }
   }
 
 void Widget::paintNested( PaintEvent &p ){
@@ -683,6 +685,7 @@ void Widget::rootCloseEvent(CloseEvent &e) {
   }
 
 void Widget::rootGestureEvent(AbstractGestureEvent &e) {
+  e.ignore();
   impl_gestureEvent(this, e);
   }
 

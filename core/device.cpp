@@ -421,14 +421,17 @@ void Device::endPaint  (){
 void Device::beginPaintImpl() const {
   data->mrtSize   = data->paintTaget.mrt.size();
 
-  if( data->paintTaget.ds )
-    api.setDSSurfaceTaget( impl, data->paintTaget.ds ); else
+  if( data->paintTaget.ds ){
+    api.setDSSurfaceTaget( impl, data->paintTaget.ds );
+    } else {
     api.retDSSurfaceTaget( impl, data->depthStencil  );
+    }
 
-  for( int i=0; i<data->mrtSize; ++i )
+  for( int i=0; i<data->mrtSize; ++i ){
     api.setRenderTaget( impl,
                         data->paintTaget.mrt[i], 0,
                         i );
+    }
   //data->viewPortSize = depthStencil.size();
 
   api.beginPaint(impl);
@@ -732,6 +735,13 @@ void Device::deleteVertexDecl( AbstractAPI::VertexDecl* d ) const {
 
 void Device::assertPaint() {
   T_ASSERT_X( data->isPaintMode, "Device::beginPaint not called" );
+  }
+
+void Device::bindShaders( const VertexShader &vs,
+                          const FragmentShader &fs ) {
+  bind(vs);
+  bind(fs);
+
   }
 
 void Device::bind( const Tempest::VertexShader &s ){

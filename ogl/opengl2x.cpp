@@ -216,8 +216,23 @@ struct Opengl2x::Device{
     return v;
     }
 
-  static void texFormat( AbstractTexture::Format::Type f,
-                         GLenum& storage, GLenum& inFrm, GLenum& inBytePkg ){
+  bool hasAlpha( AbstractTexture::Format::Type f ){
+    if( AbstractTexture::Format::RGBA<=f &&
+        f<=AbstractTexture::Format::RGBA16 )
+      return true;
+
+    if( AbstractTexture::Format::RGBA_DXT1<=f &&
+        f<=AbstractTexture::Format::RGBA_DXT5 )
+      return true;
+
+    return false;
+    }
+
+  void texFormat( AbstractTexture::Format::Type f,
+                  GLenum& storage,
+                  GLenum& inFrm,
+                  GLenum& inBytePkg,
+                  bool renderable ){
 
 #ifndef __ANDROID__
   static const GLenum format[] = {
@@ -289,7 +304,7 @@ struct Opengl2x::Device{
     };
 #endif
 
-  static const GLenum inputFormat[] = {
+    static const GLenum inputFormat[] = {
     GL_LUMINANCE,
     GL_LUMINANCE_ALPHA,
     GL_LUMINANCE,
@@ -322,6 +337,12 @@ struct Opengl2x::Device{
     GL_RGB,
     GL_RGBA
     };
+
+    if( !hasRenderToRGBTextures && renderable ){
+      if( hasAlpha(f) )
+        f = AbstractTexture::Format::RGBA5; else
+        f = AbstractTexture::Format::RGB5;
+      }
 
     inBytePkg = GL_UNSIGNED_BYTE;
 #ifdef __ANDROID__
@@ -374,6 +395,7 @@ struct Opengl2x::Device{
   unsigned  clearS;
 
   bool hasTileBasedRender, hasQCOMTiles, hasDiscardBuffers;
+  bool hasRenderToRGBTextures;
 
   PFNGLSTARTTILINGQCOMPROC glStartTilingQCOM;
   PFNGLENDTILINGQCOMPROC   glEndTilingQCOM;
@@ -488,9 +510,11 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->hasETC1Textures = (strstr(ext, "GL_OES_compressed_ETC1_RGB8_texture")!=0);
 
 #ifdef __ANDROID__
-  dev->hasHalfSupport     = strstr(ext, "GL_OES_vertex_half_float")!=0 ;
+  dev->hasHalfSupport            = strstr(ext, "GL_OES_vertex_half_float")!=0;
+  dev->hasRenderToRGBTextures    = strstr(ext, "GL_OES_rgb8_rgba8")!=0;
 #else
-  dev->hasHalfSupport     = 1;
+  dev->hasHalfSupport             = 1;
+  dev->hasRenderToRGBTextures     = 1;
 #endif
 
   dev->hasQCOMTiles      = strstr(ext, "GL_QCOM_tiled_rendering")!=0;
@@ -944,11 +968,12 @@ bool Opengl2x::setupFBO() const {
       if( err[i].err==status )
         desc = err[i].desc;
 #ifndef __ANDROID__
-    std::cout << "fbo error" << desc <<" " << std::hex << status << std::dec << std::endl;
+    std::cout << "fbo error " << desc <<" " << std::hex << status << std::dec << std::endl;
 #else
     void* ierr = (void*)status;
     __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "fbo error %s %p", desc, ierr);
 #endif
+    T_ASSERT_X(status==0, desc);
     return 1;
     }
 
@@ -1268,6 +1293,12 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
     loadTextureS3TC(d, (AbstractAPI::Texture*)tex, p, mips, compress);
     }
 
+  if( glGetError()==GL_INVALID_VALUE ){
+    glDeleteTextures( 1, &tex->id );
+    delete tex;
+    return 0;
+    }
+
   glTexParameteri( GL_TEXTURE_2D,
                    GL_TEXTURE_MIN_FILTER,
                    GL_NEAREST );
@@ -1453,7 +1484,7 @@ AbstractAPI::Texture* Opengl2x::createTexture(AbstractAPI::Device *d,
     }
 
   GLenum storage, inFrm, bytePkg;
-  dev->texFormat(f, storage, inFrm, bytePkg);
+  dev->texFormat(f, storage, inFrm, bytePkg, u!=TU_Static );
 
   Detail::GLTexture* tex = dev->texPool.alloc();
   glGenTextures(1, &tex->id);
@@ -1534,7 +1565,7 @@ AbstractAPI::Texture *Opengl2x::createTexture3d(AbstractAPI::Device *d,
   if( !setDevice(d) ) return 0;
 
   GLenum storage, inFrm, bytePkg;
-  dev->texFormat(f, storage, inFrm, bytePkg);
+  dev->texFormat(f, storage, inFrm, bytePkg, u!=TU_Static );
 
   Detail::GLTexture* tex = dev->texPool.alloc();
   glGenTextures(1, &tex->id);
@@ -1828,7 +1859,9 @@ void Opengl2x::deleteVertexDecl( AbstractAPI::Device *d,
   Device* dev = (Device*)d;
 
   VertexDeclaration::Declarator *dx = (VertexDeclaration::Declarator*)(de);
-  T_ASSERT( dev->decl!=dx );
+  if( dev->decl==dx )
+    dev->decl = 0;
+
   dev->declPool.free(dx);
   }
 

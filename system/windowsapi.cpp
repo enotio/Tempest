@@ -178,7 +178,8 @@ int WindowsAPI::nextEvents(bool &quit) {
       r = uMsg.wParam;
       } else {
       for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
-        i->second->render();
+        if( i->second->showMode()!=Tempest::Window::Minimized )
+          i->second->render();
 
       return r;
       }
@@ -602,6 +603,19 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           int cH = rectWindow.bottom - rectWindow.top;
 
           if( w ){
+            int smode = int( w->showMode() );
+
+            if( wParam==SIZE_RESTORED )
+              smode = Window::Normal;
+
+            if( wParam==SIZE_MAXIMIZED ||
+                wParam==SIZE_MAXSHOW   )
+              smode = Window::Maximized;
+
+            if( wParam==SIZE_MINIMIZED )
+              smode = Window::Minimized;
+
+            SystemAPI::setShowMode( w, smode);
             SystemAPI::sizeEvent( w, cW, cH );
             GetWindowRect( HWND(hWnd), &rectWindow );
             SystemAPI::moveEvent( w, rectWindow.left, rectWindow.top );

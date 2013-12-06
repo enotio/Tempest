@@ -110,12 +110,14 @@ class AbstractHolder : public AbstractHolderBase {
       }
 
     void delRef( Ref * re ){
+      pool.free(re);
+
       for( size_t i=0; i<references.size(); ++i )
         if( references[i]==re ){
           references[i] = references.back();
           references.pop_back();
+          return;
           }
-      pool.free(re);
       }
 
   protected:

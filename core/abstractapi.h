@@ -16,6 +16,7 @@ class RenderState;
 class Size;
 
 enum TextureUsage{
+  TU_Static,
   TU_Undefined,
   TU_RenderTaget,
   TU_Dynamic

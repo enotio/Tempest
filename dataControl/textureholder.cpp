@@ -71,9 +71,16 @@ Tempest::Texture2d TextureHolder::create( int w, int h,
   if( !(w==0 || h==0) )
     createObject( obj.data.value(), w, h, 0, f, u ); else
     obj.data.value() = 0;
-  obj.w   = w;
-  obj.h   = h;
-  obj.frm = f;
+
+  if( obj.data.const_value() ){
+    obj.w   = w;
+    obj.h   = h;
+    } else {
+    obj.w   = 0;
+    obj.h   = 0;
+    }
+
+  obj.frm = f;  
 
   return obj;
   }

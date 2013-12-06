@@ -27,6 +27,9 @@ void Log::flush() {
   if( m==Debug )
      __android_log_print(ANDROID_LOG_DEBUG, "", "%s", st.str().c_str());
 #else
-  std::cout << st.str() << std::endl;
+  if( m==Error )
+    std::cerr << st.str() << std::endl;
+    else
+    std::cout << st.str() << std::endl;
 #endif
   }

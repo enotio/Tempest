@@ -97,6 +97,7 @@ class SystemAPI{
 
     static void moveEvent( Tempest::Window *w, int cX, int cY);
     static void sizeEvent( Tempest::Window *w, int cW, int cH);
+    static void setShowMode( Tempest::Window *w, int mode );
     static void activateEvent( Tempest::Window*w, bool a );
 
     virtual bool isGraphicsContextAviable( Tempest::Window *w );
