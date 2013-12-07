@@ -23,6 +23,7 @@
 #include <fstream>
 
 #include <cstring>
+#include <tuple>
 
 #ifdef __ANDROID__
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE
@@ -119,6 +120,10 @@ struct GLSL::Data{
     GLuint vs;
     GLuint fs;
 
+    bool operator < ( const ShProgram& sh ) const {
+      return std::tie(vs, fs) < std::tie(sh.vs, sh.fs);
+      }
+
     GLuint linked;
     };
 
@@ -206,14 +211,16 @@ void GLSL::deleteVertexShader( VertexShader* s ) const {
   if( glIsShader(*prog) )
     glDeleteShader( *prog );
 
-  for( size_t i=0; i<data->prog.size();  ){
+  size_t nsz = 0;
+  for( size_t i=0; i<data->prog.size(); ++i ){
+    data->prog[nsz] = data->prog[i];
+
     if( data->prog[i].vs == *prog ){
       if( glIsProgram(data->prog[i].linked) )
         glDeleteProgram( data->prog[i].linked );
-      data->prog[i] = data->prog.back();
-      data->prog.pop_back();
-      } else
-      ++i;
+      } else {
+      ++nsz;
+      }
     }
 
   delete prog;
@@ -238,16 +245,18 @@ void GLSL::deleteFragmentShader( FragmentShader* s ) const{
   if( glIsShader(*prog) )
     glDeleteShader( *prog );
 
-  for( size_t i=0; i<data->prog.size();  ){
+  size_t nsz = 0;
+  for( size_t i=0; i<data->prog.size(); ++i ){
+    data->prog[nsz] = data->prog[i];
     if( data->prog[i].fs == *prog ){
       if( glIsProgram(data->prog[i].linked) )
         glDeleteProgram( data->prog[i].linked );
-      data->prog[i] = data->prog.back();
-      data->prog.pop_back();
-      } else
-      ++i;
+      } else {
+      ++nsz;
+      }
     }
 
+  data->prog.resize(nsz);
   delete prog;
   }
 
@@ -374,11 +383,21 @@ void GLSL::enable() const {
 
   //NON-Cashed
   if( program==0 ){
+    Data::ShProgram tmp;
+    tmp.vs = vertexShader;
+    tmp.fs = pixelShader;
+
+    auto l = std::lower_bound(data->prog.begin(), data->prog.end(), tmp);
+    if( l!=data->prog.end() && l->vs==tmp.vs && l->fs==tmp.fs ){
+      program = (*l).linked;
+      }
+
+    /*
     for( size_t i=0; i<data->prog.size(); ++i )
       if( data->prog[i].vs == vertexShader &&
           data->prog[i].fs == pixelShader ){
         program = data->prog[i].linked;
-        }
+        }*/
     }
 
   //Non-Linked
@@ -473,16 +492,14 @@ void GLSL::enable() const {
       }
 
     Data::ShProgram s;
-    s.vs = vertexShader;
-    s.fs = pixelShader;
+    s.vs     = vertexShader;
+    s.fs     = pixelShader;
     s.linked = program;
 
-    data->prog.push_back( s );
+    auto l = std::lower_bound(data->prog.begin(), data->prog.end(), s);
+    data->prog.insert(l, s);
 
-    /*
-    GLint vl = glGetAttribLocation ( program, "Position");
-    GLint cl = glGetAttribLocation ( program, "COLOR");
-    std::cout << vl;*/
+    //data->prog.push_back( s );
     }
 
   if( program != data->curProgram.linked ){
