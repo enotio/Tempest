@@ -24,6 +24,7 @@
 
 #include <cstring>
 #include <tuple>
+#include <algorithm>
 
 #ifdef __ANDROID__
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE

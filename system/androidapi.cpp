@@ -70,6 +70,7 @@ static struct Android{
 
   std::vector<char> internal, external;
   std::string locale;
+  int densityDpi;
 
   enum MainThreadMessage {
     MSG_NONE = 0,
@@ -165,7 +166,8 @@ static struct Android{
     surface = 0;
     context = 0;
 
-    env     = 0;
+    env        = 0;
+    densityDpi = 480;
 
     closeRqAccepted = 0;
 
@@ -267,6 +269,10 @@ const char *AndroidAPI::internalStorage() {
 const char *AndroidAPI::externalStorage() {
   mkdir( android.external.data(), 0770 );
   return android.external.data();
+  }
+
+int AndroidAPI::densityDpi(){
+  return android.densityDpi;
   }
 
 void AndroidAPI::toast( const std::string &s ) {
@@ -964,6 +970,11 @@ static void JNICALL nativeInitLocale( JNIEnv* , jobject,
   env->ReleaseStringUTFChars( loc, str );
   }
 
+static void setupDpi( JNIEnv* , jobject,
+                      jint d ){
+  android.densityDpi = d;
+  }
+
 jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
   static JNINativeMethod methodTable[] = {
     {"nativeOnCreate",  "()V", (void *) onCreate  },
@@ -973,7 +984,10 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
     {"nativeOnResume", "()V", (void *) resume },
     {"nativeOnPause",  "()V", (void *) pauseA },
     {"nativeOnStop",   "()V", (void *) stop   },
-    {"nativeInitLocale",   "(Ljava/lang/String;)V", (void *)nativeInitLocale },
+
+    {"nativeInitLocale", "(Ljava/lang/String;)V", (void *)nativeInitLocale },
+    {"nativeSetupDpi",   "(I)V",                  (void *)setupDpi         },
+
     {"nativeOnTouch",  "(IIII)V", (void *)nativeOnTouch   },
     {"onKeyEvent",     "(I)V",   (void *)onKeyEvent      },
     {"nativeCloseEvent",  "()I", (void *) nativeCloseEvent  },
