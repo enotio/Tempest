@@ -9,9 +9,16 @@ class AbstractSceneObject;
 
 class Matrix4x4;
 class AbstractCamera;
+class Frustum;
 
 class ViewTester {
-  public:
+  public:  
+    enum VisibleStatus{
+      NotVisible = 0,
+      PartialVisible,
+      FullVisible
+      };
+
     ViewTester();
     virtual ~ViewTester();
 
@@ -23,6 +30,18 @@ class ViewTester {
 
     virtual bool isVisible( const ModelBounds & obj,
                             const Matrix4x4 & mvp ) const;
+
+    virtual bool isVisible( float x,
+                            float y,
+                            float z,
+                            float r,
+                            const Frustum &frustum ) const;
+
+    virtual bool checkVisible( float x,
+                               float y,
+                               float z,
+                               float r,
+                               const Frustum &frustum ) const;
 /*
     virtual bool isVisible( const Model::Bounds & obj,
                             const Matrix4x4 & vp,

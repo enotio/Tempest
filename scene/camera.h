@@ -23,7 +23,10 @@ class Camera : public Tempest::AbstractCamera{
 
     double zoom() const;
 
-    void setPerespective( bool use, int w = 1, int h = 1 );
+    void setPerspective( bool use, int w = 1, int h = 1 );
+    void setPerspective( int w, int h,
+                         float use = 45.0,
+                         float zmin = 0.1f, float zmax = 100.0f );
 
     void setPosition( double x, double y, double z );
     double x() const;

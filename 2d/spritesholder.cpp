@@ -2,14 +2,16 @@
 
 #include <cassert>
 #include <string>
+#include <algorithm>
 
 #include <Tempest/Sprite>
 #include <Tempest/Device>
 
+
 using namespace Tempest;
 
 SpritesHolder::SpritesHolder(Tempest::TextureHolder &h):holder(h) {
-  needToflush = true;
+  needToflush = false;
   pageSize    = std::min( h.device().caps().maxTextureSize, 2048 );
   page.reserve(2);
   addPage();
@@ -24,6 +26,47 @@ Sprite SpritesHolder::load(const std::string &f) {
   }
 
 Sprite SpritesHolder::load(const Tempest::Pixmap &p) {
+  /*
+  for( size_t i=0; i<loadRq.size(); ++i ){
+    if( loadRq[i].p.const_data() == p.const_data() ){
+      Sprite tmp;
+      tmp.holder = this;
+      tmp.deleyd = i;
+      loadRq[i].sprites.push_back(&tmp);
+      }
+    }*/
+
+  Sprite tmp;
+  tmp.deleyd = loadRq.size();
+  tmp.holder = this;
+
+  LoadRq l;
+  l.p  = p;
+  l.sq = p.width()*p.height();
+  loadRq.push_back(l);
+
+  delayLoad(&tmp);
+  return tmp;
+
+  //return loadImpl(p);
+  }
+
+void SpritesHolder::delayLoad( Sprite *s ) {
+  LoadRq &l = loadRq[s->deleyd];
+  l.sprites.push_back(s);
+  }
+
+void SpritesHolder::delayLoadRm( Sprite *s ) {
+  LoadRq &l = loadRq[s->deleyd];
+
+  for( size_t i=0; i<l.sprites.size(); ++i )
+    if( l.sprites[i]==s ){
+      l.sprites[i] = l.sprites.back();
+      l.sprites.pop_back();
+      }
+  }
+
+Sprite SpritesHolder::loadImpl(const Tempest::Pixmap &p) {
   if( p.width()==0 || p.height()==0 ){
     Sprite n;
     n.tex = 0;
@@ -33,10 +76,9 @@ Sprite SpritesHolder::load(const Tempest::Pixmap &p) {
 
   if( p.width()  > pageSize ||
       p.height() > pageSize ){
-    Page pg;
+    page.emplace_back( new Page() );
+    Page &pg = *page.back();
     pg.p = p;
-
-    page.push_back( pg );
 
     Sprite n;
     n.tex    = &page;
@@ -46,7 +88,7 @@ Sprite SpritesHolder::load(const Tempest::Pixmap &p) {
     }
 
   for( size_t i=0; i<page.size(); ++i ){
-    Sprite r = add( p, page[i] );
+    Sprite r = add( p, *page[i] );
     if( r.tex ){
       r.id  = i;
       r.tex = &page;
@@ -65,7 +107,7 @@ Sprite SpritesHolder::load(const Tempest::Pixmap &p) {
 void SpritesHolder::flush() {
   if( needToflush ){
     for( size_t i=0; i<page.size(); ++i ){
-      page[i].t = holder.create( page[i].p, false, false );
+      page[i]->t = holder.create( page[i]->p, false, false );
 
       Tempest::Texture2d::Sampler s;
       s.mipFilter = Tempest::Texture2d::FilterType::Nearest;
@@ -73,11 +115,11 @@ void SpritesHolder::flush() {
       s.minFilter = s.mipFilter;
       s.anisotropic = false;
 
-      page[i].t.setSampler(s);
+      page[i]->t.setSampler(s);
 
       //std::string str = "./debug*.png";
       //str[7] = i+'0';
-      //page[i].p.save( str );
+      //page[i]->p.save( str );
       }
 
     //page[0].p.save("./debug.png");
@@ -85,12 +127,34 @@ void SpritesHolder::flush() {
   needToflush = false;
   }
 
+void SpritesHolder::loadDelayd() {
+  struct Grater{
+    static bool cmp( const LoadRq& a, const LoadRq& b ) {
+      return a.sq > b.sq;
+      }
+    };
+
+  std::sort( loadRq.begin(), loadRq.end(), Grater::cmp );
+
+  for( size_t i=0; i<loadRq.size(); ++i ){
+    LoadRq& rq = loadRq[i];
+    Sprite sx = loadImpl(rq.p);
+
+    for( size_t r=0; r<rq.sprites.size(); ++r ){
+      rq.sprites[r]->deleyd = -1;
+      *rq.sprites[r] = sx;
+      }
+    }
+
+  loadRq.clear();
+  }
+
 void SpritesHolder::addPage() {
-  Page p;
+  page.emplace_back( new Page() );
+  Page& p = *page.back();
+
   p.p = Tempest::Pixmap(pageSize, pageSize, true);
   p.rects.push_back( Tempest::Rect(0,0, p.p.width(), p.p.height() ) );
-
-  page.push_back( p );
   }
 
 Sprite SpritesHolder::add(const Tempest::Pixmap &px, Page & page ) {

@@ -389,7 +389,7 @@ static Tempest::KeyEvent makeKeyEvent( int32_t k, bool scut = false ){
 static void render();
 
 void Android::waitForQueue() {
-  while( mainThread && android.window && android.wnd ){
+  while( mainThread && android.window ){
     size_t s = android.msgSize();
     if( s==0 )
       return;

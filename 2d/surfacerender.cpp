@@ -66,7 +66,7 @@ void SurfaceRender::buildVbo( Tempest::Widget & surf,
             surf.w(), surf.h(), vbHolder, ibHolder, sp );
   }
 
-void SurfaceRender::renderTo(Device &dev) {
+void SurfaceRender::render(Device &dev) const {
   if( dpos ){
     float dp[2] = { -0.5f*invW, -0.5f*invH };
     dev.setUniform( vs[0], dp, 2, "dpos" );
@@ -75,7 +75,7 @@ void SurfaceRender::renderTo(Device &dev) {
 
   int sh = 0;
   for( size_t i=0; i<blocks.size(); ++i ){
-    Block& b = blocks[i];
+    const Block& b = blocks[i];
     dev.setRenderState( rstate[b.state.bm] );
     if(!b.curTex.pageRect().isEmpty() || b.curTex2d)
       sh = 0; else
@@ -333,6 +333,9 @@ void SurfaceRender::PaintDev::setTexture(const Sprite &t) {
 
   unsetTexture();
   surf.state.curTex = t;
+
+  if( t.holder && t.holder->needToflush )
+    t.holder->flush();
   }
 
 void SurfaceRender::PaintDev::unsetTexture() {

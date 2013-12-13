@@ -1,6 +1,7 @@
 #include "camera.h"
 
 #include <Tempest/Matrix4x4>
+#include <utility>
 
 using namespace Tempest;
 
@@ -11,7 +12,7 @@ Camera::Camera(){
   setSpinY(0);
 
   setZoom(1);
-  setPerespective(0);
+  setPerspective(0);
 
   updateView();
   }
@@ -80,10 +81,17 @@ void Camera::setZoom( double z ){
   updateView();
   }
 
-void Camera::setPerespective( bool use, int w, int h ){
+void Camera::setPerspective( bool use, int w, int h ){
   if( use )
-    mProj.perspective( 45, double(w)/double(h), 0.1, 100.0 ); else
+    setPerspective( w,h ); else
     mProj.identity();
+  }
+
+void Camera::setPerspective( int w, int h, float use, float zmin, float zmax ) {
+  if( zmin>zmax )
+    std::swap(zmin, zmax);
+
+  mProj.perspective( use, double(w)/double(h), zmin, zmax );
   }
 
 double Camera::spinX() const{

@@ -200,6 +200,14 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
     virtual float radius() const {
       return radi;
       }
+
+    virtual void render( Device& dev, ProgramObject &p ) const{
+      m_model->draw(dev, p.vs, p.fs);
+      }
+
+    virtual void render( Device& dev, VertexShader& vs, FragmentShader &fs ) const{
+      m_model->draw(dev,vs,fs);
+      }
   private:
     struct IModelPtr{
       virtual ~IModelPtr(){}
@@ -211,6 +219,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
                          const AbstractCamera & camera) const = 0;
 
       virtual void draw( Render &r ) const = 0;
+      virtual void draw( Device &r, VertexShader& vs, FragmentShader &fs ) const = 0;
 
       virtual size_t vboHandle() const = 0;
       virtual size_t iboHandle() const = 0;
@@ -236,6 +245,23 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
 
       void draw( Render &r ) const {
         r.draw( model );
+        }
+
+      void draw( Device &dev, VertexShader& vs, FragmentShader &fs ) const {
+        if( model.indexes().size() )
+          dev.drawIndexed( model.primitiveType(),
+                           vs, fs,
+                           model.declaration(),
+                           model.vertexes(), model.indexes(),
+                           0, 0,
+                           model.vertexCount() );
+          else
+          dev.drawPrimitive( model.primitiveType(),
+                             vs, fs,
+                             model.declaration(),
+                             model.vertexes(),
+                             0,
+                             model.vertexCount() );
         }
 
       size_t vboHandle() const{

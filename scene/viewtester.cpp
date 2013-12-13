@@ -95,3 +95,34 @@ bool ViewTester::isVisible( const ModelBounds &obj,
   return data2[0]<data1[0] && data2[1]<data1[1];
   }
 
+bool ViewTester::isVisible( float x,
+                            float y,
+                            float z,
+                            float r,
+                            const Frustum &frustum ) const {
+  return checkVisible(x,y,z,r, frustum)!=NotVisible;
+  }
+
+bool ViewTester::checkVisible( float x,
+                               float y,
+                               float z,
+                               float r,
+                               const Frustum &frustum) const {
+  bool fv = true;
+  for( int p=0; p < 6; p++ ){
+    float l = frustum.plane(p)[0] * x +
+              frustum.plane(p)[1] * y +
+              frustum.plane(p)[2] * z +
+              frustum.plane(p)[3];
+    if( l <= -r )
+      return NotVisible;
+
+    if( !(l >= r) )
+      fv = false;
+    }
+
+  if( fv )
+    return FullVisible; else
+    return PartialVisible;
+  }
+

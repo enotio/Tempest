@@ -92,6 +92,11 @@ class Device {
       s.setUniform(name.c_str(), t);
       }
 
+    template< class T, class ... Args >
+    void draw( const T& t, Args& ... a ){
+      t.render(*this,a...);
+      }
+
     template< class T >
     void drawPrimitive( AbstractAPI::PrimitiveType t,
                         const Tempest::VertexShader   &vs,

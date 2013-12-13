@@ -596,7 +596,17 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           }
         break;
 
+      case WM_MOVING:
+        if( w ){
+          RECT rpos = {0,0,0,0};
+          GetWindowRect( hWnd, &rpos );
+          SystemAPI::moveEvent( w, rpos.left, rpos.top );
+          }
+        break;
       case WM_SIZE:{
+          RECT rpos = {0,0,0,0};
+          GetWindowRect( hWnd, &rpos );
+
           RECT rectWindow;
           GetClientRect( HWND(hWnd), &rectWindow);
           int cW = rectWindow.right  - rectWindow.left;
@@ -616,9 +626,12 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
               smode = Window::Minimized;
 
             SystemAPI::setShowMode( w, smode);
-            SystemAPI::sizeEvent( w, cW, cH );
-            GetWindowRect( HWND(hWnd), &rectWindow );
-            SystemAPI::moveEvent( w, rectWindow.left, rectWindow.top );
+
+            if( wParam!=SIZE_MINIMIZED ){
+              SystemAPI::sizeEvent( w, cW, cH );
+              //GetWindowRect( HWND(hWnd), &rectWindow );
+              SystemAPI::moveEvent( w, rpos.left, rpos.top );
+              }
             }
           }
         break;

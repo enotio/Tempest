@@ -13,6 +13,9 @@ class Texture2d;
 class Sprite {
   public:
     Sprite();
+    Sprite( const Sprite& );
+    Sprite& operator = ( const Sprite& );
+    virtual ~Sprite();
 
     int w() const;
     int h() const;
@@ -23,15 +26,18 @@ class Sprite {
     Tempest::Rect pageRect() const;
 
     size_t handle() const;
-  private:
-    Tempest::Rect rect;
-    SpritesHolder *holder;
 
-    std::vector<SpritesHolder::Page> * tex;
+    bool   isDelayd() const;
+    void   flush() const;
+  private:
+    Tempest::Rect    rect;
+    SpritesHolder   *holder;
+    size_t           deleyd;
+
+    std::vector< std::unique_ptr<SpritesHolder::Page> > * tex;
     size_t id;
 
-    Tempest::Texture2d * nonPool;
-
+  friend class SurfaceRender;
   friend class SpritesHolder;
   };
 

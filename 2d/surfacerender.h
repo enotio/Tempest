@@ -64,7 +64,7 @@ class SurfaceRender {
         vdecl = Tempest::VertexDeclaration( vbHolder.device(), decl() );
       }
 
-    void renderTo( Tempest::Device& dev );
+    void render( Tempest::Device& dev ) const;
 
   protected:
     struct RState{
@@ -161,8 +161,8 @@ class SurfaceRender {
     Tempest::VertexBuffer<Vertex> vbo;
     Tempest::VertexDeclaration    vdecl;
 
-    Tempest::VertexShader   vs[2];
-    Tempest::FragmentShader fs[2];
+    mutable Tempest::VertexShader   vs[2];
+    mutable Tempest::FragmentShader fs[2];
     float invW, invH, invTw, invTh;
 
     RState state;

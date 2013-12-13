@@ -55,8 +55,12 @@ struct RawModel{
     }
 
   static ModelBounds computeBoundRect( const VertexList& vertex ){
+    return computeBoundRect(&vertex[0], vertex.size());
+    }
+
+  static ModelBounds computeBoundRect( const Vertex* vertex, size_t vsize ){
     ModelBounds r;
-    if( vertex.size()==0 ){
+    if( vsize==0 ){
       std::fill(r.min, r.min+3, 0);
       std::fill(r.max, r.max+3, 0);
       std::fill(r.mid, r.mid+3, 0);
@@ -68,7 +72,7 @@ struct RawModel{
     r.min[2] = vertex[0].z;
     std::copy( r.min, r.min+3, r.max );
 
-    for( size_t i=0; i<vertex.size(); ++i ){
+    for( size_t i=1; i<vsize; ++i ){
       float v[3] = { vertex[i].x, vertex[i].y, vertex[i].z };
       for( int q=0; q<3; ++q ){
         r.min[q] = std::min( r.min[q], v[q] );
@@ -155,14 +159,35 @@ class Model {
 
     void load( Tempest::VertexBufferHolder & vboHolder,
                Tempest::IndexBufferHolder  & /*iboHolder*/,
-               const std::vector<Vertex>& buf,
+               const Vertex* buf, size_t bufSize,
                const Tempest::VertexDeclaration::Declarator& decl ){
       vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
 
-      m_size = buf.size();
-      vbo = vboHolder.load( buf   );
+      m_size = bufSize;
+      vbo = vboHolder.load( buf, bufSize );
 
-      bds = Raw::computeBoundRect( buf );
+      bds = Raw::computeBoundRect( buf, bufSize );
+      }
+
+    void load( Tempest::VertexBufferHolder & vboHolder,
+               Tempest::IndexBufferHolder  & iboHolder,
+               const std::vector<Vertex>& buf,
+               const Tempest::VertexDeclaration::Declarator& decl ){
+      load( vboHolder, iboHolder, &buf[0], buf.size(), decl );
+      }
+
+    void load( Tempest::VertexBufferHolder & vboHolder,
+               Tempest::IndexBufferHolder  & iboHolder,
+               const Vertex*   buf, size_t bufSize,
+               const uint16_t* index,size_t iboSize,
+               const Tempest::VertexDeclaration::Declarator& decl ){
+      vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
+
+      m_size = iboSize;
+      vbo = vboHolder.load( buf,   bufSize );
+      ibo = iboHolder.load( index, iboSize );
+
+      bds = Raw::computeBoundRect( buf, bufSize );
       }
 
     void load( Tempest::VertexBufferHolder & vboHolder,
@@ -195,8 +220,8 @@ class Model {
       load( vboHolder, iboHolder, r.vertex, DefaultVertex::decl() );
       }
 
-    void load( Tempest::VertexBuffer<ModelVertex> & v,
-               Tempest::IndexBuffer<uint16_t>     & i,
+    void load( const Tempest::VertexBuffer<ModelVertex> & v,
+               const Tempest::IndexBuffer<uint16_t>     & i,
                const Tempest::VertexDeclaration   & d ){
       if( i.size() )
         m_size = i.size(); else
@@ -209,7 +234,7 @@ class Model {
       bds = Raw::computeBoundRect( v );
       }
 
-    void load( Tempest::VertexBuffer<ModelVertex> & v,
+    void load( const Tempest::VertexBuffer<ModelVertex> & v,
                const Tempest::VertexDeclaration   & d ){
       m_size = v.size();
       vbo   = v;

@@ -20,8 +20,14 @@ class SpritesHolder {
     virtual Sprite load( const std::string& f );
     virtual Sprite load( const Tempest::Pixmap & p );
 
-    void flush();
+    virtual void flush();
   private:
+    void   loadDelayd();
+    void   delayLoad  ( Sprite* s );
+    void   delayLoadRm( Sprite* s );
+
+    Sprite loadImpl( const Tempest::Pixmap & p );
+
     Tempest::TextureHolder & holder;
     bool needToflush;
 
@@ -31,7 +37,15 @@ class SpritesHolder {
       Tempest::Pixmap    p;
       };
 
-    std::vector<Page> page;
+    std::vector< std::unique_ptr<Page> > page;
+
+    struct LoadRq{
+      Tempest::Pixmap p;
+      size_t          sq;
+      std::vector<Sprite*> sprites;
+      };
+
+    std::vector<LoadRq> loadRq;
 
     void   addPage();
     Sprite add( const Tempest::Pixmap & p, Page &page );
@@ -39,6 +53,7 @@ class SpritesHolder {
     int pageSize;
 
   friend class Sprite;
+  friend class SurfaceRender;
   };
 
 }
