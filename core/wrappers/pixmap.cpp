@@ -63,9 +63,9 @@ struct Pixmap::MemPool{
 
     if( w*h*bpp<=64*64*4 ){
       d->bytes.reserve( 64*64*4 );
-      d->bytes.resize(w*h*bpp);
+      d->bytes.resize(sz);
       } else {
-      d->bytes.resize(w*h*bpp);
+      d->bytes.resize(sz);
       d->bytes.reserve( 64*64*4 );
       }
     return d;
@@ -149,7 +149,7 @@ Pixmap::Pixmap(int iw, int ih, bool alpha) {
 
   //data.value() = new Data();
   //data.value()->bytes.resize(mw*mh*bpp);
-  rawPtr = &data.const_value()->bytes[0];
+  rawPtr  = &data.const_value()->bytes[0];
   mrawPtr = 0;
 
   T_ASSERT( sizeof(Pixel)==4 );
@@ -402,7 +402,7 @@ void Pixmap::fill(const Pixmap::Pixel &p) {
 
   unsigned char px[] = {p.r, p.g, p.b, p.a};
 
-  if( info.bpp==3 ){
+  if( !info.alpha ){
     for( size_t i=0; i<sz; i+=3 ){
       mrawPtr[i+0] = px[0];
       mrawPtr[i+1] = px[1];

@@ -4,9 +4,9 @@ CONFIG -= qt
 
 CONFIG += ogl directx
 
-TARGET = Tempest
+TARGET   = Tempest
 TEMPLATE = lib
-CONFIG += dll
+CONFIG   += dll
 
 DEFINES += TEMPEST_M_TREADS
 #DEFINES += __ANDROID__
@@ -26,6 +26,7 @@ INCLUDEPATH += \
                "./thirdparty/" \
                "."
 
+INCLUDEPATH += "C:/Users/Try/Home/adt-bundle-windows-x86-20130729/android-ndk-r9b/platforms/android-9/arch-arm/usr/include/android"
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/include"
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/include/freetype2"
 
@@ -310,5 +311,6 @@ OTHER_FILES += \
     include/Tempest/Texture3d \
     include/Tempest/VolumeHolder \
     include/Tempest/ImageCodec \
-    include/Tempest/Log
+    include/Tempest/Log \
+    thirdparty/freetype/Android.mk
 

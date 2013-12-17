@@ -35,7 +35,7 @@ LOCAL_SRC_FILES := \
 	src/truetype/truetype.c
   
   
-LOCAL_LDLIBS := -ldl -llog
+#LOCAL_LDLIBS := -ldl -llog
 
 include $(BUILD_STATIC_LIBRARY)
 

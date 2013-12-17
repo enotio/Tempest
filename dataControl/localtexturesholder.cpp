@@ -139,7 +139,7 @@ void LocalTexturesHolder::createObject( AbstractAPI::Texture *&t,
   if( x.data.handle ){
     dynTextures.push_back( x );
 
-    AbstractAPI::Texture * old = dynTextures.back().data.handle;
+    AbstractAPI::Texture * old = x.data.handle;
     Tempest::TextureHolder::recreateObject(t, old, p, mips, compress);
     return;
     }

@@ -18,13 +18,15 @@ struct LocalObjectPool{
 
   template< class D, class H >
   T find( const D& x, H& h, bool (H::*f)(const D&, const D&) ){
-    for( size_t i=0; i<data.size(); ++i )
+    for( size_t i=data.size(); i>0;  ){
+      --i;
       if( (h.*f)(data[i].data, x) ) {
         T r = data[i];
         data[i] = data.back();
         data.pop_back();
         return r;
         }
+      }
 
     T t;
     t.data.handle = 0;

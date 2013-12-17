@@ -48,6 +48,8 @@
 #define GL_DEPTH_BUFFER_BIT0_QCOM                     0x00000100
 #define GL_STENCIL_BUFFER_BIT0_QCOM                   0x00010000
 
+#define GL_WRITEONLY_RENDERING_QCOM                   0x8823
+
 #ifndef GL_COLOR_EXT
 #define GL_COLOR_EXT                                  0x1800
 #define GL_DEPTH_EXT                                  0x1801
@@ -73,7 +75,8 @@ struct Opengl2x::Device{
 #endif
   bool hasS3tcTextures,
        hasETC1Textures,
-       hasHalfSupport;
+       hasHalfSupport,
+       hasWriteonlyRendering;
 
   int scrW, scrH;
   AbstractAPI::Caps caps;
@@ -407,6 +410,20 @@ struct Opengl2x::Device{
   MemPool<Detail::GLTexture> texPool;
   MemPool<Detail::GLBuffer>  bufPool;
   MemPool<VertexDeclaration::Declarator> declPool;
+
+  bool isWriteOnly( const RenderState& rs ){
+    return !rs.isZTest() &&
+           !rs.isZWriting() &&
+           !rs.isBlend();
+    }
+
+  void enableWriteOnlyRender( bool e ){
+    if( hasWriteonlyRendering && 0 ){
+      if( e )
+        glEnable ( GL_WRITEONLY_RENDERING_QCOM ); else
+        glDisable( GL_WRITEONLY_RENDERING_QCOM );
+      }
+    }
   };
 
 bool Opengl2x::errCk() const {
@@ -508,6 +525,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
       (strstr(ext, "GL_OES_texture_compression_S3TC")!=0) ||
       (strstr(ext, "GL_EXT_texture_compression_s3tc")!=0);
   dev->hasETC1Textures = (strstr(ext, "GL_OES_compressed_ETC1_RGB8_texture")!=0);
+  dev->hasWriteonlyRendering = (strstr(ext, "GL_QCOM_writeonly_rendering")!=0);
 
 #ifdef __ANDROID__
   dev->hasHalfSupport            = strstr(ext, "GL_OES_vertex_half_float")!=0;
@@ -653,9 +671,15 @@ void Opengl2x::clear( AbstractAPI::Device *d,
   dev->renderState.getColorMask( msk[0], msk[1], msk[2], msk[3] );
   if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
     glColorMask(1,1,1,1);
+  if( dev->isWriteOnly(dev->renderState) ){
+    dev->enableWriteOnlyRender(0);
+    }
 
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 
+  if( dev->isWriteOnly(dev->renderState) ){
+    dev->enableWriteOnlyRender(1);
+    }
   if( !dev->renderState.isZWriting() ){
     glDepthMask( 0 );
     }
@@ -697,7 +721,14 @@ void Opengl2x::clearZ(AbstractAPI::Device *d, float z ) const  {
   if( !dev->renderState.isZWriting() ){
     glDepthMask( 1 );
     }
+  if( dev->isWriteOnly(dev->renderState) ){
+    dev->enableWriteOnlyRender(0);
+    }
   glClear( GL_DEPTH_BUFFER_BIT );
+
+  if( dev->isWriteOnly(dev->renderState) ){
+    dev->enableWriteOnlyRender(1);
+    }
   if( !dev->renderState.isZWriting() ){
     glDepthMask( 0 );
     }
@@ -734,7 +765,13 @@ void Opengl2x::clear(AbstractAPI::Device *d,
   if( !dev->renderState.isZWriting() ){
     glDepthMask( 1 );
     }
+  if( dev->isWriteOnly(dev->renderState) ){
+    dev->enableWriteOnlyRender(0);
+    }
   glClear( GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+  if( dev->isWriteOnly(dev->renderState) ){
+    dev->enableWriteOnlyRender(1);
+    }
   if( !dev->renderState.isZWriting() ){
     glDepthMask( 0 );
     }
@@ -757,6 +794,9 @@ void Opengl2x::clear(AbstractAPI::Device *d, const Color& cl, float z ) const{
   #endif
     }
 
+  if( dev->isWriteOnly(dev->renderState) ){
+    dev->enableWriteOnlyRender(0);
+    }
   if( !dev->renderState.isZWriting() ){
     glDepthMask( 1 );
     }
@@ -772,6 +812,9 @@ void Opengl2x::clear(AbstractAPI::Device *d, const Color& cl, float z ) const{
     }
   if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
     glColorMask( msk[0], msk[1], msk[2], msk[3] );
+  if( dev->isWriteOnly(dev->renderState) ){
+    dev->enableWriteOnlyRender(1);
+    }
   }
 
 void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
@@ -1438,13 +1481,14 @@ AbstractAPI::Texture *Opengl2x::recreateTexture( AbstractAPI::Device *d,
       int(old->h)      == p.height() &&
       old->format      == format &&
       old->mips        == mips   &&
-      old->compress    == compress ){
+      old->compress    == compress && 0 ){
     tex = old;
     } else {
     deleteTexture(d, oldT);
     return createTexture( d, p, mips, compress );
     }
 
+  glActiveTexture( GL_TEXTURE0 );
   glBindTexture(GL_TEXTURE_2D, tex->id);
 
   if( p.format()==Pixmap::Format_ETC1_RGB8 ){
@@ -1452,11 +1496,11 @@ AbstractAPI::Texture *Opengl2x::recreateTexture( AbstractAPI::Device *d,
     } else
   if( p.format()==Pixmap::Format_RGB ||
       p.format()==Pixmap::Format_RGBA ){
-    glTexSubImage2D(  GL_TEXTURE_2D, 0,
-                      0, 0,
-                      p.width(), p.height(),
-                      tex->format,
-                      GL_UNSIGNED_BYTE, p.const_data() );
+    glTexSubImage2D( GL_TEXTURE_2D, 0,
+                     0, 0,
+                     p.width(), p.height(),
+                     tex->format,
+                     GL_UNSIGNED_BYTE, p.const_data() );
     if( mips )
       glGenerateMipmap( GL_TEXTURE_2D );
     } else {
@@ -2167,6 +2211,7 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
   glPolygonMode( GL_BACK,  rmode[r.backPolygonRenderMode()] );
 #endif
 
+  dev->enableWriteOnlyRender( dev->isWriteOnly(r) );
   dev->renderState = r;
   T_ASSERT_X( errCk(), "OpenGL error" );
   }
