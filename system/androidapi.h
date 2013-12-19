@@ -66,7 +66,8 @@ class AndroidAPI:public SystemAPI {
                         ImageCodec::ImgInfo &info,
                         std::vector<unsigned char>& in );
 
-    bool isGraphicsContextAviable( Tempest::Window *w );
+    GraphicsContexState isGraphicsContextAviable( Tempest::Window *w );
+    CpuInfo cpuInfoImpl();
   public:
     friend class SystemAPI;
     friend class Opengl2x;

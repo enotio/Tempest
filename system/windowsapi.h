@@ -42,6 +42,8 @@ class WindowsAPI:public SystemAPI {
     std::vector<char> loadBytesImpl( const wchar_t* file );
 
     bool writeBytesImpl(const wchar_t* file , const std::vector<char> &f);
+
+    CpuInfo cpuInfoImpl();
   private:
     struct Wnd;
 

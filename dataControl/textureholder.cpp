@@ -192,7 +192,7 @@ void TextureHolder::recreateObject( AbstractAPI::Texture *&t,
   px.mip = mips;
   px.compress = compress;
 
-  t = device().recreateTexture( old, p, mips, compress );
+  t = device().recreateTexture( p, mips, compress, old );
   px.owner = t;
   //data->pixmap_textures[t] = px;
   if( hasCPUStorage() )

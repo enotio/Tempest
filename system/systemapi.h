@@ -100,7 +100,12 @@ class SystemAPI{
     static void setShowMode( Tempest::Window *w, int mode );
     static void activateEvent( Tempest::Window*w, bool a );
 
-    virtual bool isGraphicsContextAviable( Tempest::Window *w );
+    enum GraphicsContexState{
+      DestroyedByAndroid,
+      Aviable,
+      NotAviable
+      };
+    virtual GraphicsContexState isGraphicsContextAviable( Tempest::Window *w );
 
     static std::string  toUtf8   (const std::wstring& str);
     static std::wstring toWstring( const std::string& str );
@@ -111,6 +116,12 @@ class SystemAPI{
     void installImageCodec( ImageCodec* codec );
     size_t imageCodecCount() const;
     ImageCodec& imageCodec( size_t id );
+
+    struct CpuInfo{
+      int cpuCount;
+      };
+
+    static CpuInfo cpuInfo();
   protected:
     SystemAPI();
 
@@ -147,6 +158,7 @@ class SystemAPI{
                                 std::vector<unsigned char>& out );
 
     virtual const std::string& androidActivityClassImpl();
+    virtual CpuInfo cpuInfoImpl() = 0;
 
     struct TranslateKeyPair{
       uint64_t       src;

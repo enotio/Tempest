@@ -36,9 +36,14 @@ class Pixmap {
     inline int width()  const { return info.w; }
     inline int height() const { return info.h; }
 
+    inline bool isEmpty() const {
+      return info.w==0||0==info.h;
+      }
+
     inline int mipsCount() const{ return info.mipLevels; }
 
     void downsample();
+    void toPOT( int maxSize );
 
     struct Pixel{
       unsigned char r,g,b,a;

@@ -41,8 +41,9 @@ LOCAL_SRC_FILES := \
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
 
-LOCAL_STATIC_LIBRARIES := freetype2
+LOCAL_STATIC_LIBRARIES := freetype2 cpufeatures
 LOCAL_LDLIBS    := -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics -lz
 
 include $(BUILD_SHARED_LIBRARY)
+$(call import-module,android/cpufeatures)
 

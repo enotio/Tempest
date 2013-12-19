@@ -41,7 +41,7 @@ class AbstractAPI {
       int maxVaryingComponents;
 
       bool hasHalf2, hasHalf4;
-      bool has3DTexture;
+      bool has3DTexture, hasNpotTexture;
       };
 
     enum PrimitiveType{
@@ -151,10 +151,10 @@ class AbstractAPI {
                                                  bool mips,
                                                  bool compress ) const = 0;
     virtual AbstractAPI::Texture* recreateTexture( AbstractAPI::Device * d,
-                                                   AbstractAPI::Texture* t,
                                                    const Pixmap& p,
                                                    bool mips,
-                                                   bool compress ) const = 0;
+                                                   bool compress,
+                                                   AbstractAPI::Texture* t ) const = 0;
 
     virtual AbstractAPI::Texture*
                  createTexture( AbstractAPI::Device *d,

@@ -229,8 +229,8 @@ void SystemAPI::activateEvent(Tempest::Window *w, bool a) {
   w->isAppActive = a;
   }
 
-bool SystemAPI::isGraphicsContextAviable( Tempest::Window *) {
-  return true;
+SystemAPI::GraphicsContexState SystemAPI::isGraphicsContextAviable( Tempest::Window *) {
+  return Aviable;
   }
 
 std::string SystemAPI::toUtf8(const std::wstring &str) {
@@ -406,4 +406,8 @@ size_t SystemAPI::imageCodecCount() const {
 
 ImageCodec &SystemAPI::imageCodec(size_t id) {
   return *codecs[id];
+  }
+
+SystemAPI::CpuInfo SystemAPI::cpuInfo() {
+  return instance().cpuInfoImpl();
   }

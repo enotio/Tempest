@@ -29,6 +29,7 @@ using namespace Tempest;
 #include <android/native_window_jni.h>
 
 #include <android/keycodes.h>
+#include <cpu-features.h>
 
 
 #include <cmath>
@@ -61,6 +62,7 @@ static struct Android{
 
   ANativeWindow   *window;
   pthread_mutex_t appMutex, waitMutex;
+  AndroidAPI::GraphicsContexState graphicsState;
 
   pthread_t mainThread;
 
@@ -171,6 +173,7 @@ static struct Android{
 
     closeRqAccepted = 0;
 
+    graphicsState = SystemAPI::NotAviable;
     window     = 0;
     window_w = 0;
     window_h = 0;
@@ -316,6 +319,14 @@ bool AndroidAPI::testDisplaySettings( const DisplaySettings & s ) {
 
 bool AndroidAPI::setDisplaySettings(const DisplaySettings &s) {
   return testDisplaySettings(s);
+  }
+
+AndroidAPI::CpuInfo AndroidAPI::cpuInfoImpl(){
+  CpuInfo info;
+  memset(&info, 0, sizeof(info));
+
+  info.cpuCount = android_getCpuCount();
+  return info;
   }
 
 Size AndroidAPI::implScreenSize() {
@@ -661,8 +672,9 @@ bool AndroidAPI::saveImageImpl( const wchar_t* file,
 
   }
 
-bool AndroidAPI::isGraphicsContextAviable( Tempest::Window * ) {
-  return android.window;
+AndroidAPI::GraphicsContexState AndroidAPI::isGraphicsContextAviable( Tempest::Window * ){
+  return android.graphicsState;
+  //return android.window;
   }
 
 static void render() {
@@ -770,12 +782,14 @@ bool Android::initialize() {
     }
 
   glViewport(0, 0, w, h);
+  graphicsState = SystemAPI::Aviable;
 
   return true;
   }
 
 void Android::destroy( bool killContext ) {
   LOGI("%s","Destroying context");
+  graphicsState = SystemAPI::NotAviable;
 
   if( display != EGL_NO_DISPLAY ) {
     eglMakeCurrent( display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
@@ -855,6 +869,7 @@ static void JNICALL nativeOnTouch( JNIEnv* , jobject ,
 static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject obj, jobject surface) {
   if( surface ) {
     android.window = ANativeWindow_fromSurface(jenv, surface);
+    android.graphicsState = SystemAPI::Aviable;
     LOGI("Got window %p", android.window);
 
     {
@@ -873,6 +888,7 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject obj, jobject surface
       Guard g( android.appMutex );
       (void)g;
       ANativeWindow_release(android.window);
+      android.graphicsState = SystemAPI::DestroyedByAndroid;
       android.window = 0;
       if( android.wnd )
         SystemAPI::activateEvent( android.wnd, android.window!=0);

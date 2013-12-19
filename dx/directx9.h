@@ -69,10 +69,10 @@ class DirectX9 : public AbstractAPI {
                                          bool compress ) const;
 
     AbstractAPI::Texture* recreateTexture( AbstractAPI::Device * d,
-                                           AbstractAPI::Texture* t,
                                            const Pixmap& p,
                                            bool mips,
-                                           bool compress ) const;
+                                           bool compress,
+                                           AbstractAPI::Texture* t ) const;
 
     AbstractAPI::Texture* createTexture( AbstractAPI::Device *d,
                                          int w, int h, bool mips,

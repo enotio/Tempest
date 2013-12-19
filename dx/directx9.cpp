@@ -83,6 +83,9 @@ AbstractAPI::Caps DirectX9::caps( AbstractAPI::Device *d ) const {
   c.hasHalf2 = 1;
   c.hasHalf4 = 1;
 
+  c.has3DTexture   = false;
+  c.hasNpotTexture = true;
+
   return c;
   }
 
@@ -477,10 +480,10 @@ AbstractAPI::Texture *DirectX9::createTexture( AbstractAPI::Device *d,
   }
 
 AbstractAPI::Texture *DirectX9::recreateTexture( AbstractAPI::Device *d,
-                                                 AbstractAPI::Texture *oldT,
                                                  const Pixmap &p,
                                                  bool mips,
-                                                 bool compress ) const {
+                                                 bool compress,
+                                                 AbstractAPI::Texture *oldT ) const {
   if( oldT==0 )
     return createTexture(d, p, mips, compress);
 

@@ -758,12 +758,46 @@ void ImageCodec::removeAlpha(ImageCodec::ImgInfo &info, std::vector<unsigned cha
   info.format = Pixmap::Format_RGB;
   }
 
-void ImageCodec::downsample( ImageCodec::ImgInfo &info,
-                             std::vector<unsigned char> &rgb ) {
-  T_ASSERT( info.w%2==0 && info.h%2==0 );
+void ImageCodec::resize( ImageCodec::ImgInfo &info,
+                         std::vector<unsigned char> &rgb,
+                         int w, int h ) {
+  T_ASSERT( w<=info.w && h<=info.h );
   T_ASSERT( info.format==Pixmap::Format_RGB || info.format==Pixmap::Format_RGBA );
 
-  int bpp = info.bpp, iw = info.w, w = info.w/2, h = info.h/2;
+  const size_t bpp = info.bpp,
+               iw  = info.w,
+               ih  = info.h;
+
+  if( w*h*bpp > rgb.size() )
+    rgb.resize( w*h*bpp );
+
+  unsigned char *p = &rgb[0];
+  for( int r=0; r<h; ++r)
+    for( int i=0; i<w; ++i ){
+      //size_t  pix[4] = {};
+      unsigned char *pix = &p[ (i + r*w)*bpp ];
+      size_t  x0 = (i*iw)/w,
+              y0 = (r*ih)/h;
+
+      for( size_t q=0; q<bpp; ++q ){
+        pix[q] = p[ (x0 + y0*iw)*bpp + q ];
+        }
+      }
+
+  rgb.resize( w*h*bpp );
+  info.w = w;
+  info.h = h;
+  }
+
+void ImageCodec::downsample( ImageCodec::ImgInfo &info,
+                             std::vector<unsigned char> &rgb ) {
+  //T_ASSERT( info.w%2==0 && info.h%2==0 );
+  T_ASSERT( info.format==Pixmap::Format_RGB || info.format==Pixmap::Format_RGBA );
+
+  int bpp = info.bpp,
+      iw = info.w,
+      w  = std::max(info.w/2, 1),
+      h  = std::max(info.h/2, 1);
 
   unsigned char *p = &rgb[0];
   for( int r=0; r<h; ++r)
@@ -781,7 +815,7 @@ void ImageCodec::downsample( ImageCodec::ImgInfo &info,
         p[ (i + r*w)*bpp + q ] = pix[q]/4;
       }
 
-  rgb.resize( rgb.size()/4 );
+  rgb.resize( w*h*bpp );
   info.w = w;
   info.h = h;
   }

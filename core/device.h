@@ -222,10 +222,11 @@ class Device {
                                          bool mips     = true,
                                          bool compress = true );
 
-    AbstractAPI::Texture* recreateTexture(AbstractAPI::Texture*,
-                                          const Pixmap& p,
-                                          bool mips = true,
-                                          bool compress = true );
+    AbstractAPI::Texture* recreateTexture( const Pixmap& p,
+                                           bool mips,
+                                           bool compress,
+                                           AbstractAPI::Texture *t
+                                           );
 
     AbstractAPI::Texture* createTexture( int w, int h,
                                          bool mips,

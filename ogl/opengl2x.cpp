@@ -18,6 +18,7 @@
 
 #include <Tempest/GLSL>
 #include <Tempest/RenderState>
+#include <Tempest/Log>
 
 #include <map>
 #include <set>
@@ -398,7 +399,7 @@ struct Opengl2x::Device{
   unsigned  clearS;
 
   bool hasTileBasedRender, hasQCOMTiles, hasDiscardBuffers;
-  bool hasRenderToRGBTextures;
+  bool hasRenderToRGBTextures, hasNpotTexture;
 
   PFNGLSTARTTILINGQCOMPROC glStartTilingQCOM;
   PFNGLENDTILINGQCOMPROC   glEndTilingQCOM;
@@ -412,13 +413,16 @@ struct Opengl2x::Device{
   MemPool<VertexDeclaration::Declarator> declPool;
 
   bool isWriteOnly( const RenderState& rs ){
+    bool w[4];
+    rs.getColorMask( w[0], w[1], w[2], w[3] );
     return !rs.isZTest() &&
            !rs.isZWriting() &&
-           !rs.isBlend();
+           !rs.isBlend() &&
+           w[0] && w[1] && w[2] && w[3];
     }
 
   void enableWriteOnlyRender( bool e ){
-    if( hasWriteonlyRendering && 0 ){
+    if( 0 && hasWriteonlyRendering ){
       if( e )
         glEnable ( GL_WRITEONLY_RENDERING_QCOM ); else
         glDisable( GL_WRITEONLY_RENDERING_QCOM );
@@ -527,6 +531,10 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->hasETC1Textures = (strstr(ext, "GL_OES_compressed_ETC1_RGB8_texture")!=0);
   dev->hasWriteonlyRendering = (strstr(ext, "GL_QCOM_writeonly_rendering")!=0);
 
+  dev->hasNpotTexture = (strstr(ext, "GL_OES_texture_npot")!=0) ||
+                        (strstr(ext, "GL_ARB_texture_non_power_of_two")!=0);
+  //dev->hasNpotTexture = 0;
+
 #ifdef __ANDROID__
   dev->hasHalfSupport            = strstr(ext, "GL_OES_vertex_half_float")!=0;
   dev->hasRenderToRGBTextures    = strstr(ext, "GL_OES_rgb8_rgba8")!=0;
@@ -602,6 +610,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   if( dev->caps.maxRTCount>32 )
     dev->caps.maxRTCount = 32;
 #endif
+  dev->caps.hasNpotTexture = dev->hasNpotTexture;
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glGenFramebuffers(1, &dev->fboId);
@@ -631,10 +640,13 @@ bool Opengl2x::setDevice( AbstractAPI::Device * d ) const {
   T_ASSERT_X( errCk(), "OpenGL error" );
 
 #ifdef __ANDROID__
-  bool ok =  SystemAPI::instance().isGraphicsContextAviable(0);
-  if( !ok )
+  SystemAPI::GraphicsContexState state = SystemAPI::NotAviable;
+  while( state==SystemAPI::NotAviable )
+    state = SystemAPI::instance().isGraphicsContextAviable(0);
+
+  if( state==SystemAPI::DestroyedByAndroid )
     __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "context is unaviable - android sucks");
-  return ok;
+  return state == SystemAPI::Aviable;
 #endif
 
   return 1;
@@ -663,28 +675,14 @@ void Opengl2x::clear( AbstractAPI::Device *d,
     dev->clearS = stencil;
     }
 
-  if( !dev->renderState.isZWriting() ){
-    glDepthMask( 1 );
-    }
-
-  bool msk[4];
-  dev->renderState.getColorMask( msk[0], msk[1], msk[2], msk[3] );
-  if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
-    glColorMask(1,1,1,1);
-  if( dev->isWriteOnly(dev->renderState) ){
-    dev->enableWriteOnlyRender(0);
-    }
+  RenderState r0 = dev->renderState, rs = r0;
+  rs.setColorMask(1,1,1,1);
+  rs.setZWriting(1);
+  setRenderState(d, rs);
 
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 
-  if( dev->isWriteOnly(dev->renderState) ){
-    dev->enableWriteOnlyRender(1);
-    }
-  if( !dev->renderState.isZWriting() ){
-    glDepthMask( 0 );
-    }
-  if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
-    glColorMask( msk[0], msk[1], msk[2], msk[3] );
+  setRenderState(d, r0);
   }
 
 void Opengl2x::clear(AbstractAPI::Device *d, const Color &cl) const  {
@@ -695,15 +693,13 @@ void Opengl2x::clear(AbstractAPI::Device *d, const Color &cl) const  {
     dev->clearColor = cl;
     }
 
-  bool msk[4];
-  dev->renderState.getColorMask( msk[0], msk[1], msk[2], msk[3] );
-  if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
-    glColorMask(1,1,1,1);
+  RenderState r0 = dev->renderState, rs = r0;
+  rs.setColorMask(1,1,1,1);
+  setRenderState(d, rs);
 
   glClear( GL_COLOR_BUFFER_BIT );
 
-  if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
-    glColorMask( msk[0], msk[1], msk[2], msk[3] );
+  setRenderState(d, r0);
   }
 
 void Opengl2x::clearZ(AbstractAPI::Device *d, float z ) const  {
@@ -718,20 +714,13 @@ void Opengl2x::clearZ(AbstractAPI::Device *d, float z ) const  {
   #endif
     }
 
-  if( !dev->renderState.isZWriting() ){
-    glDepthMask( 1 );
-    }
-  if( dev->isWriteOnly(dev->renderState) ){
-    dev->enableWriteOnlyRender(0);
-    }
+  RenderState r0 = dev->renderState, rs = r0;
+  rs.setZWriting(1);
+  setRenderState(d, rs);
+
   glClear( GL_DEPTH_BUFFER_BIT );
 
-  if( dev->isWriteOnly(dev->renderState) ){
-    dev->enableWriteOnlyRender(1);
-    }
-  if( !dev->renderState.isZWriting() ){
-    glDepthMask( 0 );
-    }
+  setRenderState(d, r0);
   }
 
 void Opengl2x::clearStencil( AbstractAPI::Device *d, unsigned s ) const  {
@@ -762,19 +751,13 @@ void Opengl2x::clear(AbstractAPI::Device *d,
     dev->clearS = s;
     }
 
-  if( !dev->renderState.isZWriting() ){
-    glDepthMask( 1 );
-    }
-  if( dev->isWriteOnly(dev->renderState) ){
-    dev->enableWriteOnlyRender(0);
-    }
+  RenderState r0 = dev->renderState, rs = r0;
+  rs.setZWriting(1);
+  setRenderState(d, rs);
+
   glClear( GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
-  if( dev->isWriteOnly(dev->renderState) ){
-    dev->enableWriteOnlyRender(1);
-    }
-  if( !dev->renderState.isZWriting() ){
-    glDepthMask( 0 );
-    }
+
+  setRenderState(d, r0);
   }
 
 void Opengl2x::clear(AbstractAPI::Device *d, const Color& cl, float z ) const{
@@ -794,27 +777,14 @@ void Opengl2x::clear(AbstractAPI::Device *d, const Color& cl, float z ) const{
   #endif
     }
 
-  if( dev->isWriteOnly(dev->renderState) ){
-    dev->enableWriteOnlyRender(0);
-    }
-  if( !dev->renderState.isZWriting() ){
-    glDepthMask( 1 );
-    }
-
-  bool msk[4];
-  dev->renderState.getColorMask( msk[0], msk[1], msk[2], msk[3] );
-  if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
-    glColorMask(1,1,1,1);
+  RenderState r0 = dev->renderState, rs = r0;
+  rs.setColorMask(1,1,1,1);
+  rs.setZWriting(1);
+  setRenderState(d, rs);
 
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-  if( !dev->renderState.isZWriting() ){
-    glDepthMask( 0 );
-    }
-  if( !(msk[0]&&msk[1]&&msk[2]&&msk[3]) )
-    glColorMask( msk[0], msk[1], msk[2], msk[3] );
-  if( dev->isWriteOnly(dev->renderState) ){
-    dev->enableWriteOnlyRender(1);
-    }
+
+  setRenderState(d, r0);
   }
 
 void Opengl2x::beginPaint( AbstractAPI::Device * d ) const {
@@ -1455,10 +1425,10 @@ void Opengl2x::loadTextureS3TC( AbstractAPI::Device  *d,
   }
 
 AbstractAPI::Texture *Opengl2x::recreateTexture( AbstractAPI::Device *d,
-                                                 AbstractAPI::Texture *oldT,
                                                  const Pixmap &p,
                                                  bool mips,
-                                                 bool compress) const {
+                                                 bool compress,
+                                                 AbstractAPI::Texture *oldT ) const {
   if( oldT==0 )
     return createTexture(d, p, mips, compress);
 
@@ -2138,18 +2108,6 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
     glDisable(GL_DEPTH_TEST); else
     glEnable(GL_DEPTH_TEST);
   */
-
-  if( dev->renderState.isZTest() != r.isZTest() ||
-      dev->renderState.getZTestMode()!=r.getZTestMode() ){
-    if( r.isZTest() ){
-      glDepthFunc( cmp[ r.getZTestMode() ] );
-      } else {
-      glDepthFunc( GL_ALWAYS );
-      }
-    }
-
-  if( dev->renderState.isZWriting()!=r.isZWriting() )
-    glDepthMask( r.isZWriting() );
   
 #ifdef __ANDROID__
   //a-test not supported
@@ -2178,28 +2136,6 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
     GL_ZERO
     };
 
-  if( dev->renderState.isBlend()!=r.isBlend() ||
-      dev->renderState.getBlendDFactor()!=r.getBlendDFactor() ||
-      dev->renderState.getBlendSFactor()!=r.getBlendSFactor()  ){
-    if( r.isBlend() ){
-      glBlendFunc( blend[ r.getBlendSFactor() ], blend[ r.getBlendDFactor() ] );
-      glEnable( GL_BLEND );
-      } else {
-      glDisable( GL_BLEND );
-      }
-    }
-
-  bool w[4], w1[4];
-  r.getColorMask( w[0], w[1], w[2], w[3] );
-  dev->renderState.getColorMask( w1[0], w1[1], w1[2], w1[3] );
-
-  if( w[0]!=w1[0] ||
-      w[1]!=w1[1] ||
-      w[2]!=w1[2] ||
-      w[3]!=w1[3] ){
-    glColorMask( w[0], w[1], w[2], w[3] );
-    }
-
 #ifndef __ANDROID__
   GLenum rmode[] = {
     GL_FILL,
@@ -2211,7 +2147,52 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
   glPolygonMode( GL_BACK,  rmode[r.backPolygonRenderMode()] );
 #endif
 
-  dev->enableWriteOnlyRender( dev->isWriteOnly(r) );
+  if( dev->isWriteOnly(r) ){
+    glColorMask(1,1,1,1);
+    glDisable( GL_BLEND );
+    glDisable( GL_DEPTH_TEST );
+    glDepthMask(0);
+    dev->enableWriteOnlyRender( 1 );
+    } else {
+    dev->enableWriteOnlyRender( 0 );
+
+    bool w[4], w1[4];
+    r.getColorMask( w[0], w[1], w[2], w[3] );
+    dev->renderState.getColorMask( w1[0], w1[1], w1[2], w1[3] );
+
+    if( w[0]!=w1[0] ||
+        w[1]!=w1[1] ||
+        w[2]!=w1[2] ||
+        w[3]!=w1[3] ){
+      glColorMask( w[0], w[1], w[2], w[3] );
+      }
+
+    if( dev->renderState.isBlend()!=r.isBlend() ||
+        dev->renderState.getBlendDFactor()!=r.getBlendDFactor() ||
+        dev->renderState.getBlendSFactor()!=r.getBlendSFactor()  ){
+      if( r.isBlend() ){
+        glBlendFunc( blend[ r.getBlendSFactor() ], blend[ r.getBlendDFactor() ] );
+        glEnable( GL_BLEND );
+        } else {
+        glDisable( GL_BLEND );
+        }
+      }
+
+    glEnable( GL_DEPTH_TEST );
+    if( dev->renderState.isZTest() != r.isZTest() ||
+        dev->renderState.getZTestMode()!=r.getZTestMode() ){
+      if( r.isZTest() ){
+        glDepthFunc( cmp[ r.getZTestMode() ] );
+        } else {
+        glDisable( GL_DEPTH_TEST );
+        }
+      }
+
+    if( dev->renderState.isZWriting()!=r.isZWriting() )
+      glDepthMask( r.isZWriting() );
+    }
+
   dev->renderState = r;
+
   T_ASSERT_X( errCk(), "OpenGL error" );
   }

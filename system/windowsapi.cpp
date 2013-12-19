@@ -457,6 +457,17 @@ bool WindowsAPI::writeBytesImpl( const wchar_t *file,
   return true;
   }
 
+WindowsAPI::CpuInfo WindowsAPI::cpuInfoImpl(){
+  CpuInfo info;
+  memset(&info, 0, sizeof(info));
+
+  SYSTEM_INFO inf;
+  GetSystemInfo(&inf);
+
+  info.cpuCount = inf.dwNumberOfProcessors;
+  return info;
+  }
+
 static Event::MouseButton toButton( UINT msg ){
   if( msg==WM_LBUTTONDOWN ||
       msg==WM_LBUTTONUP )

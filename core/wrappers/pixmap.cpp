@@ -498,6 +498,28 @@ void Tempest::Pixmap::downsample() {
   ImageCodec::downsample(info, data.value()->bytes);
   }
 
+inline static uint32_t nextPot( uint32_t v ){
+  v--;
+  v |= v >> 1;
+  v |= v >> 2;
+  v |= v >> 4;
+  v |= v >> 8;
+  v |= v >> 16;
+  v++;
+
+  return v;
+  }
+
+void Pixmap::toPOT(int maxSize) {
+  verifyFormatEditable();
+
+  uint32_t sz = maxSize;
+  ImageCodec::resize( info,
+                      data.value()->bytes,
+                      std::min( nextPot(info.w)/2, sz ),
+                      std::min( nextPot(info.h)/2, sz ) );
+  }
+
 
 Pixmap::ImgInfo::ImgInfo()
   :w(0), h(0), bpp(0), mipLevels(0), alpha(false), format(Format_RGB) {

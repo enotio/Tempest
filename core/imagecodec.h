@@ -48,6 +48,8 @@ class ImageCodec {
     static void addAlpha   (ImgInfo &info, std::vector<unsigned char>& rgb );
     static void removeAlpha(ImgInfo &info, std::vector<unsigned char>& rgba );
 
+    static void resize( ImgInfo &info, std::vector<unsigned char>& rgb,
+                        int nw, int nh );
     static void downsample(ImgInfo &info, std::vector<unsigned char>& rgb );
   };
 

@@ -218,6 +218,40 @@ struct Device::Data{
 
     int vbo, ibo, tex, dec;
     } allockCount;
+
+  template< class ... Args >
+  AbstractAPI::Texture* createTexture( const AbstractAPI  &api,
+                                       AbstractAPI::Texture*
+                                         (AbstractAPI::*c)( AbstractAPI::Device *impl, const Pixmap &p, Args...) const,
+                                       Device &dev,
+                                       AbstractAPI::Device *impl,
+                                       const Pixmap &p,
+                                       Args&...args ){
+    AbstractAPI::Texture * tx = 0;
+    if( api.isFormatSupported(impl, p.format()) ){
+      AbstractAPI::Caps caps = dev.caps();
+
+      if( !caps.hasNpotTexture||
+          p.width()  > caps.maxTextureSize ||
+          p.height() > caps.maxTextureSize  ){
+        bool isPot = ((p.width()  &(p.width() -1))==0) &&
+                     ((p.height() &(p.height()-1))==0);
+        if( !isPot ){
+          Pixmap px = p;
+          px.toPOT( caps.maxTextureSize );
+          return createTexture( api,c,dev, impl,px,args... );
+          }
+        }
+
+      tx = (api.*c)( impl, p, args... );
+      } else {
+      Pixmap px = p;
+      px.setFormat( p.hasAlpha() ? Pixmap::Format_RGBA:Pixmap::Format_RGB );
+      return createTexture( api,c,dev, impl,px,args... );
+      }
+
+    return tx;
+    }
   };
 
 
@@ -570,26 +604,27 @@ AbstractAPI::Texture *Device::createTexture( const Pixmap &p,
                                              bool mips,
                                              bool compress ) {
   forceEndPaint();
-  AbstractAPI::Texture * t = 0;
-  if( api.isFormatSupported(impl, p.format()) ){
-    t = api.createTexture( impl, p, mips, compress );
-    } else {
-    Pixmap px = p;
-    px.setFormat( p.hasAlpha() ? Pixmap::Format_RGBA:Pixmap::Format_RGB );
-    t = api.createTexture( impl, px, mips, compress );
-    }
 
-  if( t )
+  AbstractAPI::Texture * tx = data->createTexture( api,
+                                                   &AbstractAPI::createTexture,
+                                                   *this,
+                                                   impl, p, mips, compress );
+  if( tx )
     data->allockCount.tex++;
-  return t;
+
+  return tx;
   }
 
-AbstractAPI::Texture *Device::recreateTexture( AbstractAPI::Texture *t,
-                                               const Pixmap &p,
+AbstractAPI::Texture *Device::recreateTexture( const Pixmap &p,
                                                bool mips,
-                                               bool compress ) {
+                                               bool compress,
+                                               AbstractAPI::Texture *t
+                                               ) {
   forceEndPaint();
-  return api.recreateTexture(impl, t,p,mips, compress);
+  return data->createTexture( api,
+                              &AbstractAPI::recreateTexture,
+                              *this,
+                              impl, p, mips, compress, t );
   }
 
 AbstractAPI::Texture* Device::createTexture( int w, int h,
