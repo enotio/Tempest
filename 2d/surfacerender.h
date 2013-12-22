@@ -28,6 +28,8 @@ class SurfaceRender {
     SurfaceRender( Tempest::VertexShaderHolder   & vs,
                    Tempest::FragmentShaderHolder & fs );
 
+    void clearVbo();
+
     void buildVbo( Widget &surf,
                    Tempest::VertexBufferHolder & vbHolder,
                    Tempest::IndexBufferHolder  & ibHolder,

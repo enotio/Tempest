@@ -8,7 +8,7 @@
 #include <iostream>
 #include <locale>
 #include <fstream>
-
+#include <Tempest/Buffer>
 
 using namespace Tempest;
 
@@ -354,12 +354,14 @@ bool SystemAPI::loadImageImpl( const wchar_t *file,
   return ok;
   }
 
-bool SystemAPI::loadImageImpl(const std::vector<char> &imgBytes,
+bool SystemAPI::loadImageImpl( const std::vector<char> &imgBytes,
                                ImageCodec::ImgInfo &info,
                                std::vector<unsigned char> &out ) {
   for( size_t i=0; i<codecs.size(); ++i ){
     info = ImageCodec::ImgInfo();
-    if( codecs[i]->load(imgBytes, info, out) ){
+
+    Tempest::BufferReader reader(imgBytes);
+    if( codecs[i]->load(reader, info, out) ){
       return 1;
       }
     }

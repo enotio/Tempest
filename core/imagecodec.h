@@ -7,6 +7,8 @@
 namespace Tempest{
 
 class SystemAPI;
+class IDevice;
+class ODevice;
 
 class ImageCodec {
   public:
@@ -30,7 +32,7 @@ class ImageCodec {
     virtual bool load( const wchar_t *file,
                        ImgInfo &info,
                        std::vector<unsigned char> &out );
-    virtual bool load( const std::vector<char>& imgBytes,
+    virtual bool load( IDevice& imgBytes,
                        ImgInfo &info,
                        std::vector<unsigned char> &out );
 

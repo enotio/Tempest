@@ -4,10 +4,6 @@
 #include <Tempest/Assert>
 #include "core/wrappers/atomic.h"
 
-#ifndef __ANDROID__
-#include <IL/il.h>
-#endif
-
 #include <libpng/png.h>
 #include "../system/ddsdef.h"
 #include <squish/squish.h>
@@ -15,166 +11,28 @@
 
 #include "thirdparty/ktx/etc_dec.h"
 
+#include <libjpeg/jinclude.h>
+#include <libjpeg/jpeglib.h>
+
+#include <Tempest/Buffer>
+#include <Tempest/Log>
+
 namespace Tempest {
-
-#ifndef __ANDROID__
-struct DevILCodec:ImageCodec {
-  static void initImgLib() {
-    static Detail::Spin spin;
-    Detail::Guard guard(spin);
-    (void)guard;
-
-    static bool wasInit = false;
-    if( !wasInit )
-      ilInit();
-    ilEnable(IL_FILE_OVERWRITE);
-
-    wasInit = true;
-    }
-
-  template< class ChanelType, int mul >
-  void initRawData( std::vector<unsigned char> &d,
-                    void * input,
-                    int bpp,
-                    int w,
-                    int h,
-                    int * ix ){
-    ChanelType * img = reinterpret_cast<ChanelType*>(input);
-
-    d.resize( bpp*w*h );
-
-    for( int i=0; i<w; ++i )
-      for( int r=0; r<h; ++r ){
-        ChanelType * raw = &img[ bpp*(i+r*w) ];
-        for( int q=0; q<bpp; ++q ){
-          d[ bpp*(i+r*w)+q ] = ( raw[ ix[q] ]*mul );
-          }
-
-        }
-    }
-
-  bool canSave(ImageCodec::ImgInfo &inf) const {
-    return inf.format == Pixmap::Format_RGB || inf.format == Pixmap::Format_RGBA;
-    }
-
-  bool load( const std::vector<char> &imgBytes,
-             ImageCodec::ImgInfo &info,
-             std::vector<unsigned char> &out) {
-    initImgLib();
-    bool ok = true;
-
-    ILuint	id;
-    ilGenImages ( 1, &id );
-    ilBindImage ( id );
-
-    //if( ilLoadImage( file ) ){
-    if( ilLoadL( IL_TYPE_UNKNOWN, &imgBytes[0], imgBytes.size() ) ){
-      int format = ilGetInteger( IL_IMAGE_FORMAT );
-
-      int size_of_pixel = 1;
-      info.bpp = 3;
-      info.format = Pixmap::Format_RGB;
-
-      int idx[5][4] = {
-        { 0, 1, 2, 3 }, //IL_RGB, IL_RGBA
-        { 0, 0, 0, 0 }, //IL_ALPHA
-        { 2, 1, 0, 3 },
-        { 2, 1, 0, 3 },
-        { 0, 0, 0, 1 }
-        };
-      int *ix = idx[0];
-
-
-      switch( format ){
-        case IL_RGB:   size_of_pixel = 3; break;
-        case IL_RGBA:  size_of_pixel = 4; info.bpp = 4; break;
-        case IL_ALPHA: size_of_pixel = 1; ix = idx[1]; break;
-
-        case IL_BGR:   size_of_pixel = 3; ix = idx[2]; break;
-        case IL_BGRA:  size_of_pixel = 4; ix = idx[3]; break;
-        case IL_LUMINANCE_ALPHA:
-          size_of_pixel = 4; ix = idx[4];
-          break;
-        default: ok = false;
-        }
-
-      if( info.bpp==4 )
-        info.format = Pixmap::Format_RGBA;
-
-      info.alpha  = (info.format==Pixmap::Format_RGBA);
-
-      if( ok ){
-        ILubyte * data = ilGetData();
-        //Data * image = new Data();
-
-        info.w = ilGetInteger ( IL_IMAGE_WIDTH  );
-        info.h = ilGetInteger ( IL_IMAGE_HEIGHT );
-
-        if( ilGetInteger ( IL_IMAGE_TYPE ) == IL_UNSIGNED_BYTE )
-          initRawData<ILubyte,   1> ( out, data, size_of_pixel, info.w, info.h, ix ); else
-          initRawData<ILdouble, 255>( out, data, size_of_pixel, info.w, info.h, ix );
-        }
-      } else {
-      ok = false;
-      }
-
-    ilDeleteImages( 1, &id );
-
-    return ok;
-    }
-
-  bool save( const char *file,
-             ImgInfo &info,
-             std::vector<unsigned char> &in ){
-    if( !(info.format==Pixmap::Format_RGB || info.format==Pixmap::Format_RGBA) )
-      return 0;
-
-    initImgLib();
-
-    ILuint	id;
-    ilGenImages ( 1, &id );
-    ilBindImage ( id );
-
-    ilTexImage( info.w, info.h, 1,
-                info.bpp,
-                (info.bpp==4)? IL_RGBA : IL_RGB,
-                IL_UNSIGNED_BYTE,
-                in.data() );
-
-    ILubyte * img = ilGetData();
-    int h2 = info.h/2;
-    for( int i=0; i<info.w; ++i )
-      for( int r=0; r<h2; ++r ){
-        ILubyte * raw1 = &img[ info.bpp*(i+r*info.w) ];
-        ILubyte * raw2 = &img[ info.bpp*(i+(info.h-r-1)*info.w) ];
-        for( int q=0; q<info.bpp; ++q )
-          std::swap( raw1[q], raw2[q] );
-        }
-
-    bool ok = ilSaveImage( file );
-    ilDeleteImages( 1, &id );
-
-    return ok;
-    }
-
-  };
-#endif
 
 struct PngCodec:ImageCodec {
   PngCodec(){
     rows.reserve(2048);
     }
 
-  bool load( const std::vector<char> &d,
+  bool load( IDevice &d,
              ImgInfo &info,
              std::vector<unsigned char> &out ) {
-    if( d.size()<8 )// 8 is the maximum size that can be checked
+    char head[8];
+    if( d.readData( head, 8 )!=8 )
       return false;
 
-    unsigned char* data = (unsigned char*)&d[0];
-    if (png_sig_cmp( data, 0, 8))
+    if (png_sig_cmp( (unsigned char*)head, 0, 8))
       return false;
-    data += 8;
 
     png_structp png_ptr;
 
@@ -193,8 +51,7 @@ struct PngCodec:ImageCodec {
 
     struct Reader{
       bool err;
-      unsigned char* data;
-      size_t sz;
+      IDevice* data;
 
       static void read( png_structp png_ptr,
                         png_bytep   outBytes,
@@ -205,25 +62,17 @@ struct PngCodec:ImageCodec {
 
         Reader& r = *(Reader*)png_get_io_ptr(png_ptr);
 
-        if( r.sz<byteCountToRead ){
+        if( r.data->readData((char*)outBytes, byteCountToRead)!=byteCountToRead ){//r.sz<byteCountToRead ){
           r.err = true;
           return;
-          }
-
-        r.sz -= byteCountToRead;
-
-        for(; byteCountToRead>0; --byteCountToRead ){
-          *outBytes = *r.data;
-          ++r.data;
-          ++outBytes;
           }
         }
       };
 
     Reader r;
     r.err  = false;
-    r.data = data;
-    r.sz   = d.size()-8;
+    r.data = &d;
+
     //png_init_io(png_ptr, data);
     png_set_read_fn( png_ptr, &r, &Reader::read );
 
@@ -286,24 +135,160 @@ struct PngCodec:ImageCodec {
   Detail::Spin spin;
   };
 
+struct JpegCodec:ImageCodec {
+  JpegCodec(){
+    }
+
+  struct JpegStream {
+    jpeg_source_mgr pub;
+
+    IDevice* stream;
+    static const size_t bufferSize = 4096;
+    unsigned char buffer [bufferSize];
+    };
+
+  static void init_source( j_decompress_ptr ) {}
+
+  static boolean fill_buffer ( j_decompress_ptr cinfo ) {
+    JpegStream* src = (JpegStream*)(cinfo->src);
+    src->pub.next_input_byte = src->buffer;
+    src->pub.bytes_in_buffer = src->stream->readData( (char*)src->buffer,
+                                                      JpegStream::bufferSize );
+
+    return (src->stream->eof() && src->pub.bytes_in_buffer==0)?FALSE:TRUE;
+    }
+
+  static void skip (j_decompress_ptr cinfo, long count) {
+    JpegStream* src = (JpegStream*)(cinfo->src);
+    src->stream->skip(count);
+    }
+
+  static void term (j_decompress_ptr ) {
+    // Close the stream, can be nop
+    }
+
+  void make_stream (jpeg_decompress_struct* cinfo, IDevice* in) {
+    JpegStream * src;
+
+    if (cinfo->src == NULL) {
+      /* first time for this JPEG object? */
+      cinfo->src = (jpeg_source_mgr *)
+          (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+                                      sizeof(JpegStream));
+      src = reinterpret_cast<JpegStream*> (cinfo->src);
+      }
+
+    src = reinterpret_cast<JpegStream*> (cinfo->src);
+    src->pub.init_source       = init_source;
+    src->pub.fill_input_buffer = fill_buffer;
+    src->pub.skip_input_data   = skip;
+    src->pub.resync_to_restart = jpeg_resync_to_restart; /* use default method */
+    src->pub.term_source       = term;
+    src->stream                = in;
+    src->pub.bytes_in_buffer   = 0; /* forces fill_input_buffer on first read */
+    src->pub.next_input_byte   = 0; /* until buffer loaded */
+    }
+
+  struct compress:jpeg_decompress_struct{
+    compress(){
+      }
+
+    void start(){
+      jpeg_create_decompress(this);
+      }
+
+    ~compress(){
+      jpeg_destroy_decompress(this);
+      }
+    };
+
+  bool load( IDevice &d,
+             ImgInfo &info,
+             std::vector<unsigned char> &out ) {
+    compress cInfo;
+    struct jpeg_error_mgr cErrMgr;
+
+    // 1. Install error manager.
+    //
+    cInfo.err = jpeg_std_error(&cErrMgr);
+
+    // 2. Create JPEG decompressor object.
+    //
+    cInfo.start();
+
+    // 3. Specify the data source.
+    //
+    //jpeg_stdio_src(&cInfo, pFile);
+    make_stream(&cInfo, &d);
+
+    // 4. Read JPEG Header to extract image information.
+    //
+    if( jpeg_read_header(&cInfo, TRUE)!=JPEG_HEADER_OK )
+      return false;
+
+    // From now on, you can access information on the jpeg image by
+    // referencing fields of cInfo object.
+    //
+
+    // 5. Set Target Image Format. Here we store the decoded image in JCS_RGB format.
+    //
+    cInfo.out_color_space = JCS_RGB;
+
+    // 6. Initiate decompress procedure.
+    //
+    if( !jpeg_start_decompress(&cInfo) )
+      return 0;
+
+    // 7. Allocate temporary buffer for decoding.
+    size_t iRowStride = cInfo.output_width * cInfo.output_components;
+    //(*a_pBuffer) = new JSAMPLE[ iRowStride * cInfo.output_height ];
+
+    out.resize( iRowStride * cInfo.output_height  );
+    // Assign row buffers.
+    //
+    JSAMPROW pRows[1];
+
+    // Decoding loop:
+    //
+    size_t i = 0;
+    while (cInfo.output_scanline < cInfo.output_height)
+    {
+      // Decode it !
+      pRows[0] = (JSAMPROW)( out.data() + iRowStride * i);  // set row buffer
+      (void) jpeg_read_scanlines(&cInfo, pRows, 1);  // decode
+      i++;
+    }
+
+    info.w   = cInfo.image_width;
+    info.h   = cInfo.image_height;
+    info.bpp = cInfo.output_components;
+
+    // 8. Finish decompression.
+    //
+    if( !jpeg_finish_decompress(&cInfo) )
+      Log() << "jpeg_finish_decompress error";
+
+    return true;
+    }
+
+
+  };
+
 struct S3TCCodec:ImageCodec {
-  bool load( const std::vector<char> &img,
+  bool load( IDevice &img,
              ImgInfo &info,
              std::vector<unsigned char> &out ) {
     DDSURFACEDESC2 ddsd;
     //std::vector<char> img = loadBytesImpl(data);
-    const char* pos = &img[0];
-    if( img.size()<4+sizeof(ddsd) )
+    char dds4[4];
+    if( img.readData(dds4, 4)!=4 )
       return false;
 
-    if( strncmp( pos, "DDS ", 4 ) != 0 ) {
+    if( strncmp( dds4, "DDS ", 4 ) != 0 ) {
       return false;
       }
 
-    //std::cout << sizeof(DWORD) << std::endl;
-    pos+=4;
-    memcpy(&ddsd, pos, sizeof(ddsd) );
-    pos += sizeof(ddsd);
+    img.readData( (char*)&ddsd, sizeof(ddsd) );
 
     int factor;
     switch( ddsd.ddpfPixelFormat.dwFourCC ) {
@@ -335,7 +320,7 @@ struct S3TCCodec:ImageCodec {
 
     info.w = ddsd.dwWidth;
     info.h = ddsd.dwHeight;
-    int bufferSize = info.w*info.h/factor;
+    size_t bufferSize = info.w*info.h/factor;
 
     if( ddsd.dwMipMapCount > 1 ){
       int mipW = info.w, mipH = info.h;
@@ -354,13 +339,12 @@ struct S3TCCodec:ImageCodec {
     //  bufferSize = ddsd.dwLinearSize * factor; else
       //bufferSize = ddsd.dwLinearSize;
 
-    size_t sz = 4+sizeof(ddsd)+bufferSize;
-    if( img.size() < sz )
-      return false;
-
     out.reserve( bufferSize );
     out.resize ( bufferSize );
-    memcpy( &out[0], pos, bufferSize );
+
+    if( img.readData( (char*)&out[0], bufferSize)!=bufferSize )
+      return false;
+
     info.alpha  = (info.format!=Pixmap::Format_DXT1);
 
     return true;
@@ -617,14 +601,17 @@ struct ETCCodec:ImageCodec{
     return 1;
     }
 
-  bool load( const std::vector<char> &data,
+  bool load( IDevice &data,
              ImgInfo &info,
              std::vector<unsigned char> & out ) {
-    static const size_t hsz = sizeof(KTX_header)+sizeof(uint32_t);
-    if( data.size()<hsz )
+    KTX_header h;
+    uint32_t tmp = 0;
+    if( data.readData((char*)&h, sizeof(h)) != sizeof(h) )
       return 0;
 
-    const KTX_header& h = (*(const KTX_header*)&data[0]);
+    if( data.readData((char*)&tmp, sizeof(tmp))!=sizeof(tmp) )
+      return 0;
+
     static const uint8_t ktx_identifier[12] = { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A };
 
     for(int i=0; i<=11; i++) {
@@ -635,13 +622,11 @@ struct ETCCodec:ImageCodec{
     info.w      = h.pixelWidth;
     info.h      = h.pixelHeight;
 
-    size_t pos = hsz;
+    size_t pos = 0;
     uint32_t mips = std::max<uint32_t>(h.numberOfMipmapLevels, 1);
 
     int wx = info.w, hx = info.h;
     for( uint32_t i=0; i<mips; ++i ){
-      if( (data.size()-pos) < size_t((wx/4)*(hx/4)*8) )
-        return 0;
       pos += size_t((wx/4)*(hx/4)*8);
 
       if(wx>1) wx /= 2;
@@ -653,8 +638,10 @@ struct ETCCodec:ImageCodec{
     info.format    = Pixmap::Format_ETC1_RGB8;
     info.bpp       = 3;
 
-    out.resize( data.size()-hsz );
-    std::copy( data.begin()+hsz, data.end(), out.begin() );
+    out.resize( pos );
+    if( data.readData( (char*)&out[0], pos )!=pos )
+      return 0;
+
     return 1;
     }
   };
@@ -685,17 +672,19 @@ bool ImageCodec::load( const char *file,
                        ImageCodec::ImgInfo &info,
                        std::vector<unsigned char> &out) {
   std::vector<char> imgBytes = SystemAPI::loadBytes(file);
-  return load( imgBytes, info, out );
+  BufferReader reader(imgBytes);
+  return load( reader, info, out );
   }
 
-bool ImageCodec::load(const wchar_t *file,
+bool ImageCodec::load( const wchar_t *file,
                        ImgInfo &info,
                        std::vector<unsigned char> &out ) {
   std::vector<char> imgBytes = SystemAPI::loadBytes(file);
-  return load( imgBytes, info, out );
+  BufferReader reader(imgBytes);
+  return load( reader, info, out );
   }
 
-bool ImageCodec::load( const std::vector<char> &,
+bool ImageCodec::load( IDevice &,
                        ImageCodec::ImgInfo &,
                        std::vector<unsigned char> &) {
   T_WARNING_X(0, "overload for ImageCodec::load is unimplemented");
@@ -717,12 +706,10 @@ bool ImageCodec::save( const wchar_t *,
   }
 
 void ImageCodec::installStdCodecs(SystemAPI &s) {
-  s.installImageCodec( new PngCodec() );
-  s.installImageCodec( new ETCCodec() );
+  s.installImageCodec( new PngCodec()  );
+  s.installImageCodec( new JpegCodec() );
+  s.installImageCodec( new ETCCodec()  );
   s.installImageCodec( new S3TCCodec() );
-#ifndef __ANDROID__
-  s.installImageCodec( new DevILCodec() );
-#endif
   }
 
 void ImageCodec::addAlpha( ImgInfo& info, std::vector<unsigned char> &rgb) {

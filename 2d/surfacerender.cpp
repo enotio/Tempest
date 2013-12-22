@@ -43,6 +43,13 @@ SurfaceRender::SurfaceRender( VertexShaderHolder &vs,
   loadShader();
   }
 
+void SurfaceRender::clearVbo() {
+  cpuGm.clear();
+  blocks.clear();
+
+  vbo = Tempest::VertexBuffer<Vertex>();
+  }
+
 void SurfaceRender::loadShader() {
   {
   AbstractShadingLang::UiShaderOpt opt;

@@ -20,7 +20,6 @@ QMAKE_CXXFLAGS += -std=gnu++0x -Wall
 
 INCLUDEPATH += \
                "$$(CG_INC_PATH)"\
-               "C:/Users/Try/Home/Programming/SharedLibs/DevIL-SDK-x86-1.7.8/include"\
                "C:/Users/Try/Home/Programming/SharedLibs/glew-1.5.4-mingw32/include"\
                "./thirdparty/fakeGL" \
                "./thirdparty/" \
@@ -31,7 +30,6 @@ INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_wi
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/include/freetype2"
 
 LIBS += -L"C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/lib" -lfreetype
-LIBS += -L"C:/Users/Try/Home/Programming/SharedLibs/DevIL-SDK-x86-1.7.8/lib" -l"DevIL"
 LIBS += -l"gdi32" -l"z"
 
 #DEFINES += D3D_DEBUG_INFO
@@ -176,7 +174,37 @@ SOURCES += \
     shading/programobject.cpp \
     core/imagecodec.cpp \
     thirdparty/ktx/etc_dec.cpp \
-    utils/log.cpp
+    utils/log.cpp \
+    io/iodevice.cpp \
+    io/buffer.cpp \
+    thirdparty/libjpeg/jaricom.c \
+    thirdparty/libjpeg/jcomapi.c \
+    thirdparty/libjpeg/jdapimin.c \
+    thirdparty/libjpeg/jdapistd.c \
+    thirdparty/libjpeg/jdarith.c \
+    thirdparty/libjpeg/jdatadst.c \
+    thirdparty/libjpeg/jdatasrc.c \
+    thirdparty/libjpeg/jdcoefct.c \
+    thirdparty/libjpeg/jdcolor.c \
+    thirdparty/libjpeg/jddctmgr.c \
+    thirdparty/libjpeg/jdhuff.c \
+    thirdparty/libjpeg/jdinput.c \
+    thirdparty/libjpeg/jdmainct.c \
+    thirdparty/libjpeg/jdmarker.c \
+    thirdparty/libjpeg/jdmaster.c \
+    thirdparty/libjpeg/jdmerge.c \
+    thirdparty/libjpeg/jdpostct.c \
+    thirdparty/libjpeg/jdsample.c \
+    thirdparty/libjpeg/jdtrans.c \
+    thirdparty/libjpeg/jerror.c \
+    thirdparty/libjpeg/jidctflt.c \
+    thirdparty/libjpeg/jidctfst.c \
+    thirdparty/libjpeg/jidctint.c \
+    thirdparty/libjpeg/jmemmgr.c \
+    thirdparty/libjpeg/jmemnobs.c \
+    thirdparty/libjpeg/jquant1.c \
+    thirdparty/libjpeg/jquant2.c \
+    thirdparty/libjpeg/jutils.c
 
 HEADERS += \
     ui/window.h \
@@ -283,7 +311,19 @@ HEADERS += \
     shading/programobject.h \
     core/imagecodec.h \
     thirdparty/ktx/etc_dec.h \
-    utils/log.h
+    utils/log.h \
+    io/iodevice.h \
+    io/buffer.h \
+    include/Tempest/IODevice \
+    thirdparty/libjpeg/jconfig.h \
+    thirdparty/libjpeg/jdct.h \
+    thirdparty/libjpeg/jerror.h \
+    thirdparty/libjpeg/jinclude.h \
+    thirdparty/libjpeg/jmemsys.h \
+    thirdparty/libjpeg/jmorecfg.h \
+    thirdparty/libjpeg/jpegint.h \
+    thirdparty/libjpeg/jpeglib.h \
+    thirdparty/libjpeg/jversion.h
 
 OTHER_FILES += \
     include/Tempest/Window \
@@ -312,5 +352,6 @@ OTHER_FILES += \
     include/Tempest/VolumeHolder \
     include/Tempest/ImageCodec \
     include/Tempest/Log \
-    thirdparty/freetype/Android.mk
+    thirdparty/freetype/Android.mk \
+    include/Tempest/Buffer
 
