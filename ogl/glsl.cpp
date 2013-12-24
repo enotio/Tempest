@@ -20,7 +20,6 @@
 #include "gltypes.h"
 
 #include <iostream>
-#include <fstream>
 
 #include <cstring>
 #include <tuple>
@@ -56,11 +55,11 @@ struct GLSL::Data{
   const AbstractAPI::VertexDecl* vdecl;
 
   std::string readFile( const char* f ){
-    return SystemAPI::loadText(f).data();
+    return std::move( SystemAPI::loadText(f).data() );
     }
 
   std::string readFile( const char16_t* f ){
-    return SystemAPI::loadText(f).data();
+    return std::move( SystemAPI::loadText(f).data() );
     }
 
   GLuint loadShader( GLenum shaderType,

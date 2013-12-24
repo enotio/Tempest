@@ -45,6 +45,14 @@ RFile::RFile(const char16_t *name, RFile::Mode m) {
   impl = SystemAPI::fopen(name, md);
   }
 
+bool RFile::isOpen() const {
+  return impl!=0;
+  }
+
+size_t RFile::size() const {
+  return SystemAPI::fsize(impl);
+  }
+
 RFile::~RFile() {
   SystemAPI::fclose(impl);
   }
@@ -53,25 +61,29 @@ size_t RFile::readData(char *dest, size_t count) {
   return SystemAPI::readData(impl, dest, count);
   }
 
-size_t RFile::skip(size_t count) {
-  return SystemAPI::skip(impl, count);
+void RFile::skip(size_t count) {
+  SystemAPI::skip(impl, count);
   }
 
-bool RFile::eof() const{
+size_t RFile::peek(size_t skip, char *dest, size_t maxSize) const {
+  return SystemAPI::peek(impl, skip, dest, maxSize);
+  }
+
+bool RFile::eof() const {
   return SystemAPI::eof(impl);
   }
 
 
 WFile::WFile(const char *name, WFile::Mode m) {
   char md[4];
-  makeMode(md, m|2);
+  makeMode(md, m|2|8);
 
   impl = SystemAPI::fopen(name, md);
   }
 
 WFile::WFile(const char16_t *name, WFile::Mode m) {
   char md[4];
-  makeMode(md, m|2);
+  makeMode(md, m|2|8);
 
   impl = SystemAPI::fopen(name, md);
   }
@@ -96,4 +108,8 @@ size_t WFile::writeData(const char *src, size_t count) {
 
 void WFile::flush() {
   SystemAPI::flush(impl);
+  }
+
+bool WFile::isOpen() const {
+  return impl!=0;
   }

@@ -13,7 +13,7 @@ class RFile : public IDevice {
       //Read   = 1,
       //Write  = 2,
       //Append = 4,
-      Binary = 8
+      //Binary = 8
       };
 
     RFile( const char* name,     Mode m = Default );
@@ -25,8 +25,12 @@ class RFile : public IDevice {
     virtual ~RFile();
 
     size_t readData(char *dest, size_t count);
-    size_t skip(size_t count);
-    bool eof() const;
+    void   skip(size_t count);
+    size_t peek( size_t skip, char* dest, size_t maxSize ) const;
+
+    bool eof()    const;
+    bool isOpen() const;
+    size_t size() const;
   private:
     SystemAPI::File* impl;
   };
@@ -38,7 +42,7 @@ class WFile : public ODevice {
       //Read   = 1,
       //Write  = 2,
       Append = 4,
-      Binary = 8
+      //Binary = 8
       };
 
     WFile( const char* name,     Mode m = Default );
@@ -52,6 +56,8 @@ class WFile : public ODevice {
 
     size_t writeData(const char *src, size_t count);
     void flush();
+
+    bool isOpen() const;
   private:
     SystemAPI::File* impl;
   };

@@ -223,7 +223,7 @@ struct JpegCodec:ImageCodec {
     src->pub.bytes_in_buffer = src->stream->readData( (char*)src->buffer,
                                                       JpegStream::bufferSize );
 
-    return (src->stream->eof() && src->pub.bytes_in_buffer==0)?FALSE:TRUE;
+    return (/*src->stream->eof() &&*/ src->pub.bytes_in_buffer==0)?FALSE:TRUE;
     }
 
   static void skip (j_decompress_ptr cinfo, long count) {
@@ -244,9 +244,8 @@ struct JpegCodec:ImageCodec {
     JpegStream * src;
 
     if (cinfo->src == NULL) {
-      /* first time for this JPEG object? */
       cinfo->src = (jpeg_source_mgr *)
-          (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+          (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
                                       sizeof(JpegStream));
       src = reinterpret_cast<JpegStream*> (cinfo->src);
       }
@@ -358,7 +357,6 @@ struct S3TCCodec:ImageCodec {
              ImgInfo &info,
              std::vector<unsigned char> &out ) {
     DDSURFACEDESC2 ddsd;
-    //std::vector<char> img = loadBytesImpl(data);
     char dds4[4];
     if( img.readData(dds4, 4)!=4 )
       return false;
@@ -639,8 +637,6 @@ struct ETCCodec:ImageCodec{
     if( info.format!=Pixmap::Format_ETC1_RGB8 )
       return 0;
 
-    //std::vector<char> buf;
-
     KTX_header header;
     static const uint8_t ktx_identifier[12] = { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A };
 
@@ -668,18 +664,11 @@ struct ETCCodec:ImageCodec{
     header.glBaseInternalFormat = 0x1907;//GL_RGB;
     header.glInternalFormat     = 0x8D64;//GL_ETC1_RGB8_OES;
 
-    //write header
     file.writeData( (char*)&header, sizeof(header) );
-    //buf.insert(buf.end(), (char*)&header, (char*)&header+sizeof(header) );
 
-    //write size of compressed data.. which depend on the expanded size..
     uint32_t imagesize=(info.w*info.h*halfbytes)/2;
     file.writeData( (char*)&imagesize, sizeof(imagesize) );
-    //buf.insert(buf.end(), (char*)&imagesize, (char*)&imagesize+sizeof(imagesize) );
-
     file.writeData( (const char*)img.data(), img.size() );
-    //buf.insert(buf.end(), img.begin(), img.end() );
-    //SystemAPI::writeBytes(file, buf);
     return 1;
     }
 
@@ -750,22 +739,6 @@ void ImageCodec::fromRGB( ImageCodec::ImgInfo &/*info*/,
   T_WARNING_X(0, "overload for ImageCodec::fromRGB is unimplemented");
   }
 
-bool ImageCodec::load( const char *file,
-                       ImageCodec::ImgInfo &info,
-                       std::vector<unsigned char> &out) {
-  std::vector<char> imgBytes = SystemAPI::loadBytes(file);
-  BufferReader reader(imgBytes);
-  return load( reader, info, out );
-  }
-
-bool ImageCodec::load( const char16_t *file,
-                       ImgInfo &info,
-                       std::vector<unsigned char> &out ) {
-  std::vector<char> imgBytes = SystemAPI::loadBytes(file);
-  BufferReader reader(imgBytes);
-  return load( reader, info, out );
-  }
-
 bool ImageCodec::load( IDevice &,
                        ImageCodec::ImgInfo &,
                        std::vector<unsigned char> &) {
@@ -773,21 +746,7 @@ bool ImageCodec::load( IDevice &,
   return false;
   }
 
-bool ImageCodec::save( const char *fname,
-                       ImageCodec::ImgInfo &inf,
-                       std::vector<unsigned char> &img ) {
-  WFile f(fname, WFile::Binary);
-  return save(f, inf, img);
-  }
-
-bool ImageCodec::save( const char16_t *fname,
-                       ImageCodec::ImgInfo &inf,
-                       std::vector<unsigned char> & img ) {
-  WFile f(fname, WFile::Binary);
-  return save(f, inf, img);
-  }
-
-bool ImageCodec::save( ODevice& out,
+bool ImageCodec::save( ODevice& ,
                        ImageCodec::ImgInfo &,
                        std::vector<unsigned char> & ) {
   T_WARNING_X(0, "overload for ImageCodec::save is unimplemented");

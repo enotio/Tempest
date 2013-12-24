@@ -11,9 +11,9 @@ class BufferReader:public IDevice{
     BufferReader( const std::vector<char>& vec );
 
     size_t readData( char* dest, size_t count );
-    size_t skip( size_t count );
+    void   skip( size_t count );
 
-    char peek() const;
+    size_t peek( size_t skip, char* dest, size_t maxSize ) const;
     bool eof() const;
   private:
     const std::vector<char>& vec;

@@ -10,9 +10,9 @@
 #include <Tempest/VertexDeclaration>
 #include <Tempest/VertexBufferHolder>
 #include <Tempest/IndexBufferHolder>
+#include <Tempest/File>
 
 #include <stdint.h>
-#include <fstream>
 
 namespace Tempest{
 
@@ -106,14 +106,12 @@ class Model {
     typedef RawModel<Vertex> Raw;
 
     static Raw  loadRawData( const std::string& fname  ){
-      std::fstream fin( fname.data(), std::fstream::in | std::fstream::binary );
+      RFile fin( fname );
 
       char magic[6] = {};
-      fin.read( magic, 5 );
+      fin.readData( magic, 5 );
 
-      if( std::string(magic)!="Model" ){
-        fin.close();
-
+      if( strcmp(magic,"Model")!=0 ){
         Raw r;
         r.hasIndex = false;
         return r;
@@ -122,38 +120,33 @@ class Model {
       uint16_t ver  = 0,
                size = 0;
 
-      fin.read( (char*)&ver,  sizeof(ver)  );
-      fin.read( (char*)&size, sizeof(size) );
+      fin.readData( (char*)&ver,  sizeof(ver)  );
+      fin.readData( (char*)&size, sizeof(size) );
 
       Raw meat;
       meat.hasIndex = false;
       meat.vertex.resize( size );
 
-      fin.read( (char*)&meat.vertex[0], size*sizeof(Vertex) );
-
-      fin.close();
-
+      fin.readData( (char*)&meat.vertex[0], size*sizeof(Vertex) );
       return meat;
       }
 
     static bool saveRawData( const std::string& fname, const Raw &r  ){
-      std::fstream fout( fname.data(), std::fstream::out | std::fstream::binary );
+      WFile fout( fname.data() );
 
-      if( !fout.is_open() )
+      if( !fout.isOpen() )
         return false;
 
       char magic[6] = "Model";
-      fout.write( magic, 5 );
+      fout.writeData( magic, 5 );
 
       uint16_t ver  = 0,
                size = r.vertex.size();
 
-      fout.write( (char*)&ver,  sizeof(ver)  );
-      fout.write( (char*)&size, sizeof(size) );
+      fout.writeData( (char*)&ver,  sizeof(ver)  );
+      fout.writeData( (char*)&size, sizeof(size) );
 
-      fout.write( (char*)&r.vertex[0], size*sizeof(Vertex) );
-
-      fout.close();
+      fout.writeData( (char*)&r.vertex[0], size*sizeof(Vertex) );
       return true;
       }
 

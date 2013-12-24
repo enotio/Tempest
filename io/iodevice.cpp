@@ -20,16 +20,20 @@ size_t MemReader::readData(char *dest, size_t count) {
   return c;
   }
 
-size_t MemReader::skip(size_t count) {
+void MemReader::skip(size_t count) {
   size_t c = std::min(count, sz);
   vec+=c;
-  return c;
   }
 
-char MemReader::peek() const {
-  if( sz )
-    return *vec; else
+size_t MemReader::peek(size_t skip, char* dest, size_t count ) const {
+  if( skip>=sz )
     return 0;
+
+  size_t c = std::min(count, sz-skip);
+
+  memcpy(dest, vec+skip, c);
+
+  return c;
   }
 
 bool MemReader::eof() const {
@@ -50,5 +54,35 @@ size_t MemWriter::writeData(char *src, size_t count) {
   return c;
   }
 
+char IDevice::peek() const{
+  char x = 0;
+  peek(0, &x, 1);
+  return x;
+  }
+
 void ODevice::flush() {
   }
+
+
+PeekReader::PeekReader(IDevice &dev):dev(dev), offset(0){
+  }
+
+size_t PeekReader::readData(char *dest, size_t count) {
+  size_t c = dev.peek(offset, dest, count);
+  offset += c;
+  return c;
+  }
+
+void PeekReader::skip(size_t c) {
+  offset += c;
+  }
+
+size_t PeekReader::peek(size_t skip, char *dest, size_t maxSize) const {
+  size_t c = dev.peek(offset+skip, dest, maxSize);
+  return c;
+  }
+
+void PeekReader::commit() {
+  dev.skip( offset );
+  }
+

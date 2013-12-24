@@ -25,7 +25,6 @@ SystemAPI &SystemAPI::instance() {
   }
 
 SystemAPI::SystemAPI(){
-  buffer.reserve( 4*1024*1024 );
   ImageCodec::installStdCodecs(*this);
   }
 
@@ -93,6 +92,13 @@ void SystemAPI::flush(SystemAPI::File *f) {
     instance().flushImpl(f);
   }
 
+size_t SystemAPI::peek(SystemAPI::File *f, size_t skip, char *dest, size_t count) {
+  if( f )
+    return instance().peekImpl(f, skip, dest, count);
+
+  return 0;
+  }
+
 size_t SystemAPI::skip(SystemAPI::File *f, size_t count) {
   if( f )
     return instance().skipImpl(f, count);
@@ -112,6 +118,13 @@ void SystemAPI::fclose(SystemAPI::File *file) {
     instance().fcloseImpl(file);
   }
 
+size_t SystemAPI::fsize(SystemAPI::File *f) {
+  if( f )
+    return instance().fsizeImpl(f);
+
+  return 0;
+  }
+
 SystemAPI::File *SystemAPI::fopenImpl( const char *fname, const char *mode ) {
   return (SystemAPI::File*)::fopen(fname, mode);
   }
@@ -126,6 +139,14 @@ size_t SystemAPI::writeDataImpl(SystemAPI::File *f, const char *data, size_t cou
 
 void SystemAPI::flushImpl(SystemAPI::File *f) {
   fflush( (FILE*)f );
+  }
+
+size_t SystemAPI::peekImpl(SystemAPI::File *f, size_t skip, char *dest, size_t count) {
+  size_t pos = ftell((FILE*)f);
+  fseek( (FILE*)f, skip, SEEK_CUR );
+  size_t c = fread( dest, 1, count, (FILE*)f );
+  fseek( (FILE*)f,  pos, SEEK_SET );
+  return c;
   }
 
 size_t SystemAPI::skipImpl(SystemAPI::File *f, size_t count) {
@@ -147,25 +168,71 @@ void SystemAPI::fcloseImpl(SystemAPI::File *file) {
   ::fclose( (FILE*)file );
   }
 
-bool SystemAPI::loadImage( const char16_t *file,
+size_t SystemAPI::fsizeImpl(SystemAPI::File *f) {
+  FILE *file = (FILE*)f;
+  size_t pos = ftell(file);
+
+  fseek( file, 0, SEEK_SET );
+  size_t s = ftell(file);
+
+  fseek( file, 0, SEEK_END );
+  size_t e = ftell(file);
+
+  fseek( file, pos, SEEK_CUR );
+  return e-s;
+  }
+
+std::string SystemAPI::loadTextImpl(const char *file) {
+  RFile f(file);
+  size_t sz = f.size();
+
+  std::string str;
+  str.resize(sz);
+  f.readData( &str[0], sz );
+
+  return std::move(str);
+  }
+
+std::string SystemAPI::loadTextImpl(const char16_t *file) {
+  RFile f(file);
+  size_t sz = f.size();
+
+  std::string str;
+  str.resize(sz);
+  f.readData( &str[0], sz );
+
+  return std::move(str);
+  }
+
+std::vector<char> SystemAPI::loadBytesImpl(const char *file) {
+  RFile f(file);
+  size_t sz = f.size();
+
+  std::vector<char> str;
+  str.resize(sz);
+  f.readData( &str[0], sz );
+
+  return std::move(str);
+  }
+
+std::vector<char> SystemAPI::loadBytesImpl(const char16_t *file) {
+  RFile f(file);
+  size_t sz = f.size();
+
+  std::vector<char> str;
+  str.resize(sz);
+  f.readData( &str[0], sz );
+
+  return std::move(str);
+  }
+
+bool SystemAPI::loadImage( IDevice &file,
                            ImageCodec::ImgInfo &info,
                            std::vector<unsigned char> &out ) {
   return instance().loadImageImpl( file, info, out );
   }
 
-bool SystemAPI::loadImage( const char *file,
-                           ImageCodec::ImgInfo &info,
-                           std::vector<unsigned char> &out ) {
-  return instance().loadImageImpl( file, info, out );
-  }
-
-bool SystemAPI::saveImage( const char16_t *file,
-                           ImageCodec::ImgInfo &info,
-                           std::vector<unsigned char> &in ) {
-  return instance().saveImageImpl( file, info, in );
-  }
-
-bool SystemAPI::saveImage( const char *file,
+bool SystemAPI::saveImage( ODevice& file,
                            ImageCodec::ImgInfo &info,
                            std::vector<unsigned char> &in ) {
   return instance().saveImageImpl( file, info, in );
@@ -371,32 +438,17 @@ void SystemAPI::installImageCodec( ImageCodec *codec ) {
 
 bool SystemAPI::writeBytesImpl( const char *file,
                                 const std::vector<char> &f ) {
-  WFile fout(file, WFile::Binary );
+  WFile fout(file);
   return fout.writeData(f.data(), f.size())==f.size();
   }
 
 bool SystemAPI::writeBytesImpl( const char16_t *file,
                                 const std::vector<char> &f ) {
-  WFile fout(file, WFile::Binary );
+  WFile fout(file);
   return fout.writeData(f.data(), f.size())==f.size();
   }
 
-bool SystemAPI::loadImageImpl( const char *file,
-                               ImageCodec::ImgInfo &info,
-                               std::vector<unsigned char> &out ) {
-  bool ok = false;
-  {
-    Detail::Guard guard(byteBuffer);
-    (void)guard;
-
-    buffer = std::move( SystemAPI::loadBytes(file) );
-    return loadImageImpl(buffer, info, out );
-  }
-
-  return ok;
-  }
-
-bool SystemAPI::saveImageImpl( const char *file,
+bool SystemAPI::saveImageImpl( ODevice& file,
                                ImageCodec::ImgInfo &info,
                                std::vector<unsigned char> &out) {
   for( size_t i=0; i<codecs.size(); ++i ){
@@ -408,40 +460,13 @@ bool SystemAPI::saveImageImpl( const char *file,
   return 0;
   }
 
-bool SystemAPI::saveImageImpl( const char16_t *file,
-                               ImageCodec::ImgInfo &info,
-                               std::vector<unsigned char> &out) {
-  for( size_t i=0; i<codecs.size(); ++i ){
-    if( codecs[i]->save(file, info, out) ){
-      return 1;
-      }
-    }
-
-  return 0;
-  }
-
-bool SystemAPI::loadImageImpl( const char16_t *file,
-                               ImageCodec::ImgInfo &info,
-                               std::vector<unsigned char> &out) {
-  bool ok = false;
-  {
-    Detail::Guard guard(byteBuffer);
-    (void)guard;
-
-    buffer = std::move( SystemAPI::loadBytes(file) );
-    return loadImageImpl(buffer, info, out );
-  }
-
-  return ok;
-  }
-
-bool SystemAPI::loadImageImpl( const std::vector<char> &imgBytes,
+bool SystemAPI::loadImageImpl( Tempest::IDevice &imgBytes,
                                ImageCodec::ImgInfo &info,
                                std::vector<unsigned char> &out ) {
   for( size_t i=0; i<codecs.size(); ++i ){
     info = ImageCodec::ImgInfo();
 
-    Tempest::BufferReader reader(imgBytes);
+    Tempest::PeekReader reader(imgBytes);
     if( codecs[i]->load(reader, info, out) ){
       return 1;
       }

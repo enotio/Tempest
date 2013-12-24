@@ -25,7 +25,6 @@ INCLUDEPATH += \
                "./thirdparty/" \
                "."
 
-INCLUDEPATH += "C:/Users/Try/Home/adt-bundle-windows-x86-20130729/android-ndk-r9b/platforms/android-9/arch-arm/usr/include/android"
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/include"
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/include/freetype2"
 

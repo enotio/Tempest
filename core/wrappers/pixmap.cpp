@@ -6,6 +6,7 @@
 
 #include <squish/squish.h>
 #include <Tempest/Assert>
+#include <Tempest/File>
 #include <cstring>
 
 using namespace Tempest;
@@ -185,11 +186,13 @@ bool Pixmap::save(const std::u16string &f) {
   }
 
 bool Pixmap::save(const char* f) {
-  return implSave<const char*>(f);
+  WFile fn(f);
+  return save(fn);
   }
 
 bool Pixmap::save(const char16_t* f) {
-  return implSave<const char16_t*>(f);
+  WFile fn(f);
+  return save(fn);
   }
 
 bool Pixmap::load(const std::string &f) {
@@ -201,18 +204,31 @@ bool Pixmap::load( const std::u16string &f ) {
   }
 
 bool Pixmap::load(const char16_t *f) {
-  return implLoad<const char16_t*>(f);
+  RFile file(f);
+  return load(file);
   }
 
 bool Pixmap::load(const char *f) {
-  return implLoad<const char*>(f);
+  RFile file(f);
+  return load(file);
   }
 
-template< class T >
-bool Pixmap::implLoad( T f ) {
+bool Pixmap::save( ODevice& f ) {
+  if( data.const_value()==0 )
+    return false;
+
+  Tempest::Detail::GuardBase< Detail::Ptr<Data*, DbgManip> > guard( data );
+  (void)guard;
+
+  bool ok = SystemAPI::saveImage( f, info,
+                                  data.const_value()->bytes );
+  return ok;
+  }
+
+bool Pixmap::load( IDevice& file ) {
   Data * image = pool.alloc(0,0,0);
   ImgInfo tmpInfo;
-  bool ok = SystemAPI::loadImage( f, tmpInfo, image->bytes );
+  bool ok = SystemAPI::loadImage( file, tmpInfo, image->bytes );
 
   if( !ok ){
     *this = Pixmap();
@@ -373,21 +389,7 @@ void Pixmap::makeEditable() {
       }
     }
 
-  T_WARNING_X(0, "Pixmap::makeEditable : no convarsion found");
-  }
-
-template< class T >
-bool Pixmap::implSave( T f ) {
-  if( data.const_value()==0 )
-    return false;
-
-  Tempest::Detail::GuardBase< Detail::Ptr<Data*, DbgManip> > guard( data );
-  (void)guard;
-
-  bool ok = SystemAPI::saveImage( f,
-                                  info,
-                                  data.const_value()->bytes );
-  return ok;
+  T_WARNING_X(0, "Pixmap::makeEditable : no conversion found");
   }
 
 void Pixmap::fill(const Pixmap::Pixel &p) {

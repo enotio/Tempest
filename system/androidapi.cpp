@@ -392,6 +392,24 @@ size_t AndroidAPI::readDataImpl(SystemAPI::File *f, char *dest, size_t count) {
     }
   }
 
+size_t AndroidAPI::peekImpl(SystemAPI::File *f, size_t skip, char *dest, size_t count) {
+  DroidFile *fn = (DroidFile*)f;
+  if( fn->h ){
+    size_t pos = ftell( fn->h );
+    fseek( fn->h, skip, SEEK_CUR );
+    size_t c = fread( dest, 1, count, fn->h );
+    fseek( fn->h , pos, SEEK_SET );
+    return c;
+    } else {
+    if( skip>=fn->size )
+      return 0;
+
+    size_t c = std::min(fn->size-skip, count);
+    memcpy(dest, fn->pos+skip, c);
+    return c;
+    }
+  }
+
 size_t AndroidAPI::writeDataImpl(SystemAPI::File *f, const char *data, size_t count) {
   DroidFile *fn = (DroidFile*)f;
   return fwrite(data, 1, count, fn->h );
@@ -429,6 +447,24 @@ bool AndroidAPI::eofImpl(SystemAPI::File *f) {
   return fn->size==0;
   }
 
+size_t AndroidAPI::fsizeImpl( File* f ){
+  DroidFile *fn = (DroidFile*)f;
+  if( fn->h ){
+    FILE *file = fn->h;
+    size_t pos = ftell(file);
+
+    fseek( file, 0, SEEK_SET );
+    size_t s = ftell(file);
+
+    fseek( file, 0, SEEK_END );
+    size_t e = ftell(file);
+
+    fseek( file, pos, SEEK_CUR );
+    }
+
+  return fn->size + size_t(fn->pos - fn->assets_ptr);
+  }
+
 void AndroidAPI::fcloseImpl(SystemAPI::File *f) {
   DroidFile *fn = (DroidFile*)f;
 
@@ -458,23 +494,7 @@ void AndroidAPI::startApplication( ApplicationInitArgs * ) {
 
 void AndroidAPI::endApplication() {
   }
-
-std::string AndroidAPI::loadTextImpl(const char *file ){
-  return loadAssetImpl<std::string>( file );
-  }
-
-std::string AndroidAPI::loadTextImpl( const char16_t* file ){
-  return loadAssetImpl<std::string>( toUtf8(file).c_str() );
-  }
-
-std::vector<char> AndroidAPI::loadBytesImpl( const char* file ){
-  return std::move( loadAssetImpl<std::vector<char>>(file) );
-  }
-
-std::vector<char> AndroidAPI::loadBytesImpl(const char16_t *file) {
-  return std::move( loadBytesImpl( toUtf8(file).c_str() ) );
-  }
-
+/*
 template< class T >
 T AndroidAPI::loadAssetImpl( const char* file ){
   Android &a = android;
@@ -495,7 +515,7 @@ T AndroidAPI::loadAssetImpl( const char* file ){
   AAsset_close(asset);
 
   return std::move(str);
-  }
+  }*/
 
 static Tempest::KeyEvent makeKeyEvent( int32_t k, bool scut = false ){
   Tempest::KeyEvent::KeyType e = SystemAPI::translateKey(k);
@@ -674,21 +694,6 @@ void AndroidAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
 void AndroidAPI::bind( Window *, Tempest::Window *wx ) {
   android.wnd = wx;
   SystemAPI::activateEvent( android.wnd, android.window!=0);
-  }
-
-bool AndroidAPI::loadImageImpl( const char16_t *file,
-                                ImageCodec::ImgInfo &info,
-                                std::vector<unsigned char>& out ){
-  const std::string u8 = toUtf8(file);
-
-  LOGI("load img : %s", u8.c_str());
-  return SystemAPI::loadImageImpl( file, info, out );
-  }
-
-bool AndroidAPI::saveImageImpl( const char16_t* file,
-                                ImageCodec::ImgInfo &info,
-                                std::vector<unsigned char>& in ){
-
   }
 
 AndroidAPI::GraphicsContexState AndroidAPI::isGraphicsContextAviable( Tempest::Window * ){

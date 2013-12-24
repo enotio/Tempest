@@ -62,21 +62,16 @@ class SystemAPI{
     static size_t readData ( File* f, char* dest, size_t count );
     static size_t writeData( File* f, const char* src, size_t count );
     static void   flush(File* f);
+    static size_t peek(File* f, size_t skip, char* dest, size_t count );
     static size_t skip( File* f, size_t count );
     static bool   eof(File* f);
     static void   fclose( File* file );
+    static size_t fsize( File *f );
 
-    static bool loadImage( const char16_t* file,
+    static bool loadImage( IDevice& file,
                            ImageCodec::ImgInfo &info,
                            std::vector<unsigned char>& out );
-    static bool saveImage( const char16_t* file,
-                           ImageCodec::ImgInfo &info,
-                           std::vector<unsigned char>& in );
-
-    static bool loadImage( const char* file,
-                           ImageCodec::ImgInfo &info,
-                           std::vector<unsigned char>& out );
-    static bool saveImage( const char* file,
+    static bool saveImage( ODevice& file,
                            ImageCodec::ImgInfo &info,
                            std::vector<unsigned char>& in );
 
@@ -140,38 +135,30 @@ class SystemAPI{
     virtual size_t readDataImpl ( File* f, char* dest, size_t count );
     virtual size_t writeDataImpl(File* f, const char* data, size_t count );
     virtual void   flushImpl(File* f );
+    virtual size_t peekImpl (File* f, size_t skip, char* dest, size_t count );
     virtual size_t skipImpl(File* f, size_t count );
     virtual bool   eofImpl( File* file );
     virtual void   fcloseImpl( File* file );
+    virtual size_t fsizeImpl( File* file );
 
     virtual Size implScreenSize() = 0;
     virtual bool testDisplaySettings( const DisplaySettings& ) = 0;
     virtual bool setDisplaySettings ( const DisplaySettings& ) = 0;
 
-    virtual std::string       loadTextImpl( const char* file    ) = 0;
-    virtual std::string       loadTextImpl( const char16_t* file ) = 0;
+    virtual std::string       loadTextImpl( const char* file    );
+    virtual std::string       loadTextImpl( const char16_t* file );
 
-    virtual std::vector<char> loadBytesImpl( const char* file ) = 0;
-    virtual std::vector<char> loadBytesImpl( const char16_t* file ) = 0;
+    virtual std::vector<char> loadBytesImpl( const char* file );
+    virtual std::vector<char> loadBytesImpl( const char16_t* file );
 
     virtual bool writeBytesImpl(const char* file,     const std::vector<char> &f);
     virtual bool writeBytesImpl(const char16_t* file, const std::vector<char> &f);
 
-    virtual bool loadImageImpl( const char* file,
+    virtual bool loadImageImpl( Tempest::IDevice &imgBytes,
                                 ImageCodec::ImgInfo &info,
                                 std::vector<unsigned char>& out );
 
-    virtual bool loadImageImpl( const char16_t* file,
-                                ImageCodec::ImgInfo &info,
-                                std::vector<unsigned char>& out );
-    virtual bool loadImageImpl( const std::vector<char>& imgBytes,
-                                ImageCodec::ImgInfo &info,
-                                std::vector<unsigned char>& out );
-
-    virtual bool saveImageImpl( const char* file,
-                                ImageCodec::ImgInfo &info,
-                                std::vector<unsigned char>& out );
-    virtual bool saveImageImpl( const char16_t* file,
+    virtual bool saveImageImpl( ODevice& file,
                                 ImageCodec::ImgInfo &info,
                                 std::vector<unsigned char>& out );
 
@@ -201,9 +188,6 @@ class SystemAPI{
     struct GestureDeleter;
 
     std::vector<std::unique_ptr<ImageCodec>> codecs;
-    Detail::Spin  byteBuffer;
-    std::vector<char> buffer;
-
   friend class AbstractAPI;
   };
 

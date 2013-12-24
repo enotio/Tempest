@@ -13,10 +13,10 @@ class AbstractIODevice{
 class IDevice: public AbstractIODevice {
   public:
     virtual size_t readData( char* dest, size_t count ) = 0;
-    virtual size_t skip( size_t count ) = 0;
+    virtual void skip( size_t count ) = 0;
 
-    virtual char peek() const = 0;
-    virtual bool eof()  const = 0;
+    virtual char peek() const;
+    virtual size_t peek( size_t skip, char* dest, size_t maxSize ) const = 0;
   };
 
 class ODevice: public AbstractIODevice {
@@ -31,9 +31,9 @@ class MemReader:public IDevice{
     MemReader( const char* vec, size_t sz );
     MemReader( const unsigned char* vec, size_t sz );
     size_t readData( char* dest, size_t count );
-    size_t skip( size_t count );
+    void   skip( size_t count );
 
-    char peek() const;
+    size_t peek( size_t skip, char* dest, size_t maxSize ) const;
     bool eof()  const;
 
   private:
@@ -50,6 +50,20 @@ class MemWriter:public IDevice{
   private:
     char* vec;
     size_t sz;
+  };
+
+class PeekReader: public IDevice {
+  public:
+    PeekReader( IDevice& dev );
+
+    size_t readData( char* dest, size_t count );
+    void   skip( size_t count );
+
+    size_t peek( size_t skip, char* dest, size_t maxSize ) const;
+    void   commit();
+  private:
+    IDevice &dev;
+    size_t   offset;
   };
 }
 

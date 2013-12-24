@@ -10,6 +10,9 @@
 
 namespace Tempest{
 
+class IDevice;
+class ODevice;
+
 class Pixmap {
   public:
     Pixmap();
@@ -32,6 +35,9 @@ class Pixmap {
 
     bool load( const char16_t* f );
     bool save( const char16_t* f );
+
+    bool load( IDevice& f );
+    bool save( ODevice &f );
 
     inline int width()  const { return info.w; }
     inline int height() const { return info.h; }
@@ -181,12 +187,6 @@ class Pixmap {
 
     void  addAlpha();
     void  removeAlpha();
-
-    template< class T >
-    bool implLoad( T f );
-
-    template< class T >
-    bool implSave( T f );
 
     void setupRawPtrs() const;
 

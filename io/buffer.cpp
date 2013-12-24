@@ -17,17 +17,18 @@ size_t BufferReader::readData(char *dest, size_t count) {
   return c;
   }
 
-size_t BufferReader::skip(size_t count) {
+void BufferReader::skip(size_t count) {
   size_t c = std::min(count, vec.size()-pos);
   pos+=c;
-  return c;
   }
 
-char BufferReader::peek() const {
-  if( pos<vec.size() )
-    return vec[pos];
+size_t BufferReader::peek(size_t skip, char *dest, size_t maxSize) const {
+  if( vec.size()-pos<=skip )
+    return 0;
 
-  return 0;
+  size_t c = std::min(maxSize, vec.size()-pos-skip);
+  memcpy(dest, &vec[pos+skip], c);
+  return c;
   }
 
 bool BufferReader::eof() const {

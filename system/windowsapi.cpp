@@ -357,104 +357,6 @@ void WindowsAPI::bind( Window *w, Tempest::Window *wx ) {
   wndWx[w] = wx;
   }
 
-std::string WindowsAPI::loadTextImpl(const char *file) {
-  std::ifstream is( file, std::ifstream::binary );
-  if( !is )
-    return "";
-
-  is.seekg (0, is.end);
-  int length = is.tellg();
-  is.seekg (0, is.beg);
-
-  std::string src;
-  src.resize( length );
-  is.read ( &src[0], length );
-
-  if( !is )
-    return "";
-  is.close();
-
-  return std::move(src);
-  }
-
-std::string WindowsAPI::loadTextImpl(const char16_t *file) {
-  HANDLE hTextFile = CreateFile( (wchar_t*)file, GENERIC_READ,
-                                 0, NULL, OPEN_EXISTING,
-                                 FILE_ATTRIBUTE_NORMAL, NULL);
-
-  DWORD dwFileSize = GetFileSize(hTextFile, &dwFileSize);
-  DWORD dwBytesRead;
-
-  if( dwFileSize==DWORD(-1) )
-    return std::string();
-
-  std::string str;
-  str.resize(dwFileSize);
-  ReadFile(hTextFile, &str[0], dwFileSize, &dwBytesRead, NULL);
-  CloseHandle(hTextFile);
-
-  return std::move(str);
-  }
-
-std::vector<char> WindowsAPI::loadBytesImpl(const char *file) {
-  std::vector<char> src;
-
-  std::ifstream is( file, std::ifstream::binary );
-  if(!is)
-    return src;
-
-  is.seekg (0, is.end);
-  int length = is.tellg();
-  is.seekg (0, is.beg);
-
-  src.resize( length );
-  is.read ( &src[0], length );
-
-  if(!is)
-    return src;
-  is.close();
-
-  return std::move(src);
-  }
-
-std::vector<char> WindowsAPI::loadBytesImpl(const char16_t *file) {
-  HANDLE hTextFile = CreateFile( (wchar_t*)file, GENERIC_READ,
-                                 0, NULL, OPEN_EXISTING,
-                                 FILE_ATTRIBUTE_NORMAL, NULL);
-
-  DWORD dwFileSize = GetFileSize(hTextFile, &dwFileSize);
-  DWORD dwBytesRead;
-
-  std::vector<char> str;  
-  if( dwFileSize==DWORD(-1) )
-    return str;
-
-  str.resize(dwFileSize);
-  ReadFile(hTextFile, &str[0], dwFileSize, &dwBytesRead, NULL);
-  CloseHandle(hTextFile);
-
-  return std::move(str);
-  }
-
-bool WindowsAPI::writeBytesImpl( const char16_t *file,
-                                 const std::vector<char>& f ) {
-  HANDLE hTextFile = CreateFile( (const wchar_t*)file,
-                                 GENERIC_READ|GENERIC_WRITE,
-                                 FILE_SHARE_READ, NULL,
-                                 OPEN_ALWAYS,
-                                 FILE_ATTRIBUTE_NORMAL,
-                                 NULL );
-
-  if( hTextFile==0 )
-    return 0;
-
-  DWORD dwBytesWriten;
-  WriteFile(hTextFile, &f[0], f.size(), &dwBytesWriten, NULL);
-  CloseHandle(hTextFile);
-
-  return true;
-  }
-
 WindowsAPI::CpuInfo WindowsAPI::cpuInfoImpl(){
   CpuInfo info;
   memset(&info, 0, sizeof(info));
@@ -503,8 +405,23 @@ WindowsAPI::File *WindowsAPI::fopenImpl( const char16_t *fname, const char *mode
   }
 
 size_t WindowsAPI::readDataImpl(SystemAPI::File *f, char *dest, size_t count) {
+  WinFile *fn = (WinFile*)f;
   DWORD dwBytesRead = count;
-  return ReadFile( ((WinFile*)f)->h, dest, count, &dwBytesRead, NULL) ? dwBytesRead:0;
+  DWORD cnt = (ReadFile( fn->h, dest, count, &dwBytesRead, NULL) ? dwBytesRead:0);
+
+  fn->pos += cnt;
+  return cnt;
+  }
+
+size_t WindowsAPI::peekImpl(SystemAPI::File *f, size_t skip, char *dest, size_t count) {
+  WinFile *fn = (WinFile*)f;
+
+  SetFilePointer( fn->h, skip, 0, FILE_CURRENT );
+  DWORD dwBytesRead = count;
+  DWORD cnt = (ReadFile( fn->h, dest, count, &dwBytesRead, NULL) ? dwBytesRead:0);
+
+  fn->pos = SetFilePointer( fn->h, fn->pos, 0, FILE_BEGIN );
+  return cnt;
   }
 
 size_t WindowsAPI::writeDataImpl(SystemAPI::File *f, const char *data, size_t count) {
@@ -528,6 +445,11 @@ size_t WindowsAPI::skipImpl(SystemAPI::File *f, size_t count) {
 bool WindowsAPI::eofImpl(SystemAPI::File *f) {
   WinFile *fn = (WinFile*)f;
   return fn->pos==fn->size;
+  }
+
+size_t WindowsAPI::fsizeImpl( File *f ){
+  WinFile *fn = (WinFile*)f;
+  return fn->size;
   }
 
 void WindowsAPI::fcloseImpl(SystemAPI::File *f) {

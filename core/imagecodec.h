@@ -26,23 +26,9 @@ class ImageCodec {
     virtual void fromRGB( ImgInfo &info,
                           std::vector<unsigned char> &inout );
 
-    virtual bool load( const char *file,
-                       ImgInfo &info,
-                       std::vector<unsigned char> &out );
-    virtual bool load( const char16_t *file,
-                       ImgInfo &info,
-                       std::vector<unsigned char> &out );
     virtual bool load( IDevice& imgBytes,
                        ImgInfo &info,
                        std::vector<unsigned char> &out );
-
-    virtual bool save( const char *file,
-                       ImgInfo &info,
-                       std::vector<unsigned char> &img );
-
-    virtual bool save( const char16_t *file,
-                       ImgInfo &info,
-                       std::vector<unsigned char> &img );
 
     virtual bool save( ODevice &file,
                        ImgInfo &info,
