@@ -61,12 +61,12 @@ class ShaderHolder : public AbstractHolderWithLoad< Shader, APIDescriptor > {
 
     virtual void createObject( Shader& obj,
                                APIDescriptor*& t,
-                               const std::wstring & fname ){
+                               const std::u16string & fname ){
       createObjectFromSrc( obj, t, SystemAPI::loadText(fname) );
       }
 
     virtual void createObject( APIDescriptor*& t,
-                               const std::wstring & fname ){
+                               const std::u16string & fname ){
       createObjectFromSrc( t, SystemAPI::loadText(fname) );
       }
 

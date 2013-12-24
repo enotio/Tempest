@@ -329,6 +329,118 @@ AndroidAPI::CpuInfo AndroidAPI::cpuInfoImpl(){
   return info;
   }
 
+struct AndroidAPI::DroidFile{
+  FILE* h;
+  char * assets_ptr;
+  char * pos;
+  size_t size;
+  };
+
+AndroidAPI::File *AndroidAPI::fopenImpl( const char16_t *fname, const char *mode ) {
+  return fopenImpl( toUtf8(fname).data(), mode );
+  }
+
+AndroidAPI::File *AndroidAPI::fopenImpl( const char *fname, const char *mode ) {
+  bool wr = 0;
+  for( int i=0; mode[i]; ++i ){
+    if( mode[i]=='w' )
+      wr = 1;
+    }
+
+  DroidFile* f = new DroidFile();
+  if( fname[0]=='/'||fname[0]=='.' ){
+    f->h = ::fopen(fname, mode);
+    f->assets_ptr = 0;
+    } else
+  if( !wr ) {
+    f->h = 0;
+    Android &a = android;
+
+    JNIEnv * env = 0;
+    a.vm->AttachCurrentThread( &env, NULL);
+
+    AAssetManager* mgr = AAssetManager_fromJava(env, a.assets);
+    AAsset* asset = AAssetManager_open(mgr, fname, AASSET_MODE_UNKNOWN);
+
+    T_ASSERT( asset );
+
+    f->size       = AAsset_getLength(asset);
+    f->assets_ptr = (char*)malloc(f->size);
+    f->pos        = f->assets_ptr;
+    AAsset_read (asset, f->assets_ptr, f->size);
+    AAsset_close(asset);
+    }
+
+  if( !f->h && !f->assets_ptr ){
+    delete f;
+    return 0;
+    }
+
+  return (SystemAPI::File*)f;
+  }
+
+size_t AndroidAPI::readDataImpl(SystemAPI::File *f, char *dest, size_t count) {
+  DroidFile *fn = (DroidFile*)f;
+  if( fn->h ){
+    return fread(dest, 1, count, fn->h);
+    } else {
+    size_t c = std::min(fn->size, count);
+    memcpy(dest, fn->pos, c);
+    fn->pos  += c;
+    fn->size -= c;
+    return c;
+    }
+  }
+
+size_t AndroidAPI::writeDataImpl(SystemAPI::File *f, const char *data, size_t count) {
+  DroidFile *fn = (DroidFile*)f;
+  return fwrite(data, 1, count, fn->h );
+  }
+
+void AndroidAPI::flushImpl(SystemAPI::File *f) {
+  DroidFile *fn = (DroidFile*)f;
+  if( fn->h )
+    fflush( fn->h );
+  }
+
+size_t AndroidAPI::skipImpl(SystemAPI::File *f, size_t count) {
+  DroidFile *fn = (DroidFile*)f;
+
+  if( fn->h ){
+    size_t pos = ftell( fn->h );
+    fseek( fn->h, count, SEEK_CUR );
+
+    return ftell( fn->h ) - pos;
+    } else {
+    size_t c = std::min(fn->size, count);
+
+    fn->pos  += c;
+    fn->size -= c;
+    return c;
+    }
+  }
+
+bool AndroidAPI::eofImpl(SystemAPI::File *f) {
+  DroidFile *fn = (DroidFile*)f;
+  if( fn->h ){
+    return feof( fn->h );
+    }
+
+  return fn->size==0;
+  }
+
+void AndroidAPI::fcloseImpl(SystemAPI::File *f) {
+  DroidFile *fn = (DroidFile*)f;
+
+  if( fn->h ){
+    ::fclose( fn->h );
+    } else {
+    free( fn->assets_ptr );
+    }
+
+  delete fn;
+  }
+
 Size AndroidAPI::implScreenSize() {
   return Size(android.window_w, android.window_h);
   }
@@ -351,7 +463,7 @@ std::string AndroidAPI::loadTextImpl(const char *file ){
   return loadAssetImpl<std::string>( file );
   }
 
-std::string AndroidAPI::loadTextImpl( const wchar_t* file ){
+std::string AndroidAPI::loadTextImpl( const char16_t* file ){
   return loadAssetImpl<std::string>( toUtf8(file).c_str() );
   }
 
@@ -359,7 +471,7 @@ std::vector<char> AndroidAPI::loadBytesImpl( const char* file ){
   return std::move( loadAssetImpl<std::vector<char>>(file) );
   }
 
-std::vector<char> AndroidAPI::loadBytesImpl(const wchar_t *file) {
+std::vector<char> AndroidAPI::loadBytesImpl(const char16_t *file) {
   return std::move( loadBytesImpl( toUtf8(file).c_str() ) );
   }
 
@@ -564,109 +676,16 @@ void AndroidAPI::bind( Window *, Tempest::Window *wx ) {
   SystemAPI::activateEvent( android.wnd, android.window!=0);
   }
 
-static struct TmpImg{
-  std::vector<unsigned char> *data;
-  int w,h,bpp;
-  } tmpImage;
-
-extern "C"
-JNIEXPORT bool JNICALL Java_com_native_1call_TempestActivity_loadImg(
-        JNIEnv * env, jobject obj,
-        jobject bitmap){
-  if( bitmap==0 ){
-    LOGE("%s","bad bitmap!");
-    return false;
-    }
-
-  AndroidBitmapInfo  info;
-  AndroidBitmap_getInfo(env, bitmap, &info);
-
-  tmpImage.w = info.width;
-  tmpImage.h = info.height;
-
-  unsigned char *pixels;
-
-  if(info.format == ANDROID_BITMAP_FORMAT_RGBA_8888) {
-    tmpImage.bpp = 4;
-    tmpImage.data->resize( tmpImage.w*tmpImage.h*tmpImage.bpp );
-
-    AndroidBitmap_lockPixels(env, bitmap, reinterpret_cast<void **>(&pixels));
-    memcpy( &(*tmpImage.data)[0], pixels, tmpImage.data->size() );
-    AndroidBitmap_unlockPixels(env, bitmap);
-
-    return true;
-    }
-
-  if(info.format == ANDROID_BITMAP_FORMAT_RGB_565) {
-    tmpImage.bpp = 3;
-    tmpImage.data->resize( tmpImage.w*tmpImage.h*tmpImage.bpp );
-
-    AndroidBitmap_lockPixels(env, bitmap, reinterpret_cast<void **>(&pixels));
-
-    for( size_t i=0, r=0; i<tmpImage.data->size(); i+=3, r+=2 ){
-      uint16_t p = *(uint16_t*)(&pixels[r]);
-      unsigned char* v = &(*tmpImage.data)[i];
-
-      //WORD red_mask = 0x7C00;
-      //WORD green_mask = 0x3E0;
-      //WORD blue_mask = 0x1F;
-
-      unsigned char red_value   = (p & 0x7C00) >> 10;
-      unsigned char green_value = (p & 0x3E0)  >> 5;
-      unsigned char blue_value  = (p & 0x1F);
-
-      v[0] = red_value   << 3;
-      v[1] = green_value << 3;
-      v[2] = blue_value  << 3;
-      }
-
-    AndroidBitmap_unlockPixels(env, bitmap);
-    return true;
-    }
-
-  if(info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-    LOGE("%s", "Bitmap format is not RGBA_8888!");
-    return false;
-    }
-
-  return true;
-  }
-
-bool AndroidAPI::loadImageImpl( const wchar_t *file,
+bool AndroidAPI::loadImageImpl( const char16_t *file,
                                 ImageCodec::ImgInfo &info,
                                 std::vector<unsigned char>& out ){
   const std::string u8 = toUtf8(file);
 
   LOGI("load img : %s", u8.c_str());
   return SystemAPI::loadImageImpl( file, info, out );
-
-/*
-  JNIEnv * env = 0;
-  ((android_app*)android)->activity->vm->AttachCurrentThread( &env, NULL);
-
-  jclass libClass = env->GetObjectClass(((android_app*)android)->activity->clazz);
-
-  jmethodID loadImg = env->GetStaticMethodID(libClass, "loadImage", "(Ljava/lang/String;)Z");
-
-  jstring jstr = env->NewStringUTF( u8.c_str() );
-
-  //pthread_mutex_lock( &imgMutex );
-  tmpImage.data = &out;
-  bool ok = env->CallStaticBooleanMethod( libClass, loadImg, jstr );
-
-  w   = tmpImage.w;
-  h   = tmpImage.h;
-  bpp = tmpImage.bpp;
-
-  tmpImage.data = 0;
-  //pthread_mutex_unlock( &imgMutex );
-  env->DeleteLocalRef( jstr );
-
-  return ok;*/
-  return false;
   }
 
-bool AndroidAPI::saveImageImpl( const wchar_t* file,
+bool AndroidAPI::saveImageImpl( const char16_t* file,
                                 ImageCodec::ImgInfo &info,
                                 std::vector<unsigned char>& in ){
 

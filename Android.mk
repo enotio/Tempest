@@ -37,6 +37,7 @@ LOCAL_SRC_FILES := \
   $(wildcard $(LOCAL_PATH)/io/*.cpp) \
   $(wildcard $(LOCAL_PATH)/thirdparty/nv_math/*.cpp) \
   $(wildcard $(LOCAL_PATH)/thirdparty/libpng/*.c) \
+  $(wildcard $(LOCAL_PATH)/thirdparty/libjpeg/*.c) \
   $(LOCAL_PATH)/thirdparty/ktx/etc_dec.cpp \
   $(wildcard $(LOCAL_PATH)/*.cpp) )
 

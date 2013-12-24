@@ -36,14 +36,24 @@ class WindowsAPI:public SystemAPI {
     void bind(Window*, Tempest::Window * );
 
     std::string loadTextImpl( const char* file );
-    std::string loadTextImpl( const wchar_t* file );
+    std::string loadTextImpl( const char16_t* file );
 
     std::vector<char> loadBytesImpl( const char* file );
-    std::vector<char> loadBytesImpl( const wchar_t* file );
+    std::vector<char> loadBytesImpl( const char16_t* file );
 
-    bool writeBytesImpl(const wchar_t* file , const std::vector<char> &f);
+    bool writeBytesImpl(const char16_t* file , const std::vector<char> &f);
 
     CpuInfo cpuInfoImpl();
+
+    struct  WinFile;
+    virtual File*  fopenImpl ( const char* fname, const char* mode );
+    virtual File*  fopenImpl ( const char16_t* fname, const char* mode );
+    virtual size_t readDataImpl ( File* f, char* dest, size_t count );
+    virtual size_t writeDataImpl(File* f, const char* data, size_t count );
+    virtual void   flushImpl(File* f );
+    virtual size_t skipImpl(File* f, size_t count );
+    virtual bool   eofImpl( File* file );
+    virtual void   fcloseImpl( File* file );
   private:
     struct Wnd;
 

@@ -16,12 +16,18 @@
 
 #include <Tempest/Buffer>
 #include <Tempest/Log>
+#include <Tempest/File>
+#include <stdexcept>
 
 namespace Tempest {
 
 struct PngCodec:ImageCodec {
   PngCodec(){
     rows.reserve(2048);
+    }
+
+  bool canSave(ImgInfo &inf) const{
+    return inf.format == Pixmap::Format_RGB || inf.format==Pixmap::Format_RGBA;
     }
 
   bool load( IDevice &d,
@@ -131,6 +137,68 @@ struct PngCodec:ImageCodec {
     return false;
     }
 
+  static void png_write_data(png_structp png_ptr, png_bytep data, png_size_t length){
+    ODevice* f = (ODevice*)png_get_io_ptr(png_ptr);
+    f->writeData((const char*)data, length);
+    }
+
+  static void png_flush(png_structp png_ptr){
+    ODevice* f = (ODevice*)png_get_io_ptr(png_ptr);
+    f->flush();
+    }
+
+  bool save( ODevice & file, ImgInfo &info, std::vector<unsigned char> &img){
+    png_structp png_ptr = png_create_write_struct( PNG_LIBPNG_VER_STRING,
+                                                   NULL, NULL, NULL );
+
+    if( !png_ptr )
+      return 0;
+
+    png_infop  info_ptr = png_create_info_struct(png_ptr);
+    if( !info_ptr )
+      return 0;
+
+    if( setjmp(png_jmpbuf(png_ptr)) )
+      return 0;
+
+    //png_init_io(png_ptr, fp);
+    png_set_write_fn(png_ptr, &file, png_write_data, png_flush);
+
+    /* write header */
+    if (setjmp(png_jmpbuf(png_ptr)))
+      return 0;
+
+    png_set_IHDR( png_ptr, info_ptr, info.w, info.h,
+                  8,//bit_depth,
+                  (info.bpp==3)?PNG_COLOR_TYPE_RGB:PNG_COLOR_TYPE_RGB_ALPHA,
+                  PNG_INTERLACE_NONE,
+                  PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+    png_write_info(png_ptr, info_ptr);
+
+    /* write bytes */
+    if (setjmp(png_jmpbuf(png_ptr)))
+      return 0;
+
+    {
+      Detail::Guard guard(spin);
+      (void)guard;
+
+      rows.resize( info.h );
+
+      for( int y=0; y<info.h; y++ )
+        rows[y] = &img[ y*info.w*info.bpp ];
+      png_write_image(png_ptr, &rows[0]);
+
+      if (setjmp(png_jmpbuf(png_ptr)))
+        return 0;
+
+      png_write_end(png_ptr, NULL);
+    }
+
+    return 1;
+    }
+
   std::vector<png_bytep> rows;
   Detail::Spin spin;
   };
@@ -165,6 +233,11 @@ struct JpegCodec:ImageCodec {
 
   static void term (j_decompress_ptr ) {
     // Close the stream, can be nop
+    }
+
+  static void handleLibJpegFatalError(j_common_ptr /*cinfo*/) {
+    //(*cinfo->err->output_message)(cinfo);
+    throw std::runtime_error("error in libjpeg");
     }
 
   void make_stream (jpeg_decompress_struct* cinfo, IDevice* in) {
@@ -206,11 +279,12 @@ struct JpegCodec:ImageCodec {
              ImgInfo &info,
              std::vector<unsigned char> &out ) {
     compress cInfo;
-    struct jpeg_error_mgr cErrMgr;
+    jpeg_error_mgr cErrMgr;
 
     // 1. Install error manager.
     //
     cInfo.err = jpeg_std_error(&cErrMgr);
+    cInfo.err->error_exit = handleLibJpegFatalError;
 
     // 2. Create JPEG decompressor object.
     //
@@ -223,50 +297,55 @@ struct JpegCodec:ImageCodec {
 
     // 4. Read JPEG Header to extract image information.
     //
-    if( jpeg_read_header(&cInfo, TRUE)!=JPEG_HEADER_OK )
+    try{
+      if( jpeg_read_header(&cInfo, TRUE)!=JPEG_HEADER_OK )
+        return false;
+
+      // From now on, you can access information on the jpeg image by
+      // referencing fields of cInfo object.
+      //
+
+      // 5. Set Target Image Format. Here we store the decoded image in JCS_RGB format.
+      //
+      cInfo.out_color_space = JCS_RGB;
+
+      // 6. Initiate decompress procedure.
+      //
+      if( !jpeg_start_decompress(&cInfo) )
+        return 0;
+
+      // 7. Allocate temporary buffer for decoding.
+      size_t iRowStride = cInfo.output_width * cInfo.output_components;
+      //(*a_pBuffer) = new JSAMPLE[ iRowStride * cInfo.output_height ];
+
+      out.resize( iRowStride * cInfo.output_height  );
+      // Assign row buffers.
+      //
+      JSAMPROW pRows[1];
+
+      // Decoding loop:
+      //
+      size_t i = 0;
+      while (cInfo.output_scanline < cInfo.output_height)
+      {
+        // Decode it !
+        pRows[0] = (JSAMPROW)( out.data() + iRowStride * i);  // set row buffer
+        (void) jpeg_read_scanlines(&cInfo, pRows, 1);  // decode
+        i++;
+      }
+
+      info.w   = cInfo.image_width;
+      info.h   = cInfo.image_height;
+      info.bpp = cInfo.output_components;
+
+      // 8. Finish decompression.
+      //
+      if( !jpeg_finish_decompress(&cInfo) )
+        Log() << "jpeg_finish_decompress error";
+      }
+    catch( const std::runtime_error & ){
       return false;
-
-    // From now on, you can access information on the jpeg image by
-    // referencing fields of cInfo object.
-    //
-
-    // 5. Set Target Image Format. Here we store the decoded image in JCS_RGB format.
-    //
-    cInfo.out_color_space = JCS_RGB;
-
-    // 6. Initiate decompress procedure.
-    //
-    if( !jpeg_start_decompress(&cInfo) )
-      return 0;
-
-    // 7. Allocate temporary buffer for decoding.
-    size_t iRowStride = cInfo.output_width * cInfo.output_components;
-    //(*a_pBuffer) = new JSAMPLE[ iRowStride * cInfo.output_height ];
-
-    out.resize( iRowStride * cInfo.output_height  );
-    // Assign row buffers.
-    //
-    JSAMPROW pRows[1];
-
-    // Decoding loop:
-    //
-    size_t i = 0;
-    while (cInfo.output_scanline < cInfo.output_height)
-    {
-      // Decode it !
-      pRows[0] = (JSAMPROW)( out.data() + iRowStride * i);  // set row buffer
-      (void) jpeg_read_scanlines(&cInfo, pRows, 1);  // decode
-      i++;
-    }
-
-    info.w   = cInfo.image_width;
-    info.h   = cInfo.image_height;
-    info.bpp = cInfo.output_components;
-
-    // 8. Finish decompression.
-    //
-    if( !jpeg_finish_decompress(&cInfo) )
-      Log() << "jpeg_finish_decompress error";
+      }
 
     return true;
     }
@@ -554,13 +633,13 @@ struct ETCCodec:ImageCodec{
       }
     }
 
-  bool save( const char *file,
+  bool save( ODevice& file,
              ImgInfo &info,
              std::vector<unsigned char> &img){
     if( info.format!=Pixmap::Format_ETC1_RGB8 )
       return 0;
 
-    std::vector<char> buf;
+    //std::vector<char> buf;
 
     KTX_header header;
     static const uint8_t ktx_identifier[12] = { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A };
@@ -590,14 +669,17 @@ struct ETCCodec:ImageCodec{
     header.glInternalFormat     = 0x8D64;//GL_ETC1_RGB8_OES;
 
     //write header
-    buf.insert(buf.end(), (char*)&header, (char*)&header+sizeof(header) );
+    file.writeData( (char*)&header, sizeof(header) );
+    //buf.insert(buf.end(), (char*)&header, (char*)&header+sizeof(header) );
 
     //write size of compressed data.. which depend on the expanded size..
     uint32_t imagesize=(info.w*info.h*halfbytes)/2;
-    buf.insert(buf.end(), (char*)&imagesize, (char*)&imagesize+sizeof(imagesize) );
+    file.writeData( (char*)&imagesize, sizeof(imagesize) );
+    //buf.insert(buf.end(), (char*)&imagesize, (char*)&imagesize+sizeof(imagesize) );
 
-    buf.insert(buf.end(), img.begin(), img.end() );
-    SystemAPI::writeBytes(file, buf);
+    file.writeData( (const char*)img.data(), img.size() );
+    //buf.insert(buf.end(), img.begin(), img.end() );
+    //SystemAPI::writeBytes(file, buf);
     return 1;
     }
 
@@ -676,7 +758,7 @@ bool ImageCodec::load( const char *file,
   return load( reader, info, out );
   }
 
-bool ImageCodec::load( const wchar_t *file,
+bool ImageCodec::load( const char16_t *file,
                        ImgInfo &info,
                        std::vector<unsigned char> &out ) {
   std::vector<char> imgBytes = SystemAPI::loadBytes(file);
@@ -691,14 +773,21 @@ bool ImageCodec::load( IDevice &,
   return false;
   }
 
-bool ImageCodec::save( const char *,
-                       ImageCodec::ImgInfo &,
-                       std::vector<unsigned char> &) {
-  T_WARNING_X(0, "overload for ImageCodec::save is unimplemented");
-  return false;
+bool ImageCodec::save( const char *fname,
+                       ImageCodec::ImgInfo &inf,
+                       std::vector<unsigned char> &img ) {
+  WFile f(fname, WFile::Binary);
+  return save(f, inf, img);
   }
 
-bool ImageCodec::save( const wchar_t *,
+bool ImageCodec::save( const char16_t *fname,
+                       ImageCodec::ImgInfo &inf,
+                       std::vector<unsigned char> & img ) {
+  WFile f(fname, WFile::Binary);
+  return save(f, inf, img);
+  }
+
+bool ImageCodec::save( ODevice& out,
                        ImageCodec::ImgInfo &,
                        std::vector<unsigned char> & ) {
   T_WARNING_X(0, "overload for ImageCodec::save is unimplemented");

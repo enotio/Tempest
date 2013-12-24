@@ -53,21 +53,31 @@ class AndroidAPI:public SystemAPI {
     void bind(Window*, Tempest::Window * );
 
     std::string loadTextImpl( const char* file );
-    std::string loadTextImpl( const wchar_t* file );
+    std::string loadTextImpl( const char16_t* file );
 
     std::vector<char> loadBytesImpl( const char* file );
-    std::vector<char> loadBytesImpl( const wchar_t* file );
+    std::vector<char> loadBytesImpl( const char16_t* file );
     
-    bool loadImageImpl( const wchar_t* file,
+    bool loadImageImpl( const char16_t* file,
                         ImageCodec::ImgInfo &info,
                         std::vector<unsigned char>& out );
 
-    bool saveImageImpl( const wchar_t* file,
+    bool saveImageImpl( const char16_t* file,
                         ImageCodec::ImgInfo &info,
                         std::vector<unsigned char>& in );
 
     GraphicsContexState isGraphicsContextAviable( Tempest::Window *w );
     CpuInfo cpuInfoImpl();
+
+    struct  DroidFile;
+    virtual File*  fopenImpl ( const char* fname, const char* mode );
+    virtual File*  fopenImpl ( const char16_t* fname, const char* mode );
+    virtual size_t readDataImpl ( File* f, char* dest, size_t count );
+    virtual size_t writeDataImpl(File* f, const char* data, size_t count );
+    virtual void   flushImpl(File* f );
+    virtual size_t skipImpl(File* f, size_t count );
+    virtual bool   eofImpl( File* file );
+    virtual void   fcloseImpl( File* file );
   public:
     friend class SystemAPI;
     friend class Opengl2x;

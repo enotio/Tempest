@@ -145,8 +145,8 @@ class Painter {
                    int flag = 0 );
     void drawText( int x, int y, const std::string &, int flg = 0 );
 
-    void drawText( int x, int y, int w, int h, const std::wstring&, int flg = 0 );
-    void drawText( int x, int y, const std::wstring&, int flg = 0 );
+    void drawText( int x, int y, int w, int h, const std::u16string&, int flg = 0 );
+    void drawText( int x, int y, const std::u16string&, int flg = 0 );
 
     PainterDevice& device();
   private:

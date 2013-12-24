@@ -351,14 +351,14 @@ void Painter::drawText(int x, int y, const std::string &str, int flg ) {
             SizePolicy::maxWidgetSize().h, str, flg );
   }
 
-void Painter::drawText( int x, int y, int w, int h, const std::wstring &str,
+void Painter::drawText(int x, int y, int w, int h, const std::u16string &str,
                         int flg ) {
   dev.textEngine().drawText( x,//dev.rstate.orign.x+x,
                              y,//dev.rstate.orign.y+y,
                              w, h, str, flg);
   }
 
-void Painter::drawText(int x, int y, const std::wstring &str, int flg ) {
+void Painter::drawText(int x, int y, const std::u16string &str, int flg ) {
   drawText( x, y,
             SizePolicy::maxWidgetSize().w,
             SizePolicy::maxWidgetSize().h, str,

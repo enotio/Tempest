@@ -29,9 +29,9 @@ class Font{
 
     const Letter& letter(wchar_t ch , SpritesHolder &sp) const;
 
-    void fetch(const std::wstring& str, SpritesHolder &sp) const;
+    void fetch(const std::u16string& str, SpritesHolder &sp) const;
     void fetch(const std::string& str, SpritesHolder &sp) const;
-    Size textSize(const std::wstring& );
+    Size textSize(const std::u16string& );
     Size textSize(const std::string& );
 
     int  size() const;

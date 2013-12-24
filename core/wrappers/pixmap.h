@@ -14,15 +14,15 @@ class Pixmap {
   public:
     Pixmap();
     Pixmap( const std::string& p );
-    Pixmap( const std::wstring& p );
+    Pixmap( const std::u16string& p );
 
     Pixmap( int w, int h, bool alpha );
 
     Pixmap( const Pixmap& p );
     Pixmap& operator = ( const Pixmap & p );
 
-    bool load( const std::wstring & f );
-    bool save( const std::wstring & f );
+    bool load( const std::u16string & f );
+    bool save( const std::u16string & f );
 
     bool load( const std::string & f );
     bool save( const std::string & f );
@@ -30,8 +30,8 @@ class Pixmap {
     bool load( const char* f );
     bool save( const char* f );
 
-    bool load( const wchar_t* f );
-    bool save( const wchar_t* f );
+    bool load( const char16_t* f );
+    bool save( const char16_t* f );
 
     inline int width()  const { return info.w; }
     inline int height() const { return info.h; }

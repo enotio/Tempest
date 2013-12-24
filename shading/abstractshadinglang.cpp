@@ -16,12 +16,12 @@ AbstractShadingLang::VertexShader*
   }
 
 AbstractShadingLang::VertexShader*
-  AbstractShadingLang::createVertexShader(const std::wstring &fname, std::string &outputLog) const {
+  AbstractShadingLang::createVertexShader(const std::u16string &fname, std::string &outputLog) const {
   return createVertexShaderFromSource( SystemAPI::loadText(fname), outputLog );
   }
 
 AbstractShadingLang::FragmentShader*
-  AbstractShadingLang::createFragmentShader(const std::wstring &fname, std::string & log ) const {
+  AbstractShadingLang::createFragmentShader(const std::u16string &fname, std::string & log ) const {
   return createFragmentShaderFromSource( SystemAPI::loadText(fname), log );
   }
 
@@ -69,8 +69,8 @@ void *AbstractShadingLang::createShader( AbstractShadingLang::ShaderType t,
   return createShaderFromSource( t, SystemAPI::loadText(fname), outputLog );
   }
 
-void *AbstractShadingLang::createShader( AbstractShadingLang::ShaderType t,
-                                         const std::wstring &fname,
+void *AbstractShadingLang::createShader(AbstractShadingLang::ShaderType t,
+                                         const std::u16string &fname,
                                          std::string &outputLog) const {
   return createShaderFromSource( t, SystemAPI::loadText(fname), outputLog );
   }

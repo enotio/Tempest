@@ -40,7 +40,7 @@ class PaintTextEngine {
       (void)h;
       (void)align;
       }
-    virtual void drawText( int x, int y, int w, int h, const std::wstring &,
+    virtual void drawText( int x, int y, int w, int h, const std::u16string &,
                            int align = NoAlign ){
       (void)x;
       (void)y;

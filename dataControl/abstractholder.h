@@ -1,6 +1,7 @@
 #ifndef ABSTRACTTEXTUREHOLDER_H
 #define ABSTRACTTEXTUREHOLDER_H
 
+#include <Tempest/SystemAPI>
 #include <Tempest/AbstractAPI>
 #include "../core/wrappers/atomic.h"
 #include "../utils/cwnptr.h"
@@ -156,7 +157,7 @@ class AbstractHolderWithLoad : public AbstractHolder<Data, APIDescriptor> {
 
     typedef typename AbstractHolder<Data, APIDescriptor>::ImplManip ImplManip;
 
-    virtual Data load( const std::wstring & fname ){
+    virtual Data load( const std::u16string & fname ){
       Data obj( *this );
 
       createObject( obj, obj.data.value(), fname );
@@ -180,24 +181,20 @@ class AbstractHolderWithLoad : public AbstractHolder<Data, APIDescriptor> {
   protected:
     virtual void createObject( APIDescriptor*& t,
                                const std::string & fname ){
-      std::wstring str;
-      str.assign( fname.begin(), fname.end() );
-      createObject(t, str);
+      createObject(t, SystemAPI::toUtf16(fname) );
       }
     virtual void createObject( APIDescriptor*& t,
-                               const std::wstring & fname ) = 0;
+                               const std::u16string & fname ) = 0;
 
     virtual void createObject( Data & object,
                                APIDescriptor*& t,
                                const std::string & fname ){
-      std::wstring str;
-      str.assign( fname.begin(), fname.end() );
-      createObject(object, t, str);
+      createObject(object, t, SystemAPI::toUtf16(fname));
       }
 
     virtual void createObject( Data & /*object*/,
                                APIDescriptor*& t,
-                               const std::wstring & fname ){
+                               const std::u16string & fname ){
       createObject(t, fname);
       }
 

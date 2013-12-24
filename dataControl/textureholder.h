@@ -35,24 +35,24 @@ class TextureHolder : public AbstractHolderWithLoad
                                           = Tempest::AbstractTexture::Format::RGB,
                                         TextureUsage u = TU_RenderTaget );
 
-    Tempest::Texture2d load( const std::wstring & fname );
+    Tempest::Texture2d load( const std::u16string & fname );
     Tempest::Texture2d load( const std::string & fname );
     Tempest::Texture2d load( const char* fname );
 
   protected:
     virtual void createObject( AbstractAPI::Texture*& t,
-                               const std::wstring & fname );
+                               const std::u16string & fname );
 
     virtual void createObject( AbstractAPI::Texture*& t,
                                int w, int h, bool mips,
                                AbstractTexture::Format::Type f,
                                TextureUsage u );
 
-    virtual void createObject(AbstractAPI::Texture*& t,
-                               const Pixmap & p, bool mips , bool compress);
+    virtual void createObject( AbstractAPI::Texture*& t,
+                               const Pixmap & p, bool mips, bool compress);
 
-    virtual void recreateObject(AbstractAPI::Texture*& t, AbstractAPI::Texture *old,
-                                 const Pixmap & p, bool mips , bool compress);
+    virtual void recreateObject( AbstractAPI::Texture*& t, AbstractAPI::Texture *old,
+                                 const Pixmap & p, bool mips, bool compress);
 
     virtual void deleteObject( AbstractAPI::Texture* t );
 

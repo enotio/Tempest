@@ -229,7 +229,7 @@ const Tempest::Font::Letter &
   return ref;
   }
 
-void Tempest::Font::fetch( const std::wstring &str,
+void Tempest::Font::fetch(const std::u16string &str,
                            Tempest::SpritesHolder & sp  ) const {
   for( size_t i=0; i<str.size(); ++i )
     fetchLeter( str[i], sp );
@@ -241,7 +241,7 @@ void Tempest::Font::fetch( const std::string &str,
     fetchLeter( str[i], sp );
   }
 
-Tempest::Size Tempest::Font::textSize( const std::wstring & str ) {
+Tempest::Size Tempest::Font::textSize(const std::u16string &str ) {
   int tx = 0, ty = 0, tw = 0, th = 0;
   for( size_t i=0; i<str.size(); ++i ){
     const LetterGeometry& l = letterGeometry( str[i] );

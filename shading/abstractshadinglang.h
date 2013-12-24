@@ -50,7 +50,7 @@ class AbstractShadingLang {
                                 const std::string& fname,
                                 std::string & outputLog ) const;
     virtual void* createShader( ShaderType t,
-                                const std::wstring& fname,
+                                const std::u16string& fname,
                                 std::string & outputLog ) const;
     virtual void* createShaderFromSource( ShaderType t,
                                           const std::string& src,
@@ -71,7 +71,7 @@ class AbstractShadingLang {
                  createVertexShader( const std::string& fname,
                                      std::string & outputLog ) const;
     virtual VertexShader*
-                 createVertexShader( const std::wstring& fname,
+                 createVertexShader( const std::u16string& fname,
                                      std::string & outputLog ) const;
     virtual VertexShader*
                  createVertexShaderFromSource( const std::string& src,
@@ -81,7 +81,7 @@ class AbstractShadingLang {
                  createFragmentShader( const std::string& fname,
                                        std::string & outputLog ) const;
     virtual FragmentShader*
-                 createFragmentShader( const std::wstring& fname,
+                 createFragmentShader( const std::u16string& fname,
                                        std::string &log ) const;
     virtual FragmentShader*
                  createFragmentShaderFromSource( const std::string& src,

@@ -29,7 +29,7 @@ class ImageCodec {
     virtual bool load( const char *file,
                        ImgInfo &info,
                        std::vector<unsigned char> &out );
-    virtual bool load( const wchar_t *file,
+    virtual bool load( const char16_t *file,
                        ImgInfo &info,
                        std::vector<unsigned char> &out );
     virtual bool load( IDevice& imgBytes,
@@ -40,7 +40,11 @@ class ImageCodec {
                        ImgInfo &info,
                        std::vector<unsigned char> &img );
 
-    virtual bool save( const wchar_t *file,
+    virtual bool save( const char16_t *file,
+                       ImgInfo &info,
+                       std::vector<unsigned char> &img );
+
+    virtual bool save( ODevice &file,
                        ImgInfo &info,
                        std::vector<unsigned char> &img );
 

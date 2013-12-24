@@ -104,7 +104,6 @@ SOURCES += \
     dataControl/localvertexbufferholder.cpp \
     dataControl/localtexturesholder.cpp \
     dataControl/indexbufferholder.cpp \
-    dataControl/fragmentshaderholder.cpp \
     dataControl/abstractholder.cpp \
     math/matrix4x4.cpp \
     render/render.cpp \
@@ -204,7 +203,8 @@ SOURCES += \
     thirdparty/libjpeg/jmemnobs.c \
     thirdparty/libjpeg/jquant1.c \
     thirdparty/libjpeg/jquant2.c \
-    thirdparty/libjpeg/jutils.c
+    thirdparty/libjpeg/jutils.c \
+    io/file.cpp
 
 HEADERS += \
     ui/window.h \
@@ -323,7 +323,8 @@ HEADERS += \
     thirdparty/libjpeg/jmorecfg.h \
     thirdparty/libjpeg/jpegint.h \
     thirdparty/libjpeg/jpeglib.h \
-    thirdparty/libjpeg/jversion.h
+    thirdparty/libjpeg/jversion.h \
+    io/file.h
 
 OTHER_FILES += \
     include/Tempest/Window \
@@ -353,5 +354,6 @@ OTHER_FILES += \
     include/Tempest/ImageCodec \
     include/Tempest/Log \
     thirdparty/freetype/Android.mk \
-    include/Tempest/Buffer
+    include/Tempest/Buffer \
+    include/Tempest/File
 

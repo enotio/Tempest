@@ -405,8 +405,8 @@ void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
   p.setScissor(oldScissor);
   }
 
-void SurfaceRender::TextEngine::drawText( int x, int y, int w, int h,
-                                          const std::wstring &s, int align) {
+void SurfaceRender::TextEngine::drawText(int x, int y, int w, int h,
+                                          const std::u16string &s, int align) {
   dText(x, y, w, h, s, align);
   }
 

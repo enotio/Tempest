@@ -46,20 +46,30 @@ class SystemAPI{
     virtual int  nextEvents(bool &qiut) = 0;
 
     static std::string loadText( const std::string& file );
-    static std::string loadText( const std::wstring& file );
+    static std::string loadText( const std::u16string& file );
 
     static std::string loadText( const char* file );
-    static std::string loadText( const wchar_t* file );
+    static std::string loadText( const char16_t* file );
 
     static std::vector<char> loadBytes( const char* file );
-    static std::vector<char> loadBytes( const wchar_t* file );
-    static bool writeBytes(const char* file, const std::vector<char> &f);
-    static bool writeBytes(const wchar_t* file, const std::vector<char> &f);
+    static std::vector<char> loadBytes( const char16_t *file );
+    static bool writeBytes(const char* file,     const std::vector<char> &f);
+    static bool writeBytes(const char16_t* file, const std::vector<char> &f);
 
-    static bool loadImage( const wchar_t* file,
+    class  File;
+    static File*  fopen( const char16_t* fname, const char* mode );
+    static File*  fopen( const char* fname, const char* mode );
+    static size_t readData ( File* f, char* dest, size_t count );
+    static size_t writeData( File* f, const char* src, size_t count );
+    static void   flush(File* f);
+    static size_t skip( File* f, size_t count );
+    static bool   eof(File* f);
+    static void   fclose( File* file );
+
+    static bool loadImage( const char16_t* file,
                            ImageCodec::ImgInfo &info,
                            std::vector<unsigned char>& out );
-    static bool saveImage( const wchar_t* file,
+    static bool saveImage( const char16_t* file,
                            ImageCodec::ImgInfo &info,
                            std::vector<unsigned char>& in );
 
@@ -107,8 +117,8 @@ class SystemAPI{
       };
     virtual GraphicsContexState isGraphicsContextAviable( Tempest::Window *w );
 
-    static std::string  toUtf8   (const std::wstring& str);
-    static std::wstring toWstring( const std::string& str );
+    static std::string    toUtf8 (const std::u16string& str);
+    static std::u16string toUtf16( const std::string& str );
 
     static const std::string& androidActivityClass();
     static Event::KeyType translateKey( uint64_t scancode );
@@ -125,25 +135,33 @@ class SystemAPI{
   protected:
     SystemAPI();
 
+    virtual File*  fopenImpl ( const char16_t* fname, const char* mode );
+    virtual File*  fopenImpl ( const char* fname, const char* mode );
+    virtual size_t readDataImpl ( File* f, char* dest, size_t count );
+    virtual size_t writeDataImpl(File* f, const char* data, size_t count );
+    virtual void   flushImpl(File* f );
+    virtual size_t skipImpl(File* f, size_t count );
+    virtual bool   eofImpl( File* file );
+    virtual void   fcloseImpl( File* file );
 
     virtual Size implScreenSize() = 0;
     virtual bool testDisplaySettings( const DisplaySettings& ) = 0;
     virtual bool setDisplaySettings ( const DisplaySettings& ) = 0;
 
     virtual std::string       loadTextImpl( const char* file    ) = 0;
-    virtual std::string       loadTextImpl( const wchar_t* file ) = 0;
+    virtual std::string       loadTextImpl( const char16_t* file ) = 0;
 
     virtual std::vector<char> loadBytesImpl( const char* file ) = 0;
-    virtual std::vector<char> loadBytesImpl( const wchar_t* file ) = 0;
+    virtual std::vector<char> loadBytesImpl( const char16_t* file ) = 0;
 
-    virtual bool writeBytesImpl(const char* file , const std::vector<char> &f);
-    virtual bool writeBytesImpl(const wchar_t* file , const std::vector<char> &f);
+    virtual bool writeBytesImpl(const char* file,     const std::vector<char> &f);
+    virtual bool writeBytesImpl(const char16_t* file, const std::vector<char> &f);
 
     virtual bool loadImageImpl( const char* file,
                                 ImageCodec::ImgInfo &info,
                                 std::vector<unsigned char>& out );
 
-    virtual bool loadImageImpl( const wchar_t* file,
+    virtual bool loadImageImpl( const char16_t* file,
                                 ImageCodec::ImgInfo &info,
                                 std::vector<unsigned char>& out );
     virtual bool loadImageImpl( const std::vector<char>& imgBytes,
@@ -153,7 +171,7 @@ class SystemAPI{
     virtual bool saveImageImpl( const char* file,
                                 ImageCodec::ImgInfo &info,
                                 std::vector<unsigned char>& out );
-    virtual bool saveImageImpl( const wchar_t* file,
+    virtual bool saveImageImpl( const char16_t* file,
                                 ImageCodec::ImgInfo &info,
                                 std::vector<unsigned char>& out );
 

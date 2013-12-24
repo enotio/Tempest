@@ -127,7 +127,7 @@ Tempest::Pixmap::Pixmap(const std::string &p) {
   load(p);
   }
 
-Tempest::Pixmap::Pixmap(const std::wstring &p) {
+Tempest::Pixmap::Pixmap(const std::u16string &p) {
   load(p);
   }
 
@@ -180,7 +180,7 @@ bool Pixmap::save(const std::string &f) {
   return save(f.data());
   }
 
-bool Pixmap::save(const std::wstring &f) {
+bool Pixmap::save(const std::u16string &f) {
   return save(f.data());
   }
 
@@ -188,20 +188,20 @@ bool Pixmap::save(const char* f) {
   return implSave<const char*>(f);
   }
 
-bool Pixmap::save(const wchar_t* f) {
-  return implSave<const wchar_t*>(f);
+bool Pixmap::save(const char16_t* f) {
+  return implSave<const char16_t*>(f);
   }
 
 bool Pixmap::load(const std::string &f) {
   return load(f.data());
   }
 
-bool Pixmap::load( const std::wstring &f ) {
+bool Pixmap::load( const std::u16string &f ) {
   return load(f.data());
   }
 
-bool Pixmap::load(const wchar_t *f) {
-  return implLoad<const wchar_t*>(f);
+bool Pixmap::load(const char16_t *f) {
+  return implLoad<const char16_t*>(f);
   }
 
 bool Pixmap::load(const char *f) {

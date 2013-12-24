@@ -83,7 +83,7 @@ class SurfaceRender {
       TextEngine( PaintDev & p );
 
       void setFont(const Font &f );
-      void drawText( int x, int y, int w, int h, const std::wstring &,
+      void drawText( int x, int y, int w, int h, const std::u16string &,
                      int align = Tempest::NoAlign );
       void drawText( int x, int y, int w, int h, const std::string &,
                      int align = Tempest::NoAlign );

@@ -59,7 +59,7 @@ struct GLSL::Data{
     return SystemAPI::loadText(f).data();
     }
 
-  std::string readFile( const wchar_t* f ){
+  std::string readFile( const char16_t* f ){
     return SystemAPI::loadText(f).data();
     }
 

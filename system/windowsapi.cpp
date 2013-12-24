@@ -12,8 +12,6 @@
 #include <Tempest/Assert>
 
 #include <iostream>
-
-#include <IL/il.h>
 #include "core/wrappers/atomic.h"
 
 using namespace Tempest;
@@ -379,8 +377,8 @@ std::string WindowsAPI::loadTextImpl(const char *file) {
   return std::move(src);
   }
 
-std::string WindowsAPI::loadTextImpl(const wchar_t *file) {
-  HANDLE hTextFile = CreateFile( file, GENERIC_READ,
+std::string WindowsAPI::loadTextImpl(const char16_t *file) {
+  HANDLE hTextFile = CreateFile( (wchar_t*)file, GENERIC_READ,
                                  0, NULL, OPEN_EXISTING,
                                  FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -419,8 +417,8 @@ std::vector<char> WindowsAPI::loadBytesImpl(const char *file) {
   return std::move(src);
   }
 
-std::vector<char> WindowsAPI::loadBytesImpl(const wchar_t *file) {
-  HANDLE hTextFile = CreateFile( file, GENERIC_READ,
+std::vector<char> WindowsAPI::loadBytesImpl(const char16_t *file) {
+  HANDLE hTextFile = CreateFile( (wchar_t*)file, GENERIC_READ,
                                  0, NULL, OPEN_EXISTING,
                                  FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -438,9 +436,9 @@ std::vector<char> WindowsAPI::loadBytesImpl(const wchar_t *file) {
   return std::move(str);
   }
 
-bool WindowsAPI::writeBytesImpl( const wchar_t *file,
+bool WindowsAPI::writeBytesImpl( const char16_t *file,
                                  const std::vector<char>& f ) {
-  HANDLE hTextFile = CreateFile( file,
+  HANDLE hTextFile = CreateFile( (const wchar_t*)file,
                                  GENERIC_READ|GENERIC_WRITE,
                                  FILE_SHARE_READ, NULL,
                                  OPEN_ALWAYS,
@@ -466,6 +464,75 @@ WindowsAPI::CpuInfo WindowsAPI::cpuInfoImpl(){
 
   info.cpuCount = inf.dwNumberOfProcessors;
   return info;
+  }
+
+struct WindowsAPI::WinFile{
+  HANDLE h;
+  DWORD  pos, size;
+  };
+
+WindowsAPI::File *WindowsAPI::fopenImpl( const char *fname, const char *mode ) {
+  return fopenImpl( toUtf16(fname).data(), mode );
+  }
+
+WindowsAPI::File *WindowsAPI::fopenImpl( const char16_t *fname, const char *mode ) {
+  DWORD gmode = 0, opMode = OPEN_ALWAYS;
+  for( int i=0; mode[i]; ++i ){
+    if( mode[i]=='r' )
+      gmode |= GENERIC_READ;
+    if( mode[i]=='w' )
+      gmode |= GENERIC_WRITE;
+
+    if( mode[i]=='+' )
+      opMode = OPEN_EXISTING;
+    }
+
+  WinFile* f = new WinFile();
+  f->h = CreateFile( (wchar_t*)fname, gmode,
+                     0, NULL, opMode,
+                     FILE_ATTRIBUTE_NORMAL, NULL);
+  if( !f->h ){
+    delete f;
+    return 0;
+    }
+
+  f->pos  = 0;
+  f->size = GetFileSize(f->h, 0);
+
+  return (SystemAPI::File*)f;
+  }
+
+size_t WindowsAPI::readDataImpl(SystemAPI::File *f, char *dest, size_t count) {
+  DWORD dwBytesRead = count;
+  return ReadFile( ((WinFile*)f)->h, dest, count, &dwBytesRead, NULL) ? dwBytesRead:0;
+  }
+
+size_t WindowsAPI::writeDataImpl(SystemAPI::File *f, const char *data, size_t count) {
+  DWORD dwBytesWriten = count;
+  return WriteFile( ((WinFile*)f)->h, data, count, &dwBytesWriten, NULL)?dwBytesWriten:0;
+  }
+
+void WindowsAPI::flushImpl(SystemAPI::File *f) {
+  WinFile *fn = (WinFile*)f;
+  FlushFileBuffers(fn->h);
+  }
+
+size_t WindowsAPI::skipImpl(SystemAPI::File *f, size_t count) {
+  WinFile *fn = (WinFile*)f;
+  size_t pos = fn->pos;
+  fn->pos = SetFilePointer( fn->h, count, 0, FILE_CURRENT );
+
+  return fn->pos - pos;
+  }
+
+bool WindowsAPI::eofImpl(SystemAPI::File *f) {
+  WinFile *fn = (WinFile*)f;
+  return fn->pos==fn->size;
+  }
+
+void WindowsAPI::fcloseImpl(SystemAPI::File *f) {
+  CloseHandle( ((WinFile*)f)->h );
+  delete ((WinFile*)f);
   }
 
 static Event::MouseButton toButton( UINT msg ){

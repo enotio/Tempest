@@ -7,8 +7,8 @@
 #include <cstring>
 #include <iostream>
 #include <locale>
-#include <fstream>
 #include <Tempest/Buffer>
+#include <Tempest/File>
 
 using namespace Tempest;
 
@@ -37,7 +37,7 @@ std::string SystemAPI::loadText(const std::string &file) {
   return std::move( instance().loadText( file.data() ));
   }
 
-std::string SystemAPI::loadText(const std::wstring &file) {
+std::string SystemAPI::loadText(const std::u16string &file) {
   return std::move( instance().loadText( file.data() ));
   }
 
@@ -45,7 +45,7 @@ std::string SystemAPI::loadText(const char *file) {
   return std::move( instance().loadTextImpl(file) );
   }
 
-std::string SystemAPI::loadText(const wchar_t *file) {
+std::string SystemAPI::loadText(const char16_t *file) {
   return std::move( instance().loadTextImpl(file) );
   }
 
@@ -53,37 +53,119 @@ std::vector<char> SystemAPI::loadBytes(const char *file) {
   return std::move( instance().loadBytesImpl(file) );
   }
 
-std::vector<char> SystemAPI::loadBytes(const wchar_t *file) {
+std::vector<char> SystemAPI::loadBytes(const char16_t *file) {
   return std::move( instance().loadBytesImpl(file) );
   }
 
-bool SystemAPI::writeBytes(const char *file, const std::vector<char> &f) {
+bool SystemAPI::writeBytes( const char *file,
+                            const std::vector<char> &f ) {
   return instance().writeBytesImpl(file, f);
   }
 
-bool SystemAPI::writeBytes(const wchar_t *file, const std::vector<char> &f) {
+bool SystemAPI::writeBytes( const char16_t *file,
+                            const std::vector<char> &f ) {
   return instance().writeBytesImpl(file, f);
   }
 
-bool SystemAPI::loadImage(const wchar_t *file,
-                           ImageCodec::ImgInfo &info,
-                           std::vector<unsigned char> &out) {
-  return instance().loadImageImpl( file, info, out );
+
+SystemAPI::File *SystemAPI::fopen( const char16_t *fname, const char *mode ) {
+  return instance().fopenImpl(fname, mode);
   }
 
-bool SystemAPI::loadImage(const char *file,
+SystemAPI::File *SystemAPI::fopen( const char *fname, const char *mode ) {
+  return instance().fopenImpl(fname, mode);
+  }
+
+size_t SystemAPI::readData(SystemAPI::File *f, char *dest, size_t count) {
+  if( f )
+    return instance().readDataImpl(f, dest, count);
+  return 0;
+  }
+
+size_t SystemAPI::writeData(SystemAPI::File *f, const char *src, size_t count) {
+  if( f )
+    return instance().writeDataImpl(f, src, count);
+  return 0;
+  }
+
+void SystemAPI::flush(SystemAPI::File *f) {
+  if( f )
+    instance().flushImpl(f);
+  }
+
+size_t SystemAPI::skip(SystemAPI::File *f, size_t count) {
+  if( f )
+    return instance().skipImpl(f, count);
+
+  return 0;
+  }
+
+bool SystemAPI::eof(SystemAPI::File *f) {
+  if( f )
+    return instance().eofImpl(f);
+
+  return 0;
+  }
+
+void SystemAPI::fclose(SystemAPI::File *file) {
+  if( file )
+    instance().fcloseImpl(file);
+  }
+
+SystemAPI::File *SystemAPI::fopenImpl( const char *fname, const char *mode ) {
+  return (SystemAPI::File*)::fopen(fname, mode);
+  }
+
+size_t SystemAPI::readDataImpl(SystemAPI::File *f, char *dest, size_t count) {
+  return fread( dest, 1, count, (FILE*)f );
+  }
+
+size_t SystemAPI::writeDataImpl(SystemAPI::File *f, const char *data, size_t count) {
+  return fwrite(data, 1, count, (FILE*)f );
+  }
+
+void SystemAPI::flushImpl(SystemAPI::File *f) {
+  fflush( (FILE*)f );
+  }
+
+size_t SystemAPI::skipImpl(SystemAPI::File *f, size_t count) {
+  size_t pos = ftell((FILE*)f);
+  fseek( (FILE*)f, count, SEEK_CUR );
+
+  return ftell((FILE*)f) - pos;
+  }
+
+bool SystemAPI::eofImpl(SystemAPI::File *f) {
+  return feof((FILE*)f);
+  }
+
+SystemAPI::File *SystemAPI::fopenImpl( const char16_t *fname, const char *mode ) {
+  return (SystemAPI::File*)::fopen( toUtf8(fname).data(), mode);
+  }
+
+void SystemAPI::fcloseImpl(SystemAPI::File *file) {
+  ::fclose( (FILE*)file );
+  }
+
+bool SystemAPI::loadImage( const char16_t *file,
                            ImageCodec::ImgInfo &info,
                            std::vector<unsigned char> &out ) {
   return instance().loadImageImpl( file, info, out );
   }
 
-bool SystemAPI::saveImage(const wchar_t *file,
+bool SystemAPI::loadImage( const char *file,
+                           ImageCodec::ImgInfo &info,
+                           std::vector<unsigned char> &out ) {
+  return instance().loadImageImpl( file, info, out );
+  }
+
+bool SystemAPI::saveImage( const char16_t *file,
                            ImageCodec::ImgInfo &info,
                            std::vector<unsigned char> &in ) {
   return instance().saveImageImpl( file, info, in );
   }
 
-bool SystemAPI::saveImage(const char *file,
+bool SystemAPI::saveImage( const char *file,
                            ImageCodec::ImgInfo &info,
                            std::vector<unsigned char> &in ) {
   return instance().saveImageImpl( file, info, in );
@@ -233,18 +315,18 @@ SystemAPI::GraphicsContexState SystemAPI::isGraphicsContextAviable( Tempest::Win
   return Aviable;
   }
 
-std::string SystemAPI::toUtf8(const std::wstring &str) {
+std::string SystemAPI::toUtf8(const std::u16string &str) {
   std::string r;
   r.assign( str.begin(), str.end() );
 
-  return r;
+  return std::move(r);
   }
 
-std::wstring SystemAPI::toWstring(const std::string &str) {
-  std::wstring r;
+std::u16string SystemAPI::toUtf16(const std::string &str) {
+  std::u16string r;
   r.assign( str.begin(), str.end() );
 
-  return r;
+  return std::move(r);
   }
 
 const std::string &SystemAPI::androidActivityClass() {
@@ -289,15 +371,14 @@ void SystemAPI::installImageCodec( ImageCodec *codec ) {
 
 bool SystemAPI::writeBytesImpl( const char *file,
                                 const std::vector<char> &f ) {
-  std::ofstream fout(file, std::ios::binary);
-  if( fout )
-    fout.write( f.data(), f.size() );
-  return bool(fout);
+  WFile fout(file, WFile::Binary );
+  return fout.writeData(f.data(), f.size())==f.size();
   }
 
-bool SystemAPI::writeBytesImpl( const wchar_t *file,
+bool SystemAPI::writeBytesImpl( const char16_t *file,
                                 const std::vector<char> &f ) {
-  return 0;
+  WFile fout(file, WFile::Binary );
+  return fout.writeData(f.data(), f.size())==f.size();
   }
 
 bool SystemAPI::loadImageImpl( const char *file,
@@ -327,7 +408,7 @@ bool SystemAPI::saveImageImpl( const char *file,
   return 0;
   }
 
-bool SystemAPI::saveImageImpl( const wchar_t *file,
+bool SystemAPI::saveImageImpl( const char16_t *file,
                                ImageCodec::ImgInfo &info,
                                std::vector<unsigned char> &out) {
   for( size_t i=0; i<codecs.size(); ++i ){
@@ -339,7 +420,7 @@ bool SystemAPI::saveImageImpl( const wchar_t *file,
   return 0;
   }
 
-bool SystemAPI::loadImageImpl( const wchar_t *file,
+bool SystemAPI::loadImageImpl( const char16_t *file,
                                ImageCodec::ImgInfo &info,
                                std::vector<unsigned char> &out) {
   bool ok = false;
