@@ -1451,7 +1451,7 @@ AbstractAPI::Texture *Opengl2x::recreateTexture( AbstractAPI::Device *d,
       int(old->h)      == p.height() &&
       old->format      == format &&
       old->mips        == mips   &&
-      old->compress    == compress && 0 ){
+      old->compress    == compress ){
     tex = old;
     } else {
     deleteTexture(d, oldT);
@@ -1466,11 +1466,19 @@ AbstractAPI::Texture *Opengl2x::recreateTexture( AbstractAPI::Device *d,
     } else
   if( p.format()==Pixmap::Format_RGB ||
       p.format()==Pixmap::Format_RGBA ){
+#ifdef __ANDROID__
+    glTexImage2D( GL_TEXTURE_2D, 0,
+                  tex->format,
+                  p.width(), p.height(),
+                  0,tex->format,
+                  GL_UNSIGNED_BYTE, p.const_data() );
+#else
     glTexSubImage2D( GL_TEXTURE_2D, 0,
                      0, 0,
                      p.width(), p.height(),
                      tex->format,
                      GL_UNSIGNED_BYTE, p.const_data() );
+#endif
     if( mips )
       glGenerateMipmap( GL_TEXTURE_2D );
     } else {
