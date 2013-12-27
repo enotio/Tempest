@@ -59,15 +59,46 @@ class ShaderHolder : public AbstractHolderWithLoad< Shader, APIDescriptor > {
       data->shadersSrc[t] = src;
       }
 
-    virtual void createObject( Shader& obj,
-                               APIDescriptor*& t,
-                               const std::u16string & fname ){
+    void createObject( Shader& obj,
+                       APIDescriptor*& t,
+                       const std::string & fname ){
       createObjectFromSrc( obj, t, SystemAPI::loadText(fname) );
       }
 
-    virtual void createObject( APIDescriptor*& t,
-                               const std::u16string & fname ){
+    void createObject( APIDescriptor*& t,
+                       const std::string & fname ){
       createObjectFromSrc( t, SystemAPI::loadText(fname) );
+      }
+
+    void createObject( Shader& obj,
+                       APIDescriptor*& t,
+                       const std::u16string & fname ){
+      createObjectFromSrc( obj, t, SystemAPI::loadText(fname) );
+      }
+
+    void createObject( APIDescriptor*& t,
+                       const std::u16string & fname ){
+      createObjectFromSrc( t, SystemAPI::loadText(fname) );
+      }
+
+    virtual void createObject( Shader& obj,
+                               APIDescriptor *&t,
+                               IDevice &f ){
+      std::string shader;
+      char ch = 0;
+      while( f.readData(&ch,1)==1 )
+        shader.push_back(ch);
+
+      createObjectFromSrc( obj, t, shader);
+      }
+
+    virtual void createObject( APIDescriptor *&t, IDevice &f ){
+      std::string shader;
+      char ch = 0;
+      while( f.readData(&ch,1)==1 )
+        shader.push_back(ch);
+
+      createObjectFromSrc(t, shader);
       }
 
     virtual void deleteObject( APIDescriptor* t ){

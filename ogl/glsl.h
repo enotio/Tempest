@@ -46,6 +46,10 @@ namespace Tempest {
 
       void setDevice() const;
 
+      void setUniforms( unsigned int prog,
+                        const ShaderInput & input,
+                        bool textures ) const;
+
       void setUniform( unsigned int s,
                        const Matrix4x4& m,
                        const char* name,

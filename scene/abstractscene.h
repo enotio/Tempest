@@ -101,8 +101,10 @@ class AbstractScene {
       onObjectRemoved(x);
       }
 
-    static bool typeEQ( const void* a, const void* b ){
-      return *((void**)a) == *((void**)b);
+    template< class T1, class T2 >
+    static bool typeEQ( const T1* a, const T2* b ){
+      return typeid(*a)==typeid(*b);
+      //return *((void**)a) == *((void**)b);
       }
 
     AbstractCamera* m_camera;

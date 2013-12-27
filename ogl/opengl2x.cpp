@@ -574,7 +574,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 #endif
 
   glEnable( GL_DEPTH_TEST );
-  glEnable( GL_CULL_FACE );
+  //glEnable( GL_CULL_FACE );
   glFrontFace( GL_CW );
 
   dev->renderState.setCullFaceMode( RenderState::CullMode::noCull );
@@ -2088,7 +2088,7 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
   if( !setDevice(d) ) return;
 
   GLenum cull[] = {
-    GL_NONE,
+    GL_FRONT_AND_BACK,
     GL_FRONT,
     GL_BACK
     };
@@ -2108,8 +2108,14 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
     GL_ALWAYS
     };
 
-  if( dev->renderState.cullFaceMode()!=r.cullFaceMode() )
-    glCullFace( cull[ r.cullFaceMode() ] );
+  if( dev->renderState.cullFaceMode()!=r.cullFaceMode() ){
+    if( r.cullFaceMode()==RenderState::CullMode::noCull){
+      glDisable( GL_CULL_FACE );
+      } else {
+      glEnable ( GL_CULL_FACE );
+      glCullFace( cull[ r.cullFaceMode() ] );
+      }
+    }
 
   /*
   if( !r.isZTest() && !r.isZWriting() )

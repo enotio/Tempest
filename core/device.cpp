@@ -575,7 +575,12 @@ bool Device::hasManagedStorge() const {
   return api.hasManagedStorge();
   }
 
-void Device::drawFullScreenQuad(VertexShader &vs, FragmentShader &fs) {
+void Device::drawFullScreenQuad(const ProgramObject &p) {
+  drawFullScreenQuad( p.vs, p.fs );
+  }
+
+void Device::drawFullScreenQuad( const VertexShader   &vs,
+                                 const FragmentShader &fs ) {
   drawPrimitive( AbstractAPI::Triangle, vs, fs,
                  data->quadDecl, data->quad,
                  0, 2 );

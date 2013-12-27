@@ -468,6 +468,7 @@ bool SystemAPI::loadImageImpl( Tempest::IDevice &imgBytes,
 
     Tempest::PeekReader reader(imgBytes);
     if( codecs[i]->load(reader, info, out) ){
+      reader.commit();
       return 1;
       }
     }

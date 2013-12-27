@@ -58,6 +58,10 @@ class VertexBuffer : public VertexBufferBase {
       ((VertexBufferHolder&)data.manip.holder()).get( *this, begin, end, b );
       }
 
+    const Vertex* const_data() const {
+      return ((VertexBufferHolder&)data.manip.holder()).bufferData( *this );
+      }
+
     size_t handle() const {
       return reinterpret_cast<size_t>( data.const_value() );
       }

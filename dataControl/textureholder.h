@@ -38,10 +38,11 @@ class TextureHolder : public AbstractHolderWithLoad
     Tempest::Texture2d load( const std::u16string & fname );
     Tempest::Texture2d load( const std::string & fname );
     Tempest::Texture2d load( const char* fname );
+    Tempest::Texture2d load( IDevice &file );
 
   protected:
-    virtual void createObject( AbstractAPI::Texture*& t,
-                               const std::u16string & fname );
+    virtual void createObject(AbstractAPI::Texture*& t,
+                               IDevice& file );
 
     virtual void createObject( AbstractAPI::Texture*& t,
                                int w, int h, bool mips,

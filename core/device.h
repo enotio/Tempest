@@ -181,8 +181,9 @@ class Device {
       drawIndexed(t, m.vs, m.fs, decl, vbo, ibo, vboOffsetIndex, iboOffsetIndex, pCount );
       }
 
-    void drawFullScreenQuad( Tempest::VertexShader   & vs,
-                             Tempest::FragmentShader & fs );
+    void drawFullScreenQuad( const Tempest::ProgramObject   & p );
+    void drawFullScreenQuad( const Tempest::VertexShader   & vs,
+                             const Tempest::FragmentShader & fs );
 
     Tempest::Size windowSize() const;
     Tempest::Size viewPortSize() const;

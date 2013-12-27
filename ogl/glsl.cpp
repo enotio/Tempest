@@ -511,8 +511,14 @@ void GLSL::enable() const {
     data->uCash.reset();
     }
 
-  { const ShaderInput & in = inputOf( *data->currentFS );
+  setUniforms( program, inputOf( *data->currentFS ), true  );
+  setUniforms( program, inputOf( *data->currentVS ), false );
+  }
 
+void GLSL::setUniforms( unsigned int program,
+                        const ShaderInput &in,
+                        bool textures ) const {
+  if( textures ){
     for( size_t i=0; i<in.tex3d.names.size(); ++i ){
       setUniform( program,
                   *in.tex3d.values[i],
@@ -526,35 +532,19 @@ void GLSL::enable() const {
                   in.tex.names[i].data(), i,
                   in.tex.id[i] );
       }
-
-    for( size_t i=0; i<in.mat.names.size(); ++i ){
-      setUniform( program,
-                  in.mat.values[i],
-                  in.mat.names[i].data(),
-                  in.mat.id[i] );
-      }
-
-    setUniforms( program, in.v1, 1 );
-    setUniforms( program, in.v2, 2 );
-    setUniforms( program, in.v3, 3 );
-    setUniforms( program, in.v4, 4 );
     }
 
-  { const ShaderInput & in = inputOf( *data->currentVS );
-
-    for( size_t i=0; i<in.mat.names.size(); ++i ){
-      setUniform( program,
-                  in.mat.values[i],
-                  in.mat.names[i].data(),
-                  in.mat.id[i] );
-      }
-
-    setUniforms( program, in.v1, 1 );
-    setUniforms( program, in.v2, 2 );
-    setUniforms( program, in.v3, 3 );
-    setUniforms( program, in.v4, 4 );
+  for( size_t i=0; i<in.mat.names.size(); ++i ){
+    setUniform( program,
+                in.mat.values[i],
+                in.mat.names[i].data(),
+                in.mat.id[i] );
     }
 
+  setUniforms( program, in.v1, 1 );
+  setUniforms( program, in.v2, 2 );
+  setUniforms( program, in.v3, 3 );
+  setUniforms( program, in.v4, 4 );
   }
 
 template< class T >

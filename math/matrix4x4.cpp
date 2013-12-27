@@ -200,4 +200,17 @@ void Tempest::Matrix4x4::set(int x, int y, float v) {
   }
 
 void Matrix4x4::check() const {
+}
+
+void Tempest::Matrix4x4::project(float &x, float &y, float &z, float &w) const {
+  project( x,y,z,w,
+           x,y,z,w );
+  }
+
+void Matrix4x4::project(float &x, float &y, float &z) const {
+  float w = 1;
+  project(x,y,z,w);
+  x /= w;
+  y /= w;
+  z /= w;
   }

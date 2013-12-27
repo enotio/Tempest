@@ -65,7 +65,7 @@ class ShaderInput {
           if( name==names[i] ){
             if( values[i] != t ){
               values[i] =  t;
-              id[i]     = (void*)size_t(-1);
+              id[i]     =  non_id;
               }
             return;
             }
@@ -77,7 +77,7 @@ class ShaderInput {
 
       void resetID() const {
         for( size_t i=0; i<id.size(); ++i )
-          id[i] = (void*)size_t(-1);
+          id[i] = non_id;
         }
       };
 
@@ -99,6 +99,8 @@ class ShaderInput {
       tex3d.resetID();
       mat.resetID();
       }
+
+    static void* non_id;
   };
 
 }

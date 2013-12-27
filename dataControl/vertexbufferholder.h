@@ -65,6 +65,7 @@ class VertexBufferHolder : public AbstractHolder
                   copy( AbstractAPI::VertexBuffer* t );
 
     char* lockBuffer  (AbstractAPI::VertexBuffer* t, int b, int sz );
+    char* bufferData  (AbstractAPI::VertexBuffer* t);
     void  unlockBuffer(AbstractAPI::VertexBuffer* t );
 
   private:
@@ -85,6 +86,12 @@ class VertexBufferHolder : public AbstractHolder
         }
 
       unlockNWBuffer( vbo.data.const_value() );
+      }
+
+    template< class Vertex >
+    const Vertex* bufferData( const VertexBuffer<Vertex> & vbo ){
+      const Vertex *v = (const Vertex*)bufferData( vbo.data.const_value() );
+      return v;
       }
 
     struct Data;

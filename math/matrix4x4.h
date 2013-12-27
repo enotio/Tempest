@@ -43,6 +43,8 @@ class Matrix4x4{
 
     void project(float   x, float   y, float   z, float   w,
                  float &ox, float &oy, float &oz, float &ow ) const;
+    void project(float & x, float & y, float & z, float & w ) const;
+    void project(float & x, float & y, float & z ) const;
 
     void perspective( float angle, float aspect, float zNear, float zFar);
 

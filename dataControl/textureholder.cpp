@@ -126,10 +126,16 @@ Tempest::Texture2d TextureHolder::load( const char* fname ){
   return create(p, true);
   }
 
-void TextureHolder::createObject(AbstractAPI::Texture*& t,
-                                  const std::u16string &fname ){
+Texture2d TextureHolder::load( IDevice &file) {
   Pixmap p;
-  p.load(fname);
+  p.load(file);
+  return create(p, true);
+  }
+
+void TextureHolder::createObject( AbstractAPI::Texture*& t,
+                                  IDevice &file ){
+  Pixmap p;
+  p.load(file);
   createObject( t, p, true, true );
   }
 

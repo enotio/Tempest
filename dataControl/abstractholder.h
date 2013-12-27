@@ -3,6 +3,7 @@
 
 #include <Tempest/SystemAPI>
 #include <Tempest/AbstractAPI>
+#include <Tempest/File>
 #include "../core/wrappers/atomic.h"
 #include "../utils/cwnptr.h"
 
@@ -157,17 +158,24 @@ class AbstractHolderWithLoad : public AbstractHolder<Data, APIDescriptor> {
 
     typedef typename AbstractHolder<Data, APIDescriptor>::ImplManip ImplManip;
 
+    virtual Data load( IDevice & file ){
+      Data obj( *this );
+
+      this->createObject( obj, obj.data.value(), file );
+      return obj;
+      }
+
     virtual Data load( const std::u16string & fname ){
       Data obj( *this );
 
-      createObject( obj, obj.data.value(), fname );
+      this->createObject( obj, obj.data.value(), fname );
       return obj;
       }
 
     virtual Data load( const std::string & fname ){
       Data obj( *this );
 
-      createObject( obj, obj.data.value(), fname );
+      this->createObject( obj, obj.data.value(), fname );
       return obj;
       }
 
@@ -179,25 +187,36 @@ class AbstractHolderWithLoad : public AbstractHolder<Data, APIDescriptor> {
     using AbstractHolder<Data, APIDescriptor>::restore;
 
   protected:
-    virtual void createObject( APIDescriptor*& t,
-                               const std::string & fname ){
-      createObject(t, SystemAPI::toUtf16(fname) );
-      }
-    virtual void createObject( APIDescriptor*& t,
-                               const std::u16string & fname ) = 0;
-
-    virtual void createObject( Data & object,
+    virtual void createObject( Data & /*object*/,
                                APIDescriptor*& t,
                                const std::string & fname ){
-      createObject(object, t, SystemAPI::toUtf16(fname));
+      this->createObject(t, fname);
       }
 
     virtual void createObject( Data & /*object*/,
                                APIDescriptor*& t,
                                const std::u16string & fname ){
-      createObject(t, fname);
+      this->createObject(t, fname);
       }
 
+    virtual void createObject( Data & /*object*/,
+                               APIDescriptor*& t,
+                               IDevice & file ){
+      this->createObject(t, file);
+      }
+
+    virtual void createObject( APIDescriptor*& t,
+                               const std::string & fname ){
+      RFile file(fname.c_str());
+      this->createObject(t, file);
+      }
+    virtual void createObject( APIDescriptor*& t,
+                               const std::u16string & fname ){
+      RFile file(fname.c_str());
+      this->createObject(t, file);
+      }
+    virtual void createObject( APIDescriptor*& t,
+                               IDevice & file ) = 0;
   private:
     typedef typename ImplManip::Ref Ref;
 

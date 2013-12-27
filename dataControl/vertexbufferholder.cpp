@@ -134,6 +134,14 @@ char *VertexBufferHolder::lockBuffer( AbstractAPI::VertexBuffer *t,
   return &ld.data[0];//(char*)device().lockBuffer( t, b, sz);
   }
 
+char *VertexBufferHolder::bufferData(AbstractAPI::VertexBuffer *t) {
+  if( t==0 )
+    return 0;
+
+  Data::LDData & ld = *data->vbos[t];
+  return &ld.data[0];
+  }
+
 void VertexBufferHolder::unlockBuffer(AbstractAPI::VertexBuffer *t) {
   if( t==0 )
     return;
