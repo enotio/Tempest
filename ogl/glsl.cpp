@@ -5,7 +5,8 @@
 #include <GLES/gl.h>
 #include <GLES2/gl2.h>
 #else
-#include <GL/glew.h>
+//#include <GL/glew.h>
+#include "glfn.h"
 #include <GL/gl.h>
 #endif
 
@@ -31,6 +32,7 @@
 #endif
 
 using namespace Tempest;
+using namespace Tempest::GLProc;
 
 struct GLSL::Data{
   AbstractAPI::OpenGL2xDevice * context;
@@ -765,6 +767,6 @@ void GLSL::Data::setupSampler( GLenum texClass,
     }
 //#endif
 
-  glUniform1i( prm, slot );
+  glUniform1iv( prm, 1, &slot );
   glActiveTexture( GL_TEXTURE0 );
   }

@@ -12,7 +12,8 @@
 #else
 #include <windows.h>
 
-#include <GL/glew.h>
+//#include <GL/glew.h>
+#include "glfn.h"
 #include <GL/gl.h>
 #endif
 
@@ -33,6 +34,8 @@
 #include <cstring>
 
 #include "../utils/mempool.h"
+
+using namespace Tempest::GLProc;
 
 #ifndef GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
 #define GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER 0x8CDB
@@ -513,10 +516,9 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 
   dev->wglSwapInterval = 0;
 
-  if( !GLEW_VERSION_2_1 )
-    if( glewInit()!=GLEW_OK || !GLEW_VERSION_2_1) {
-      return 0;
-      }
+  if( !Detail::initGLProc() ) {
+    return 0;
+    }
 #else
   dev->disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   dev->s    = eglGetCurrentSurface(EGL_DRAW);

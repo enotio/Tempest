@@ -172,17 +172,18 @@ int WindowsAPI::nextEvents(bool &quit) {
 
       TranslateMessage( &uMsg );
       DispatchMessage ( &uMsg );
-      Sleep(0);
       r = uMsg.wParam;
       } else {
       for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
         if( i->second->showMode()!=Tempest::Window::Minimized )
           i->second->render();
 
+      Sleep(0);
       return r;
       }
     }
 
+  Sleep(0);
   return r;
   }
 

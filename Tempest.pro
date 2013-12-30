@@ -17,6 +17,7 @@ INCLUDEPATH += "./include"
 DESTDIR = ../lib
 
 QMAKE_CXXFLAGS += -std=gnu++0x -Wall
+DEFINES += FT2_BUILD_LIBRARY
 
 INCLUDEPATH += \
                "$$(CG_INC_PATH)"\
@@ -25,19 +26,13 @@ INCLUDEPATH += \
                "./thirdparty/" \
                "."
 
-INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/include"
-INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/include/freetype2"
-
-LIBS += -L"C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/lib" -lfreetype
 LIBS += -l"gdi32" -l"z"
 
 #DEFINES += D3D_DEBUG_INFO
 
 ogl:{
   LIBS += -L"$$(CG_LIB_PATH)"
-  LIBS += -L"C:/Users/Try/Home/Programming/SharedLibs/glew-1.5.4-mingw32/lib"
-
-  LIBS += -l"opengl32" -l"cg" -l"cgGL" -l"glew32"
+  LIBS += -l"opengl32" -l"cg" -l"cgGL"
 
   HEADERS +=\
     ogl/opengl2x.h \
@@ -74,6 +69,32 @@ ogl:{
     }
   }
 
+DEFINES += FT2_BUILD_LIBRARY
+PRECOMPILED_HEADER = thirdparty/freetype/include/freetype/config/ftheader.h
+INCLUDEPATH += thirdparty/freetype/include
+
+SOURCES += \
+  thirdparty/freetype/src/autofit/autofit.c \
+  thirdparty/freetype/src/base/basepic.c \
+  thirdparty/freetype/src/base/ftapi.c \
+  thirdparty/freetype/src/base/ftbase.c \
+  thirdparty/freetype/src/base/ftbbox.c \
+  thirdparty/freetype/src/base/ftbitmap.c \
+  thirdparty/freetype/src/base/ftdbgmem.c \
+  thirdparty/freetype/src/base/ftdebug.c \
+  thirdparty/freetype/src/base/ftglyph.c \
+  thirdparty/freetype/src/base/ftinit.c \
+  thirdparty/freetype/src/base/ftpic.c \
+  thirdparty/freetype/src/base/ftstroke.c \
+  thirdparty/freetype/src/base/ftsynth.c \
+  thirdparty/freetype/src/base/ftsystem.c \
+  thirdparty/freetype/src/cff/cff.c \
+  thirdparty/freetype/src/pshinter/pshinter.c \
+  thirdparty/freetype/src/psnames/psnames.c \
+  thirdparty/freetype/src/raster/raster.c \
+  thirdparty/freetype/src/sfnt/sfnt.c \
+  thirdparty/freetype/src/smooth/smooth.c \
+  thirdparty/freetype/src/truetype/truetype.c
 
 SOURCES += \
     ui/window.cpp \
@@ -203,7 +224,8 @@ SOURCES += \
     thirdparty/libjpeg/jquant1.c \
     thirdparty/libjpeg/jquant2.c \
     thirdparty/libjpeg/jutils.c \
-    io/file.cpp
+    io/file.cpp \
+    ogl/glfn.cpp
 
 HEADERS += \
     ui/window.h \
@@ -323,7 +345,8 @@ HEADERS += \
     thirdparty/libjpeg/jpegint.h \
     thirdparty/libjpeg/jpeglib.h \
     thirdparty/libjpeg/jversion.h \
-    io/file.h
+    io/file.h \
+    ogl/glfn.h
 
 OTHER_FILES += \
     include/Tempest/Window \
@@ -354,5 +377,6 @@ OTHER_FILES += \
     include/Tempest/Log \
     thirdparty/freetype/Android.mk \
     include/Tempest/Buffer \
-    include/Tempest/File
+    include/Tempest/File \
+    README.md
 
