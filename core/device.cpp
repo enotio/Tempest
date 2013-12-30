@@ -293,7 +293,7 @@ void Device::init( const AbstractAPI &,
 
   data->quadDecl = Tempest::VertexDeclaration( *this, decl );
 
-  Data::QuadVertex q[6] = {
+  static const Data::QuadVertex q[6] = {
     {-1,-1,  0,1},
     { 1, 1,  1,0},
     { 1,-1,  1,1},

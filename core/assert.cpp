@@ -44,10 +44,10 @@ namespace Tempest{
 
   }
 
-void Tempest::Detail::t_assert( bool a,
-                                const char *file,
-                                int line,
-                                const char *X, const char *msg) {
+void Tempest::Detail::te_assert_impl( bool a,
+                                      const char *file,
+                                      int line,
+                                      const char *X, const char *msg) {
   if(a)
     return;
 
@@ -69,9 +69,9 @@ void Tempest::Detail::t_assert( bool a,
   h_assert(file, line, X, msg);
   }
 
-void Tempest::Detail::t_warning( bool a, const char *file,
-                                 int line, const char *X,
-                                 const char *msg ) {
+void Tempest::Detail::te_warning_impl( bool a, const char *file,
+                                       int line, const char *X,
+                                       const char *msg ) {
   if(a)
     return;
 

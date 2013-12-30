@@ -7,63 +7,63 @@
 namespace Tempest {
 namespace GLProc {
 #ifndef __ANDROID__
-void (*glGenFramebuffers)(GLsizei n, const GLuint* framebuffers) = 0;
-void (*glDeleteFramebuffers)(GLsizei n, const GLuint* framebuffers) = 0;
+void ( GLAPIENTRY *glGenFramebuffers)(GLsizei n, const GLuint* framebuffers) = 0;
+void ( GLAPIENTRY *glDeleteFramebuffers)(GLsizei n, const GLuint* framebuffers) = 0;
 
-void (*glGenRenderbuffers)(GLsizei n, const GLuint* framebuffers) = 0;
-bool (*glIsRenderbuffer) (GLuint renderbuffer) = 0;
-void (*glDeleteRenderbuffers)(GLsizei n, const GLuint* framebuffers) = 0;
+void ( GLAPIENTRY *glGenRenderbuffers)(GLsizei n, const GLuint* framebuffers) = 0;
+bool ( GLAPIENTRY *glIsRenderbuffer) (GLuint renderbuffer) = 0;
+void ( GLAPIENTRY *glDeleteRenderbuffers)(GLsizei n, const GLuint* framebuffers) = 0;
 
-void (*glBindBuffer)(GLenum target, GLuint buffer) = 0;
-void (*glBindRenderbuffer)(GLenum target, GLuint renderbuffer) = 0;
-void (*glGenBuffers) (GLsizei n, GLuint* buffers) = 0;
-bool (*glIsBuffer) (GLuint buffer) = 0;
-void (*glDeleteBuffers) (GLsizei n, const GLuint* buffers) = 0;
-void (*glBufferData) (GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage) = 0;
-void (*glBufferSubData) (GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid* data) = 0;
+void ( GLAPIENTRY *glBindBuffer)(GLenum target, GLuint buffer) = 0;
+void ( GLAPIENTRY *glBindRenderbuffer)(GLenum target, GLuint renderbuffer) = 0;
+void ( GLAPIENTRY *glGenBuffers) (GLsizei n, GLuint* buffers) = 0;
+bool ( GLAPIENTRY *glIsBuffer) (GLuint buffer) = 0;
+void ( GLAPIENTRY *glDeleteBuffers) (GLsizei n, const GLuint* buffers) = 0;
+void ( GLAPIENTRY *glBufferData) (GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage) = 0;
+void ( GLAPIENTRY *glBufferSubData) (GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid* data) = 0;
 
-void (*glRenderbufferStorage) (GLenum target, GLenum internalformat, GLsizei width, GLsizei height) = 0;
-void (*glBindFramebuffer)(GLenum target, GLuint framebuffer) = 0;
-void (*glFramebufferTexture2D) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) = 0;
-void (*glFramebufferRenderbuffer) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) = 0;
-GLenum (*glCheckFramebufferStatus) (GLenum target) = 0;
-void (*glGenerateMipmap) (GLenum target) = 0;
-void (*glCompressedTexImage2D) (GLenum target, GLint level, GLenum internalformat,
+void ( GLAPIENTRY *glRenderbufferStorage) (GLenum target, GLenum internalformat, GLsizei width, GLsizei height) = 0;
+void ( GLAPIENTRY *glBindFramebuffer)(GLenum target, GLuint framebuffer) = 0;
+void ( GLAPIENTRY *glFramebufferTexture2D) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) = 0;
+void ( GLAPIENTRY *glFramebufferRenderbuffer) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) = 0;
+GLenum ( GLAPIENTRY *glCheckFramebufferStatus) (GLenum target) = 0;
+void ( GLAPIENTRY *glGenerateMipmap) (GLenum target) = 0;
+void ( GLAPIENTRY *glCompressedTexImage2D) (GLenum target, GLint level, GLenum internalformat,
                                        GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid* data) = 0;
-void (*glActiveTexture) (GLenum texture) = 0;
-void (*glEnableVertexAttribArray) (GLuint index) = 0;
-void (*glDisableVertexAttribArray) (GLuint index) = 0;
-void (*glVertexAttribPointer) (GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) = 0;
+void ( GLAPIENTRY *glActiveTexture) (GLenum texture) = 0;
+void ( GLAPIENTRY *glEnableVertexAttribArray) (GLuint index) = 0;
+void ( GLAPIENTRY *glDisableVertexAttribArray) (GLuint index) = 0;
+void ( GLAPIENTRY *glVertexAttribPointer) (GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) = 0;
 
-void (*glTexImage3D)(	GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth,
+void ( GLAPIENTRY *glTexImage3D)(	GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth,
                               GLint border, GLenum format, GLenum type, const GLvoid * data) = 0;
 
-GLuint (*glCreateShader) (GLenum type) = 0;
-void   (*glDeleteShader) (GLuint shader) = 0;
-void   (*glShaderSource) (GLuint shader, GLsizei count, const GLchar** string, const GLint* length) = 0;
-void   (*glCompileShader)(GLuint shader) = 0;
+GLuint ( GLAPIENTRY *glCreateShader) (GLenum type) = 0;
+void   ( GLAPIENTRY *glDeleteShader) (GLuint shader) = 0;
+void   ( GLAPIENTRY *glShaderSource) (GLuint shader, GLsizei count, const GLchar** string, const GLint* length) = 0;
+void   ( GLAPIENTRY *glCompileShader)(GLuint shader) = 0;
 
-GLint  (*glGetUniformLocation) (GLuint program, const GLchar* name) = 0;
-void   (*glGetShaderiv) (GLuint shader, GLenum pname, GLint* params) = 0;
-void   (*glGetShaderInfoLog) (GLuint shader, GLsizei bufsize, GLsizei* length, GLchar* infolog) = 0;
-void   (*glUseProgram) (GLuint program) = 0;
-bool   (*glIsShader)  (GLuint shader) = 0;
-bool   (*glIsProgram) (GLuint program) = 0;
-GLuint (*glCreateProgram) (void) = 0;
-void   (*glDeleteProgram) (GLuint program) = 0;
-void   (*glAttachShader)  (GLuint program, GLuint shader) = 0;
-void   (*glBindAttribLocation) (GLuint program, GLuint index, const GLchar* name) = 0;
-void   (*glLinkProgram)        (GLuint program) = 0;
-void   (*glGetProgramiv) (GLuint program, GLenum pname, GLint* params) = 0;
-void   (*glGetProgramInfoLog) (GLuint program, GLsizei bufsize, GLsizei* length, GLchar* infolog) = 0;
+GLint  ( GLAPIENTRY *glGetUniformLocation) (GLuint program, const GLchar* name) = 0;
+void   ( GLAPIENTRY *glGetShaderiv) (GLuint shader, GLenum pname, GLint* params) = 0;
+void   ( GLAPIENTRY *glGetShaderInfoLog) (GLuint shader, GLsizei bufsize, GLsizei* length, GLchar* infolog) = 0;
+void   ( GLAPIENTRY *glUseProgram) (GLuint program) = 0;
+bool   ( GLAPIENTRY *glIsShader)  (GLuint shader) = 0;
+bool   ( GLAPIENTRY *glIsProgram) (GLuint program) = 0;
+GLuint ( GLAPIENTRY *glCreateProgram) (void) = 0;
+void   ( GLAPIENTRY *glDeleteProgram) (GLuint program) = 0;
+void   ( GLAPIENTRY *glAttachShader)  (GLuint program, GLuint shader) = 0;
+void   ( GLAPIENTRY *glBindAttribLocation) (GLuint program, GLuint index, const GLchar* name) = 0;
+void   ( GLAPIENTRY *glLinkProgram)        (GLuint program) = 0;
+void   ( GLAPIENTRY *glGetProgramiv) (GLuint program, GLenum pname, GLint* params) = 0;
+void   ( GLAPIENTRY *glGetProgramInfoLog) (GLuint program, GLsizei bufsize, GLsizei* length, GLchar* infolog) = 0;
 
-void   (*glUniform1iv) (GLint location, GLsizei count, const GLint* v) = 0;
-void   (*glUniform1fv) (GLint location, GLsizei count, const GLfloat* v) = 0;
-void   (*glUniform2fv) (GLint location, GLsizei count, const GLfloat* v) = 0;
-void   (*glUniform3fv) (GLint location, GLsizei count, const GLfloat* v) = 0;
-void   (*glUniform4fv) (GLint location, GLsizei count, const GLfloat* v) = 0;
+void   ( GLAPIENTRY *glUniform1iv) (GLint location, GLsizei count, const GLint* v) = 0;
+void   ( GLAPIENTRY *glUniform1fv) (GLint location, GLsizei count, const GLfloat* v) = 0;
+void   ( GLAPIENTRY *glUniform2fv) (GLint location, GLsizei count, const GLfloat* v) = 0;
+void   ( GLAPIENTRY *glUniform3fv) (GLint location, GLsizei count, const GLfloat* v) = 0;
+void   ( GLAPIENTRY *glUniform4fv) (GLint location, GLsizei count, const GLfloat* v) = 0;
 
-void   (*glUniformMatrix4fv) (GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) = 0;
+void   ( GLAPIENTRY *glUniformMatrix4fv) (GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) = 0;
 
 #endif
 }

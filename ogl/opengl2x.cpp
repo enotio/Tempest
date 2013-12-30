@@ -1673,8 +1673,8 @@ AbstractAPI::VertexBuffer *Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
 
   static const GLenum gu[] = {
     GL_STREAM_DRAW,
-    GL_DYNAMIC_DRAW,
-    GL_STATIC_DRAW
+    GL_STATIC_DRAW,
+    GL_DYNAMIC_DRAW
     };
 
   Detail::GLBuffer *vbo = dev->bufPool.alloc();
@@ -1683,6 +1683,7 @@ AbstractAPI::VertexBuffer *Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
 
   glGenBuffers( 1, &vbo->id );
   glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
+
   glBufferData( GL_ARRAY_BUFFER,
                 size*elSize, src,
                 gu[u] );

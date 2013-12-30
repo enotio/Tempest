@@ -7,7 +7,7 @@ Crossplatform 3d engine.
 
 * Windows: OpenGL2/GLSL, DirectX9/Cg
 
-* Android: OpenGLES2
+* Android: OpenGLES2/GLSL
 
 ## How to build
 
@@ -21,7 +21,7 @@ Crossplatform 3d engine.
 
  1.4. Install Android SDK+NDK to compile android version
 
-     *hint: you can disable directx support in .pro file.*
+     hint: you can disable directx support in .pro file.
 
 ### 2. Build(Windows):
  2.1 open Tempest directory

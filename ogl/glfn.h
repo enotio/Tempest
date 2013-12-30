@@ -2,6 +2,7 @@
 #define GLFN_H
 
 #include <GL/gl.h>
+#include <cstddef>
 
 #define GL_HALF_FLOAT 0x8D61
 #define GL_RG16       0x822C
@@ -23,9 +24,10 @@
 #define GL_DEPTH_COMPONENT24                              0x81A6
 #define GL_DEPTH_COMPONENT32                              0x81A7
 
-#define GL_ARRAY_BUFFER                                   0x8892
-#define GL_ELEMENT_ARRAY_BUFFER                           0x8893
-#define GL_ARRAY_BUFFER_BINDING                           0x8894
+#define GL_ARRAY_BUFFER         0x8892
+#define GL_ELEMENT_ARRAY_BUFFER 0x8893
+#define GL_ARRAY_BUFFER_BINDING 0x8894
+
 #define GL_INVALID_FRAMEBUFFER_OPERATION                  0x0506
 
 #define GL_FRAMEBUFFER_COMPLETE                      0x8CD5
@@ -60,11 +62,12 @@
 #define GL_VERTEX_SHADER                    0x8B31
 #define GL_LINK_STATUS                      0x8B82
 
-typedef signed   long  int     khronos_intptr_t;
-typedef signed   long  int     khronos_ssize_t;
+#ifndef GLAPIENTRY
+#define GLAPIENTRY APIENTRY
+#endif
 
-typedef khronos_ssize_t  GLsizeiptr;
-typedef khronos_intptr_t GLintptr;
+typedef ptrdiff_t GLintptr;
+typedef ptrdiff_t GLsizeiptr;
 typedef char             GLchar;
 
 namespace Tempest{
@@ -73,63 +76,63 @@ namespace Detail {
   }
 namespace GLProc{
 #ifndef __ANDROID__
-extern void (*glGenFramebuffers)(GLsizei n, const GLuint* framebuffers);
-extern void (*glDeleteFramebuffers)(GLsizei n, const GLuint* framebuffers);
+extern void ( GLAPIENTRY *glGenFramebuffers)(GLsizei n, const GLuint* framebuffers);
+extern void ( GLAPIENTRY *glDeleteFramebuffers)(GLsizei n, const GLuint* framebuffers);
 
-extern void (*glGenRenderbuffers)(GLsizei n, const GLuint* framebuffers);
-extern bool (*glIsRenderbuffer) (GLuint renderbuffer);
-extern void (*glDeleteRenderbuffers)(GLsizei n, const GLuint* framebuffers);
+extern void ( GLAPIENTRY *glGenRenderbuffers)(GLsizei n, const GLuint* framebuffers);
+extern bool ( GLAPIENTRY *glIsRenderbuffer) (GLuint renderbuffer);
+extern void ( GLAPIENTRY *glDeleteRenderbuffers)(GLsizei n, const GLuint* framebuffers);
 
-extern void (*glBindBuffer)(GLenum target, GLuint buffer);
-extern void (*glBindRenderbuffer)(GLenum target, GLuint renderbuffer);
-extern void (*glGenBuffers) (GLsizei n, GLuint* buffers);
-extern bool (*glIsBuffer) (GLuint buffer);
-extern void (*glDeleteBuffers) (GLsizei n, const GLuint* buffers);
-extern void (*glBufferData) (GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage);
-extern void (*glBufferSubData) (GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid* data);
+extern void ( GLAPIENTRY *glBindBuffer)(GLenum target, GLuint buffer);
+extern void ( GLAPIENTRY *glBindRenderbuffer)(GLenum target, GLuint renderbuffer);
+extern void ( GLAPIENTRY *glGenBuffers) (GLsizei n, GLuint* buffers);
+extern bool ( GLAPIENTRY *glIsBuffer) (GLuint buffer);
+extern void ( GLAPIENTRY *glDeleteBuffers) (GLsizei n, const GLuint* buffers);
+extern void ( GLAPIENTRY *glBufferData) (GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage);
+extern void ( GLAPIENTRY *glBufferSubData) (GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid* data);
 
-extern void (*glRenderbufferStorage) (GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
-extern void (*glBindFramebuffer)(GLenum target, GLuint framebuffer);
-extern void (*glFramebufferTexture2D) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-extern void (*glFramebufferRenderbuffer) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
-extern GLenum (*glCheckFramebufferStatus) (GLenum target);
-extern void (*glGenerateMipmap) (GLenum target);
-extern void (*glCompressedTexImage2D) (GLenum target, GLint level, GLenum internalformat,
+extern void ( GLAPIENTRY *glRenderbufferStorage) (GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+extern void ( GLAPIENTRY *glBindFramebuffer)(GLenum target, GLuint framebuffer);
+extern void ( GLAPIENTRY *glFramebufferTexture2D) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+extern void ( GLAPIENTRY *glFramebufferRenderbuffer) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+extern GLenum ( GLAPIENTRY *glCheckFramebufferStatus) (GLenum target);
+extern void ( GLAPIENTRY *glGenerateMipmap) (GLenum target);
+extern void ( GLAPIENTRY *glCompressedTexImage2D) (GLenum target, GLint level, GLenum internalformat,
                                        GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid* data);
-extern void (*glActiveTexture) (GLenum texture);
-extern void (*glEnableVertexAttribArray) (GLuint index);
-extern void (*glDisableVertexAttribArray) (GLuint index);
-extern void (*glVertexAttribPointer) (GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr);
+extern void ( GLAPIENTRY *glActiveTexture) (GLenum texture);
+extern void ( GLAPIENTRY *glEnableVertexAttribArray) (GLuint index);
+extern void ( GLAPIENTRY *glDisableVertexAttribArray) (GLuint index);
+extern void ( GLAPIENTRY *glVertexAttribPointer) (GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr);
 
-extern void (*glTexImage3D)(	GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth,
+extern void ( GLAPIENTRY *glTexImage3D)(	GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth,
                               GLint border, GLenum format, GLenum type, const GLvoid * data);
 
-extern GLuint (*glCreateShader) (GLenum type);
-extern void   (*glDeleteShader) (GLuint shader);
-extern void   (*glShaderSource) (GLuint shader, GLsizei count, const GLchar** string, const GLint* length);
-extern void   (*glCompileShader)(GLuint shader);
+extern GLuint ( GLAPIENTRY *glCreateShader) (GLenum type);
+extern void   ( GLAPIENTRY *glDeleteShader) (GLuint shader);
+extern void   ( GLAPIENTRY *glShaderSource) (GLuint shader, GLsizei count, const GLchar** string, const GLint* length);
+extern void   ( GLAPIENTRY *glCompileShader)(GLuint shader);
 
-extern GLint  (*glGetUniformLocation) (GLuint program, const GLchar* name);
-extern void   (*glGetShaderiv) (GLuint shader, GLenum pname, GLint* params);
-extern void   (*glGetShaderInfoLog) (GLuint shader, GLsizei bufsize, GLsizei* length, GLchar* infolog);
-extern void   (*glUseProgram) (GLuint program);
-extern bool   (*glIsShader)  (GLuint shader);
-extern bool   (*glIsProgram) (GLuint program);
-extern GLuint (*glCreateProgram) (void);
-extern void   (*glDeleteProgram) (GLuint program);
-extern void   (*glAttachShader)  (GLuint program, GLuint shader);
-extern void   (*glBindAttribLocation) (GLuint program, GLuint index, const GLchar* name);
-extern void   (*glLinkProgram)        (GLuint program);
-extern void   (*glGetProgramiv) (GLuint program, GLenum pname, GLint* params);
-extern void   (*glGetProgramInfoLog) (GLuint program, GLsizei bufsize, GLsizei* length, GLchar* infolog);
+extern GLint  ( GLAPIENTRY *glGetUniformLocation) (GLuint program, const GLchar* name);
+extern void   ( GLAPIENTRY *glGetShaderiv) (GLuint shader, GLenum pname, GLint* params);
+extern void   ( GLAPIENTRY *glGetShaderInfoLog) (GLuint shader, GLsizei bufsize, GLsizei* length, GLchar* infolog);
+extern void   ( GLAPIENTRY *glUseProgram) (GLuint program);
+extern bool   ( GLAPIENTRY *glIsShader)  (GLuint shader);
+extern bool   ( GLAPIENTRY *glIsProgram) (GLuint program);
+extern GLuint ( GLAPIENTRY *glCreateProgram) (void);
+extern void   ( GLAPIENTRY *glDeleteProgram) (GLuint program);
+extern void   ( GLAPIENTRY *glAttachShader)  (GLuint program, GLuint shader);
+extern void   ( GLAPIENTRY *glBindAttribLocation) (GLuint program, GLuint index, const GLchar* name);
+extern void   ( GLAPIENTRY *glLinkProgram)        (GLuint program);
+extern void   ( GLAPIENTRY *glGetProgramiv) (GLuint program, GLenum pname, GLint* params);
+extern void   ( GLAPIENTRY *glGetProgramInfoLog) (GLuint program, GLsizei bufsize, GLsizei* length, GLchar* infolog);
 
-extern void   (*glUniform1iv) (GLint location, GLsizei count, const GLint* v);
-extern void   (*glUniform1fv) (GLint location, GLsizei count, const GLfloat* v);
-extern void   (*glUniform2fv) (GLint location, GLsizei count, const GLfloat* v);
-extern void   (*glUniform3fv) (GLint location, GLsizei count, const GLfloat* v);
-extern void   (*glUniform4fv) (GLint location, GLsizei count, const GLfloat* v);
+extern void   ( GLAPIENTRY *glUniform1iv) (GLint location, GLsizei count, const GLint* v);
+extern void   ( GLAPIENTRY *glUniform1fv) (GLint location, GLsizei count, const GLfloat* v);
+extern void   ( GLAPIENTRY *glUniform2fv) (GLint location, GLsizei count, const GLfloat* v);
+extern void   ( GLAPIENTRY *glUniform3fv) (GLint location, GLsizei count, const GLfloat* v);
+extern void   ( GLAPIENTRY *glUniform4fv) (GLint location, GLsizei count, const GLfloat* v);
 
-extern void   (*glUniformMatrix4fv) (GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+extern void   ( GLAPIENTRY *glUniformMatrix4fv) (GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
 
 #endif
 }
