@@ -178,12 +178,11 @@ int WindowsAPI::nextEvents(bool &quit) {
         if( i->second->showMode()!=Tempest::Window::Minimized )
           i->second->render();
 
-      Sleep(0);
+      Sleep(1);
       return r;
       }
     }
 
-  Sleep(0);
   return r;
   }
 
