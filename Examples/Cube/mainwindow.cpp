@@ -93,9 +93,6 @@ void MainWindow::render() {
 
   device.clear( Color(0,0,1), 1 );
 
-  RenderState st;
-  st.setCullFaceMode( RenderState::CullMode::noCull );
-  //device.setRenderState(st);
   device.beginPaint();
   setupShaderConstants(shader);
   device.drawIndexed( AbstractAPI::Triangle,

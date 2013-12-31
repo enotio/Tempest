@@ -278,7 +278,7 @@ class Model {
 
       m.m_size = size;
 
-      // TODO bds recalc
+      bds = Raw::computeBoundRect( m.vbo );
       return m;
       }
 
