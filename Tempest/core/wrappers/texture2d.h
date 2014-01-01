@@ -37,6 +37,7 @@ namespace Tempest{
       int width()  const;
       int height() const;
       Size  size() const;
+      Rect  rect() const;
 
       bool isEmpty() const;
 

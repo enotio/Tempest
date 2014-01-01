@@ -2,6 +2,7 @@
 
 #include <Tempest/Assert>
 #include <Tempest/RenderState>
+#include <Tempest/Painter>
 
 static MainWindow::Vertex quadVb[] = {
   { 1,-1,-1,  1,1},
@@ -52,7 +53,9 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     vboHolder(device),
     iboHolder(device),
     vsHolder (device),
-    fsHolder (device)
+    fsHolder (device),
+    spHolder (texHolder),
+    uiRender ( vsHolder, fsHolder )
     {
   zoom = 1;
 
@@ -70,6 +73,16 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
   shader.fs = fsHolder.load("shader/basic.fs.glsl");
 
   T_ASSERT( shader.isValid() );
+  }
+
+void MainWindow::paintEvent(PaintEvent &e) {
+  Painter p(e);
+
+  p.setTexture(texture);
+  p.drawRect( Rect(0,0, 100, 100), texture.rect() );
+
+  p.setFont( Font("data/arial", 16) );
+  p.drawText(100, 100, "This is cat!");
   }
 
 void MainWindow::mouseDownEvent(MouseEvent &e) {
@@ -91,6 +104,7 @@ void MainWindow::render() {
   if( !device.startRender() )
     return;
 
+  uiRender.buildVbo(*this, vboHolder, iboHolder, spHolder );
   device.clear( Color(0,0,1), 1 );
 
   device.beginPaint();
@@ -99,6 +113,7 @@ void MainWindow::render() {
                       shader, vdecl,
                       vbo, ibo,
                       0,0, ibo.size()/3 );
+  device.draw( uiRender );
   device.endPaint();
 
   device.present();

@@ -21,6 +21,7 @@ class Sprite {
     int h() const;
 
     Size size() const;
+    Rect rect() const;
 
     const Tempest::Texture2d& pageRawData() const;
     Tempest::Rect pageRect() const;
@@ -30,7 +31,7 @@ class Sprite {
     bool   isDelayd() const;
     void   flush() const;
   private:
-    Tempest::Rect    rect;
+    Tempest::Rect    prect;
     SpritesHolder   *holder;
     size_t           deleyd;
 

@@ -51,6 +51,10 @@ Size Texture2d::size() const {
   return Size(w,h);
   }
 
+Rect Texture2d::rect() const {
+  return Rect(0,0,w,h);
+  }
+
 bool Texture2d::isEmpty() const {
   return w==0||0==h;
   }

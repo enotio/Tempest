@@ -7,7 +7,7 @@ Sprite::Sprite():holder(0), deleyd(-1), tex(0), id(-1) {
   }
 
 Sprite::Sprite(const Sprite &s)
-  :rect(s.rect), holder(s.holder), deleyd(s.deleyd), tex(s.tex), id(s.id){
+  :prect(s.prect), holder(s.holder), deleyd(s.deleyd), tex(s.tex), id(s.id){
   if( isDelayd() ){
     holder->delayLoad(this);
     }
@@ -18,7 +18,7 @@ Sprite &Sprite::operator =(const Sprite &s) {
     holder->delayLoadRm(this);
     }
 
-  rect   = s.rect;
+  prect  = s.prect;
   holder = s.holder;
   deleyd = s.deleyd;
   tex    = s.tex;
@@ -49,17 +49,22 @@ void Sprite::flush() const {
 
 int Sprite::w() const {
   flush();
-  return rect.w;
+  return prect.w;
   }
 
 int Sprite::h() const {
   flush();
-  return rect.h;
+  return prect.h;
   }
 
 Size Sprite::size() const {
   flush();
-  return rect.size();
+  return prect.size();
+  }
+
+Rect Sprite::rect() const {
+  flush();
+  return Rect(0,0,prect.w,prect.h);
   }
 
 const Tempest::Texture2d &Sprite::pageRawData() const {
@@ -74,7 +79,7 @@ const Tempest::Texture2d &Sprite::pageRawData() const {
 
 Rect Sprite::pageRect() const {
   flush();
-  return rect;
+  return prect;
   }
 
 size_t Sprite::handle() const {

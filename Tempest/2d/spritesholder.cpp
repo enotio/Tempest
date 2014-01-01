@@ -205,8 +205,8 @@ Sprite SpritesHolder::add(const Tempest::Pixmap &px, Page & page ) {
 
 
   Sprite n;
-  n.rect = Tempest::Rect( r.x, r.y, px.width(), px.height() );
-  n.tex = &this->page;
+  n.prect = Tempest::Rect( r.x, r.y, px.width(), px.height() );
+  n.tex   = &this->page;
 
   return n;
   }
