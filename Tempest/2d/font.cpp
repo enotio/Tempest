@@ -1,6 +1,7 @@
 #include "font.h"
 
 #include <Tempest/Pixmap>
+#include <Tempest/File>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -25,6 +26,42 @@ struct Tempest::Font::FreeTypeLib{
     }
 
   FT_Library    library;
+
+  static unsigned long ft_stream_io( FT_Stream       stream,
+                                     unsigned long   offset,
+                                     unsigned char*  buffer,
+                                     unsigned long   count ) {
+    if( !count && offset > stream->size )
+      return 1;
+
+    IDevice*  file;
+    file = ( (IDevice*)stream->descriptor.pointer );
+    return file->peek(offset, (char*)buffer, count );
+    }
+
+  static void ft_stream_close( FT_Stream  /*stream*/ ) {
+    return;
+    }
+
+  void mkStream( FT_StreamRec& stream, IDevice& file ){
+    stream.descriptor.pointer = &file;
+    stream.read  = ft_stream_io;
+    stream.close = ft_stream_close;
+    }
+
+  FT_Error New_Face( FT_Library    library,
+                     FT_StreamRec& stream,
+                     FT_Long       face_index,
+                     FT_Face      *aface ) {
+    FT_Open_Args  args;
+
+    args.pathname = 0;
+
+    args.flags    = FT_OPEN_STREAM;
+    args.stream   = &stream;
+
+    return FT_Open_Face( library, &args, face_index, aface );
+    }
   };
 
 std::map<Tempest::Font::Key, Tempest::Font::Leters*>
@@ -124,7 +161,11 @@ const Tempest::Font::Letter&
   FT_Vector     pen = {0,0};
   FT_Error err = 0;
 
-  err = FT_New_Face( ft().library, fnames[key.name].c_str(), 0, &face );
+  RFile file(fnames[key.name].c_str());
+  FT_StreamRec stream;
+  ft().mkStream(stream, file);
+
+  err = ft().New_Face( ft().library, stream, 0, &face );
   if( err )
     return nullLeter(ch);
 
@@ -188,7 +229,11 @@ Tempest::Font::LetterGeometry Tempest::Font::letterGeometry( wchar_t ch ) const 
   FT_Vector     pen = {0,0};
   FT_Error err = 0;
 
-  err = FT_New_Face( ft().library, fnames[key.name].c_str(), 0, &face );
+  RFile file(fnames[key.name].c_str());
+  FT_StreamRec stream;
+  ft().mkStream(stream, file);
+
+  err = ft().New_Face( ft().library, stream, 0, &face );
   if( err )
     return LetterGeometry();
 
