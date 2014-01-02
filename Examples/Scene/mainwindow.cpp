@@ -2,7 +2,6 @@
 
 #include <Tempest/Assert>
 #include <Tempest/RenderState>
-#include <Tempest/Painter>
 
 static MainWindow::Vertex quadVb[] = {
   { 1,-1,-1,  1,1},
@@ -53,11 +52,16 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     vboHolder(device),
     iboHolder(device),
     vsHolder (device),
-    fsHolder (device),
-    spHolder (texHolder),
-    uiRender ( vsHolder, fsHolder )
+    fsHolder (device)
     {
-  zoom = 1;
+  camera.setPerspective(w(), h());
+  camera.setSpinX(45);
+  camera.setSpinY(180+45);
+  camera.setZoom(0.2);
+
+  Tempest::VertexBuffer<Vertex>  vbo;
+  Tempest::IndexBuffer<uint16_t> ibo;
+  Tempest::VertexDeclaration     vdecl;
 
   vbo = vboHolder.load(quadVb, sizeof(quadVb)/sizeof(quadVb[0]));
   ibo = iboHolder.load(quadId, sizeof(quadId)/sizeof(quadId[0]));
@@ -67,22 +71,39 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
       .add( Decl::float2, Usage::TexCoord );
   vdecl = VertexDeclaration(device, decl);
 
-  texture   = texHolder.load("data/texture.png");
-
   shader.vs = vsHolder.load("shader/basic.vs.glsl");
   shader.fs = fsHolder.load("shader/basic.fs.glsl");
 
   T_ASSERT( shader.isValid() );
-  }
 
-void MainWindow::paintEvent(PaintEvent &e) {
-  Painter p(e);
+  Model<Vertex> m;
+  m.load( vbo, ibo , vdecl );
 
-  p.setTexture(texture);
-  p.drawRect( Rect(0,0, 100, 100), texture.rect() );
+  Material mat;
+  mat.texture = texHolder.load("data/texture.png");
 
-  p.setFont( Font("data/arial", 16) );
-  p.drawText(100, 100, "This is cat!");
+  for( int i=0; i<5; ++i ){
+    SceneObject obj(scene);
+    obj.setModel(m);
+    obj.setMaterial(mat);
+    obj.setPosition( i*2,0,0);
+    objects.push_back( obj );
+    }
+
+  for( int i=1; i<10; ++i ){
+    SceneObject obj(scene);
+    obj.setModel(m);
+    obj.setMaterial(mat);
+    obj.setPosition( 0,i*2,0);
+    objects.push_back( obj );
+    }
+  for( int i=1; i<3; ++i ){
+    SceneObject obj(scene);
+    obj.setModel(m);
+    obj.setMaterial(mat);
+    obj.setPosition( 0,0,i*2);
+    objects.push_back( obj );
+    }
   }
 
 void MainWindow::mouseDownEvent(MouseEvent &e) {
@@ -90,30 +111,35 @@ void MainWindow::mouseDownEvent(MouseEvent &e) {
   }
 
 void MainWindow::mouseDragEvent(MouseEvent &e) {
-  rotate += (e.pos()-mpos);
+  auto rotate = (e.pos()-mpos);
   mpos = e.pos();
+
+  camera.setSpinX( camera.spinX()+rotate.x );
+  camera.setSpinY( camera.spinY()+rotate.y );
   }
 
 void MainWindow::mouseWheelEvent(MouseEvent &e) {
   if( e.delta>0 )
-    zoom *= 1.1; else
-    zoom /= 1.1;
+    camera.setZoom( camera.zoom()*1.1 ); else
+    camera.setZoom( camera.zoom()/1.1 );
   }
 
 void MainWindow::render() {
   if( !device.startRender() )
     return;
 
-  uiRender.buildVbo(*this, vboHolder, iboHolder, spHolder );
+  updateCamera();
   device.clear( Color(0,0,1), 1 );
 
   device.beginPaint();
-  setupShaderConstants(shader);
-  device.drawIndexed( AbstractAPI::Triangle,
-                      shader, vdecl,
-                      vbo, ibo,
-                      0,0, ibo.size()/3 );
-  device.draw( uiRender );
+
+  for( size_t i=0; i<objects.size(); ++i ){
+    SceneObject &obj = objects[i];
+
+    setupShaderConstants(obj, shader);
+    device.draw( obj, shader );
+    }
+
   device.endPaint();
 
   device.present();
@@ -121,21 +147,20 @@ void MainWindow::render() {
 
 void MainWindow::resizeEvent( SizeEvent & ) {
   device.reset();
+  camera.setPerspective( w(), h() );
   }
 
-void MainWindow::setupShaderConstants( ProgramObject &sh ) {
-  Matrix4x4 mvpMatrix, projective, view;
+void MainWindow::setupShaderConstants( const SceneObject &obj, ProgramObject &sh ) {
+  Matrix4x4 mvpMatrix;
 
-  projective.perspective( 45.0, (float)w()/h(), 0.1, 100.0 );
-
-  view.translate(0,0,4);
-  view.rotate(rotate.y, 1, 0, 0);
-  view.rotate(rotate.x, 0, 1, 0);
-  view.scale(zoom);
-
-  mvpMatrix = projective;
-  mvpMatrix.mul(view);
+  mvpMatrix    = scene.camera().projective();
+  mvpMatrix.mul( scene.camera().view() );
+  mvpMatrix.mul( obj.transform()       );
 
   sh.vs.setUniform("mvpMatrix", mvpMatrix);
-  sh.fs.setUniform("texture",   texture  );
+  sh.fs.setUniform("texture",   obj.material().texture  );
+  }
+
+void MainWindow::updateCamera() {
+  scene.setCamera( camera );
   }
