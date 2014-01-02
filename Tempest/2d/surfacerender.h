@@ -43,6 +43,8 @@ class SurfaceRender {
                    Tempest::VertexBufferHolder & vbHolder,
                    Tempest::IndexBufferHolder  & /*ibHolder*/,
                    Tempest::SpritesHolder & sp ){
+      surf.nToUpdate = false;
+
       PaintDev p(*this, sstk, sp, 0, 0, w,h);
       PaintEvent e(p,0);
 

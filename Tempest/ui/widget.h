@@ -208,6 +208,7 @@ class Widget {
   friend class Layout;
   friend class Shortcut;
   friend class SystemAPI;
+  friend class SurfaceRender;
   friend class Application;
   };
 

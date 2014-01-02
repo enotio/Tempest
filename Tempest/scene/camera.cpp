@@ -6,6 +6,7 @@
 using namespace Tempest;
 
 Camera::Camera(){
+  setDistance(4);
   setPosition(0,0,0);
 
   setSpinX(0);
