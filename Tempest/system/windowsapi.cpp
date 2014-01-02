@@ -160,6 +160,11 @@ int WindowsAPI::nextEvent(bool &quit) {
     }
   }
 
+static void render( Tempest::Window* w ){
+  if( w->showMode()!=Tempest::Window::Minimized && w->isActive() )
+    w->render();
+  }
+
 int WindowsAPI::nextEvents(bool &quit) {
   MSG uMsg;
   memset(&uMsg,0,sizeof(uMsg));
@@ -175,8 +180,7 @@ int WindowsAPI::nextEvents(bool &quit) {
       r = uMsg.wParam;
       } else {
       for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
-        if( i->second->showMode()!=Tempest::Window::Minimized )
-          i->second->render();
+        render( i->second );
 
       Sleep(1);
       return r;
@@ -380,8 +384,11 @@ WindowsAPI::File *WindowsAPI::fopenImpl( const char *fname, const char *mode ) {
 WindowsAPI::File *WindowsAPI::fopenImpl( const char16_t *fname, const char *mode ) {
   DWORD gmode = 0, opMode = OPEN_ALWAYS;
   for( int i=0; mode[i]; ++i ){
-    if( mode[i]=='r' )
+    if( mode[i]=='r' ){
       gmode |= GENERIC_READ;
+      opMode = OPEN_EXISTING;
+      }
+
     if( mode[i]=='w' )
       gmode |= GENERIC_WRITE;
 
@@ -393,13 +400,18 @@ WindowsAPI::File *WindowsAPI::fopenImpl( const char16_t *fname, const char *mode
   f->h = CreateFile( (wchar_t*)fname, gmode,
                      0, NULL, opMode,
                      FILE_ATTRIBUTE_NORMAL, NULL);
-  if( !f->h ){
+  if( f->h==INVALID_HANDLE_VALUE ){
     delete f;
     return 0;
     }
 
   f->pos  = 0;
   f->size = GetFileSize(f->h, 0);
+
+  if( f->size==INVALID_FILE_SIZE ){
+    delete f;
+    return 0;
+    }
 
   return (SystemAPI::File*)f;
   }
