@@ -108,6 +108,8 @@ void MainWindow::render() {
   device.clear( Color(0,0,1), 1 );
 
   device.beginPaint();
+  device.setRenderState( RenderState() );
+
   setupShaderConstants(shader);
   device.drawIndexed( AbstractAPI::Triangle,
                       shader, vdecl,

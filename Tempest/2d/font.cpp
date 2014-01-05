@@ -47,6 +47,7 @@ struct Tempest::Font::FreeTypeLib{
     stream.descriptor.pointer = &file;
     stream.read  = ft_stream_io;
     stream.close = ft_stream_close;
+    stream.size  = -1;
     }
 
   FT_Error New_Face( FT_Library    library,

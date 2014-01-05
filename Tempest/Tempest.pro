@@ -80,8 +80,7 @@ ogl:{
   }
 android:TARGET = Tempest
 
-DEFINES += FT2_BUILD_LIBRARY
-PRECOMPILED_HEADER = thirdparty/freetype/include/freetype/config/ftheader.h
+DEFINES += "FT2_BUILD_LIBRARY=1"
 INCLUDEPATH += thirdparty/freetype/include
 
 SOURCES += \
@@ -386,7 +385,6 @@ OTHER_FILES += \
     include/Tempest/VolumeHolder \
     include/Tempest/ImageCodec \
     include/Tempest/Log \
-    thirdparty/freetype/Android.mk \
     include/Tempest/Buffer \
     include/Tempest/File \
     ../.gitignore

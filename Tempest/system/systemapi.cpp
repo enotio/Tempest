@@ -477,7 +477,7 @@ bool SystemAPI::loadImageImpl( Tempest::IDevice &imgBytes,
   }
 
 const std::string &SystemAPI::androidActivityClassImpl() {
-  static const std::string cls = "com/tempest/engine/TempestActivity";
+  static const std::string cls = "com/tempest/TempestActivity";
   return cls;
   }
 

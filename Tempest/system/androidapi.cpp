@@ -7,6 +7,7 @@ using namespace Tempest;
 #include <Tempest/Application>
 #include <Tempest/Window>
 #include <Tempest/Event>
+#include <Tempest/Log>
 #include <map>
 #include <queue>
 #include <Tempest/Assert>
@@ -16,7 +17,6 @@ using namespace Tempest;
 #include <GLES/gl.h>
 
 #include <pthread.h>
-#include <android/log.h>
 #include <unistd.h>
 #include <sys/stat.h>
 
@@ -52,16 +52,16 @@ static struct Android{
   EGLContext context;
 
   int window_w, window_h;
-  Tempest::Window * wnd;
+  Tempest::Window * volatile wnd;
 
   JavaVM  *vm;
   JNIEnv  *env;
   jobject assets;
   jclass  tempestClass;
 
-  ANativeWindow   *window;
+  ANativeWindow   * volatile window;
   pthread_mutex_t appMutex, waitMutex;
-  AndroidAPI::GraphicsContexState graphicsState;
+  volatile AndroidAPI::GraphicsContexState graphicsState;
 
   pthread_t mainThread;
 
@@ -213,16 +213,6 @@ struct SyncMethod{
   Guard g;
   };
 
-template< class ... Args >
-void LOGI( const Args& ... args ){
-  __android_log_print( ANDROID_LOG_INFO, "game", args... );
-  }
-
-template< class ... Args >
-void LOGE( const Args& ... args ){
-  __android_log_print( ANDROID_LOG_ERROR, "game", args... );
-  }
-
 using namespace Tempest;
 
 AndroidAPI::AndroidAPI(){
@@ -293,7 +283,7 @@ const std::string &AndroidAPI::iso3Locale() {
   return android.locale;
   }
 
-AndroidAPI::Window *AndroidAPI::createWindow(int w, int h) {
+AndroidAPI::Window *AndroidAPI::createWindow(int /*w*/, int /*h*/) {
   return 0;
   }
 
@@ -459,6 +449,7 @@ size_t AndroidAPI::fsizeImpl( File* f ){
     size_t e = ftell(file);
 
     fseek( file, pos, SEEK_CUR );
+    return e-s;
     }
 
   return fn->size + size_t(fn->pos - fn->assets_ptr);
@@ -595,6 +586,7 @@ int AndroidAPI::nextEvent(bool &quit) {
 
     case Android::MSG_KEY_EVENT:{
       Tempest::KeyEvent sce = makeKeyEvent(msg.data1, true);
+
       SystemAPI::emitEvent(android.wnd, sce, Event::Shortcut);
 
       if( !sce.isAccepted() ){
@@ -687,7 +679,7 @@ void AndroidAPI::show(Window *) {
     }
   }
 
-void AndroidAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
+void AndroidAPI::setGeometry( Window */*hw*/, int /*x*/, int /*y*/, int /*w*/, int /*h*/ ) {
   }
 
 void AndroidAPI::bind( Window *, Tempest::Window *wx ) {
@@ -786,7 +778,7 @@ bool Android::initialize() {
     }
 
   if( eglMakeCurrent(ini_display, ini_surface, ini_surface, ini_context) == EGL_FALSE ){
-    LOGE("%s","Unable to eglMakeCurrent");
+    Log(Log::Error) << "Unable to eglMakeCurrent";
     return false;
     }
 
@@ -811,7 +803,7 @@ bool Android::initialize() {
   }
 
 void Android::destroy( bool killContext ) {
-  LOGI("%s","Destroying context");
+  Log(Log::Info) << "Destroying context";
   graphicsState = SystemAPI::NotAviable;
 
   if( display != EGL_NO_DISPLAY ) {
@@ -847,16 +839,16 @@ static void resize( JNIEnv * , jobject, jobject, jint w, jint h ) {
   android.pushMsg(m);
   }
 
-static void JNICALL start(JNIEnv* jenv, jobject obj) {
-  LOGI("%s","nativeOnStart");
+static void JNICALL start(JNIEnv* /*jenv*/, jobject /*obj*/) {
+  Log(Log::Info) << "nativeOnStart";
   }
 
-static void JNICALL stop(JNIEnv* jenv, jobject obj) {
-  LOGI("%s","nativeOnStop");
+static void JNICALL stop(JNIEnv* /*jenv*/, jobject /*obj*/) {
+  Log(Log::Info) << "nativeOnStop";
   }
 
-static void JNICALL resume(JNIEnv* jenv, jobject obj) {
-  LOGI("%s","nativeOnResume");
+static void JNICALL resume(JNIEnv* /*jenv*/, jobject /*obj*/) {
+  Log(Log::Info) << "nativeOnResume";
   SyncMethod wm;
   (void)wm;
 
@@ -864,8 +856,8 @@ static void JNICALL resume(JNIEnv* jenv, jobject obj) {
   android.isPaused = false;
   }
 
-static void JNICALL pauseA(JNIEnv* jenv, jobject obj) {
-  LOGI("%s","nativeOnPause");
+static void JNICALL pauseA(JNIEnv* /*jenv*/, jobject /*obj*/) {
+  Log(Log::Info) << "nativeOnPause";
   SyncMethod wm;
   (void)wm;
 
@@ -873,8 +865,8 @@ static void JNICALL pauseA(JNIEnv* jenv, jobject obj) {
   android.isPaused = true;
   }
 
-static void JNICALL setAssets(JNIEnv* jenv, jobject obj, jobject assets ) {
-  LOGI("%s","setAssets");
+static void JNICALL setAssets(JNIEnv* jenv, jobject /*obj*/, jobject assets ) {
+  Log(Log::Info) << "setAssets";
   android.assets = jenv->NewGlobalRef(assets);
   }
 
@@ -889,11 +881,11 @@ static void JNICALL nativeOnTouch( JNIEnv* , jobject ,
   android.pushMsg(m);
   }
 
-static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject obj, jobject surface) {
+static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject /*obj*/, jobject surface) {
   if( surface ) {
     android.window = ANativeWindow_fromSurface(jenv, surface);
     android.graphicsState = SystemAPI::Aviable;
-    LOGI("Got window %p", android.window);
+    Log(Log::Info) << "Got window " << android.window;
 
     {
       Guard g( android.appMutex );
@@ -906,11 +898,13 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject obj, jobject surface
     if( android.mainThread==0 )
       pthread_create(&android.mainThread, 0, tempestMainFunc, 0);    
     } else {
-    LOGI("%s","Releasing window");
+    Log(Log::Info) << "Releasing window";
     {
       Guard g( android.appMutex );
       (void)g;
-      ANativeWindow_release(android.window);
+
+      ANativeWindow* wx = android.window;
+      ANativeWindow_release(wx);
       android.graphicsState = SystemAPI::DestroyedByAndroid;
       android.window = 0;
       if( android.wnd )
@@ -922,11 +916,11 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject obj, jobject surface
   }
 
 static void JNICALL onCreate(JNIEnv* , jobject ) {
-  LOGI("%s","nativeOnCreate");
+  Log(Log::Info) << "nativeOnCreate";
   android.mainThread = 0;
   }
 
-static void JNICALL onDestroy(JNIEnv* jenv, jobject obj) {
+static void JNICALL onDestroy(JNIEnv* /*jenv*/, jobject /*obj*/) {
   {
   Guard g( android.appMutex );
   (void)g;
@@ -938,11 +932,11 @@ static void JNICALL onDestroy(JNIEnv* jenv, jobject obj) {
 
   android.msg.clear();
 
-  LOGI("%s","nativeOnDestroy");
+  Log(Log::Info) << "nativeOnDestroy";
   }
 
 static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
-  LOGI("%s","onKeyEvent");
+  Log(Log::Info) << "onKeyEvent";
 
   Guard w( android.waitMutex );
   (void)w;
@@ -957,10 +951,12 @@ static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
   }
 
 static jint JNICALL nativeCloseEvent( JNIEnv* , jobject ){
+  {
   SyncMethod wm;
   (void)wm;
 
   android.pushMsg( Android::MSG_CLOSE );
+  }
   return android.closeRqAccepted? 1:0;
   }
 
@@ -1015,6 +1011,8 @@ static void setupDpi( JNIEnv* , jobject,
   }
 
 jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
+  Log(Log::Info) << "Tempest JNI_OnLoad";
+
   static JNINativeMethod methodTable[] = {
     {"nativeOnCreate",  "()V", (void *) onCreate  },
     {"nativeOnDestroy", "()V", (void *) onDestroy },
@@ -1041,7 +1039,7 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
 
   JNIEnv* env;
   if( vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK ){
-    LOGE("%s","Failed to get the environment");
+    Log(Log::Error) << "Failed to get the environment";
     return -1;
     }
 
@@ -1049,7 +1047,7 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
   android.tempestClass = (jclass)env->NewGlobalRef(android.tempestClass);
 
   if (!android.tempestClass) {
-    LOGE("%s", "failed to get %s class reference", SystemAPI::androidActivityClass().c_str() );
+    Log(Log::Error) << "failed to get " << SystemAPI::androidActivityClass().c_str() << " class reference";
     return -1;
     }
 
@@ -1057,12 +1055,12 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
                         methodTable,
                         sizeof(methodTable) / sizeof(methodTable[0]) );
 
-  LOGI("%s","Tempest JNI_OnLoad");
+  Log(Log::Info) << "Tempest ~JNI_OnLoad";
   return JNI_VERSION_1_6;
   }
 
 static void* tempestMainFunc(void*){
-  LOGI("%s","Tempest MainFunc");
+  Log(Log::Info) << "Tempest MainFunc";
   Android &a = android;
 
   a.vm->AttachCurrentThread( &a.env, NULL);
@@ -1071,10 +1069,10 @@ static void* tempestMainFunc(void*){
   jmethodID invokeMain = a.env->GetStaticMethodID( clazz, "invokeMain", "()V");
 
   android.initialize();
-  LOGI("%s","Tempest MainFunc[1]");
+  Log(Log::Info) << "Tempest MainFunc[1]";
   a.env->CallStaticVoidMethod(clazz, invokeMain);
 
-  LOGI("%s","~Tempest MainFunc");
+  Log(Log::Info) << "~Tempest MainFunc";
   android.destroy(true);
 
   a.vm->DetachCurrentThread();

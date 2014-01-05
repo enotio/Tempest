@@ -2162,7 +2162,7 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
   glPolygonMode( GL_BACK,  rmode[r.backPolygonRenderMode()] );
 #endif
 
-  if( dev->isWriteOnly(r) ){
+  if( dev->isWriteOnly(r) && 0 ){
     glColorMask(1,1,1,1);
     glDisable( GL_BLEND );
     glDisable( GL_DEPTH_TEST );
@@ -2193,10 +2193,10 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
         }
       }
 
-    glEnable( GL_DEPTH_TEST );
     if( dev->renderState.isZTest() != r.isZTest() ||
         dev->renderState.getZTestMode()!=r.getZTestMode() ){
       if( r.isZTest() ){
+        glEnable( GL_DEPTH_TEST );
         glDepthFunc( cmp[ r.getZTestMode() ] );
         } else {
         glDisable( GL_DEPTH_TEST );

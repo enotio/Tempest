@@ -58,9 +58,8 @@ void Camera::updateView(){
 
   mView.rotate( sy, 1,0,0 );
   mView.rotate( sx, 0,0,1 );
-  mView.translate( -pos[0], -pos[1], -pos[2] );
-
   mView.scale( m_zoom );
+  mView.translate( -pos[0], -pos[1], -pos[2] );
   }
 
 Matrix4x4 Camera::projective() const {
