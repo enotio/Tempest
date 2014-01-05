@@ -160,7 +160,7 @@ class Model {
                const Tempest::VertexDeclaration::Declarator& decl ){
       vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
 
-      m_size = bufSize;
+      setupMSZ( bufSize );
       vbo = vboHolder.load( buf, bufSize );
 
       bds = Raw::computeBoundRect( buf, bufSize );
@@ -180,7 +180,7 @@ class Model {
                const Tempest::VertexDeclaration::Declarator& decl ){
       vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
 
-      m_size = iboSize;
+     setupMSZ( iboSize );
       vbo = vboHolder.load( buf,   bufSize );
       ibo = iboHolder.load( index, iboSize );
 
@@ -194,7 +194,7 @@ class Model {
                const Tempest::VertexDeclaration::Declarator& decl ){
       vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
 
-      m_size = index.size();
+      setupMSZ( index.size() );
       vbo = vboHolder.load( buf   );
       ibo = iboHolder.load( index );
 
@@ -221,8 +221,8 @@ class Model {
                const Tempest::IndexBuffer<uint16_t>     & i,
                const Tempest::VertexDeclaration   & d ){
       if( i.size() )
-        m_size = i.size(); else
-        m_size = v.size();
+        setupMSZ(i.size()); else
+        setupMSZ(v.size());
 
       vbo   = v;
       ibo   = i;
@@ -233,7 +233,7 @@ class Model {
 
     void load( const Tempest::VertexBuffer<ModelVertex> & v,
                const Tempest::VertexDeclaration   & d ){
-      m_size = v.size();
+      setupMSZ( v.size() );
       vbo   = v;
       ibo   = IndexBuffer<uint16_t>();
       vdecl = d;
@@ -254,7 +254,7 @@ class Model {
       }
 
     int size() const{
-      return m_size/3;
+      return m_pcount;
       }
 
     int vertexCount() const{
@@ -269,6 +269,10 @@ class Model {
       return Tempest::AbstractAPI::Triangle;
       }
 
+    size_t primitiveCount() const {
+      return m_pcount;
+      }
+
     Model<ModelVertex> slice( int first, int size ) const {
       Model<ModelVertex> m = *this;
 
@@ -276,7 +280,7 @@ class Model {
         m.ibo = m.ibo.slice( first, size ); else
         m.vbo = m.vbo.slice( first, size );
 
-      m.m_size = size;
+      m.setupMSZ(size);
 
       bds = Raw::computeBoundRect( m.vbo );
       return m;
@@ -294,7 +298,11 @@ class Model {
     Tempest::VertexDeclaration    vdecl;
     ModelBounds bds;
 
-    int m_size;
+    void setupMSZ( int sz ){
+      m_size   = sz;
+      m_pcount = AbstractAPI::primitiveCount( vertexCount(), primitiveType() );
+      }
+    int m_size, m_pcount;
   };
 
 }

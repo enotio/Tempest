@@ -653,6 +653,8 @@ void GLSL::setUniform( unsigned int sh,
     if( tx && tx->id ){
 #ifndef __ANDROID__
       data->setupSampler( GL_TEXTURE_3D, prm, slot, tx, u.sampler() );
+#else
+      (void)slot;
 #endif
       }
     }

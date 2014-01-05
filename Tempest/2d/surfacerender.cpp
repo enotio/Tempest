@@ -74,6 +74,8 @@ void SurfaceRender::buildVbo( Tempest::Widget & surf,
   }
 
 void SurfaceRender::render(Device &dev) const {
+  auto rs = dev.renderState();
+
   if( dpos ){
     float dp[2] = { -0.5f*invW, -0.5f*invH };
     dev.setUniform( vs[0], dp, 2, "dpos" );
@@ -101,6 +103,8 @@ void SurfaceRender::render(Device &dev) const {
                        b.begin,
                        (b.end-b.begin)/sz );
     }
+
+  dev.setRenderState(rs);
   }
 
 

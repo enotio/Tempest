@@ -127,6 +127,7 @@ AbstractAPI::Texture* VolumeHolder::copy( AbstractAPI::Texture*  ){
 #ifndef __ANDROID__
   throw std::runtime_error("VolumeHolder::copy not implemented yet");
 #endif
+  return 0;
   }
 
 void VolumeHolder::setTextureFlag( AbstractAPI::Texture *t,

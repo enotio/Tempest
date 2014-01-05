@@ -309,6 +309,7 @@ struct Opengl2x::Device{
     };
 #endif
 
+#ifndef __ANDROID__
     static const GLenum inputFormat[] = {
     GL_LUMINANCE,
     GL_LUMINANCE_ALPHA,
@@ -342,6 +343,7 @@ struct Opengl2x::Device{
     GL_RGB,
     GL_RGBA
     };
+#endif
 
     if( !hasRenderToRGBTextures && renderable ){
       if( hasAlpha(f) )
@@ -857,12 +859,7 @@ AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
   glGenRenderbuffers( 1, &tex->depthId );
   glBindRenderbuffer( GL_RENDERBUFFER, tex->depthId);
   glRenderbufferStorage( GL_RENDERBUFFER,
-                       #ifndef __ANDROID__
-                         //GL_DEPTH_STENCIL,
                          format[ f-AbstractTexture::Format::Depth16 ],
-                       #else
-                         GL_DEPTH_COMPONENT16,
-                       #endif
                          w, h );
   glBindRenderbuffer( GL_RENDERBUFFER, 0);
 
@@ -1224,6 +1221,9 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   if( dev->wglSwapInterval )
     dev->wglSwapInterval( opt.vSync );
 #else
+  (void)hwnd;
+  (void)opt;
+
   EGLDisplay disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   EGLSurface s    = eglGetCurrentSurface(EGL_DRAW);
 

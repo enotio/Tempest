@@ -64,6 +64,7 @@ class Device {
     void endPaint  ();
 
     void setRenderState( const RenderState & ) const;
+    const RenderState& renderState() const;
 
     bool startRender();
     bool reset( const Options &opt = Options() );

@@ -254,14 +254,14 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
                            model.declaration(),
                            model.vertexes(), model.indexes(),
                            0, 0,
-                           model.vertexCount() );
+                           model.primitiveCount() );
           else
           dev.drawPrimitive( model.primitiveType(),
                              vs, fs,
                              model.declaration(),
                              model.vertexes(),
                              0,
-                             model.vertexCount() );
+                             model.primitiveCount()  );
         }
 
       size_t vboHandle() const{

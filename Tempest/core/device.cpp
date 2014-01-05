@@ -513,6 +513,10 @@ void Device::setRenderState( const RenderState & r ) const {
   data->rs       = r;
   }
 
+const RenderState &Device::renderState() const {
+  return data->rs;
+  }
+
 void Device::applyRs() const {
   if( data->delaydRS ){
     api.setRenderState( impl, data->rs );

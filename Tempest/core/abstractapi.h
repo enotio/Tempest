@@ -55,6 +55,8 @@ class AbstractAPI {
       lastPrimitiveType
       };
 
+    static size_t primitiveCount( size_t vert, PrimitiveType t );
+
     enum TextureFlag {
       TF_Inialized
       };

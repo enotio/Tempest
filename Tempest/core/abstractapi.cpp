@@ -89,3 +89,19 @@ int AbstractAPI::vertexCount(AbstractAPI::PrimitiveType t, int pCount) {
 
   return pCount*3;
   }
+
+
+size_t AbstractAPI::primitiveCount(size_t vert, AbstractAPI::PrimitiveType t) {
+  if( t==AbstractAPI::TriangleStrip ||
+      t==AbstractAPI::TriangleFan ||
+      t==AbstractAPI::LinesStrip  )
+    return vert-2;
+
+  if( t==AbstractAPI::Lines )
+    return vert/2;
+
+  if( t==Points )
+    return vert;
+
+  return vert/3;
+  }
