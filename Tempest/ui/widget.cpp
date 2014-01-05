@@ -150,8 +150,11 @@ void Widget::setGeometry(const Rect &r) {
   if( ox!=r.x && oy!=r.y )
     onPositionChange(ox,oy);
 
-  if( ow!=r.w && ow!=r.w )
+  if( ow!=r.w && ow!=r.w ){
     onResize(ow,oh);
+    SizeEvent e(w(),h());
+    resizeEvent( e );
+    }
 
   update();
   }
