@@ -11,10 +11,10 @@
 #include <android/log.h>
 #else
 #include <windows.h>
-
-//#include <GL/glew.h>
 #include "glfn.h"
 #include <GL/gl.h>
+
+using namespace Tempest::GLProc;
 #endif
 
 #include <Tempest/GLSL>
@@ -34,8 +34,6 @@
 #include <cstring>
 
 #include "../utils/mempool.h"
-
-using namespace Tempest::GLProc;
 
 #ifndef GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
 #define GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER 0x8CDB

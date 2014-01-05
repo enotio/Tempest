@@ -21,18 +21,28 @@ DEFINES += FT2_BUILD_LIBRARY
 
 INCLUDEPATH += \
                "$$(CG_INC_PATH)"\
-               "C:/Users/Try/Home/Programming/SharedLibs/glew-1.5.4-mingw32/include"\
-               "./thirdparty/fakeGL" \
+               "C:/Users/Try/Home/Programming/SharedLibs/glew-1.5.4-mingw32/include"\               
                "./thirdparty/" \
                "."
-
-LIBS += -l"gdi32" -l"z"
+!android:INCLUDEPATH += "./thirdparty/fakeGL"
+win32:LIBS += -l"gdi32"
+LIBS += -l"z"
 
 #DEFINES += D3D_DEBUG_INFO
 
+android:{
+  DEFINES += "sigset_t=\"unsigned int\""
+  DEFINES += __STDC_INT64__
+  DEFINES -= TEMPEST_M_TREADS
+
+  CONFIG += ogl
+  CONFIG -= directx
+  }
+
 ogl:{
   LIBS += -L"$$(CG_LIB_PATH)"
-  LIBS += -l"opengl32" -l"cg" -l"cgGL"
+  win32:  LIBS += -l"opengl32" -l"cg" -l"cgGL"
+  android:LIBS += -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics
 
   HEADERS +=\
     ogl/opengl2x.h \
@@ -68,6 +78,7 @@ ogl:{
     TARGET = Tempest
     }
   }
+android:TARGET = Tempest
 
 DEFINES += FT2_BUILD_LIBRARY
 PRECOMPILED_HEADER = thirdparty/freetype/include/freetype/config/ftheader.h
@@ -377,4 +388,5 @@ OTHER_FILES += \
     include/Tempest/Log \
     thirdparty/freetype/Android.mk \
     include/Tempest/Buffer \
-    include/Tempest/File
+    include/Tempest/File \
+    ../.gitignore

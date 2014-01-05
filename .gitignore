@@ -31,6 +31,8 @@ local.properties
 ## Binary
 #################
 *.dll
+*.so
+*.so.*
 *.exe
 *.a
 

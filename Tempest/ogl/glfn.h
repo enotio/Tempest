@@ -1,8 +1,9 @@
 #ifndef GLFN_H
 #define GLFN_H
 
-#include <GL/gl.h>
 #include <cstddef>
+#ifndef __ANDROID__
+#include <GL/gl.h>
 
 #define GL_HALF_FLOAT 0x8D61
 #define GL_RG16       0x822C
@@ -69,6 +70,7 @@
 typedef ptrdiff_t GLintptr;
 typedef ptrdiff_t GLsizeiptr;
 typedef char             GLchar;
+#endif
 
 namespace Tempest{
 namespace Detail {

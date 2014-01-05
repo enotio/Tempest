@@ -29,8 +29,7 @@ using namespace Tempest;
 #include <android/native_window_jni.h>
 
 #include <android/keycodes.h>
-#include <cpu-features.h>
-
+#include <machine/cpu-features.h>
 
 #include <cmath>
 #include <locale>
@@ -325,7 +324,7 @@ AndroidAPI::CpuInfo AndroidAPI::cpuInfoImpl(){
   CpuInfo info;
   memset(&info, 0, sizeof(info));
 
-  info.cpuCount = android_getCpuCount();
+  info.cpuCount = 1;//android_getCpuCount();
   return info;
   }
 
