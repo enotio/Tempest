@@ -26,6 +26,12 @@ namespace Tempest{
           vClamp = c;
           }
 
+        void setFiltration( FilterType::Type f ){
+          minFilter = f;
+          magFilter = f;
+          mipFilter = f;
+          }
+
         bool anisotropic;
         };
 
