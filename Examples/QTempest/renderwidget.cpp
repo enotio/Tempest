@@ -1,10 +1,9 @@
-#include "mainwindow.h"
+#include "renderwidget.h"
+#include "ui_renderwidget.h"
 
-#include <Tempest/Assert>
-#include <Tempest/RenderState>
-#include <Tempest/Painter>
+#include <QMouseEvent>
 
-static MainWindow::Vertex quadVb[] = {
+static RenderWidget::Vertex quadVb[] = {
   { 1,-1,-1,  1,1},
   {-1,-1,-1,  0,1},
   {-1, 1,-1,  0,0},
@@ -47,16 +46,17 @@ static uint16_t quadId[] = {
 
 using namespace Tempest;
 
-MainWindow::MainWindow(Tempest::AbstractAPI &api)
-   :device( api, handle() ),
-    texHolder(device),
-    vboHolder(device),
-    iboHolder(device),
-    vsHolder (device),
-    fsHolder (device),
-    spHolder (texHolder),
-    uiRender ( vsHolder, fsHolder )
-    {
+RenderWidget::RenderWidget( Tempest::AbstractAPI & api, QWidget *parent ) :
+  QTempestWidget(api, parent),
+  ui(new Ui::RenderWidget),
+  texHolder(device),
+  vboHolder(device),
+  iboHolder(device),
+  vsHolder (device),
+  fsHolder (device)
+{
+  ui->setupUi(this);
+
   zoom = 1;
 
   vbo = vboHolder.load(quadVb, sizeof(quadVb)/sizeof(quadVb[0]));
@@ -67,72 +67,61 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
       .add( Decl::float2, Usage::TexCoord );
   vdecl = VertexDeclaration(device, decl);
 
-  texture   = texHolder.load("data/texture.png");
+  texture = texHolder.load("data/texture.png");
 
   shader.vs = vsHolder.load("shader/basic.vs.glsl");
   shader.fs = fsHolder.load("shader/basic.fs.glsl");
 
-  T_ASSERT( shader.isValid() );  
+  T_ASSERT( shader.isValid() );
   }
 
-void MainWindow::paintEvent(PaintEvent &e) {
-  Painter p(e);
-
-  p.setTexture(texture);
-  p.drawRect( Rect(0,0, 100, 100), texture.rect() );
-
-  p.setFont( Font("data/arial", 16) );
-  p.drawText(100, 100, "This is cat!");
+RenderWidget::~RenderWidget() {
+  delete ui;
   }
 
-void MainWindow::mouseDownEvent(MouseEvent &e) {
-  mpos = e.pos();
+void RenderWidget::mousePressEvent(QMouseEvent *e) {
+  mpos = e->pos();
+  setMouseTracking(1);
   }
 
-void MainWindow::mouseDragEvent(MouseEvent &e) {
-  rotate += (e.pos()-mpos);
-  mpos = e.pos();
+void RenderWidget::mouseMoveEvent(QMouseEvent *e) {
+  rotate += (e->pos() - mpos);
+  mpos = e->pos();
+  update();
   }
 
-void MainWindow::mouseWheelEvent(MouseEvent &e) {
-  if( e.delta>0 )
+void RenderWidget::mouseReleaseEvent(QMouseEvent *) {
+  setMouseTracking(0);
+  }
+
+void RenderWidget::wheelEvent( QWheelEvent *e ) {
+  if( e->delta()>0 )
     zoom *= 1.1; else
     zoom /= 1.1;
+
+  update();
   }
 
-void MainWindow::render() {
-  if( !device.startRender() )
-    return;
-
-  uiRender.buildVbo(*this, vboHolder, iboHolder, spHolder );
+void RenderWidget::paint3d() {
   device.clear( Color(0,0,1), 1 );
 
   device.beginPaint();
-  device.setRenderState( RenderState() );
-
   setupShaderConstants(shader);
   device.drawIndexed( AbstractAPI::Triangle,
                       shader, vdecl,
                       vbo, ibo,
                       0,0, ibo.size()/3 );
-  device.draw( uiRender );
   device.endPaint();
-
-  device.present();
   }
 
-void MainWindow::resizeEvent( SizeEvent & ) {
-  device.reset();
-  }
-
-void MainWindow::setupShaderConstants( ProgramObject &sh ) {
+void RenderWidget::setupShaderConstants( ProgramObject &sh ) {
   Matrix4x4 mvpMatrix, projective, view;
 
-  projective.perspective( 45.0, (float)w()/h(), 0.1, 100.0 );
+  projective.perspective( 45.0, (float)width()/height(), 0.1, 100.0 );
 
   view.translate(0,0,4);
-  view.rotate(rotate.y, 1, 0, 0);
-  view.rotate(rotate.x, 0, 1, 0);
+  view.rotate(rotate.y(), 1, 0, 0);
+  view.rotate(rotate.x(), 0, 1, 0);
   view.scale(zoom);
 
   mvpMatrix = projective;
