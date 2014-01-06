@@ -706,7 +706,11 @@ void GLSL::Data::setupSampler( GLenum texClass,
   glActiveTexture( GL_TEXTURE0 + slot );
   glBindTexture( texClass, tx->id );
 
-  if( isPot ){
+  bool setupClampAnyway = true;
+#ifdef __ANDROID__
+   setupClampAnyway = false;
+#endif
+  if( isPot || setupClampAnyway ){
     if( tx->clampU!=clamp[ s.uClamp ] ){
       tx->clampU = clamp[ s.uClamp ];
       glTexParameteri( texClass, GL_TEXTURE_WRAP_S, tx->clampU );

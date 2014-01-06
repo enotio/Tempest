@@ -78,37 +78,48 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
   }
 
 void MainWindow::loadData() {
-  const int x = 256, y = 256, z = 256;
+  RFile file("data/dataset-stagbeetle-416x416x247.dat");
 
-  std::vector<uint8_t> data( x*y*z*4 );
+  uint16_t x,y,z;
+  file.readData( (char*)&x, 2 );
+  file.readData( (char*)&y, 2 );
+  file.readData( (char*)&z, 2 );
+
+  std::vector<uint16_t> xdata( x*y*z );
+  file.readData( (char*)&xdata[0], xdata.size()*2 );
+
+  std::vector<uint16_t> data( x*y*z*4 );
 
   for( int i=0; i<x; ++i )
     for( int r=0; r<y; ++r )
       for( int q=0; q<z; ++q ){
-        uint8_t* vx = &data[ ((i*y+r)*z+q)*4 ];
+        auto* vx = &data[ ((i*y+r)*z+q)*4 ];
 
         vx[0] = i;
         vx[1] = r;
         vx[2] = q;
 
-        float px = 2.0*(i-x/2)/x,
-              py = 2.0*(r-y/2)/y,
-              pz = 2.0*(q-z/2)/z;
-        double l = sqrt( px*px+py*py+pz*pz );
-
         if( i==0||i==x-1 ||
             r==0||r==y-1 ||
             q==0||q==z-1 )
           vx[3] = 0; else
-          vx[3] = l<=1.0? 255:0;
+          vx[3] = xdata[((i*y+r)*z+q)];
         }
 
-  volume = volHolder.load(x,y,z, data.data(), Texture3d::Format::RGBA8 );
+  volume = volHolder.load(x,y,z, data.data(), Texture3d::Format::RGBA16 );
 
   Texture3d::Sampler s;
-  s.setClamping( Texture3d::ClampMode::Clamp );
+  s.setClamping  ( Texture3d::ClampMode::ClampToEdge );
+  s.setFiltration( Texture3d::FilterType::Nearest    );
 
   volume.setSampler(s);
+
+  double sz = std::max( std::max(x,y), z );
+  modeSize[0] = x/sz;
+  modeSize[1] = y/sz;
+  modeSize[2] = z/sz;
+
+  view.scale( modeSize[0], modeSize[1], modeSize[2] );
   }
 
 void MainWindow::mouseDownEvent(MouseEvent &e) {
@@ -156,6 +167,7 @@ void MainWindow::setupShaderConstants( ProgramObject &sh ) {
   view.rotate(rotate.y, 1, 0, 0);
   view.rotate(rotate.x, 0, 1, 0);
   view.scale(zoom);
+  view.mul( this->view );
 
   mvpMatrix = projective;
   mvpMatrix.mul(view);

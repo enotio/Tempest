@@ -25,6 +25,12 @@ namespace Tempest{
           vClamp = c;
           wClamp = c;
           }
+
+        void setFiltration( FilterType::Type f ){
+          minFilter = f;
+          magFilter = f;
+          mipFilter = f;
+          }
         };
 
       const Sampler& sampler() const;

@@ -42,7 +42,9 @@ class MainWindow:public Tempest::Window {
     Tempest::ProgramObject         shader;
 
     Tempest::Point rotate, mpos;
+    Tempest::Matrix4x4     view;
     float zoom;
+    float modeSize[3];
 
     void loadData();
     void mouseDownEvent ( Tempest::MouseEvent& e );

@@ -352,6 +352,10 @@ struct Opengl2x::Device{
       }
 
     inBytePkg = GL_UNSIGNED_BYTE;
+    if( f==AbstractTexture::Format::RGB16 ||
+        f==AbstractTexture::Format::RGBA16 )
+      inBytePkg = GL_UNSIGNED_SHORT;
+
 #ifdef __ANDROID__
     if( f==AbstractTexture::Format::RGB ||
         f==AbstractTexture::Format::RGB4 )

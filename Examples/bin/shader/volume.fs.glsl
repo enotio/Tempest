@@ -1,4 +1,4 @@
-varying vec4 eyeray_o, eyeray_d;
+varying vec3 eyeray_o, eyeray_d;
 
 uniform sampler3D volume;
 
@@ -38,21 +38,22 @@ bool intersectBox( Ray r,
   }
 
 vec4 color( vec3 pos ){
-  return texture3D(volume, pos);//vec4( pos*0.5+vec3(0.5), 1.0 );
+  vec4 c = texture3D(volume, pos );
+  return vec4(c.a);
   }
 
 void main(void) {
   const int steps = 128;
-  float stepsize = 1.7 / float(steps);
+  float stepsize  = 1.0 / float(steps);
 
   Ray eyeray;
-  eyeray.o = eyeray_o.xyz/eyeray_o.w;
-  eyeray.d = eyeray_d.xyz/eyeray_d.w - eyeray.o;
+  eyeray.o = eyeray_o.xyz;
+  eyeray.d = eyeray_d.xyz - eyeray.o;
 
   eyeray.d = normalize(eyeray.d);
 
   float tnear, tfar;
-  bool hit = intersectBox(eyeray, vec3(-1.0), vec3(1.0), tnear, tfar);
+  bool hit = intersectBox(eyeray, -vec3(1), vec3(1), tnear, tfar);
   if (!hit)
     discard;
 
@@ -62,23 +63,22 @@ void main(void) {
   vec3 Pnear = eyeray.o + eyeray.d*tnear;
   vec3 Pfar  = eyeray.o + eyeray.d*tfar;
 
-  Pnear = Pnear*0.5 + 0.5;
-  Pfar  = Pfar *0.5 + 0.5;
+  Pnear = (Pnear/2.0 + 0.5);
+  Pfar  = (Pfar /2.0 + 0.5);
 
   vec4 c = vec4(0.0);
   vec3 P = Pfar;
-  vec3 Pstep = -eyeray.d * stepsize;
+  vec3 Pstep = (Pnear-Pfar)*stepsize;
 
   for(int i=0; i<steps; i++) {
     vec4 s = color(P);
-    if( s.a>0.1 )
-      c = s;
+    c += s;
 
     P += Pstep;
     }
 
-  if( c.a==0.0 )
-    discard;
+  //if( c.a==0.0 )
+    //discard;
 
   gl_FragColor = c;
   }
