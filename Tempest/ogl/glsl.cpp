@@ -687,7 +687,7 @@ void GLSL::Data::setupSampler( GLenum texClass,
 
   static const GLenum clamp[6] = {
 #ifndef __ANDROID__
-    GL_CLAMP,
+    GL_CLAMP_TO_EDGE,
     GL_CLAMP_TO_BORDER,
 #else
     GL_CLAMP_TO_EDGE,

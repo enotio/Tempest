@@ -38,7 +38,7 @@ VolumeHolder::~VolumeHolder(){
   }
 
 Texture3d VolumeHolder::load( int x, int y, int z,
-                              const char *data,
+                              const void *data,
                               AbstractTexture::Format::Type f,
                               TextureUsage u ) {
   Tempest::Texture3d obj( *this );
@@ -47,7 +47,7 @@ Texture3d VolumeHolder::load( int x, int y, int z,
   z = std::max(z,0);
 
   if( !(x==0 || y==0 || z==0) )
-    createObject( obj.data.value(), x, y, z, false, data, f, u ); else
+    createObject( obj.data.value(), x, y, z, false, (const char*)data, f, u ); else
     obj.data.value() = 0;
   obj.sx   = x;
   obj.sy   = y;

@@ -16,6 +16,7 @@ HEADERS += \
     mainwindow.h
 
 OTHER_FILES += \
-    ../bin/shader/basic.vs.glsl \
-    ../bin/shader/basic.fs.glsl
+    ../bin/shader/volume.fs.glsl \
+    ../bin/shader/volume.vs.glsl
+
 
