@@ -792,6 +792,8 @@ void Widget::setFocus(bool f) {
         if( root->owner() ){
           proot = root;
           root  = root->owner();
+          } else {
+          break;
           }
         }
 
