@@ -5,7 +5,7 @@
 #ifndef __ANDROID__
 #include <GL/gl.h>
 
-#define GL_HALF_FLOAT 0x8D61
+#define GL_HALF_FLOAT 0x140B
 #define GL_RG16       0x822C
 
 #define GL_CLAMP_TO_BORDER 0x812D

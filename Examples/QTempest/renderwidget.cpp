@@ -67,6 +67,7 @@ RenderWidget::RenderWidget( Tempest::AbstractAPI & api, QWidget *parent ) :
       .add( Decl::float2, Usage::TexCoord );
   vdecl = VertexDeclaration(device, decl);
 
+
   texture = texHolder.load("data/texture.png");
 
   shader.vs = vsHolder.load("shader/basic.vs.glsl");

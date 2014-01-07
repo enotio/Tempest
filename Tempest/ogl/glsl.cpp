@@ -195,6 +195,9 @@ void GLSL::setDevice() const {
 
 AbstractShadingLang::VertexShader*
   GLSL::createVertexShaderFromSource(const std::string &src, std::string &log) const {
+  if( src.size()==0 )
+    return 0;
+
   GLuint *prog = new GLuint(0);
   *prog = data->loadShader( GL_VERTEX_SHADER, src.data(), log );
 
