@@ -10,6 +10,8 @@
 #include <Tempest/Buffer>
 #include <Tempest/File>
 
+#include "thirdparty/utf8cpp/utf8.h"
+
 using namespace Tempest;
 
 SystemAPI &SystemAPI::instance() {
@@ -383,15 +385,19 @@ SystemAPI::GraphicsContexState SystemAPI::isGraphicsContextAviable( Tempest::Win
   }
 
 std::string SystemAPI::toUtf8(const std::u16string &str) {
+  using namespace utf8::unchecked;
+
   std::string r;
-  r.assign( str.begin(), str.end() );
+  utf16to8( str.begin(), str.end(), std::back_inserter(r) );
 
   return std::move(r);
   }
 
 std::u16string SystemAPI::toUtf16(const std::string &str) {
+  using namespace utf8::unchecked;
+
   std::u16string r;
-  r.assign( str.begin(), str.end() );
+  utf8to16( str.begin(), str.end(), std::back_inserter(r) );
 
   return std::move(r);
   }

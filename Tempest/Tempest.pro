@@ -356,7 +356,11 @@ HEADERS += \
     thirdparty/libjpeg/jpeglib.h \
     thirdparty/libjpeg/jversion.h \
     io/file.h \
-    ogl/glfn.h
+    ogl/glfn.h \
+    thirdparty/utf8cpp/utf8.h \
+    thirdparty/utf8cpp/utf8/checked.h \
+    thirdparty/utf8cpp/utf8/core.h \
+    thirdparty/utf8cpp/utf8/unchecked.h
 
 OTHER_FILES += \
     include/Tempest/Window \
