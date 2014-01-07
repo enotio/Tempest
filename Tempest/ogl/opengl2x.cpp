@@ -541,11 +541,11 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
                         (strstr(ext, "GL_ARB_texture_non_power_of_two")!=0);
   //dev->hasNpotTexture = 0;
 
+  dev->hasHalfSupport            = (strstr(ext, "GL_OES_vertex_half_float")!=0) ||
+                                   (strstr(ext, "GL_ARB_half_float_vertex")!=0);
 #ifdef __ANDROID__
-  dev->hasHalfSupport            = strstr(ext, "GL_OES_vertex_half_float")!=0;
   dev->hasRenderToRGBTextures    = strstr(ext, "GL_OES_rgb8_rgba8")!=0;
 #else
-  dev->hasHalfSupport             = 1;
   dev->hasRenderToRGBTextures     = 1;
 #endif
 
