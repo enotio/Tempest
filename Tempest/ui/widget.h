@@ -126,6 +126,7 @@ class Widget {
     virtual void resizeEvent( Tempest::SizeEvent& e );
 
     virtual void gestureEvent( Tempest::AbstractGestureEvent & e );
+    virtual void event( Tempest::Event & e );
 
     signal<> intentToUpdate;
     void update();
@@ -168,8 +169,8 @@ class Widget {
 
     static Widget* impl_mouseEvent( Tempest::MouseEvent & e,
                                     Widget *root,
-                                    void (Widget::*f)(Tempest::MouseEvent &),
-                                    bool focus = true, bool mpress = false );
+                                    bool focus  = true,
+                                    bool mpress = false );
     static void impl_mouseUpEvent  ( Widget* w, Tempest::MouseEvent & e );
     static void impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e );
     static void impl_keyPressEvent ( Widget* w, Tempest::KeyEvent & e,

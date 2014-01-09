@@ -319,7 +319,6 @@ void Widget::paintEvent( PaintEvent &pe ) {
 
 Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
                                  Widget* root,
-                                 void (Widget::*f)(Tempest::MouseEvent &),
                                  bool focus,
                                  bool mpress ){
   DeleteGuard guard(root);
@@ -337,10 +336,11 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
                      e.y - w->y(),
                      e.button,
                      e.delta,
-                     e.mouseID );
+                     e.mouseID,
+                     e.type() );
       et.ignore();
 
-      Widget* deep = impl_mouseEvent(et, w, f, focus, mpress);
+      Widget* deep = impl_mouseEvent(et, w, focus, mpress);
       if( et.isAccepted() ){
         e.accept();
         if( mpress ){
@@ -353,7 +353,7 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
 
       if( w->isVisible() && (et.mouseID==0 || w->multiTouch) ){
         et.accept();
-        (w->*f)( et );
+        w->event(et);
         }
 
       if( et.isAccepted() ){
@@ -456,7 +456,7 @@ void Widget::impl_keyPressEvent( Widget *wd, KeyEvent &e,
   for( size_t i=w.size(); i>0; --i ){
     if( w[i-1]->hasFocus() ){
       e.accept();
-      (w[i-1]->*f)(e);
+      w[i-1]->event(e);
       if( e.isAccepted() )
         return;
       }
@@ -476,7 +476,7 @@ void Widget::impl_customEvent( Widget*w, CustomEvent &e ) {
   size_t sz = w->layout().widgets().size();
   for( size_t i=0; i<sz; ++i ){
     Widget *wx = w->layout().widgets()[sz-i-1];
-    wx->customEvent(e);
+    wx->event(e);
     impl_customEvent( wx, e );
     }
   }
@@ -495,7 +495,7 @@ void Widget::impl_closeEvent(Widget *w, CloseEvent &e) {
     }
 
   e.accept();
-  w->closeEvent(e);
+  w->event(e);
   }
 
 void Widget::impl_gestureEvent(Widget *w, AbstractGestureEvent &e) {
@@ -520,7 +520,7 @@ void Widget::impl_gestureEvent(Widget *w, AbstractGestureEvent &e) {
 
   if( !e.isAccepted() ){
     e.accept();
-    w->gestureEvent(e);
+    w->event(e);
     }
   }
 
@@ -546,7 +546,7 @@ void Widget::paintNested( PaintEvent &p ){
       w[i]->nToUpdate = false;
       if( !( uscis && s.isEmpty() ) ){
         p.painter.translate(  pt.x,  pt.y );
-        w[i]->paintEvent(p);
+        w[i]->event(p);
         p.painter.translate( -pt.x, -pt.y );
         }
 
@@ -568,12 +568,11 @@ void Widget::rootMouseDownEvent(MouseEvent &e) {
 
   mouseReleseReciver[e.mouseID] = impl_mouseEvent( e,
                                                    this,
-                                                   &Widget::mouseDownEvent,
                                                    true,
                                                    true );
 
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()))
-    this->mouseDownEvent(e);
+    this->event(e);
   }
 
 void Widget::rootMouseDragEvent(MouseEvent &e) {
@@ -587,7 +586,7 @@ void Widget::rootMouseDragEvent(MouseEvent &e) {
 
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
-    this->mouseDragEvent(e);
+    this->event(e);
     }
   }
 
@@ -602,7 +601,7 @@ void Widget::rootMouseUpEvent(MouseEvent &e) {
 
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
-    this->mouseUpEvent(e);
+    this->event(e);
     }
   }
 
@@ -611,7 +610,7 @@ void Widget::impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e ){
   (void)guard;
 
   if( !( size_t(e.mouseID) < w->mouseReleseReciver.size() && w->mouseReleseReciver[e.mouseID]) ){
-    w->mouseDragEvent(e);
+    w->event(e);
     return;
     }
 
@@ -624,7 +623,9 @@ void Widget::impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e ){
                  rec )
       !=w->layout().widgets().end() ){
     Widget * r = rec;
-    Tempest::MouseEvent ex( e.x - r->x(), e.y - r->y(), e.button, e.delta, e.mouseID );
+    Tempest::MouseEvent ex( e.x - r->x(), e.y - r->y(),
+                            e.button, e.delta, e.mouseID,
+                            e.type() );
 
     impl_mouseDragEvent( r, ex);
     }
@@ -632,21 +633,21 @@ void Widget::impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e ){
 
 void Widget::rootMouseMoveEvent(MouseEvent &e) {
   e.ignore();
-  impl_mouseEvent( e, this, &Widget::mouseMoveEvent, false, false );
+  impl_mouseEvent( e, this, false, false );
 
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
-    this->mouseMoveEvent(e);
+    this->event(e);
     }
   }
 
 void Widget::rootMouseWheelEvent(MouseEvent &e) {
   e.ignore();
-  impl_mouseEvent( e, this, &Widget::mouseWheelEvent, true, true );
+  impl_mouseEvent( e, this, true, true );
 
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
-    this->mouseWheelEvent(e);
+    this->event(e);
     }
   }
 
@@ -660,7 +661,7 @@ void Widget::rootKeyDownEvent(KeyEvent &e) {
 
   if( !e.isAccepted() ){
     e.accept();
-    this->keyDownEvent(e);
+    this->event(e);
     }
   }
 
@@ -674,7 +675,7 @@ void Widget::rootKeyUpEvent(KeyEvent &e) {
 
   if( !e.isAccepted() ){
     e.accept();
-    this->keyUpEvent(e);
+    this->event(e);
     }
   }
 
@@ -863,7 +864,7 @@ void Widget::shortcutEvent(KeyEvent &e) {
 
   size_t sz = layout().widgets().size()-1;
   for( size_t i=0; i<layout().widgets().size(); ++i ){
-    layout().widgets()[sz-i]->shortcutEvent(e);
+    layout().widgets()[sz-i]->event(e);
     if( e.isAccepted() )
       return;
     }
@@ -888,6 +889,65 @@ void Widget::resizeEvent( SizeEvent &e ) {
 
 void Widget::gestureEvent(AbstractGestureEvent &e) {
   e.ignore();
+  }
+
+void Widget::event( Event &e ) {
+  switch ( e.type() ) {
+    case Event::NoEvent:
+      break;
+
+    case Event::MouseDown:
+      mouseDownEvent( (Tempest::MouseEvent&)e );
+      break;
+
+    case Event::MouseUp:
+      mouseUpEvent( (Tempest::MouseEvent&)e );
+      break;
+
+    case Event::MouseMove:
+      mouseMoveEvent( (Tempest::MouseEvent&)e );
+      break;
+
+    case Event::MouseDrag:
+      mouseDragEvent( (Tempest::MouseEvent&)e );
+      break;
+
+    case Event::MouseWheel:
+      mouseWheelEvent( (Tempest::MouseEvent&)e );
+      break;
+
+    case Event::KeyDown:
+      keyDownEvent( (Tempest::KeyEvent&)e );
+      break;
+
+    case Event::KeyUp:
+      keyUpEvent( (Tempest::KeyEvent&)e );
+      break;
+
+    case Event::Resize:
+      resizeEvent( (Tempest::SizeEvent&)e );
+      break;
+
+    case Event::Shortcut:
+      shortcutEvent( (Tempest::KeyEvent&)e );
+      break;
+
+    case Event::Paint:
+      paintEvent( (Tempest::PaintEvent&)e );
+      break;
+
+    case Event::Close:
+      closeEvent( (Tempest::CloseEvent&)e );
+      break;
+
+    case Event::Gesture:
+      gestureEvent( (Tempest::AbstractGestureEvent&)e );
+      break;
+
+    case Event::Custom:
+      customEvent( (Tempest::CustomEvent&)e );
+      break;
+    }
   }
 
 
