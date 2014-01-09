@@ -95,7 +95,8 @@ template< class ModelVertex = DefaultVertex >
 class Model {
   public:
     Model(){
-      m_size = 0;
+      m_size   = 0;
+      m_pcount = 0;
 
       for( size_t i=0; i<3; ++i ){
         bds.min[i] = 0;

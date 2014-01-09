@@ -25,7 +25,7 @@ struct Pixmap::MemPool{
     for( size_t i=0; i<ldata.size(); ++i )
       pool.free( ldata[i] );
 
-    T_ASSERT_X( count==0, "pixmap leak detected" );
+    //T_ASSERT_X( count==0, "pixmap leak detected" );
     }
 
   Pixmap::Data* alloc( int w, int h, int bpp ){

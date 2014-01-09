@@ -351,7 +351,7 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
         return w;
         }
 
-      if( w->isVisible() && (et.mouseID==0 || root->multiTouch) ){
+      if( w->isVisible() && (et.mouseID==0 || w->multiTouch) ){
         et.accept();
         (w->*f)( et );
         }

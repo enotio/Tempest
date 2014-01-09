@@ -18526,7 +18526,13 @@ systemapi.obj: ..\Tempest\system\systemapi.cpp ..\Tempest\system\systemapi.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\libs\armeabi-v7a\include\bits\messages_members.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\bits\locale_facets_nonio.tcc \
 		..\Tempest\include\Tempest\Buffer \
-		..\Tempest\io\buffer.h
+		..\Tempest\io\buffer.h \
+		..\Tempest\thirdparty\utf8cpp\utf8.h \
+		..\Tempest\thirdparty\utf8cpp\utf8\checked.h \
+		..\Tempest\thirdparty\utf8cpp\utf8\core.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\iterator \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\bits\stream_iterator.h \
+		..\Tempest\thirdparty\utf8cpp\utf8\unchecked.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o systemapi.obj ..\Tempest\system\systemapi.cpp
 
 half.obj: ..\Tempest\core\wrappers\half.cpp ..\Tempest\core\wrappers\half.h \
