@@ -696,7 +696,8 @@ void Widget::impl_mouseUpEvent( Widget* w, Tempest::MouseEvent & e ){
   DeleteGuard guard(w);
   (void)guard;
 
-  if( !( size_t(e.mouseID) < w->mouseReleseReciver.size() && w->mouseReleseReciver[e.mouseID]) ){
+  if( !( size_t(e.mouseID) < w->mouseReleseReciver.size() &&
+         w->mouseReleseReciver[e.mouseID]) ){
     w->mouseUpEvent(e);
     return;
     }
@@ -707,7 +708,7 @@ void Widget::impl_mouseUpEvent( Widget* w, Tempest::MouseEvent & e ){
 
   if( rec ){
     Widget * r = rec;
-    Tempest::MouseEvent ex( e.x - r->x(), e.y - r->y(), e.button, e.delta );
+    Tempest::MouseEvent ex( e.x - r->x(), e.y - r->y(), e.button, e.delta, e.mouseID );
 
     impl_mouseUpEvent( r, ex );
 

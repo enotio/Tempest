@@ -101,27 +101,24 @@ implements SurfaceHolder.Callback  {
 
     switch (event.getActionMasked()) {
       case MotionEvent.ACTION_MOVE: {
-        for (int p = 0; p < event.getPointerCount(); p++) {     
+        for( int p = 0; p < event.getPointerCount(); p++ ){     
           x = Math.round( event.getX(p) );
           y = Math.round( event.getY(p) );
           pid = event.getPointerId(p);
           
-          //Log.d("Controlls", "Action Move " + x +" " + y +" " + pid);  
           nativeOnTouch( x, y, 2, pid );
           }
         break;
         }
     
-      case MotionEvent.ACTION_DOWN: {
-        Log.d("Controlls", "Action Down " + pid);        
+      case MotionEvent.ACTION_DOWN: {        
         x = Math.round( event.getX() );
         y = Math.round( event.getY() );
         act = 0;
         break;
         }
 
-      case MotionEvent.ACTION_UP: {
-        Log.d("Controlls", "Action UP "+ pid);       
+      case MotionEvent.ACTION_UP: {    
         x = Math.round( event.getX() );
         y = Math.round( event.getY() );
         act = 1;
@@ -129,7 +126,6 @@ implements SurfaceHolder.Callback  {
         }
 
       case MotionEvent.ACTION_POINTER_DOWN: {
-        Log.d("Controlls", "Action Pointer Down "+ pid);
         x = Math.round( event.getX(index) );
         y = Math.round( event.getY(index) );
         act = 0;
@@ -137,7 +133,6 @@ implements SurfaceHolder.Callback  {
         }
 
       case MotionEvent.ACTION_POINTER_UP: {
-        Log.d("Controlls", "Action Pointer UP "+ pid);
         x = Math.round( event.getX(index) );
         y = Math.round( event.getY(index) );
         act = 1;

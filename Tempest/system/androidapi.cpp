@@ -601,7 +601,6 @@ int AndroidAPI::nextEvent(bool &quit) {
 
     case Android::MSG_TOUCH: {
       int id = android.pointerId( msg.data2 );
-      Log(Log::Info) << "nativeOnTouch " << msg.data1 <<" " << msg.data2;
 
       if( msg.data1==0 ){
         MouseEvent e( msg.data.x, msg.data.y,
