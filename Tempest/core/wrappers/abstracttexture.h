@@ -59,6 +59,9 @@ namespace Tempest{
 
           RG16,
 
+          RedableDepth16,
+          RedableDepth32,
+
           Count
           };
         };

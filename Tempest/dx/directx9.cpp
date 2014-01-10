@@ -640,7 +640,12 @@ AbstractAPI::Texture* DirectX9::createTexture(AbstractAPI::Device *d,
     D3DFMT_D16,   // Depth16,
     D3DFMT_D24X8, // Depth24,
     D3DFMT_D32,   // Depth32,
+
     D3DFMT_G16R16,// RG16
+
+    D3DFMT_D16,   // RedableDepth16,
+    D3DFMT_D32,   // RedableDepth32,
+
     D3DFMT_A8R8G8B8, //Count
     };
 

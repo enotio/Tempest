@@ -446,8 +446,7 @@ bool Widget::hasMultiPassPaint() const {
   return multiPaint;
   }
 
-void Widget::impl_keyPressEvent( Widget *wd, KeyEvent &e,
-                                 void (Widget::*f)(Tempest::KeyEvent &) ) {
+void Widget::impl_keyPressEvent(Widget *wd, KeyEvent &e) {
   DeleteGuard guard(wd);
   (void)guard;
 
@@ -462,7 +461,7 @@ void Widget::impl_keyPressEvent( Widget *wd, KeyEvent &e,
       }
 
     if( w[i-1]->chFocus ){
-      impl_keyPressEvent(w[i-1], e, f);
+      impl_keyPressEvent(w[i-1], e);
       }
     }
 
@@ -654,7 +653,7 @@ void Widget::rootMouseWheelEvent(MouseEvent &e) {
 void Widget::rootKeyDownEvent(KeyEvent &e) {
   if( chFocus && !focus ){
     e.accept();
-    impl_keyPressEvent( this, e, &Widget::keyDownEvent );
+    impl_keyPressEvent( this, e );
     } else {
     e.ignore();
     }
@@ -668,7 +667,7 @@ void Widget::rootKeyDownEvent(KeyEvent &e) {
 void Widget::rootKeyUpEvent(KeyEvent &e) {
   if( chFocus && !focus ){
     e.accept();
-    impl_keyPressEvent( this, e, &Widget::keyUpEvent );
+    impl_keyPressEvent( this, e );
     } else {
     e.ignore();
     }

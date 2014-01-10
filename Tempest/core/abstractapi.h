@@ -42,6 +42,8 @@ class AbstractAPI {
 
       bool hasHalf2, hasHalf4;
       bool has3DTexture, hasNpotTexture;
+
+      bool hasRedableDepth;
       };
 
     enum PrimitiveType{

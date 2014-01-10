@@ -268,9 +268,12 @@ struct Opengl2x::Device{
     GL_DEPTH_COMPONENT, //16
     GL_DEPTH_COMPONENT, //24
     GL_DEPTH_COMPONENT, //32
-    GL_DEPTH_STENCIL,
 
     GL_RG16,
+
+    GL_DEPTH_COMPONENT16, //16
+    GL_DEPTH_COMPONENT32, //32
+
     GL_RGBA
     };
 #else
@@ -302,9 +305,12 @@ struct Opengl2x::Device{
     GL_LUMINANCE,
     GL_LUMINANCE,
     GL_LUMINANCE,
-    GL_LUMINANCE,
 
     GL_RGB,
+
+    GL_DEPTH_COMPONENT, //16
+    GL_DEPTH_COMPONENT, //32
+
     GL_RGBA
     };
 #endif
@@ -338,9 +344,11 @@ struct Opengl2x::Device{
     GL_DEPTH_COMPONENT, //d
     GL_DEPTH_COMPONENT, //d
     GL_DEPTH_COMPONENT, //d
-    GL_DEPTH_COMPONENT, //ds
 
     GL_RGB,
+
+    GL_DEPTH_COMPONENT, //d
+    GL_DEPTH_COMPONENT, //d
     GL_RGBA
     };
 #endif
@@ -367,6 +375,12 @@ struct Opengl2x::Device{
     if( f==AbstractTexture::Format::RGBA5 ||
         f==AbstractTexture::Format::RGBA )
       inBytePkg = GL_UNSIGNED_SHORT_5_5_5_1;
+
+    if( f==AbstractTexture::Format::RedableDepth16 )
+      inBytePkg = GL_UNSIGNED_SHORT;
+
+    if( f==AbstractTexture::Format::RedableDepth32 )
+      inBytePkg = GL_UNSIGNED_INT;
 #endif
 
     storage = format[f];
@@ -543,6 +557,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 
   dev->hasHalfSupport            = (strstr(ext, "GL_OES_vertex_half_float")!=0) ||
                                    (strstr(ext, "GL_ARB_half_float_vertex")!=0);
+
 #ifdef __ANDROID__
   dev->hasRenderToRGBTextures    = strstr(ext, "GL_OES_rgb8_rgba8")!=0;
 #else
@@ -594,9 +609,12 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->clearS     = 0;
 
   memset( (char*)&dev->caps, 0, sizeof(dev->caps) );
-  // T_WARNING_X( dev->hasHalfSupport, "half_float not aviable on device" );
+
   dev->caps.hasHalf2 = dev->hasHalfSupport;
-  dev->caps.hasHalf4 = dev->hasHalfSupport;
+  dev->caps.hasHalf4 = dev->hasHalfSupport;  
+  dev->caps.hasRedableDepth = (strstr(ext, "GL_OES_depth_texture")!=0) ||
+                              (strstr(ext, "GL_ARB_depth_texture")!=0);
+
   T_ASSERT_X( errCk(), "OpenGL error" );
   glGetIntegerv( GL_MAX_TEXTURE_SIZE,         &dev->caps.maxTextureSize );
   T_ASSERT_X( errCk(), "OpenGL error" );
@@ -947,10 +965,16 @@ bool Opengl2x::setupFBO() const {
       }
 
     if( dev->target.depth ){
-      glFramebufferRenderbuffer( GL_FRAMEBUFFER,
-                                 GL_DEPTH_ATTACHMENT,
-                                 GL_RENDERBUFFER,
-                                 dev->target.depth->depthId );
+      if( dev->target.depth->id )
+        glFramebufferTexture2D( GL_FRAMEBUFFER,
+                                GL_DEPTH_ATTACHMENT,
+                                GL_TEXTURE_2D,
+                                dev->target.depth->id, 0 );
+        else
+        glFramebufferRenderbuffer( GL_FRAMEBUFFER,
+                                   GL_DEPTH_ATTACHMENT,
+                                   GL_RENDERBUFFER,
+                                   dev->target.depth->depthId );
       } else {
       glFramebufferRenderbuffer( GL_FRAMEBUFFER,
                                  GL_DEPTH_ATTACHMENT,

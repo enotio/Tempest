@@ -173,8 +173,7 @@ class Widget {
                                     bool mpress = false );
     static void impl_mouseUpEvent  ( Widget* w, Tempest::MouseEvent & e );
     static void impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e );
-    static void impl_keyPressEvent ( Widget* w, Tempest::KeyEvent & e,
-                                     void (Widget::*f)(Tempest::KeyEvent &) );
+    static void impl_keyPressEvent ( Widget* w, Tempest::KeyEvent & e );
 
     static void impl_customEvent(Widget *w, Tempest::CustomEvent & e );
     static void impl_closeEvent (Widget *w, Tempest::CloseEvent & e );
