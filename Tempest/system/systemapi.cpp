@@ -526,3 +526,7 @@ ImageCodec &SystemAPI::imageCodec(size_t id) {
 SystemAPI::CpuInfo SystemAPI::cpuInfo() {
   return instance().cpuInfoImpl();
   }
+
+void SystemAPI::addOverlay(Tempest::Window *w, WindowOverlay *ov) {
+  w->addOverlay(ov);
+  }

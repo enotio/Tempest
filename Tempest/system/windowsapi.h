@@ -27,6 +27,8 @@ class WindowsAPI:public SystemAPI {
     Window* createWindowMinimized();
     Window* createWindowFullScr();
 
+    Widget *addOverlay(WindowOverlay *ov );
+
     Point windowClientPos ( Window* );
     Size  windowClientRect( Window* );
 

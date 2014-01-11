@@ -14,6 +14,7 @@ class Application {
     ~Application();
 
     int exec();
+    static bool isQuit();
     static bool processEvents(bool all = true);
     static void sleep(unsigned int msec );
 

@@ -10,6 +10,18 @@
 
 namespace Tempest{
 
+class SurfaceRender;
+
+struct WindowOverlay:Widget{
+  WindowOverlay();
+  ~WindowOverlay();
+
+  private:
+    Window * owner;
+
+  friend class Window;
+  };
+
 class Window : public Widget {
   public:
     Window();
@@ -34,6 +46,9 @@ class Window : public Widget {
     using Widget::resize;
 
     virtual void render(){}
+    size_t overlayCount() const;
+    WindowOverlay& overlay(size_t i );
+    const WindowOverlay& overlay(size_t i ) const;
 
     bool isFullScreenMode() const;
     ShowMode showMode() const;
@@ -63,6 +78,10 @@ class Window : public Widget {
     std::vector<int>   pressedC;
     bool resizeIntent, isAppActive;
 
+    void addOverlay( WindowOverlay* w );
+    void removeOverlay( WindowOverlay* w );
+    std::vector<WindowOverlay*> overlaywd;
+
     AbstractGestureEvent* sendEventToGestureRecognizer(const Event &e);
 
     std::vector< std::unique_ptr<GestureRecognizer>> recognizers;
@@ -75,6 +94,7 @@ class Window : public Widget {
     const Window& operator = ( const Window& ) = delete;
 
     struct DragGestureRecognizer;
+  friend class WindowOverlay;
   friend class SystemAPI;
   };
 

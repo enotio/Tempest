@@ -40,8 +40,12 @@ int Application::exec() {
   return app.ret;
   }
 
+bool Application::isQuit() {
+  return app.quit;
+  }
+
 void *Application::execImpl(void *) {
-  while( !app.quit ) {
+  while( !isQuit() ) {
     processEvents();
     }
   return 0;

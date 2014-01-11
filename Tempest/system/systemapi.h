@@ -14,6 +14,7 @@ namespace Tempest{
 
 class Widget;
 class Window;
+class WindowOverlay;
 
 class DisplaySettings;
 
@@ -34,6 +35,8 @@ class SystemAPI{
     virtual void setGeometry( Window*, int x, int y, int w, int h ) = 0;
     virtual void show( Window* ) = 0;
     virtual void bind( Window*, Tempest::Window* ) = 0;
+
+    virtual Widget* addOverlay( WindowOverlay* ov ) = 0;
 
     static Size screenSize();
 
@@ -130,6 +133,8 @@ class SystemAPI{
   protected:
     SystemAPI();
 
+    void addOverlay(Tempest::Window *w, WindowOverlay *ov );
+
     virtual File*  fopenImpl ( const char16_t* fname, const char* mode );
     virtual File*  fopenImpl ( const char* fname, const char* mode );
     virtual size_t readDataImpl ( File* f, char* dest, size_t count );
@@ -172,8 +177,9 @@ class SystemAPI{
 
     void setupKeyTranslate( const TranslateKeyPair k[] );
     void setFuncKeysCount( int c );    
-  private:
+private:
     SystemAPI( const SystemAPI& ){}
+
     SystemAPI& operator = ( const SystemAPI&){return *this;}
 
     struct KeyInf{

@@ -299,6 +299,16 @@ AndroidAPI::Window* AndroidAPI::createWindowFullScr(){
   return 0;
   }
 
+Widget *AndroidAPI::addOverlay(WindowOverlay *ov) {
+  if( android.wnd==0 ){
+    delete ov;
+    return 0;
+    }
+
+  SystemAPI::addOverlay(android.wnd, ov);
+  return ov;
+  }
+
 bool AndroidAPI::testDisplaySettings( const DisplaySettings & s ) {
   return s.width ==android.window_w  &&
          s.height==android.window_h &&

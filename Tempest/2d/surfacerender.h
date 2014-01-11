@@ -33,7 +33,9 @@ class SurfaceRender {
     void buildVbo( Widget &surf,
                    Tempest::VertexBufferHolder & vbHolder,
                    Tempest::IndexBufferHolder  & ibHolder,
-                   Tempest::SpritesHolder & sp );
+                   Tempest::SpritesHolder & sp,
+                   bool clrVbo   = true,
+                   bool flushVbo = true );
 
     template< class T, class F >
     void buildVbo( T &surf,
@@ -42,7 +44,9 @@ class SurfaceRender {
                    int h,
                    Tempest::VertexBufferHolder & vbHolder,
                    Tempest::IndexBufferHolder  & /*ibHolder*/,
-                   Tempest::SpritesHolder & sp ){
+                   Tempest::SpritesHolder & sp,
+                   bool clrVbo = true,
+                   bool flushVbo = true  ){
       surf.nToUpdate = false;
 
       PaintDev p(*this, sstk, sp, 0, 0, w,h);
@@ -54,18 +58,21 @@ class SurfaceRender {
       invTw = 1.0f;
       invTh = 1.0f;
 
-      cpuGm.clear();
-      blocks.clear();
+      if( clrVbo ){
+        cpuGm.clear();
+        blocks.clear();
+        }
 
       func(surf, e);
 
-      vbo = Tempest::VertexBuffer<Vertex>();
-      vbo = vbHolder.load( cpuGm, AbstractAPI::BF_NoReadback );
+      if( flushVbo ){
+        vbo = Tempest::VertexBuffer<Vertex>();
+        vbo = vbHolder.load( cpuGm, AbstractAPI::BF_NoReadback );
+        if( !vdecl.isValid() )
+          vdecl = Tempest::VertexDeclaration( vbHolder.device(), decl() );
+        }
 
       sp.flush();
-
-      if( !vdecl.isValid() )
-        vdecl = Tempest::VertexDeclaration( vbHolder.device(), decl() );
       }
 
     void render( Tempest::Device& dev ) const;

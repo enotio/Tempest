@@ -68,9 +68,13 @@ void SurfaceRender::loadShader() {
 
 void SurfaceRender::buildVbo( Tempest::Widget & surf,
                               VertexBufferHolder & vbHolder,
-                              IndexBufferHolder  & ibHolder , SpritesHolder &sp) {
+                              IndexBufferHolder  & ibHolder,
+                              SpritesHolder &sp,
+                              bool clrVbo,
+                              bool flushVbo ) {
   buildVbo( surf, std::mem_fn(&Tempest::Widget::paintEvent),
-            surf.w(), surf.h(), vbHolder, ibHolder, sp );
+            surf.w(), surf.h(), vbHolder, ibHolder, sp,
+            clrVbo, flushVbo );
   }
 
 void SurfaceRender::render(Device &dev) const {

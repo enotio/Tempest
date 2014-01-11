@@ -9,6 +9,7 @@
 namespace Tempest{
 
 class Window;
+class WindowOverlay;
 
 class AndroidAPI:public SystemAPI {
   public:
@@ -43,6 +44,8 @@ class AndroidAPI:public SystemAPI {
     Window* createWindowMaximized();
     Window* createWindowMinimized();
     Window* createWindowFullScr();
+
+    Widget* addOverlay( WindowOverlay *ov );
 
     Point windowClientPos ( Window* );
     Size  windowClientRect( Window* );

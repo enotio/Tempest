@@ -282,6 +282,17 @@ SystemAPI::Window *WindowsAPI::createWindowFullScr() {
   return (Window*)hwnd;
   }
 
+Widget* WindowsAPI::addOverlay(WindowOverlay *ov) {
+  if( wndWx.empty() ){
+    delete ov;
+    return 0;
+    }
+
+  Tempest::Window* w = wndWx.begin()->second;
+  SystemAPI::addOverlay(w, ov);
+  return ov;
+  }
+
 Point WindowsAPI::windowClientPos( SystemAPI::Window * hWnd ) {
   RECT rectWindow;
   GetClientRect( HWND(hWnd), &rectWindow);

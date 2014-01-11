@@ -135,10 +135,18 @@ void Window::init( int w, int h ){
 
   smode = Normal;
 
+  overlaywd.reserve(8);
+
   instalGestureRecognizer( new DragGestureRecognizer() );
   }
 
 Window::~Window() {
+  for( auto i:overlaywd ){
+    i->owner = 0;
+    delete i;
+    }
+  overlaywd.clear();
+
   SystemAPI::instance().deleteWindow( wnd );
   }
 
@@ -165,6 +173,18 @@ void Window::resize(int w, int h) {
     SystemAPI::instance().setGeometry( wnd, x(), y(), w, h );
   }
 
+size_t Window::overlayCount() const {
+  return overlaywd.size();
+  }
+
+WindowOverlay &Window::overlay(size_t i) {
+  return *overlaywd[i];
+  }
+
+const WindowOverlay &Window::overlay(size_t i) const {
+  return *overlaywd[i];
+  }
+
 bool Window::isFullScreenMode() const {
   return showMode()==FullScreen;
   }
@@ -181,6 +201,27 @@ SystemAPI::Window *Window::handle() {
   return wnd;
   }
 
+void Window::addOverlay(WindowOverlay *wx ) {
+  overlaywd.push_back(wx);
+  wx->owner = this;
+  wx->setGeometry(0,0,w(),h());
+  }
+
+void Window::removeOverlay(WindowOverlay *w) {
+  size_t id = 0;
+  for( size_t i=0; i<overlaywd.size(); ){
+    if( overlaywd[i]==w ){
+      ++i;
+      } else{
+      overlaywd[id] = overlaywd[i];
+      ++i;
+      ++id;
+      }
+    }
+
+  overlaywd.resize(id);
+  }
+
 AbstractGestureEvent *Window::sendEventToGestureRecognizer( const Event &e ) {
   AbstractGestureEvent *x = 0;
   for( size_t i=0; i<recognizers.size(); ++i ){
@@ -190,4 +231,13 @@ AbstractGestureEvent *Window::sendEventToGestureRecognizer( const Event &e ) {
     }
 
   return 0;
+  }
+
+
+WindowOverlay::WindowOverlay():owner(0){
+  }
+
+WindowOverlay::~WindowOverlay() {
+  if( owner )
+    owner->removeOverlay(this);
   }
