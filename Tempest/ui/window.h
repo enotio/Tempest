@@ -46,9 +46,12 @@ class Window : public Widget {
     using Widget::resize;
 
     virtual void render(){}
+
     size_t overlayCount() const;
     WindowOverlay& overlay(size_t i );
     const WindowOverlay& overlay(size_t i ) const;
+
+    bool needToUpdate() const;
 
     bool isFullScreenMode() const;
     ShowMode showMode() const;

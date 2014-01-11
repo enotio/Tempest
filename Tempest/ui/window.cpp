@@ -185,6 +185,17 @@ const WindowOverlay &Window::overlay(size_t i) const {
   return *overlaywd[i];
   }
 
+bool Window::needToUpdate() const{
+  if( Widget::needToUpdate() )
+    return true;
+
+  for( Widget* w:overlaywd )
+    if( w->needToUpdate() )
+      return true;
+
+  return false;
+  }
+
 bool Window::isFullScreenMode() const {
   return showMode()==FullScreen;
   }

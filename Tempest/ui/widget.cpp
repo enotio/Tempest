@@ -533,22 +533,23 @@ void Widget::paintNested( PaintEvent &p ){
   Rect s;
 
   for( size_t i=0; i<w.size(); ++i ){
-    if( w[i]->wvisible &&
-        !(w[i]->uscissor &&
-          p.painter.scissor().intersected(w[i]->rect()).isEmpty()) &&
-        !(!w[i]->hasMultiPassPaint() && p.pass) ){
-      Tempest::Point pt = w[i]->pos();
+    Widget *wi = w[i];
+    if( wi->wvisible &&
+        !(wi->uscissor &&
+          p.painter.scissor().intersected(wi->rect()).isEmpty()) &&
+        !(!wi->hasMultiPassPaint() && p.pass) ){
+      Tempest::Point pt = wi->pos();
 
-      bool uscis = w[i]->uscissor;
+      bool uscis = wi->uscissor;
       if( uscis ){
-        s = scissor.intersected( w[i]->wrect );
+        s = scissor.intersected( wi->wrect );
         p.painter.setScissor( s );
         }
 
-      w[i]->nToUpdate = false;
+      wi->nToUpdate = false;
       if( !( uscis && s.isEmpty() ) ){
         p.painter.translate(  pt.x,  pt.y );
-        w[i]->event(p);
+        wi->event(p);
         p.painter.translate( -pt.x, -pt.y );
         }
 
@@ -630,6 +631,9 @@ void Widget::impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e ){
                             e.type() );
 
     impl_mouseDragEvent( r, ex);
+
+    if( ex.isAccepted() )
+      e.accept();
     }
   }
 

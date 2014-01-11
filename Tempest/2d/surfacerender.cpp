@@ -323,9 +323,9 @@ void SurfaceRender::PaintDev::popState() {
   surf.sstk.pop_back();
   }
 
-SurfaceRender::PaintDev::PaintDev(SurfaceRender &s,
+SurfaceRender::PaintDev::PaintDev( SurfaceRender &s,
                                    std::vector<SurfaceRender::RState> &sstk,
-                                  SpritesHolder &sp,
+                                   SpritesHolder &sp,
                                    int rx, int ry, int rw, int rh )
   :surf(s), sstk(sstk), te(*this), sp(sp) {
   surf.state.curTex   = Tempest::Sprite();
@@ -387,7 +387,6 @@ void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
     tx+= l.advance.x;
     ty+= l.advance.y;
     }
-
 
   if( flg & Tempest::AlignHCenter )
     x += (w-tw)/2; else

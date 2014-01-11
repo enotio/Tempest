@@ -130,7 +130,7 @@ class Widget {
 
     signal<> intentToUpdate;
     void update();
-    bool needToUpdate() const;
+    virtual bool needToUpdate() const;
 
     void setMultiPassPaint( bool a );
     bool hasMultiPassPaint() const;

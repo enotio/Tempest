@@ -259,7 +259,7 @@ void SystemAPI::emitEventImpl( Tempest::Window *w,
 
 void SystemAPI::emitEvent( Tempest::Window *w, Event &e ){
   if( e.type()==Event::MouseDown ||
-      e.type()==Event::MouseUp ||
+      e.type()==Event::MouseUp   ||
       e.type()==Event::MouseMove ||
       e.type()==Event::MouseWheel ){
     MouseEvent& me = (MouseEvent&)e;

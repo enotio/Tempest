@@ -13,7 +13,7 @@ namespace Tempest {
 class Font{
   public:
     Font( const std::string& name, int sz );
-    Font( int sz );
+    //Font( int sz );
     Font();
 
     struct LetterGeometry{

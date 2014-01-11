@@ -361,6 +361,8 @@ AndroidAPI::File *AndroidAPI::fopenImpl( const char *fname, const char *mode ) {
     AAssetManager* mgr = AAssetManager_fromJava(env, a.assets);
     AAsset* asset = AAssetManager_open(mgr, fname, AASSET_MODE_UNKNOWN);
 
+    if( !asset )
+      Log(Log::Error) << "not found: \"" << fname <<'\"';
     T_ASSERT( asset );
 
     f->size       = AAsset_getLength(asset);
@@ -494,28 +496,6 @@ void AndroidAPI::startApplication( ApplicationInitArgs * ) {
 
 void AndroidAPI::endApplication() {
   }
-/*
-template< class T >
-T AndroidAPI::loadAssetImpl( const char* file ){
-  Android &a = android;
-
-  JNIEnv * env = 0;
-  a.vm->AttachCurrentThread( &env, NULL);
-
-  AAssetManager* mgr = AAssetManager_fromJava(env, a.assets);
-  AAsset* asset = AAssetManager_open(mgr, file, AASSET_MODE_UNKNOWN);
-
-  T_ASSERT( asset );
-
-  long size = AAsset_getLength(asset);
-  T str;
-  str.resize( size );
-  AAsset_read (asset, &str[0], size);
-  //__android_log_print(ANDROID_LOG_ERROR, "Tempest", buffer);
-  AAsset_close(asset);
-
-  return std::move(str);
-  }*/
 
 static Tempest::KeyEvent makeKeyEvent( int32_t k, bool scut = false ){
   Tempest::KeyEvent::KeyType e = SystemAPI::translateKey(k);
@@ -597,13 +577,17 @@ int AndroidAPI::nextEvent(bool &quit) {
     case Android::MSG_KEY_EVENT:{
       Tempest::KeyEvent sce = makeKeyEvent(msg.data1, true);
 
-      SystemAPI::emitEvent(android.wnd, sce, Event::Shortcut);
+      Tempest::KeyEvent sc( sce.key, sce.u16, Event::Shortcut );
+      SystemAPI::emitEvent( android.wnd, sc );
 
       if( !sce.isAccepted() ){
         Tempest::KeyEvent e =  makeKeyEvent(msg.data1);
         if( e.key!=Tempest::KeyEvent::K_NoKey ){
-          SystemAPI::emitEvent(android.wnd, e, Event::KeyDown);
-          SystemAPI::emitEvent(android.wnd, e, Event::KeyUp);
+          Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );
+          SystemAPI::emitEvent( android.wnd, ed);
+
+          Tempest::KeyEvent eu( e.key, e.u16, Event::KeyUp );
+          SystemAPI::emitEvent( android.wnd, eu);
           }
         }
       }
@@ -617,14 +601,14 @@ int AndroidAPI::nextEvent(bool &quit) {
                       MouseEvent::ButtonLeft, 0, id,
                       Event::MouseDown );
         android.pointerPos(id) = Point(msg.data.x, msg.data.y);
-        SystemAPI::emitEvent(android.wnd, e, Event::MouseDown);
+        SystemAPI::emitEvent(android.wnd, e);
         }
 
       if( msg.data1==1 ){
         MouseEvent e( msg.data.x, msg.data.y,
                       MouseEvent::ButtonLeft, 0, id,
                       Event::MouseUp );
-        SystemAPI::emitEvent(android.wnd, e, Event::MouseUp);
+        SystemAPI::emitEvent(android.wnd, e);
         android.unsetPointer(msg.data2);
         }
 
@@ -634,7 +618,7 @@ int AndroidAPI::nextEvent(bool &quit) {
                       Event::MouseMove );
         if( android.pointerPos(id) != Point(msg.data.x, msg.data.y) ){
           android.pointerPos(id) = Point(msg.data.x, msg.data.y);
-          SystemAPI::emitEvent(android.wnd, e, Event::MouseMove);
+          SystemAPI::emitEvent(android.wnd, e);
           }
         }
       }
@@ -642,7 +626,7 @@ int AndroidAPI::nextEvent(bool &quit) {
 
     case Android::MSG_CLOSE:  {
       Tempest::CloseEvent e;
-      SystemAPI::emitEvent(android.wnd, e, Event::Close );
+      SystemAPI::emitEvent(android.wnd, e);
       android.closeRqAccepted = e.isAccepted();
       }
       break;
