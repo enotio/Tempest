@@ -249,8 +249,10 @@ struct SystemAPI::GestureDeleter {
 
 void SystemAPI::emitEventImpl( Tempest::Window *w,
                                Event& e ){
-  for( size_t i=0; i<w->overlayCount(); ++i ){
-    processEvents( &w->overlay( w->overlayCount()-1-i ), e );
+  for( size_t i=w->overlayCount(); i>0; ){
+    --i;
+
+    processEvents( &w->overlay( i ), e );
     if( e.isAccepted() )
       return;
     }
