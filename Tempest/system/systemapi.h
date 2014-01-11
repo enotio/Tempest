@@ -78,30 +78,11 @@ class SystemAPI{
                            ImageCodec::ImgInfo &info,
                            std::vector<unsigned char>& in );
 
-    static void processEvents( Tempest::Widget *w,
-                               AbstractGestureEvent &e,
-                               Event::Type type);
-    static void processEvents( Tempest::Widget *w,
-                               MouseEvent& e,
-                               Event::Type type );
-    static void processEvents( Tempest::Widget *w,
-                               KeyEvent &e,
-                               Event::Type type );
-    static void processEvents( Tempest::Widget *w,
-                               CloseEvent &e,
-                               Event::Type type );
+    static void processEvents(Tempest::Widget *w,
+                               Event &e);
 
     static void emitEvent( Tempest::Window *w,
-                           MouseEvent& e,
-                           Event::Type type );
-
-    static void emitEvent( Tempest::Window *w,
-                           KeyEvent& e,
-                           Event::Type type );
-
-    static void emitEvent( Tempest::Window *w,
-                           CloseEvent& e,
-                           Event::Type type );
+                           Event& e );
 
     static void moveEvent( Tempest::Window *w, int cX, int cY);
     static void sizeEvent( Tempest::Window *w, int cW, int cH);
@@ -194,6 +175,9 @@ private:
     struct GestureDeleter;
 
     std::vector<std::unique_ptr<ImageCodec>> codecs;
+
+    static void emitEventImpl( Tempest::Window *w,
+                               Event& e );
   friend class AbstractAPI;
   };
 

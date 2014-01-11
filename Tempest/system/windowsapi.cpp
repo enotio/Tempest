@@ -539,8 +539,11 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
            };
 
          if( 0 == *std::find( wrd, wrd+2, wParam) ){
-           SystemAPI::emitEvent(w, e, Event::KeyDown);
-           SystemAPI::emitEvent(w, e, Event::KeyUp);
+           Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );
+           SystemAPI::emitEvent(w, ed);
+
+           Tempest::KeyEvent eu( e.key, e.u16, Event::KeyUp );
+           SystemAPI::emitEvent(w, eu);
            }
       }
       break;
@@ -548,12 +551,15 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       case WM_KEYDOWN:
       {
          Tempest::KeyEvent sce = makeKeyEvent(wParam, true);
-         SystemAPI::emitEvent(w, sce, Event::Shortcut);
+
+         Tempest::KeyEvent sc( sce.key, sce.u16, Event::Shortcut );
+         SystemAPI::emitEvent(w, sc);
 
          if( !sce.isAccepted() ){
            Tempest::KeyEvent e =  makeKeyEvent(wParam);
+           Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );
            if( e.key!=Tempest::KeyEvent::K_NoKey )
-             SystemAPI::emitEvent(w, e, Event::KeyDown);
+             SystemAPI::emitEvent( w, ed );
            }
       }
       break;
@@ -561,7 +567,8 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       case WM_KEYUP:
       {
          Tempest::KeyEvent e =  makeKeyEvent(wParam);
-         SystemAPI::emitEvent(w, e, Event::KeyUp);
+         Tempest::KeyEvent eu( e.key, e.u16, Event::KeyUp );
+         SystemAPI::emitEvent(w, eu);
       }
       break;
 
@@ -575,7 +582,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
                       0,
                       0,
                       Event::MouseDown );
-        SystemAPI::emitEvent(w, e, Event::MouseDown);
+        SystemAPI::emitEvent(w, e);
         }
         break;
 
@@ -588,8 +595,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
                       0,
                       0,
                       Event::MouseUp  );
-        //w->mouseUpEvent(e);
-        SystemAPI::emitEvent(w, e, Event::MouseUp);
+        SystemAPI::emitEvent(w, e);
         }
         break;
 
@@ -600,7 +606,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
                       0,
                       0,
                       Event::MouseMove  );
-        SystemAPI::emitEvent(w, e, Event::MouseMove);
+        SystemAPI::emitEvent(w, e);
         }
         break;
 
@@ -613,8 +619,10 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
           Tempest::MouseEvent e( p.x, p.y,
                                  Tempest::Event::ButtonNone,
-                                 GET_WHEEL_DELTA_WPARAM(wParam) );
-          SystemAPI::emitEvent(w, e, Event::MouseWheel);
+                                 GET_WHEEL_DELTA_WPARAM(wParam),
+                                 0,
+                                 Event::MouseWheel );
+          SystemAPI::emitEvent(w, e);
           //w->mouseWheelEvent(e);
           }
         break;
@@ -678,7 +686,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
       case WM_CLOSE:{
         Tempest::CloseEvent e;
-        SystemAPI::emitEvent(w, e, Event::Close);
+        SystemAPI::emitEvent(w, e);
         if( !e.isAccepted() )
           PostQuitMessage(0);
         }

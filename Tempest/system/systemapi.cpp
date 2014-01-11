@@ -240,26 +240,6 @@ bool SystemAPI::saveImage( ODevice& file,
   return instance().saveImageImpl( file, info, in );
   }
 
-void SystemAPI::emitEvent( Tempest::Window *w,
-                           KeyEvent& e,
-                           Event::Type type ){
-  if( type==Event::KeyDown ){
-    processEvents(w, e, type);
-    }
-  if( type==Event::KeyUp ){
-    processEvents(w, e, type);
-    }
-  if( type==Event::Shortcut ){
-    processEvents(w, e, type);
-    }
-  }
-
-void SystemAPI::emitEvent( Tempest::Window *w,
-                           CloseEvent &e,
-                           Event::Type type) {
-  processEvents(w, e, type);
-  }
-
 struct SystemAPI::GestureDeleter {
   void operator()( AbstractGestureEvent* x ){
     if( x )
@@ -267,87 +247,106 @@ struct SystemAPI::GestureDeleter {
     }
   };
 
-void SystemAPI::emitEvent( Tempest::Window *w, MouseEvent &e, Event::Type type ){
-  if( w->pressedC.size() < size_t(e.mouseID+1) )
-    w->pressedC.resize(e.mouseID+1);
+void SystemAPI::emitEventImpl( Tempest::Window *w,
+                               Event& e ){
+  for( size_t i=0; i<w->overlayCount(); ++i ){
+    processEvents( &w->overlay( w->overlayCount()-1-i ), e );
+    if( e.isAccepted() )
+      return;
+    }
+  processEvents(w, e );
+  }
 
-  std::unique_ptr<AbstractGestureEvent, GestureDeleter> eg;
-  eg.reset( w->sendEventToGestureRecognizer(e) );
+void SystemAPI::emitEvent( Tempest::Window *w, Event &e ){
+  if( e.type()==Event::MouseDown ||
+      e.type()==Event::MouseUp ||
+      e.type()==Event::MouseMove ||
+      e.type()==Event::MouseWheel ){
+    MouseEvent& me = (MouseEvent&)e;
 
-  if( eg ){
-    std::unique_ptr<AbstractGestureEvent, GestureDeleter> e = std::move(eg);
-    processEvents(w, *e, type);
+    if( w->pressedC.size() < size_t(me.mouseID+1) )
+      w->pressedC.resize(me.mouseID+1);
+
+    std::unique_ptr<AbstractGestureEvent, GestureDeleter> eg;
+    eg.reset( w->sendEventToGestureRecognizer(me) );
+
+    if( eg ){
+      std::unique_ptr<AbstractGestureEvent, GestureDeleter> e = std::move(eg);
+      emitEventImpl( w, *e );
+      }
+
+    if( e.type()==Event::MouseDown ){
+      w->pressedC[me.mouseID] = 1;
+      } else
+    if( e.type()==Event::MouseUp ){
+      w->pressedC[me.mouseID] = 0;
+      }
     }
 
-  if( type==Event::MouseDown ){
-    w->pressedC[e.mouseID] = 1;
-    processEvents(w, e, type);
-    }
-
-  if( type==Event::MouseUp ){
-    w->pressedC[e.mouseID] = 0;
-    processEvents(w, e, type);
-    }
-
-  if( type==Event::MouseMove ){
-    if( w->pressedC[e.mouseID] ){
-      processEvents(w, e, Event::MouseDrag);
+  if( e.type()==Event::MouseMove ){
+    MouseEvent& me = (MouseEvent&)e;
+    if( w->pressedC[me.mouseID] ){
+      me.setType(Event::MouseDrag);
+      emitEventImpl(w, me);
 
       if( e.isAccepted() )
         return;
       }
 
-    processEvents(w, e, type);
+    me.setType(Event::MouseMove);
+    emitEventImpl(w, me);
+    return;
     }
 
-  if( type==Event::MouseWheel ){
-    processEvents(w, e, type);
-    }
+  emitEventImpl(w, e);
   }
 
 void SystemAPI::processEvents( Widget *w,
-                               AbstractGestureEvent &e,
-                               Event::Type /*type*/ ) {
-  e.setType( Event::Gesture );
-  w->rootGestureEvent(e);
-  }
+                               Event &e ) {
+  switch( e.type() ){
+    case Event::NoEvent:
+    case Event::Resize:
+    case Event::Paint:
+      break;
 
+    case Event::Gesture:
+      w->rootGestureEvent( (AbstractGestureEvent&)e );
+      break;
 
-void SystemAPI::processEvents(Widget *w, MouseEvent &e, Event::Type type) {
-  e.setType( type );
+    case Event::MouseDown:
+      w->rootMouseDownEvent( (MouseEvent&)e );
+      break;
+    case Event::MouseUp:
+      w->rootMouseUpEvent( (MouseEvent&)e );
+      break;
+    case Event::MouseMove:
+      w->rootMouseMoveEvent( (MouseEvent&)e );
+      break;
+    case Event::MouseWheel:
+      w->rootMouseWheelEvent( (MouseEvent&)e );
+      break;
+    case Event::MouseDrag:
+      w->rootMouseDragEvent( (MouseEvent&)e );
+      break;
 
-  if( type==Event::MouseDown )
-    return w->rootMouseDownEvent(e);
+    case Event::KeyDown:
+      w->rootKeyDownEvent( (KeyEvent&)e );
+      break;
+    case Event::KeyUp:
+      w->rootKeyUpEvent( (KeyEvent&)e );
+      break;
+    case Event::Shortcut:
+      w->rootShortcutEvent( (KeyEvent&)e );
+      break;
 
-  if( type==Event::MouseUp )
-    return w->rootMouseUpEvent(e);
+    case Event::Close:
+      w->rootCloseEvent( (CloseEvent&)e );
+      break;
 
-  if( type==Event::MouseMove )
-    return w->rootMouseMoveEvent(e);
-
-  if( type==Event::MouseWheel )
-    return w->rootMouseWheelEvent(e);
-
-  if( type==Event::MouseDrag)
-    return w->rootMouseDragEvent(e);
-  }
-
-void SystemAPI::processEvents(Widget *w, KeyEvent &e, Event::Type type) {
-  e.setType( type );
-
-  if( type==Event::KeyDown )
-    return w->rootKeyDownEvent(e);
-
-  if( type==Event::KeyUp )
-    return w->rootKeyUpEvent(e);
-
-  if( type==Event::Shortcut )
-    return w->rootShortcutEvent(e);
-  }
-
-void SystemAPI::processEvents(Widget *w, CloseEvent &e, Event::Type type) {
-  if( type==Event::Close )
-    return w->rootCloseEvent(e);
+    case Event::Custom:
+      w->customEvent( (CustomEvent&)e );
+      break;
+    }
   }
 
 void SystemAPI::moveEvent( Tempest::Window *w, int cX, int cY) {
