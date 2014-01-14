@@ -41,6 +41,6 @@ BufferWriter::BufferWriter(std::vector<char> &vec):vec(vec){
 
 size_t BufferWriter::writeData(const char *src, size_t count) {
   vec.resize( vec.size()+count );
-  memcpy( &vec[vec.size()-count-1], src, count );
+  memcpy( &vec[vec.size()-count], src, count );
   return count;
   }
