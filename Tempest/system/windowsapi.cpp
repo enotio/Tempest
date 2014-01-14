@@ -177,7 +177,9 @@ int WindowsAPI::nextEvents(bool &quit) {
 
       TranslateMessage( &uMsg );
       DispatchMessage ( &uMsg );
-      r = uMsg.wParam;
+
+      if( uMsg.message==WM_QUIT )
+        r = uMsg.wParam;
       } else {
       for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
         render( i->second );
