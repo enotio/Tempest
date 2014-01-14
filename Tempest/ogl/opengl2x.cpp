@@ -668,8 +668,13 @@ bool Opengl2x::setDevice( AbstractAPI::Device * d ) const {
   while( state==SystemAPI::NotAviable )
     state = SystemAPI::instance().isGraphicsContextAviable(0);
 
-  if( state==SystemAPI::DestroyedByAndroid )
-    __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "context is unaviable - android sucks");
+  if( state==SystemAPI::DestroyedByAndroid ){
+    static bool dbgOnce = true;
+    if( dbgOnce ){
+      __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "context is unaviable - android sucks");
+      dbgOnce = false;
+      }
+    }
   return state == SystemAPI::Aviable;
 #endif
 

@@ -52,7 +52,7 @@ class AndroidAPI:public SystemAPI {
 
     void deleteWindow( Window* );
     void show( Window* );
-    void setGeometry( Window*, int x, int y , int w, int h );
+    void setGeometry( Window*, int x, int y, int w, int h );
     void bind(Window*, Tempest::Window * );
 
     GraphicsContexState isGraphicsContextAviable( Tempest::Window *w );

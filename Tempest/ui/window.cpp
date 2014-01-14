@@ -169,6 +169,9 @@ void Window::setPosition(int ix, int iy) {
 void Window::resize(int w, int h) {
   Widget::resize(w,h);
 
+  for( auto wx:overlaywd )
+    wx->resize(w,h);
+
   if( !isFullScreenMode() )
     SystemAPI::instance().setGeometry( wnd, x(), y(), w, h );
   }

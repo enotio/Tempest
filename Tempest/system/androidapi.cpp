@@ -60,7 +60,7 @@ static struct Android{
   jclass  tempestClass;
 
   ANativeWindow   * volatile window;
-  pthread_mutex_t appMutex, waitMutex;
+  pthread_mutex_t appMutex, waitMutex, assetsPreloadedMutex;
   volatile AndroidAPI::GraphicsContexState graphicsState;
 
   pthread_t mainThread;
@@ -82,6 +82,7 @@ static struct Android{
     MSG_RESUME,
     MSG_KEY_EVENT,
     MSG_CLOSE,
+    MSG_WAIT,
     MSG_RENDER_LOOP_EXIT
     };
 
@@ -111,16 +112,19 @@ static struct Android{
 
   void pushMsg( const Message& m ){
     Guard g( appMutex );
+    (void)g;
     msg.push_back(m);
     }
 
   size_t msgSize(){
     Guard g( appMutex );
+    (void)g;
     return msg.size();
     }
 
   Message takeMsg(){
     Guard g( appMutex );
+    (void)g;
     if(msg.size())
       return msg[0];
 
@@ -133,7 +137,36 @@ static struct Android{
     Point pos;
     };
   std::vector<MousePointer> mouse;
-  bool closeRqAccepted;
+
+  std::unordered_map< std::string, std::unique_ptr< std::vector<char>> > asset_files;
+
+  std::vector<char>& preloadAsset( const std::string& ass ){
+    Guard guard(assetsPreloadedMutex);
+    (void)guard;
+
+    auto i = asset_files.find(ass);
+    if( i!=asset_files.end() ){
+      return *i->second;
+      }
+
+    JNIEnv * env = 0;
+    vm->AttachCurrentThread( &env, NULL);
+
+    AAssetManager* mgr = AAssetManager_fromJava(env, assets);
+    AAsset* asset = AAssetManager_open(mgr, ass.c_str(), AASSET_MODE_UNKNOWN);
+
+    if( !asset )
+      Log(Log::Error) << "not found: \"" << ass <<'\"';
+
+    T_ASSERT( asset );
+
+    std::unique_ptr< std::vector<char>> vec(new std::vector<char>(AAsset_getLength(asset)));
+    AAsset_read (asset, &((*vec)[0]), vec->size() );
+    AAsset_close(asset);
+
+    asset_files[ass] = std::move(vec);
+    return *asset_files[ass];
+    }
 
   int pointerId( int nid ){
     for( size_t i=0; i<mouse.size(); ++i )
@@ -170,8 +203,6 @@ static struct Android{
     env        = 0;
     densityDpi = 480;
 
-    closeRqAccepted = 0;
-
     graphicsState = SystemAPI::NotAviable;
     window     = 0;
     window_w = 0;
@@ -188,9 +219,11 @@ static struct Android{
 
     pthread_mutex_init(&waitMutex, 0);
     pthread_mutex_init(&appMutex, 0);
+    pthread_mutex_init(&assetsPreloadedMutex, 0);
     }
 
   ~Android(){
+    pthread_mutex_destroy(&assetsPreloadedMutex);
     pthread_mutex_destroy(&appMutex);
     pthread_mutex_destroy(&waitMutex);
     }
@@ -353,23 +386,10 @@ AndroidAPI::File *AndroidAPI::fopenImpl( const char *fname, const char *mode ) {
     } else
   if( !wr ) {
     f->h = 0;
-    Android &a = android;
-
-    JNIEnv * env = 0;
-    a.vm->AttachCurrentThread( &env, NULL);
-
-    AAssetManager* mgr = AAssetManager_fromJava(env, a.assets);
-    AAsset* asset = AAssetManager_open(mgr, fname, AASSET_MODE_UNKNOWN);
-
-    if( !asset )
-      Log(Log::Error) << "not found: \"" << fname <<'\"';
-    T_ASSERT( asset );
-
-    f->size       = AAsset_getLength(asset);
-    f->assets_ptr = (char*)malloc(f->size);
+    std::vector<char>& vec = android.preloadAsset(fname);
+    f->size       = vec.size();
+    f->assets_ptr = &vec[0];
     f->pos        = f->assets_ptr;
-    AAsset_read (asset, f->assets_ptr, f->size);
-    AAsset_close(asset);
     }
 
   if( !f->h && !f->assets_ptr ){
@@ -472,8 +492,6 @@ void AndroidAPI::fcloseImpl(SystemAPI::File *f) {
 
   if( fn->h ){
     ::fclose( fn->h );
-    } else {
-    free( fn->assets_ptr );
     }
 
   delete fn;
@@ -563,6 +581,10 @@ int AndroidAPI::nextEvent(bool &quit) {
       }
 
     android.msg.erase( android.msg.begin() );
+    } else {
+    if( !android.isPaused && hasWindow )
+      render();
+    return 0;
     }
   }
 
@@ -627,7 +649,9 @@ int AndroidAPI::nextEvent(bool &quit) {
     case Android::MSG_CLOSE:  {
       Tempest::CloseEvent e;
       SystemAPI::emitEvent(android.wnd, e);
-      android.closeRqAccepted = e.isAccepted();
+      if( !e.isAccepted() ){
+        android.pushMsg( Android::MSG_RENDER_LOOP_EXIT );
+        }
       }
       break;
 
@@ -689,7 +713,8 @@ AndroidAPI::GraphicsContexState AndroidAPI::isGraphicsContextAviable( Tempest::W
 static void render() {
   Android& e = android;
 
-  if( e.display!= EGL_NO_DISPLAY && e.wnd ){
+  if( e.display!= EGL_NO_DISPLAY && e.wnd &&
+      android.graphicsState != SystemAPI::DestroyedByAndroid){
     int w = e.window_w,
         h = e.window_h;
 
@@ -798,6 +823,10 @@ bool Android::initialize() {
 
 void Android::destroy( bool killContext ) {
   Log(Log::Info) << "Destroying context";
+
+  if( graphicsState == SystemAPI::DestroyedByAndroid )
+    return;
+
   graphicsState = SystemAPI::NotAviable;
 
   if( display != EGL_NO_DISPLAY ) {
@@ -945,13 +974,8 @@ static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
   }
 
 static jint JNICALL nativeCloseEvent( JNIEnv* , jobject ){
-  {
-  SyncMethod wm;
-  (void)wm;
-
   android.pushMsg( Android::MSG_CLOSE );
-  }
-  return android.closeRqAccepted? 1:0;
+  return 1;
   }
 
 static void JNICALL nativeSetupStorage( JNIEnv* , jobject,

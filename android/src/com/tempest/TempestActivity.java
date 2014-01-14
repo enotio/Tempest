@@ -148,9 +148,8 @@ implements SurfaceHolder.Callback  {
   @Override
   public boolean onKeyUp(int keyCode, KeyEvent event) {
     if( keyCode==KeyEvent.KEYCODE_BACK ){
-      if( onClose(0) )
-        return true; else
-        return super.onKeyUp(keyCode, event);
+      onClose(0);
+      return true;
       } else {
       onKeyEvent(keyCode);
       return true;
@@ -159,19 +158,16 @@ implements SurfaceHolder.Callback  {
 
   @Override
   public void onBackPressed(){
-    if( !onClose(1) )
-      super.onBackPressed();
+    onClose(1);
     }
 
-  private int closeEventId = -1, closeRes = -1;
-  private boolean onClose( int eid ){
+  private int closeEventId = -1;
+  private void onClose( int eid ){
     if( closeEventId==-1 )
       closeEventId = eid;
     
     if( closeEventId==eid )     
-      closeRes = nativeCloseEvent();
-    
-    return closeRes==1;
+      nativeCloseEvent();
     }
 
   public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
