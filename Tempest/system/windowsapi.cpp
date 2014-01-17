@@ -557,7 +557,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
          Tempest::KeyEvent sc( sce.key, sce.u16, Event::Shortcut );
          SystemAPI::emitEvent(w, sc);
 
-         if( !sce.isAccepted() ){
+         if( !sc.isAccepted() ){
            Tempest::KeyEvent e =  makeKeyEvent(wParam);
            Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );
            if( e.key!=Tempest::KeyEvent::K_NoKey )

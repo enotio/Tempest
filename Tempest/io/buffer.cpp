@@ -23,7 +23,7 @@ void BufferReader::skip(size_t count) {
   }
 
 size_t BufferReader::peek(size_t skip, char *dest, size_t maxSize) const {
-  if( vec.size()-pos<=skip )
+  if( vec.size()-pos <= skip )
     return 0;
 
   size_t c = std::min(maxSize, vec.size()-pos-skip);
