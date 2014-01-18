@@ -602,7 +602,7 @@ int AndroidAPI::nextEvent(bool &quit) {
       Tempest::KeyEvent sc( sce.key, sce.u16, Event::Shortcut );
       SystemAPI::emitEvent( android.wnd, sc );
 
-      if( !sce.isAccepted() ){
+      if( !sc.isAccepted() ){
         Tempest::KeyEvent e =  makeKeyEvent(msg.data1);
         if( e.key!=Tempest::KeyEvent::K_NoKey ){
           Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );

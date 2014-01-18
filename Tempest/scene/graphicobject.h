@@ -29,6 +29,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       size[2] = 1;
 
       rx = 0;
+      ry = 0;
       rz = 0;
 
       radi = 0;
@@ -53,6 +54,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       std::copy( obj.size, obj.size+3, size );
 
       rx = obj.rx;
+      ry = obj.ry;
       rz = obj.rz;
 
       radi = obj.radi;
@@ -87,6 +89,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       std::copy( g.size, g.size+3, size );
 
       rx = g.rx;
+      ry = g.ry;
       rz = g.rz;
 
       radi = g.radi;
@@ -165,6 +168,18 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       updateMat();
       }
 
+    virtual void setRotation( double x, double y, double z ){
+      if( x==rx && y==ry && z==rz )
+        return;
+
+      rx = x;
+      ry = y;
+      rz = z;
+
+      needToUpdateMat = true;
+      updateMat();
+      }
+
     virtual float x() const {
       return pos[0];
       }
@@ -193,6 +208,10 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       return rx;
       }
 
+    virtual float angleY() const{
+      return ry;
+      }
+
     virtual float angleZ() const{
       return rz;
       }
@@ -208,6 +227,22 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
     virtual void render( Device& dev, VertexShader& vs, FragmentShader &fs ) const{
       m_model->draw(dev,vs,fs);
       }
+
+  protected:
+    virtual void computeMat() const {
+      mat.identity();
+      mat.translate( pos );
+
+      mat.rotate( rx, 1, 0, 0 );
+      mat.rotate( ry, 0, 1, 0 );
+      mat.rotate( rz, 0, 0, 1 );
+
+      mat.scale( size[0], size[1], size[2] );
+
+      radi = (*std::max_element(size, size+3))*bounds().radius();
+      needToUpdateMat = false;
+      }
+
   private:
     struct IModelPtr{
       virtual ~IModelPtr(){}
@@ -290,7 +325,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       return m->draw( r );
       }
 
-    float pos[3], size[3], rx, rz;
+    float pos[3], size[3], rx, ry, rz;
 
     mutable double radi;
     mutable Matrix4x4 mat;
@@ -303,19 +338,6 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       Tempest::Matrix4x4 oldM = mat;
       computeMat();
       this->onTransformChanged(oldM);
-      }
-
-    void computeMat() const {
-      mat.identity();
-      mat.translate( pos );
-
-      mat.rotate( rx, 1, 0, 0 );
-      mat.rotate( rz, 0, 0, 1 );
-
-      mat.scale( size[0], size[1], size[2] );
-
-      radi = (*std::max_element(size, size+3))*bounds().radius();
-      needToUpdateMat = false;
       }
   };
 
