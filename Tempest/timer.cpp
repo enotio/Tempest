@@ -5,27 +5,27 @@
 using namespace Tempest;
 
 Timer::Timer() {
-  interval    = 0;//std::chrono::milliseconds::zero();
+  minterval    = 0;//std::chrono::milliseconds::zero();
   mrepeatCount = 4;
   }
 
 Timer::~Timer() {
-  if( interval != 0 )
+  if( minterval != 0 )
     unreg();
   }
 
 void Timer::start(uint64_t t) {
-  if( interval == 0){
+  if( minterval == 0){
     if( t==0 )
       return;
     reg();
     }
 
   if( t==0 ){
-    interval = 0;
+    minterval = 0;
     unreg();
     } else {
-    interval = t;
+    minterval = t;
     }
 
   lastTimeout = Application::tickCount();
@@ -33,6 +33,10 @@ void Timer::start(uint64_t t) {
 
 void Timer::stop() {
   start(0);
+  }
+
+uint64_t Timer::interval() const {
+  return minterval;
   }
 
 void Timer::setRepeatCount(uint64_t c) {
@@ -57,5 +61,5 @@ void Timer::unreg() {
       return;
       }
 
-  interval = 0;
+  minterval = 0;
   }

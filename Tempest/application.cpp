@@ -90,7 +90,7 @@ void Application::processTimers() {
   for( size_t i=0; i<a.timer.size(); ++i ){
     uint64_t t = tickCount();
 
-    uint64_t dt = (t-a.timer[i]->lastTimeout)/a.timer[i]->interval;
+    uint64_t dt = (t-a.timer[i]->lastTimeout)/a.timer[i]->minterval;
 
     for( size_t r=0; r<dt && r<app.timer[i]->mrepeatCount; ++r ){
       app.timer[i]->lastTimeout = t;
