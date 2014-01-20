@@ -59,7 +59,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
 
       radi = obj.radi;
 
-      computeMat();
+      mat = computeMat();
       needToUpdateMat = false;
 
       this->sceneAddObject();
@@ -94,7 +94,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
 
       radi = g.radi;
 
-      computeMat();
+      mat = computeMat();
       needToUpdateMat = false;
       this->sceneAddObject();
 
@@ -108,7 +108,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       IModelPtr *m  = reinterpret_cast<IModelPtr*>(m_model);
       m->~IModelPtr();
       new (m_model) ModelPtr<V>(md);
-      computeMat();
+      mat = computeMat();
 
       this->vboH = md.vertexes().handle();
       this->iboH = md.indexes().handle();
@@ -229,8 +229,8 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       }
 
   protected:
-    virtual void computeMat() const {
-      mat.identity();
+    virtual Tempest::Matrix4x4 computeMat() const {
+      Tempest::Matrix4x4 mat;
       mat.translate( pos );
 
       mat.rotate( rx, 1, 0, 0 );
@@ -239,8 +239,11 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
 
       mat.scale( size[0], size[1], size[2] );
 
-      radi = (*std::max_element(size, size+3))*bounds().radius();
-      needToUpdateMat = false;
+      return mat;
+      }
+
+    void requestMatrixUpdate(){
+      needToUpdateMat = true;
       }
 
   private:
@@ -336,7 +339,11 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
         return;
 
       Tempest::Matrix4x4 oldM = mat;
-      computeMat();
+
+      mat = computeMat();
+      radi = (*std::max_element(size, size+3))*bounds().radius();
+      needToUpdateMat = false;
+
       this->onTransformChanged(oldM);
       }
   };

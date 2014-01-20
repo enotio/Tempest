@@ -283,7 +283,7 @@ class Model {
 
       m.setupMSZ(size);
 
-      bds = Raw::computeBoundRect( m.vbo );
+      m.bds = Raw::computeBoundRect( m.vbo );
       return m;
       }
 
