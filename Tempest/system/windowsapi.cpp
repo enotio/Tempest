@@ -395,7 +395,7 @@ WindowsAPI::File *WindowsAPI::fopenImpl( const char *fname, const char *mode ) {
   }
 
 WindowsAPI::File *WindowsAPI::fopenImpl( const char16_t *fname, const char *mode ) {
-  DWORD gmode = 0, opMode = OPEN_ALWAYS;
+  DWORD gmode = 0, opMode = CREATE_ALWAYS;
   for( int i=0; mode[i]; ++i ){
     if( mode[i]=='r' ){
       gmode |= GENERIC_READ;
