@@ -480,7 +480,7 @@ size_t AndroidAPI::fsizeImpl( File* f ){
     fseek( file, 0, SEEK_END );
     size_t e = ftell(file);
 
-    fseek( file, pos, SEEK_CUR );
+    fseek( file, pos, SEEK_SET );
     return e-s;
     }
 

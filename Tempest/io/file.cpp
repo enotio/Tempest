@@ -23,7 +23,7 @@ static void makeMode( char* out, uint16_t m ){
 
 RFile::RFile(const char *name, RFile::Mode m) {
   char md[4];
-  makeMode(md, m|1);
+  makeMode(md, m|1|8);
 
   impl = SystemAPI::fopen(name, md);
   }
@@ -40,7 +40,7 @@ RFile &RFile::operator =( RFile && mov) {
 
 RFile::RFile(const char16_t *name, RFile::Mode m) {
   char md[4];
-  makeMode(md, m|1);
+  makeMode(md, m|1|8);
 
   impl = SystemAPI::fopen(name, md);
   }
