@@ -76,7 +76,12 @@ void Application::sleep(unsigned int msec) {
 
 uint64_t Application::tickCount() {
   timespec now;
+#ifdef WIN32
+  clock_gettime(CLOCK_MONOTONIC    , &now);
+#else
   clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+#endif
+
   uint64_t t = (uint8_t)now.tv_sec;
   t *= 1000;
   t += now.tv_nsec/1000000;
