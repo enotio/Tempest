@@ -37,7 +37,7 @@ Sprite SpritesHolder::load(const Tempest::Pixmap &p) {
     }*/
 
   Sprite tmp;
-  tmp.deleyd = loadRq.size();
+  tmp.delayd = loadRq.size();
   tmp.holder = this;
 
   LoadRq l;
@@ -47,23 +47,26 @@ Sprite SpritesHolder::load(const Tempest::Pixmap &p) {
 
   delayLoad(&tmp);
   return tmp;
-
-  //return loadImpl(p);
   }
 
 void SpritesHolder::delayLoad( Sprite *s ) {
-  LoadRq &l = loadRq[s->deleyd];
-  l.sprites.push_back(s);
+  LoadRq &l = loadRq[s->delayd];
+  if( l.sprite==0 )
+    l.sprite = s; else
+    l.spr.push_back(s);
   }
 
 void SpritesHolder::delayLoadRm( Sprite *s ) {
-  LoadRq &l = loadRq[s->deleyd];
+  LoadRq &l = loadRq[s->delayd];
+  if( l.sprite==s )
+    l.sprite = 0;
 
-  for( size_t i=0; i<l.sprites.size(); ++i )
-    if( l.sprites[i]==s ){
-      l.sprites[i] = l.sprites.back();
-      l.sprites.pop_back();
+  for( size_t i=0; i<l.spr.size(); ++i ){
+    if( l.spr[i]==s ){
+      l.spr[i] = l.spr.back();
+      l.spr.pop_back();
       }
+    }
   }
 
 Sprite SpritesHolder::loadImpl(const Tempest::Pixmap &p) {
@@ -140,13 +143,22 @@ void SpritesHolder::loadDelayd() {
     LoadRq& rq = loadRq[i];
     Sprite sx = loadImpl(rq.p);
 
-    for( size_t r=0; r<rq.sprites.size(); ++r ){
-      rq.sprites[r]->deleyd = -1;
-      *rq.sprites[r] = sx;
+    if( rq.sprite ){
+      rq.sprite->delayd = -1;
+      *rq.sprite = sx;
+      }
+
+    for( Sprite* s:rq.spr ){
+      s->delayd = -1;
+      *s = sx;
       }
     }
 
   loadRq.clear();
+  }
+
+Size SpritesHolder::spriteSizeD(size_t delayd) {
+  return loadRq[delayd].p.size();
   }
 
 void SpritesHolder::addPage() {

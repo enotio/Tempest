@@ -2,12 +2,12 @@
 
 using namespace Tempest;
 
-Sprite::Sprite():holder(0), deleyd(-1), tex(0), id(-1) {
+Sprite::Sprite():holder(0), delayd(-1), tex(0), id(-1) {
 
   }
 
 Sprite::Sprite(const Sprite &s)
-  :prect(s.prect), holder(s.holder), deleyd(s.deleyd), tex(s.tex), id(s.id){
+  :prect(s.prect), holder(s.holder), delayd(s.delayd), tex(s.tex), id(s.id){
   if( isDelayd() ){
     holder->delayLoad(this);
     }
@@ -20,7 +20,7 @@ Sprite &Sprite::operator =(const Sprite &s) {
 
   prect  = s.prect;
   holder = s.holder;
-  deleyd = s.deleyd;
+  delayd = s.delayd;
   tex    = s.tex;
   id     = s.id;
 
@@ -38,7 +38,7 @@ Sprite::~Sprite() {
   }
 
 bool Sprite::isDelayd() const{
-  return deleyd!=size_t(-1);
+  return delayd!=size_t(-1);
   }
 
 void Sprite::flush() const {
@@ -58,7 +58,9 @@ int Sprite::h() const {
   }
 
 Size Sprite::size() const {
-  flush();
+  if( isDelayd() )
+    return holder->spriteSizeD( delayd );
+  //flush();
   return prect.size();
   }
 

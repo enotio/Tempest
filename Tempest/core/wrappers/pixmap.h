@@ -8,6 +8,8 @@
 #include <vector>
 #include <string>
 
+#include <Tempest/Utility>
+
 namespace Tempest{
 
 class IDevice;
@@ -41,6 +43,8 @@ class Pixmap {
 
     inline int width()  const { return info.w; }
     inline int height() const { return info.h; }
+
+    inline Size size() const { return Size(info.w, info.h); }
 
     inline bool isEmpty() const {
       return info.w==0||0==info.h;

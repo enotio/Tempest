@@ -33,7 +33,7 @@ class Sprite {
   private:
     Tempest::Rect    prect;
     SpritesHolder   *holder;
-    size_t           deleyd;
+    size_t           delayd;
 
     std::vector< std::unique_ptr<SpritesHolder::Page> > * tex;
     size_t id;

@@ -23,6 +23,7 @@ class SpritesHolder {
     virtual void flush();
   private:
     void   loadDelayd();
+    Size   spriteSizeD(size_t deleyd );
     void   delayLoad  ( Sprite* s );
     void   delayLoadRm( Sprite* s );
 
@@ -42,7 +43,8 @@ class SpritesHolder {
     struct LoadRq{
       Tempest::Pixmap p;
       size_t          sq;
-      std::vector<Sprite*> sprites;
+      Sprite*         sprite;
+      std::vector<Sprite*> spr;
       };
 
     std::vector<LoadRq> loadRq;
