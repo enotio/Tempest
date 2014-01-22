@@ -30,6 +30,7 @@ class PaintTextEngine {
       (void)sz;
       }
     virtual void setFont( const Font & f ){ (void)f; }
+    virtual Font font() const = 0;
     virtual const Font::Letter& letter( const Font &f, wchar_t c ) = 0;
 
     virtual void drawText( int x, int y, int w, int h, const std::string  &,

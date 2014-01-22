@@ -92,13 +92,14 @@ class SurfaceRender {
       TextEngine( PaintDev & p );
 
       void setFont(const Font &f );
+      Font font() const;
       void drawText( int x, int y, int w, int h, const std::u16string &,
                      int align = Tempest::NoAlign );
       void drawText( int x, int y, int w, int h, const std::string &,
                      int align = Tempest::NoAlign );
       const Font::Letter& letter( const Font &f, wchar_t c );
       PaintDev & p;
-      Tempest::Font font;
+      Tempest::Font fnt;
 
       template< class T >
       void dText( int x, int y, int w, int h, const T &,
@@ -114,14 +115,20 @@ class SurfaceRender {
       virtual void setTexture( const Tempest::Sprite & t );
       virtual void unsetTexture();
 
+      Color color() const;
+      void setColor( Color& cl );
       void setColor(float, float, float, float);
+
       void setFlip( bool h, bool v );
+      bool isHorizontalFliped() const;
+      bool isVerticalFliped() const;
 
       virtual void quad( int x, int y, int  w, int  h,
                          int tx, int ty, int tw, int th );
       virtual void line( int x, int y, int x2, int y2);
 
       virtual void setBlendMode( BlendMode m );
+      virtual BlendMode blendMode() const;
 
       virtual PaintTextEngine& textEngine();
 

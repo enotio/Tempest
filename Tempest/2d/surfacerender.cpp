@@ -291,6 +291,10 @@ void SurfaceRender::PaintDev::setBlendMode(BlendMode m) {
   surf.state.bm = m;
   }
 
+BlendMode SurfaceRender::PaintDev::blendMode() const {
+  return surf.state.bm;
+  }
+
 PaintTextEngine &SurfaceRender::PaintDev::textEngine() {
   return te;
   }
@@ -299,9 +303,25 @@ void SurfaceRender::PaintDev::setColor( float r, float g, float b, float a ) {
   surf.state.cl.set(r,g,b,a);
   }
 
+void SurfaceRender::PaintDev::setColor(Color &cl) {
+  surf.state.cl = cl;
+  }
+
+Color SurfaceRender::PaintDev::color() const {
+  return surf.state.cl;
+  }
+
 void SurfaceRender::PaintDev::setFlip(bool h, bool v) {
   surf.state.flip[0] = h;
   surf.state.flip[1] = v;
+  }
+
+bool SurfaceRender::PaintDev::isHorizontalFliped() const{
+  return surf.state.flip[0];
+  }
+
+bool SurfaceRender::PaintDev::isVerticalFliped() const{
+  return surf.state.flip[1];
   }
 
 void SurfaceRender::PaintDev::setNullState() {
@@ -358,20 +378,23 @@ void SurfaceRender::PaintDev::unsetTexture() {
   surf.state.curTex2d = 0;
   }
 
-
 SurfaceRender::TextEngine::TextEngine(PaintDev &p)
                        :p(p) {
   }
 
 void SurfaceRender::TextEngine::setFont(const Tempest::Font &f) {
-  font = f;
+  fnt = f;
+  }
+
+Font SurfaceRender::TextEngine::font() const {
+  return fnt;
   }
 
 template< class T >
 void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
                                        const T &str,
                                        int flg ) {
-  font.fetch( str, p.sp );
+  fnt.fetch( str, p.sp );
 
   Tempest::Rect oldScissor = p.scissor();
   p.setScissor( oldScissor.intersected( Tempest::Rect(x,y,w,h) ) );
@@ -379,7 +402,7 @@ void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
 
   int tx = 0, ty = 0, tw = 0, th = 0;
   for( size_t i=0; i<str.size(); ++i ){
-    const Font::Letter& l = font.letter( str[i], p.sp );
+    const Font::Letter& l = fnt.letter( str[i], p.sp );
 
     tw = std::max( tx+l.dpos.x+l.size.w, tw );
     th = std::max( ty+l.dpos.y+l.size.h, th );
@@ -401,7 +424,7 @@ void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
 
 
   for( size_t i=0; i<str.size(); ++i ){
-    const Font::Letter& l = font.letter( str[i], p.sp );
+    const Font::Letter& l = fnt.letter( str[i], p.sp );
     p.setTexture( l.surf );
     p.drawRect( x+l.dpos.x, y+l.dpos.y, l.size.w, l.size.h,
                 0,0 );

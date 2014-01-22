@@ -260,8 +260,11 @@ void PainterDevice::translate(int dx, int dy) {
   rstate.orign += Point(dx,dy);
   }
 
-void PainterDevice::setBlendMode(BlendMode ) {
+void PainterDevice::setBlendMode(BlendMode ) {  
+  }
 
+BlendMode PainterDevice::blendMode() const {
+  return noBlend;
   }
 
 void PainterDevice::setState(const PainterDevice::State &s) {
@@ -318,12 +321,28 @@ void Painter::setColor(float r, float g, float b, float a) {
   dev.setColor(r,g,b,a);
   }
 
+Color Painter::color() const {
+  return dev.color();
+  }
+
 void Painter::setFlip(bool h, bool v) {
   dev.setFlip(h,v);
   }
 
+bool Painter::isHorizontalFliped() const {
+  return dev.isHorizontalFliped();
+  }
+
+bool Painter::isVerticalFliped() const {
+  return dev.isVerticalFliped();
+  }
+
 void Painter::setBlendMode( BlendMode m ) {
   dev.setBlendMode(m);
+  }
+
+BlendMode Painter::blendMode() const {
+  return dev.blendMode();
   }
 
 void Painter::setFont(const std::string &f, int sz) {
@@ -332,6 +351,10 @@ void Painter::setFont(const std::string &f, int sz) {
 
 void Painter::setFont(const Font &f) {
   dev.textEngine().setFont(f);
+  }
+
+Font Painter::font() const {
+  return dev.textEngine().font();
   }
 
 const Font::Letter &Painter::letter(const Font &f, wchar_t c) {

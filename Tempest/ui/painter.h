@@ -50,9 +50,15 @@ class PainterDevice {
 
     virtual void setTexture( const Tempest::Texture2d& ){}
     virtual void setTexture( const Tempest::Sprite& ){}
-    virtual void unsetTexture() = 0;    
-    virtual void setColor( float , float , float , float ){}
+    virtual void unsetTexture() = 0;
+
+    virtual void  setColor( float , float , float , float ){}
+    virtual void  setColor( Color& ){}
+    virtual Color color() const{ return Color(1); }
+
     virtual void setFlip( bool /*h*/, bool /*v*/ ){}
+    virtual bool isHorizontalFliped() const{ return false; }
+    virtual bool isVerticalFliped() const{ return false; }
 
     virtual void quad( int x, int y, int  w, int  h){
       quad( x, y, w, h,  0,  0, w, h);
@@ -67,6 +73,7 @@ class PainterDevice {
     virtual void line( int x, int y, int x2, int y2) = 0;
 
     virtual void setBlendMode( BlendMode m );
+    virtual BlendMode blendMode() const;
 
     virtual PaintTextEngine& textEngine() = 0;
 
@@ -121,10 +128,16 @@ class Painter {
     void setTexture( const Tempest::Sprite& );
     void unsetTexture();
 
-    void setColor( const Tempest::Color & cl );
-    void setColor( float r, float g, float b, float a = 1);
+    void  setColor( const Tempest::Color & cl );
+    void  setColor( float r, float g, float b, float a = 1);
+    Color color() const;
+
     void setFlip( bool h, bool v );
+    bool isHorizontalFliped() const;
+    bool isVerticalFliped() const;
+
     void setBlendMode( BlendMode );
+    BlendMode blendMode() const;
 
     enum AlignFlag{
       NoAlign      = 0,
@@ -139,6 +152,7 @@ class Painter {
 
     void setFont( const std::string & f, int sz );
     void setFont( const Font &f );
+    Font font() const;
     const Font::Letter& letter( const Font &f, wchar_t c );
 
     void drawText( int x, int y, int w, int h, const std::string&,
