@@ -42,6 +42,7 @@ Sprite SpritesHolder::load(const Tempest::Pixmap &p) {
 
   LoadRq l;
   l.p  = p;
+  l.sprite = 0;
   l.sq = p.width()*p.height();
   loadRq.push_back(l);
 
