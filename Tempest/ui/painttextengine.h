@@ -33,7 +33,7 @@ class PaintTextEngine {
     virtual Font font() const = 0;
     virtual const Font::Letter& letter( const Font &f, wchar_t c ) = 0;
 
-    virtual void drawText( int x, int y, int w, int h, const std::string  &,
+    virtual void drawText( int x, int y, int w, int h, const char*  ,
                            int align = NoAlign ){
       (void)x;
       (void)y;
@@ -41,7 +41,7 @@ class PaintTextEngine {
       (void)h;
       (void)align;
       }
-    virtual void drawText( int x, int y, int w, int h, const std::u16string &,
+    virtual void drawText( int x, int y, int w, int h, const char16_t* ,
                            int align = NoAlign ){
       (void)x;
       (void)y;

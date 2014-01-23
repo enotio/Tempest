@@ -93,16 +93,18 @@ class SurfaceRender {
 
       void setFont(const Font &f );
       Font font() const;
-      void drawText( int x, int y, int w, int h, const std::u16string &,
+      void drawText( int x, int y, int w, int h,
+                     const char16_t* ,
                      int align = Tempest::NoAlign );
-      void drawText( int x, int y, int w, int h, const std::string &,
+      void drawText( int x, int y, int w, int h,
+                     const char*,
                      int align = Tempest::NoAlign );
       const Font::Letter& letter( const Font &f, wchar_t c );
       PaintDev & p;
       Tempest::Font fnt;
 
       template< class T >
-      void dText( int x, int y, int w, int h, const T &,
+      void dText( int x, int y, int w, int h, const T* str,
                   int align );
       };
 

@@ -155,12 +155,25 @@ class Painter {
     Font font() const;
     const Font::Letter& letter( const Font &f, wchar_t c );
 
-    void drawText( int x, int y, int w, int h, const std::string&,
+    void drawText( int x, int y, int w, int h,
+                   const char* str,
+                   int flag = 0 );
+    void drawText( int x, int y, const char* t, int flg = 0 );
+
+    void drawText( int x, int y, int w, int h,
+                   const std::string&,
                    int flag = 0 );
     void drawText( int x, int y, const std::string &, int flg = 0 );
 
-    void drawText( int x, int y, int w, int h, const std::u16string&, int flg = 0 );
-    void drawText( int x, int y, const std::u16string&, int flg = 0 );
+    void drawText( int x, int y, int w, int h,
+                   const char16_t* str,
+                   int flag = 0 );
+    void drawText( int x, int y, const char16_t* t, int flg = 0 );
+
+    void drawText( int x, int y, int w, int h,
+                   const std::u16string&, int flg = 0 );
+    void drawText( int x, int y,
+                   const std::u16string&, int flg = 0 );
 
     PainterDevice& device();
   private:

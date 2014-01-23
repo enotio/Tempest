@@ -392,7 +392,7 @@ Font SurfaceRender::TextEngine::font() const {
 
 template< class T >
 void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
-                                       const T &str,
+                                       const T* str,
                                        int flg ) {
   fnt.fetch( str, p.sp );
 
@@ -401,7 +401,7 @@ void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
   p.setBlendMode( Tempest::alphaBlend );
 
   int tx = 0, ty = 0, tw = 0, th = 0;
-  for( size_t i=0; i<str.size(); ++i ){
+  for( size_t i=0; str[i]; ++i ){
     const Font::Letter& l = fnt.letter( str[i], p.sp );
 
     tw = std::max( tx+l.dpos.x+l.size.w, tw );
@@ -423,7 +423,7 @@ void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
     y += (h-th);
 
 
-  for( size_t i=0; i<str.size(); ++i ){
+  for( size_t i=0; str[i]; ++i ){
     const Font::Letter& l = fnt.letter( str[i], p.sp );
     p.setTexture( l.surf );
     p.drawRect( x+l.dpos.x, y+l.dpos.y, l.size.w, l.size.h,
@@ -436,12 +436,12 @@ void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
   }
 
 void SurfaceRender::TextEngine::drawText(int x, int y, int w, int h,
-                                          const std::u16string &s, int align) {
+                                          const char16_t *s, int align) {
   dText(x, y, w, h, s, align);
   }
 
-void SurfaceRender::TextEngine::drawText( int x, int y, int w, int h,
-                                          const std::string &s, int align) {
+void SurfaceRender::TextEngine::drawText(int x, int y, int w, int h,
+                                          const char *s, int align) {
   dText(x, y, w, h, s, align);
   }
 

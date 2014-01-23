@@ -361,24 +361,63 @@ const Font::Letter &Painter::letter(const Font &f, wchar_t c) {
   return dev.textEngine().letter(f,c);
   }
 
-void Painter::drawText( int x, int y, int w, int h, const std::string &str,
+void Painter::drawText( int x, int y, int w, int h,
+                        const char *str,
+                        int flag) {
+  dev.textEngine().drawText( x,
+                             y,
+                             w, h,
+                             str,
+                             flag);
+  }
+
+void Painter::drawText(int x, int y, const char16_t *t, int flg) {
+  dev.textEngine().drawText( x, y,
+                             SizePolicy::maxWidgetSize().w,
+                             SizePolicy::maxWidgetSize().h,
+                             t,
+                             flg );
+  }
+
+void Painter::drawText(int x, int y, int w, int h, const char16_t *str, int flg) {
+  dev.textEngine().drawText( x, y, w,  h,
+                             str,
+                             flg );
+  }
+
+void Painter::drawText( int x, int y, int w, int h,
+                        const std::string &str,
                         int flag ) {
   dev.textEngine().drawText( x,
                              y,
-                             w, h, str, flag);
+                             w, h,
+                             str.c_str(),
+                             flag);
   }
 
 void Painter::drawText(int x, int y, const std::string &str, int flg ) {
-  drawText( x, y,
-            SizePolicy::maxWidgetSize().w,
-            SizePolicy::maxWidgetSize().h, str, flg );
+  dev.textEngine().drawText( x, y,
+                             SizePolicy::maxWidgetSize().w,
+                             SizePolicy::maxWidgetSize().h,
+                             str.c_str(),
+                             flg );
   }
 
-void Painter::drawText(int x, int y, int w, int h, const std::u16string &str,
+void Painter::drawText(int x, int y, const char *str, int flg) {
+  dev.textEngine().drawText( x, y,
+                             SizePolicy::maxWidgetSize().w,
+                             SizePolicy::maxWidgetSize().h,
+                             str,
+                             flg );
+  }
+
+void Painter::drawText( int x, int y,
+                        int w, int h,
+                        const std::u16string &str,
                         int flg ) {
-  dev.textEngine().drawText( x,//dev.rstate.orign.x+x,
-                             y,//dev.rstate.orign.y+y,
-                             w, h, str, flg);
+  dev.textEngine().drawText( x, y, w, h,
+                             str.c_str(),
+                             flg);
   }
 
 void Painter::drawText(int x, int y, const std::u16string &str, int flg ) {

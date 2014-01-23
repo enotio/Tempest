@@ -27,12 +27,19 @@ class Font{
       Tempest::Point   dpos, advance;
       };
 
-    const Letter& letter(wchar_t ch , SpritesHolder &sp) const;
+    const Letter& letter(char16_t ch, SpritesHolder &sp) const;
 
     void fetch(const std::u16string& str, SpritesHolder &sp) const;
     void fetch(const std::string& str, SpritesHolder &sp) const;
+
     Size textSize(const std::u16string& );
     Size textSize(const std::string& );
+
+    Size textSize(const char16_t* b, const char16_t* e );
+    Size textSize(const char* b, const char* e );
+
+    Size textSize(const char16_t* str );
+    Size textSize(const char* str );
 
     int  size() const;
 
@@ -43,7 +50,7 @@ class Font{
     bool isItalic() const;
 
     void setSize( int s );
-    LetterGeometry letterGeometry( wchar_t ch ) const;
+    LetterGeometry letterGeometry( char16_t ch ) const;
   private:
     void init(const std::string &name, int sz);
 
@@ -60,8 +67,8 @@ class Font{
           delete n[i];
         }
 
-      Letter* find( wchar_t c ) const;
-      Letter& operator[]( wchar_t c );
+      Letter* find( char16_t c ) const;
+      Letter& operator[]( char16_t c );
 
       private:
         mutable Letter* l;
@@ -101,8 +108,8 @@ class Font{
     static bool cmpS( const std::string &tg, const std::string& s, const char* ss);
 
     static std::map<Key, Leters*> letterBox;
-    const Letter& fetchLeter(wchar_t ch, SpritesHolder &sp) const;
-    const Letter& nullLeter (wchar_t ch ) const;
+    const Letter& fetchLeter(char16_t ch, SpritesHolder &sp) const;
+    const Letter& nullLeter (char16_t ch ) const;
 
     void update();
   };

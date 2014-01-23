@@ -150,7 +150,7 @@ void Tempest::Font::init( const std::string& name, int sz ) {
   }
 
 const Tempest::Font::Letter&
-    Tempest::Font::fetchLeter( wchar_t ch,
+    Tempest::Font::fetchLeter( char16_t ch,
                                Tempest::SpritesHolder & res  ) const {
   Leters & leters = *lt;
 
@@ -215,7 +215,7 @@ const Tempest::Font::Letter&
   return ref;
   }
 
-Tempest::Font::LetterGeometry Tempest::Font::letterGeometry( wchar_t ch ) const {
+Tempest::Font::LetterGeometry Tempest::Font::letterGeometry( char16_t ch ) const {
   Leters & leters = *lt;
 
   if( Letter *l = leters.find(ch) ){
@@ -265,7 +265,7 @@ Tempest::Font::LetterGeometry Tempest::Font::letterGeometry( wchar_t ch ) const 
   }
 
 const Tempest::Font::Letter &
-  Tempest::Font::nullLeter(wchar_t ch) const {
+  Tempest::Font::nullLeter(char16_t ch) const {
   Leters & leters = *lt;
   Letter letter;
 
@@ -288,9 +288,29 @@ void Tempest::Font::fetch( const std::string &str,
   }
 
 Tempest::Size Tempest::Font::textSize(const std::u16string &str ) {
+  return textSize( &str[0], &str[0]+str.size() );
+  }
+
+Tempest::Size Tempest::Font::textSize(const std::string &str ) {
+  return textSize( &str[0], &str[0]+str.size() );
+  }
+
+Tempest::Size Tempest::Font::textSize(const char16_t *str) {
+  const char16_t *e = str;
+  while(*e) ++e;
+  return textSize(str, e);
+  }
+
+Tempest::Size Tempest::Font::textSize(const char *str) {
+  const char *e = str;
+  while(*e) ++e;
+  return textSize(str, e);
+  }
+
+Tempest::Size Tempest::Font::textSize(const char16_t *b, const char16_t *e) {
   int tx = 0, ty = 0, tw = 0, th = 0;
-  for( size_t i=0; i<str.size(); ++i ){
-    const LetterGeometry& l = letterGeometry( str[i] );
+  for( const char16_t* i=b; i<e; ++i ){
+    const LetterGeometry& l = letterGeometry( *i );
 
     tw = std::max( tx+l.dpos.x+l.size.w, tw );
     th = std::max( ty+l.dpos.y+l.size.h, th );
@@ -302,16 +322,13 @@ Tempest::Size Tempest::Font::textSize(const std::u16string &str ) {
   return Tempest::Size(tw,th);
   }
 
-Tempest::Size Tempest::Font::textSize( const std::string & str ) {
+Tempest::Size Tempest::Font::textSize(const char *b, const char *e) {
   int tx = 0, ty = 0, tw = 0, th = 0;
-  for( size_t i=0; i<str.size(); ++i ){
-    LetterGeometry l = letterGeometry( str[i] );
+  for( const char* i=b; i<e; ++i ){
+    const LetterGeometry& l = letterGeometry( *i );
 
     tw = std::max( tx+l.dpos.x+l.size.w, tw );
     th = std::max( ty+l.dpos.y+l.size.h, th );
-
-    tw = std::max( tx+l.advance.x, tw );
-    th = std::max( ty+l.advance.y, th );
 
     tx+= l.advance.x;
     ty+= l.advance.y;
@@ -348,10 +365,9 @@ void Tempest::Font::setSize(int s) {
   }
 
 const Tempest::Font::Letter&
-  Tempest::Font::letter( wchar_t ch,
+  Tempest::Font::letter( char16_t ch,
                          Tempest::SpritesHolder & sp ) const {
   const Tempest::Font::Letter& tmp = fetchLeter(ch,sp);
-  sp.flush();
   return tmp;
   }
 
@@ -373,16 +389,16 @@ void Tempest::Font::update() {
     }
   }
 
-Tempest::Font::Letter *Tempest::Font::LMap::find(wchar_t c) const {
+Tempest::Font::Letter *Tempest::Font::LMap::find(char16_t c) const {
   unsigned char cp[sizeof(c)];
-  for( size_t i=0; i<sizeof(wchar_t); ++i){
+  for( size_t i=0; i<sizeof(char16_t); ++i){
     cp[i] = c%256;
     c/=256;
     }
 
   const LMap *l = this;
 
-  for( size_t i=sizeof(wchar_t)-1; i>0; --i ){
+  for( size_t i=sizeof(char16_t)-1; i>0; --i ){
     unsigned char cx = cp[i];
     if( l->n[cx]==0 )
       return 0;
@@ -402,16 +418,16 @@ Tempest::Font::Letter *Tempest::Font::LMap::find(wchar_t c) const {
   return 0;
   }
 
-Tempest::Font::Letter &Tempest::Font::LMap::operator [](wchar_t c) {
+Tempest::Font::Letter &Tempest::Font::LMap::operator [](char16_t c) {
   unsigned char cp[sizeof(c)];
-  for( size_t i=0; i<sizeof(wchar_t); ++i){
+  for( size_t i=0; i<sizeof(char16_t); ++i){
     cp[i] = c%256;
     c/=256;
     }
 
   const LMap *l = this;
 
-  for( size_t i=sizeof(wchar_t)-1; i>0; --i ){
+  for( size_t i=sizeof(char16_t)-1; i>0; --i ){
     unsigned char cx = cp[i];
     if( l->n[cx]==0 ){
       l->n[cx] = new LMap();
