@@ -116,15 +116,7 @@ Tempest::Font::Font( const std::string &name,
                      int sz) {
   init(name, sz);
   }
-/*
-Tempest::Font::Font(int sz) {
-#ifdef __ANDROID__
-  init("/system/fonts/DroidSans", sz);
-#else
-  init("./data/arial", sz);
-#endif
-  }
-*/
+
 Tempest::Font::Font() {
 #ifdef __ANDROID__
   init("/system/fonts/DroidSans", 16);

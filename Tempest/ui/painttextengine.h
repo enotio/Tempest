@@ -56,6 +56,10 @@ class PaintTextEngine {
       (void)w;
       (void)h;
       }
+
+  virtual void pushState()    = 0;
+  virtual void popState()     = 0;
+  virtual void setNullState() = 0;
   };
 
 }

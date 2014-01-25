@@ -91,6 +91,10 @@ class SurfaceRender {
     struct TextEngine:public Tempest::PaintTextEngine{
       TextEngine( PaintDev & p );
 
+      void pushState();
+      void popState();
+      void setNullState();
+
       void setFont(const Font &f );
       Font font() const;
       void drawText( int x, int y, int w, int h,
@@ -102,6 +106,7 @@ class SurfaceRender {
       const Font::Letter& letter( const Font &f, wchar_t c );
       PaintDev & p;
       Tempest::Font fnt;
+      std::vector<Tempest::Font> state_stk;
 
       template< class T >
       void dText( int x, int y, int w, int h, const T* str,

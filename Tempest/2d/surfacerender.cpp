@@ -332,13 +332,17 @@ void SurfaceRender::PaintDev::setNullState() {
 
   surf.state.curTex   = Sprite();
   surf.state.curTex2d = 0;
+
+  textEngine().setNullState();
   }
 
 void SurfaceRender::PaintDev::pushState() {
   surf.sstk.push_back( surf.state );
+  textEngine().pushState();
   }
 
 void SurfaceRender::PaintDev::popState() {
+  textEngine().popState();
   surf.state = sstk.back();
   surf.sstk.pop_back();
   }
@@ -379,7 +383,21 @@ void SurfaceRender::PaintDev::unsetTexture() {
   }
 
 SurfaceRender::TextEngine::TextEngine(PaintDev &p)
-                       :p(p) {
+  :p(p) {
+  state_stk.reserve(128);
+  }
+
+void SurfaceRender::TextEngine::pushState() {
+  state_stk.push_back(fnt);
+  }
+
+void SurfaceRender::TextEngine::popState() {
+  fnt = state_stk.back();
+  state_stk.pop_back();
+  }
+
+void SurfaceRender::TextEngine::setNullState() {
+  setFont( Font() );
   }
 
 void SurfaceRender::TextEngine::setFont(const Tempest::Font &f) {

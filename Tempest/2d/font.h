@@ -76,16 +76,7 @@ class Font{
         mutable LMap*  n[256];
       };
 
-    typedef LMap Leters;
-    Leters * lt;
-
-    //SpritesHolder* res;
-
-    struct FreeTypeLib;
-    static FreeTypeLib& ft();
-
     struct Key{
-      //std::string name, baseName;
       size_t name, baseName;
       int size;
       bool bold, italic;
@@ -98,7 +89,14 @@ class Font{
 
         return name < other.name;
         }
-      } key;
+      };
+
+    typedef LMap Leters;
+    Leters * lt;
+    Key key;
+
+    struct FreeTypeLib;
+    static FreeTypeLib& ft();
 
     static std::vector< std::string > fnames;
     size_t findFontName( const std::string& n );
