@@ -144,6 +144,17 @@ implements SurfaceHolder.Callback  {
       nativeOnTouch( x, y, act, pid );
     return true;   
     }
+
+  @Override
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+    if( keyCode==KeyEvent.KEYCODE_BACK ){
+      onClose(2);
+      return true;
+      } else {
+      onKeyDownEvent(keyCode);
+      return true;
+      }
+    }
   
   @Override
   public boolean onKeyUp(int keyCode, KeyEvent event) {
@@ -151,7 +162,7 @@ implements SurfaceHolder.Callback  {
       onClose(0);
       return true;
       } else {
-      onKeyEvent(keyCode);
+      onKeyUpEvent(keyCode);
       return true;
       }
     }
@@ -206,17 +217,28 @@ implements SurfaceHolder.Callback  {
   static native void nativeSetupDpi  ( int dpi );
   
   static native void nativeOnTouch( int x, int y, int act, int pid );
-  static native void onKeyEvent( int k );
+  static native void onKeyDownEvent( int k );
+  static native void onKeyUpEvent( int k );
   static native int  nativeCloseEvent();
   static native void nativeSetSurface(Surface surface);
   static native void nativeOnResize( Surface surface, int w, int h );
   static native void nativeSetAssets( AssetManager m );
   static native void nativeSetupStorage( String internal, String external );
+  
+  static void loadLib( String lib ){
+    try {
+      System.loadLibrary(lib);
+      }
+    catch( java.lang.UnsatisfiedLinkError e ){
+      Log.e( "", "lib not loaded: \"" + lib + "\"" );
+      }
+    }
     
   static {
-    System.loadLibrary("gnustl_shared");
-    System.loadLibrary("Tempest");
-    System.loadLibrary("network");
-    System.loadLibrary("game");
+    loadLib("gnustl_shared");
+    loadLib("bullet");
+    loadLib("Tempest");
+    loadLib("network");
+    loadLib("game");
   }
 }

@@ -80,7 +80,8 @@ static struct Android{
     MSG_TOUCH,
     MSG_PAUSE,
     MSG_RESUME,
-    MSG_KEY_EVENT,
+    MSG_KEYDOWN_EVENT,
+    MSG_KEYUP_EVENT,
     MSG_CLOSE,
     MSG_WAIT,
     MSG_RENDER_LOOP_EXIT
@@ -596,22 +597,27 @@ int AndroidAPI::nextEvent(bool &quit) {
       quit = true;
       break;
 
-    case Android::MSG_KEY_EVENT:{
-      Tempest::KeyEvent sce = makeKeyEvent(msg.data1, true);
+    case Android::MSG_KEYDOWN_EVENT:{
+        Tempest::KeyEvent sce = makeKeyEvent(msg.data1, true);
 
-      Tempest::KeyEvent sc( sce.key, sce.u16, Event::Shortcut );
-      SystemAPI::emitEvent( android.wnd, sc );
+        Tempest::KeyEvent sc( sce.key, sce.u16, Event::Shortcut );
+        SystemAPI::emitEvent( android.wnd, sc );
 
-      if( !sc.isAccepted() ){
-        Tempest::KeyEvent e =  makeKeyEvent(msg.data1);
-        if( e.key!=Tempest::KeyEvent::K_NoKey ){
-          Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );
-          SystemAPI::emitEvent( android.wnd, ed);
-
-          Tempest::KeyEvent eu( e.key, e.u16, Event::KeyUp );
-          SystemAPI::emitEvent( android.wnd, eu);
+        if( !sc.isAccepted() ){
+          Tempest::KeyEvent e =  makeKeyEvent(msg.data1);
+          if( e.key!=Tempest::KeyEvent::K_NoKey ){
+            Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );
+            SystemAPI::emitEvent( android.wnd, ed);
+            }
           }
-        }
+      }
+      break;
+
+    case Android::MSG_KEYUP_EVENT:{
+      Tempest::KeyEvent e = makeKeyEvent(msg.data1);
+
+      Tempest::KeyEvent eu( e.key, e.u16, Event::KeyUp );
+      SystemAPI::emitEvent( android.wnd, eu);
       }
       break;
 
@@ -958,14 +964,29 @@ static void JNICALL onDestroy(JNIEnv* /*jenv*/, jobject /*obj*/) {
   Log(Log::Info) << "nativeOnDestroy";
   }
 
-static void JNICALL onKeyEvent(JNIEnv* , jobject, jint key ) {
-  Log(Log::Info) << "onKeyEvent";
+static void JNICALL onKeyDownEvent(JNIEnv* , jobject, jint key ) {
+  Log(Log::Info) << "onKeyDownEvent";
 
   Guard w( android.waitMutex );
   (void)w;
 
   if( key!=AKEYCODE_BACK ){
-    Android::Message m = Android::MSG_KEY_EVENT;
+    Android::Message m = Android::MSG_KEYDOWN_EVENT;
+    m.data1 = key;
+    android.pushMsg(m);
+    } else {
+    android.pushMsg( Android::MSG_RENDER_LOOP_EXIT );
+    }
+  }
+
+static void JNICALL onKeyUpEvent(JNIEnv* , jobject, jint key ) {
+  Log(Log::Info) << "onKeyUpEvent";
+
+  Guard w( android.waitMutex );
+  (void)w;
+
+  if( key!=AKEYCODE_BACK ){
+    Android::Message m = Android::MSG_KEYUP_EVENT;
     m.data1 = key;
     android.pushMsg(m);
     } else {
@@ -1044,7 +1065,10 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
     {"nativeSetupDpi",   "(I)V",                  (void *)setupDpi         },
 
     {"nativeOnTouch",  "(IIII)V", (void *)nativeOnTouch   },
-    {"onKeyEvent",     "(I)V",   (void *)onKeyEvent      },
+
+    {"onKeyDownEvent",   "(I)V",   (void *)onKeyDownEvent    },
+    {"onKeyUpEvent",     "(I)V",   (void *)onKeyUpEvent      },
+
     {"nativeCloseEvent",  "()I", (void *) nativeCloseEvent  },
     {"nativeSetSurface", "(Landroid/view/Surface;)V",   (void *) nativeSetSurface   },
     {"nativeOnResize",   "(Landroid/view/Surface;II)V", (void *) resize             },
