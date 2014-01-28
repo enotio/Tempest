@@ -1086,16 +1086,23 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
     }
 
   android.tempestClass = env->FindClass( SystemAPI::androidActivityClass().c_str() );
-  android.tempestClass = (jclass)env->NewGlobalRef(android.tempestClass);
 
   if (!android.tempestClass) {
     Log(Log::Error) << "failed to get " << SystemAPI::androidActivityClass().c_str() << " class reference";
-    return -1;
+
+    jthrowable err = env->ExceptionOccurred();
+    if( err ) {
+      env->ExceptionDescribe();
+      env->ExceptionClear();
+      }
     }
 
-  env->RegisterNatives( android.tempestClass,
-                        methodTable,
-                        sizeof(methodTable) / sizeof(methodTable[0]) );
+  if( android.tempestClass ){
+    android.tempestClass = (jclass)env->NewGlobalRef(android.tempestClass);
+    env->RegisterNatives( android.tempestClass,
+                          methodTable,
+                          sizeof(methodTable) / sizeof(methodTable[0]) );
+    }
 
   Log(Log::Info) << "Tempest ~JNI_OnLoad";
   return JNI_VERSION_1_6;

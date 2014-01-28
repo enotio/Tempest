@@ -2,6 +2,10 @@
 #define GLFN_H
 
 #include <cstddef>
+#ifdef __ANDROID__
+#include <EGL/egl.h>
+#endif
+
 #ifndef __ANDROID__
 #include <GL/gl.h>
 
@@ -73,9 +77,20 @@ typedef char             GLchar;
 #endif
 
 namespace Tempest{
+
 namespace Detail {
+#ifdef __WIN32
+typedef HGLRC GLContext;
+#endif
+
+#ifdef __ANDROID__
+typedef EGLContext GLContext;
+#endif
+
   bool initGLProc();
+  GLContext createContext( void* hdc );
   }
+
 namespace GLProc{
 #ifndef __ANDROID__
 extern void ( GLAPIENTRY *glGenFramebuffers)(GLsizei n, const GLuint* framebuffers);

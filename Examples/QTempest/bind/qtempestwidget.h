@@ -21,7 +21,14 @@
 #include <Tempest/SurfaceRender>
 #include <Tempest/SpritesHolder>
 
-class QTempestWidget :public QWidget {
+#ifdef __ANDROID__
+#include <QtOpenGL/QGLWidget>
+typedef QGLWidget QTempestWidgetBase;
+#else
+typedef QWidget QTempestWidgetBase;
+#endif
+
+class QTempestWidget :public QTempestWidgetBase {
   Q_OBJECT
   public:
     explicit QTempestWidget( Tempest::AbstractAPI & api, QWidget * parent = 0 );

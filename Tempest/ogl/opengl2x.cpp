@@ -502,12 +502,8 @@ std::string Opengl2x::renderer(AbstractAPI::Device *d) const {
   return (const char*)s;
   }
 
-AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) const {
-  Device * dev = new Device();
-  dev->isPainting = false;
-  memset( &dev->target, 0, sizeof(dev->target) );
-  dev->lbUseed = false;
-  dev->tmpLockBuffer.reserve( 8096*32 );
+bool Opengl2x::createContext( Device* dev, void *hwnd, const Options & ) const {
+  (void)hwnd;
 
 #ifndef __ANDROID__
   GLuint PixelFormat;
@@ -526,7 +522,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   PixelFormat = ChoosePixelFormat( hDC, &pfd );
   SetPixelFormat( hDC, PixelFormat, &pfd);
 
-  HGLRC hRC = wglCreateContext( hDC );
+  HGLRC hRC = Detail::createContext( hDC );
   wglMakeCurrent( hDC, hRC );
 
   dev->hDC = hDC;
@@ -543,6 +539,19 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 
   dev->swapEfect = EGL_BUFFER_PRESERVED;
 #endif
+
+  return 1;
+  }
+
+AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) const {
+  Device* dev = new Device();
+  dev->isPainting = false;
+  memset( &dev->target, 0, sizeof(dev->target) );
+  dev->lbUseed = false;
+  dev->tmpLockBuffer.reserve( 8096*32 );
+
+  if( !createContext(dev, hwnd, opt) )
+    return 0;
 
   const char * ext = (const char*)glGetString(GL_EXTENSIONS);
   dev->hasS3tcTextures =

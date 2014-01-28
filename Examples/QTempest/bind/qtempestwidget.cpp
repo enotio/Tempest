@@ -51,7 +51,7 @@ QPaintEngine::Type QTempestWidget::PaintEngine::type() const{
   }
 
 QTempestWidget::QTempestWidget(Tempest::AbstractAPI &api, QWidget *parent)
-  :QWidget(parent), flg(this), device(api, (void*)winId()), impl(device) {
+  :QTempestWidgetBase(parent), flg(this), device(api, (void*)winId()), impl(device) {
   }
 
 bool QTempestWidget::event( QEvent *e ) {

@@ -8,6 +8,11 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+android: {
+  CONFIG += opengles
+  QT += opengl
+  }
+
 TARGET = QTempest
 TEMPLATE = app
 
@@ -17,7 +22,6 @@ LIBS += -L../../lib/ -lTempest
 DESTDIR = ../bin
 
 QMAKE_CXXFLAGS += -std=c++11
-
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -33,4 +37,9 @@ FORMS    += mainwindow.ui \
 
 OTHER_FILES += \
     ../bin/shader/basic.fs.glsl \
-    ../bin/shader/basic.vs.glsl
+    ../bin/shader/basic.vs.glsl \
+    android/AndroidManifest.xml
+
+ANDROID_EXTRA_LIBS = ../../lib/libTempest.so
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android

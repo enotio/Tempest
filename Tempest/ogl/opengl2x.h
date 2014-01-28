@@ -197,6 +197,8 @@ class Opengl2x : public AbstractAPI {
 
     Opengl2x( const Opengl2x& ){}
     void operator = ( const Opengl2x& ){}
+
+    bool createContext( Device*, void* hwnd, const Options &opt ) const;
   };
 
 }

@@ -72,10 +72,27 @@ void   ( GLAPIENTRY *glUniformMatrix4fv) (GLint location, GLsizei count, GLboole
 using namespace Tempest;
 using namespace Tempest::GLProc;
 
+Detail::GLContext Detail::createContext(void *hdc) {
+#ifdef __WIN32
+  return wglCreateContext( (HDC)hdc );
+#endif
+
+#ifdef __ANDROID__
+  (void)hdc;
+  //return eglCreateContext( hdc );
+#endif
+  return 0;
+  }
+
 static void* getAddr( const char* name ){
 #ifdef __WIN32
   return (void*)wglGetProcAddress(name);
 #endif
+
+#ifdef __ANDROID__
+  return (void*)eglGetProcAddress( name );
+#endif
+
   return 0;
   }
 
