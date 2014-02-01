@@ -9,6 +9,11 @@ class Window;
 
 #ifdef __WIN32__
 class WindowsAPI:public SystemAPI {
+  public:
+    static void setCursor( Tempest::Window& w,
+                           const Pixmap& pinput,
+                           int hotSpotX,
+                           int hotSpotY );
   protected:
     WindowsAPI();
     ~WindowsAPI();

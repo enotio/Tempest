@@ -697,6 +697,17 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         PostQuitMessage(0);
         }
         break;
+/*
+      case WM_SETCURSOR:
+      // If the window is minimized, draw hCurs1.
+      // If the window is not minimized, draw the
+      // default cursor (class cursor).
+
+        if (IsIconic(hWnd)) {
+          //SetCursor(hCurs1);
+          break;
+          }
+        break;*/
 
       default: {
         return DefWindowProc( hWnd, msg, wParam, lParam );
@@ -704,6 +715,91 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       }
 
     return 0;
+  }
+
+static
+HCURSOR pixmapToCursor( const Pixmap& pinput,
+                      int hotSpotX,
+                      int hotSpotY ) {
+  if( pinput.isEmpty() ) {
+    return 0;
+    }
+
+  Pixmap pm = pinput;
+  pm.setFormat( Pixmap::Format_RGBA );
+
+  ICONINFO iconInfo;
+  ZeroMemory(&iconInfo, sizeof(iconInfo));
+  iconInfo.fIcon = false;
+
+  iconInfo.xHotspot = hotSpotX;
+  iconInfo.yHotspot = hotSpotY;
+
+  HBITMAP hBitmap     = 0;
+  HBITMAP hMonoBitmap = CreateBitmap( pm.width(), pm.height(), 1,1, NULL);
+  iconInfo.hbmMask  = hMonoBitmap;
+
+  {
+    BITMAPV5HEADER bi;
+    ZeroMemory(&bi,sizeof(BITMAPV5HEADER));
+    bi.bV5Size            = sizeof(BITMAPV5HEADER);
+    bi.bV5Width           = pm.width();
+    bi.bV5Height          = pm.height();
+    bi.bV5Planes   = 1;
+    bi.bV5BitCount = 32;
+    bi.bV5Compression = BI_BITFIELDS;
+    // The following mask specification specifies a supported 32 BPP
+    // alpha format for Windows XP.
+
+    bi.bV5RedMask   =  0x00FF0000;
+    bi.bV5GreenMask =  0x0000FF00;
+    bi.bV5BlueMask  =  0x000000FF;
+    bi.bV5AlphaMask =  0xFF000000;
+
+    HDC hdc;
+    hdc = GetDC(NULL);
+
+    uint8_t *lpBits;
+    const uint8_t* input = pm.const_data();
+
+    hBitmap = CreateDIBSection( hdc, (BITMAPINFO *)&bi, DIB_RGB_COLORS,
+                                (void **)&lpBits, NULL, (DWORD)0 );
+
+    size_t bperRow = pm.width()*4;
+    for( int i=0; i<pm.height(); ++i ){
+      memcpy( lpBits + bperRow*i,
+              input  + bperRow*(pm.height()-i-1),
+              bperRow );
+      }
+
+    size_t bsz = pm.width()*pm.height()*4;
+    for( size_t i=0; i<bsz; i+=4 ){
+      uint8_t a     = *(lpBits+i);
+      *(lpBits+i)   = *(lpBits+i+2);
+      *(lpBits+i+2) = a;
+      }
+
+    iconInfo.hbmColor = hBitmap;
+    }
+
+  HICON hicon = CreateIconIndirect(&iconInfo);
+
+  DeleteObject(hBitmap);
+  DeleteObject(hMonoBitmap);
+  return (HCURSOR)hicon;
+  }
+
+void WindowsAPI::setCursor( Tempest::Window &w,
+                            const Pixmap &p,
+                            int hotSpotX,
+                            int hotSpotY ) {
+  HWND  hwnd = (HWND)handle(w);
+  HCURSOR cr = pixmapToCursor(p, hotSpotX, hotSpotY);
+
+  SetClassLong( hwnd,    // window handle
+                GCL_HCURSOR,      // change cursor
+                (LONG)cr );
+  DestroyCursor( cr );
   }
 
 #endif

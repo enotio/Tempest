@@ -360,7 +360,8 @@ HEADERS += \
     thirdparty/utf8cpp/utf8.h \
     thirdparty/utf8cpp/utf8/checked.h \
     thirdparty/utf8cpp/utf8/core.h \
-    thirdparty/utf8cpp/utf8/unchecked.h
+    thirdparty/utf8cpp/utf8/unchecked.h \
+    include/Tempest/Windows
 
 OTHER_FILES += \
     include/Tempest/Window \

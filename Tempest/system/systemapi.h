@@ -114,6 +114,8 @@ class SystemAPI{
   protected:
     SystemAPI();
 
+    static Window* handle( Tempest::Window& );
+
     void addOverlay(Tempest::Window *w, WindowOverlay *ov );
 
     virtual File*  fopenImpl ( const char16_t* fname, const char* mode );

@@ -531,3 +531,7 @@ SystemAPI::CpuInfo SystemAPI::cpuInfo() {
 void SystemAPI::addOverlay(Tempest::Window *w, WindowOverlay *ov) {
   w->addOverlay(ov);
   }
+
+SystemAPI::Window *SystemAPI::handle( Tempest::Window &owner) {
+  return owner.handle();
+  }
