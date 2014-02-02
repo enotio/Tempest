@@ -719,8 +719,8 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
 static
 HCURSOR pixmapToCursor( const Pixmap& pinput,
-                      int hotSpotX,
-                      int hotSpotY ) {
+                        int hotSpotX,
+                        int hotSpotY ) {
   if( pinput.isEmpty() ) {
     return 0;
     }
@@ -756,8 +756,7 @@ HCURSOR pixmapToCursor( const Pixmap& pinput,
     bi.bV5BlueMask  =  0x000000FF;
     bi.bV5AlphaMask =  0xFF000000;
 
-    HDC hdc;
-    hdc = GetDC(NULL);
+    HDC hdc = GetDC(NULL);
 
     uint8_t *lpBits;
     const uint8_t* input = pm.const_data();

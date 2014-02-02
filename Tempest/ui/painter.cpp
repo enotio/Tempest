@@ -160,14 +160,14 @@ void PainterDevice::drawRectTailed( int x, int y, int w, int h,
 
   if( hl>0 )
     for( int i=0; i+wl<w; i+=tw )
-      drawRect( x+i, y+h-hl-1, tw, hl, tx, ty );
+      drawRect( x+i, y+h-hl, tw, hl, tx, ty );
 
   if( wl>0 )
     for( int r=0; r+hl<h; r+=th )
-      drawRect( x+w-wl-1, y+r, wl, th, tx, ty );
+      drawRect( x+w-wl, y+r, wl, th, tx, ty );
 
   if( wl>0 && hl>0 )
-    drawRect( x+w-wl-1, y+h-hl-1, wl, hl, tx, ty );
+    drawRect( x+w-wl, y+h-hl, wl, hl, tx, ty );
   }
 
 void PainterDevice::drawLine( int x, int y, int x1, int y1 ) {
