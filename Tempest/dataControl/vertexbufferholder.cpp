@@ -39,7 +39,7 @@ VertexBufferHolder::VertexBufferHolder( const VertexBufferHolder& h)
 void VertexBufferHolder::createObject(AbstractAPI::VertexBuffer*& t,
                                        const char * src,
                                        int size, int vsize , AbstractAPI::BufferFlag flg){
-  t = allocBuffer( size, vsize, src );
+  t = allocBuffer( size, vsize, src, flg );
 
   if( !t )
     return;
@@ -64,11 +64,13 @@ void VertexBufferHolder::createObject(AbstractAPI::VertexBuffer*& t,
 
 AbstractAPI::VertexBuffer* VertexBufferHolder::allocBuffer( size_t size,
                                                             size_t vsize,
-                                                            const void *src){
-  return device().createVertexbuffer( size, vsize, src, AbstractAPI::BU_Static );
+                                                            const void *src,
+                                                            AbstractAPI::BufferFlag flg ){
+  return allocBuffer( size, vsize, src,
+                      AbstractAPI::BU_Static, flg );
   }
 
-AbstractAPI::VertexBuffer *VertexBufferHolder::allocBuffer(size_t size,
+AbstractAPI::VertexBuffer *VertexBufferHolder::allocBuffer( size_t size,
                                                             size_t vsize,
                                                             const void *src,
                                                             AbstractAPI::BufferUsage u,

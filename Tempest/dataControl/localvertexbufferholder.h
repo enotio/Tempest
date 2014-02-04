@@ -29,6 +29,15 @@ class LocalBufferHolder : public Holder {
       reset();
       }
 
+    void setMaxCollectIterations(int c){
+      nonFreed.maxColletIterations = c;
+      }
+
+    int  maxCollectIterations() const {
+      return nonFreed.maxColletIterations;
+      }
+
+
     void setReserveSize( int sz ){
       reserveSize = sz;
       }
@@ -86,11 +95,17 @@ class LocalBufferHolder : public Holder {
       if( pcollect )
         return;
 
-      nonFreed.collect(*this, &LocalBufferHolder::deleteObject);
+      nonFreed.collect( *this,
+                        &LocalBufferHolder::deleteObject,
+                        &LocalBufferHolder::deleteCond );
       }
 
     void deleteObject( NonFreed& obj ) {
       Holder::deleteObject( obj.data.handle );
+      }
+
+    bool deleteCond( NonFreed& obj ){
+      return obj.data.memSize > minVboSize;
       }
 
   private:
@@ -179,7 +194,8 @@ class LocalBufferHolder : public Holder {
       Holder::deleteObject(t);
       }
 
-    typename Holder::DescriptorType* allocBuffer( size_t size, size_t vsize,
+    typename Holder::DescriptorType* allocBuffer( size_t size,
+                                                  size_t vsize,
                                                   const void *src,
                                                   AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags ){
       return Holder::allocBuffer(size, vsize, src, AbstractAPI::BU_Dynamic, flg);

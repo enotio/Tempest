@@ -9,6 +9,7 @@ template< class T >
 struct LocalObjectPool{
   LocalObjectPool(){
     data.reserve(256);
+    maxColletIterations = 3;
     }
 
   void push( const T& t ){
@@ -34,11 +35,13 @@ struct LocalObjectPool{
     }
 
   template< class H >
-  void collect( H& h, void(H::*f)(T&) ){
+  void collect( H& h, void(H::*f)(T&), bool(H::*deleteCond)(T&) ){
     for( size_t i=0; i<data.size(); ){
       ++data[i].collectIteration;
 
-      if( data[i].collectIteration > 3 /*&& data[i].data.memSize > h.minVboSize*/ ){
+      if( data[i].collectIteration > maxColletIterations &&
+          (h.*deleteCond)(data[i])
+          /*&& data[i].data.memSize > h.minVboSize*/ ){
         deleteObject( data[i], h, f );
         data[i] = data.back();
         data.pop_back();
@@ -66,6 +69,7 @@ struct LocalObjectPool{
     }
 
   std::vector< T > data;
+  unsigned maxColletIterations;
   };
 
 }

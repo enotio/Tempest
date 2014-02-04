@@ -32,6 +32,7 @@ using namespace Tempest::GLProc;
 #include "gltypes.h"
 #include <squish.h>
 #include <cstring>
+#include <unordered_set>
 
 #include "../utils/mempool.h"
 
@@ -433,6 +434,15 @@ struct Opengl2x::Device{
   MemPool<Detail::GLBuffer>  bufPool;
   MemPool<VertexDeclaration::Declarator> declPool;
 
+  struct DynBuffer{
+    std::unordered_set<GLuint> used, freed;
+    } dynVbo;
+
+  void free( DynBuffer& buf ){
+    for( GLuint id:buf.freed )
+      glDeleteBuffers(1, &id);
+    }
+
   bool isWriteOnly( const RenderState& rs ){
     bool w[4];
     rs.getColorMask( w[0], w[1], w[2], w[3] );
@@ -659,6 +669,8 @@ void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
   Device* dev = (Device*)d;
   if( !setDevice(d) ) return;
   glDeleteFramebuffers (1, &dev->fboId);
+
+  dev->free(dev->dynVbo);
 
 #ifndef __ANDROID__
   wglMakeCurrent( NULL, NULL );
@@ -1721,12 +1733,23 @@ AbstractAPI::VertexBuffer *Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
   vbo->offset = 0;
   vbo->size   = 0;
 
-  glGenBuffers( 1, &vbo->id );
+  if( dev->dynVbo.freed.size() ){
+    vbo->id = *dev->dynVbo.freed.begin();
+    dev->dynVbo.freed.erase( dev->dynVbo.freed.begin() );
+    } else {
+    glGenBuffers( 1, &vbo->id );
+    }
+
   glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
 
   glBufferData( GL_ARRAY_BUFFER,
                 size*elSize, src,
                 gu[u] );
+
+  if( u==BU_Dynamic ){
+    dev->dynVbo.used.insert(vbo->id);
+    }
+
   T_ASSERT_X( errCk(), "OpenGL error" );
 
   return (AbstractAPI::VertexBuffer*)vbo;
@@ -1737,15 +1760,24 @@ void Opengl2x::deleteVertexBuffer(  AbstractAPI::Device *d,
   if( !setDevice(d) ) return;
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
-  if( glIsBuffer(vbo->id) ){
-    if( dev->curVBO==vbo->id ){
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
-      dev->curVBO = 0;
-      }
 
-    glDeleteBuffers( 1, &vbo->id );
+  if( dev->dynVbo.used.find(vbo->id)!=dev->dynVbo.used.end() ){
+    glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
+    glBufferData( GL_ARRAY_BUFFER, 1, 0, GL_DYNAMIC_DRAW );
+
+    dev->dynVbo.used .erase ( vbo->id );
+    dev->dynVbo.freed.insert( vbo->id );
     } else {
-    T_ASSERT_X(0, "bad glDeleteBuffers call");
+    if( glIsBuffer(vbo->id) ){
+      if( dev->curVBO==vbo->id ){
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        dev->curVBO = 0;
+        }
+
+      glDeleteBuffers( 1, &vbo->id );
+      } else {
+      T_ASSERT_X(0, "bad glDeleteBuffers call");
+      }
     }
   dev->bufPool.free(vbo);
 

@@ -58,6 +58,7 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
 
     virtual void presentEvent();
     void deleteObject( NonFreed& obj );
+    bool deleteCond( NonFreed& obj );
   private:
     void createObject( Tempest::AbstractAPI::Texture*& t,
                        int w, int h, bool mips,
@@ -76,7 +77,6 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
 
     bool needToRestore;
     int  maxReserved;
-    int  mmaxColletIterations;
     bool pcollect;
   };
 

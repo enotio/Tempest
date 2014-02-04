@@ -946,6 +946,8 @@ opengl2x.obj: ..\Tempest\ogl\opengl2x.cpp ..\Tempest\ogl\opengl2x.h \
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\EGL\egl.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\EGL\eglplatform.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\KHR\khrplatform.h \
@@ -996,8 +998,6 @@ opengl2x.obj: ..\Tempest\ogl\opengl2x.cpp ..\Tempest\ogl\opengl2x.h \
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -1258,6 +1258,8 @@ glsl.obj: ..\Tempest\ogl\glsl.cpp ..\Tempest\ogl\glsl.h \
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\bits\stl_tree.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\bits\stl_map.h \
@@ -1290,8 +1292,6 @@ glsl.obj: ..\Tempest\ogl\glsl.cpp ..\Tempest\ogl\glsl.h \
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -6092,6 +6092,8 @@ device.obj: ..\Tempest\core\device.cpp ..\Tempest\core\device.h \
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\AbstractShadingLang \
 		..\Tempest\shading\abstractshadinglang.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
@@ -6112,8 +6114,6 @@ device.obj: ..\Tempest\core\device.cpp ..\Tempest\core\device.h \
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -6409,10 +6409,10 @@ abstractapi.obj: ..\Tempest\core\abstractapi.cpp ..\Tempest\core\abstractapi.h \
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
-		..\Tempest\include\Tempest\SystemAPI \
-		..\Tempest\system\systemapi.h \
 		..\Tempest\include\Tempest\Utility \
 		..\Tempest\utils\utility.h \
+		..\Tempest\include\Tempest\SystemAPI \
+		..\Tempest\system\systemapi.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -6665,6 +6665,8 @@ vertexdeclaration.obj: ..\Tempest\core\wrappers\vertexdeclaration.cpp ..\Tempest
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\AbstractShadingLang \
 		..\Tempest\shading\abstractshadinglang.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
@@ -6685,8 +6687,6 @@ vertexdeclaration.obj: ..\Tempest\core\wrappers\vertexdeclaration.cpp ..\Tempest
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -6975,6 +6975,8 @@ vertexbuffer.obj: ..\Tempest\core\wrappers\vertexbuffer.cpp ..\Tempest\core\wrap
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\AbstractShadingLang \
 		..\Tempest\shading\abstractshadinglang.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
@@ -6995,8 +6997,6 @@ vertexbuffer.obj: ..\Tempest\core\wrappers\vertexbuffer.cpp ..\Tempest\core\wrap
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -7590,10 +7590,10 @@ pixmap.obj: ..\Tempest\core\wrappers\pixmap.cpp ..\Tempest\core\wrappers\pixmap.
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\backward\auto_ptr.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
-		..\Tempest\include\Tempest\SystemAPI \
-		..\Tempest\system\systemapi.h \
 		..\Tempest\include\Tempest\Utility \
 		..\Tempest\utils\utility.h \
+		..\Tempest\include\Tempest\SystemAPI \
+		..\Tempest\system\systemapi.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -7855,6 +7855,8 @@ indexbuffer.obj: ..\Tempest\core\wrappers\indexbuffer.cpp ..\Tempest\core\wrappe
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\AbstractShadingLang \
 		..\Tempest\shading\abstractshadinglang.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
@@ -7875,8 +7877,6 @@ indexbuffer.obj: ..\Tempest\core\wrappers\indexbuffer.cpp ..\Tempest\core\wrappe
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -10671,6 +10671,8 @@ render.obj: ..\Tempest\render\render.cpp ..\Tempest\render\render.h \
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\AbstractShadingLang \
 		..\Tempest\shading\abstractshadinglang.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
@@ -10691,8 +10693,6 @@ render.obj: ..\Tempest\render\render.cpp ..\Tempest\render\render.h \
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -11080,6 +11080,8 @@ viewtester.obj: ..\Tempest\scene\viewtester.cpp ..\Tempest\scene\viewtester.h \
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\AbstractShadingLang \
 		..\Tempest\shading\abstractshadinglang.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
@@ -11100,8 +11102,6 @@ viewtester.obj: ..\Tempest\scene\viewtester.cpp ..\Tempest\scene\viewtester.h \
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -11478,6 +11478,8 @@ model.obj: ..\Tempest\scene\model.cpp ..\Tempest\scene\model.h \
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\AbstractShadingLang \
 		..\Tempest\shading\abstractshadinglang.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
@@ -11498,8 +11500,6 @@ model.obj: ..\Tempest\scene\model.cpp ..\Tempest\scene\model.h \
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -12121,6 +12121,8 @@ graphicobject.obj: ..\Tempest\scene\graphicobject.cpp ..\Tempest\scene\graphicob
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\AbstractShadingLang \
 		..\Tempest\shading\abstractshadinglang.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
@@ -12141,8 +12143,6 @@ graphicobject.obj: ..\Tempest\scene\graphicobject.cpp ..\Tempest\scene\graphicob
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -12572,6 +12572,8 @@ abstractscene.obj: ..\Tempest\scene\abstractscene.cpp ..\Tempest\scene\abstracts
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\AbstractShadingLang \
 		..\Tempest\shading\abstractshadinglang.h \
 		..\Tempest\include\Tempest\VertexShader \
@@ -12582,8 +12584,6 @@ abstractscene.obj: ..\Tempest\scene\abstractscene.cpp ..\Tempest\scene\abstracts
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -12979,6 +12979,8 @@ abstractgraphicobject.obj: ..\Tempest\scene\abstractgraphicobject.cpp ..\Tempest
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\AbstractShadingLang \
 		..\Tempest\shading\abstractshadinglang.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
@@ -12999,8 +13001,6 @@ abstractgraphicobject.obj: ..\Tempest\scene\abstractgraphicobject.cpp ..\Tempest
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -13657,6 +13657,8 @@ vertexshader.obj: ..\Tempest\shading\vertexshader.cpp ..\Tempest\shading\vertexs
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\bits\stl_tree.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\bits\stl_map.h \
@@ -13673,8 +13675,6 @@ vertexshader.obj: ..\Tempest\shading\vertexshader.cpp ..\Tempest\shading\vertexs
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -14281,6 +14281,8 @@ uniformcash.obj: ..\Tempest\shading\uniformcash.cpp ..\Tempest\shading\uniformca
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Matrix4x4 \
 		..\Tempest\math\matrix4x4.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o uniformcash.obj ..\Tempest\shading\uniformcash.cpp
@@ -14532,6 +14534,8 @@ fragmentshader.obj: ..\Tempest\shading\fragmentshader.cpp ..\Tempest\shading\fra
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\bits\stl_tree.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\bits\stl_map.h \
@@ -14548,8 +14552,6 @@ fragmentshader.obj: ..\Tempest\shading\fragmentshader.cpp ..\Tempest\shading\fra
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -14839,6 +14841,8 @@ abstractshadinglang.obj: ..\Tempest\shading\abstractshadinglang.cpp ..\Tempest\s
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\bits\stl_tree.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\bits\stl_map.h \
@@ -14858,8 +14862,6 @@ abstractshadinglang.obj: ..\Tempest\shading\abstractshadinglang.cpp ..\Tempest\s
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -15154,6 +15156,8 @@ tessobject.obj: ..\Tempest\utils\tessobject.cpp ..\Tempest\utils\tessobject.h \
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\AbstractShadingLang \
 		..\Tempest\shading\abstractshadinglang.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
@@ -15174,8 +15178,6 @@ tessobject.obj: ..\Tempest\utils\tessobject.cpp ..\Tempest\utils\tessobject.h \
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -25583,6 +25585,8 @@ programobject.obj: ..\Tempest\shading\programobject.cpp ..\Tempest\shading\progr
 		..\Tempest\utils\mempool.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
+		..\Tempest\include\Tempest\Utility \
+		..\Tempest\utils\utility.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\map \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\bits\stl_tree.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\bits\stl_map.h \
@@ -25599,8 +25603,6 @@ programobject.obj: ..\Tempest\shading\programobject.cpp ..\Tempest\shading\progr
 		..\Tempest\dataControl\abstractholder.h \
 		..\Tempest\include\Tempest\SystemAPI \
 		..\Tempest\system\systemapi.h \
-		..\Tempest\include\Tempest\Utility \
-		..\Tempest\utils\utility.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -25878,10 +25880,10 @@ imagecodec.obj: ..\Tempest\core\imagecodec.cpp ..\Tempest\core\imagecodec.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\backward\auto_ptr.h \
 		..\Tempest\include\Tempest\Assert \
 		..\Tempest\core\assert.h \
-		..\Tempest\include\Tempest\SystemAPI \
-		..\Tempest\system\systemapi.h \
 		..\Tempest\include\Tempest\Utility \
 		..\Tempest\utils\utility.h \
+		..\Tempest\include\Tempest\SystemAPI \
+		..\Tempest\system\systemapi.h \
 		..\Tempest\include\Tempest\Event \
 		..\Tempest\ui\event.h \
 		..\Tempest\include\Tempest\ImageCodec \
@@ -27838,7 +27840,20 @@ glfn.obj: ..\Tempest\ogl\glfn.cpp ..\Tempest\ogl\glfn.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\include\cstddef \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\libs\armeabi-v7a\include\bits\c++config.h \
 		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\libs\armeabi-v7a\include\bits\os_defines.h \
-		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\libs\armeabi-v7a\include\bits\cpu_defines.h
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\sources\cxx-stl\gnu-libstdc++\4.8\libs\armeabi-v7a\include\bits\cpu_defines.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\EGL\egl.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\EGL\eglplatform.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\KHR\khrplatform.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\sys\cdefs.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\sys\cdefs_elf.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\android\api-level.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\stdint.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\sys\_types.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\machine\_types.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\sys\_wchar_limits.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\inttypes.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\android\native_window.h \
+		..\..\libs\android_sdk\android-ndk-r9c-windows-x86\android-ndk-r9c\platforms\android-9\arch-arm\usr\include\android\rect.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o glfn.obj ..\Tempest\ogl\glfn.cpp
 
 ####### Install

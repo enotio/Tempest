@@ -50,7 +50,8 @@ class IndexBufferHolder : public AbstractHolder
 
 
     virtual AbstractAPI::IndexBuffer* allocBuffer( size_t size, size_t vsize,
-                                                   const void *src );
+                                                   const void *src,
+                                                   AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags );
     virtual AbstractAPI::IndexBuffer* allocBuffer( size_t size, size_t vsize,
                                                    const void *src,
                                                    AbstractAPI::BufferUsage u,

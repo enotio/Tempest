@@ -10,7 +10,6 @@ LocalTexturesHolder::LocalTexturesHolder( Tempest::Device &d ):Tempest::TextureH
   dynTextures.reserve(128);
 
   needToRestore = false;
-  mmaxColletIterations = 3;
   maxReserved = -1;
   pcollect    = false;
   }
@@ -20,11 +19,11 @@ LocalTexturesHolder::~LocalTexturesHolder() {
   }
 
 void LocalTexturesHolder::setMaxCollectIterations(int c) {
-  mmaxColletIterations = c;
+  nonFreed.maxColletIterations = c;
   }
 
 int LocalTexturesHolder::maxCollectIterations() const {
-  return mmaxColletIterations;
+  return nonFreed.maxColletIterations;
   }
 
 void LocalTexturesHolder::setMaxReservedCount(int s) {
@@ -61,11 +60,17 @@ void LocalTexturesHolder::presentEvent() {
   if( pcollect )
     return;
 
-  nonFreed.collect(*this, &LocalTexturesHolder::deleteObject );
+  nonFreed.collect( *this,
+                    &LocalTexturesHolder::deleteObject,
+                    &LocalTexturesHolder::deleteCond );
   }
 
-void LocalTexturesHolder::deleteObject(LocalTexturesHolder::NonFreed &obj) {
+void LocalTexturesHolder::deleteObject( LocalTexturesHolder::NonFreed &obj ) {
   Tempest::TextureHolder::deleteObject( obj.data.handle );
+  }
+
+bool LocalTexturesHolder::deleteCond( LocalTexturesHolder::NonFreed&  ){
+  return true;
   }
 
 void LocalTexturesHolder::createObject(Tempest::AbstractAPI::Texture *&t,

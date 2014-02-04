@@ -74,8 +74,10 @@ void IndexBufferHolder::deleteObject( AbstractAPI::IndexBuffer* t ){
 
 AbstractAPI::IndexBuffer *IndexBufferHolder::allocBuffer( size_t size,
                                                           size_t vsize,
-                                                          const void *src) {
-  return device().createIndexBuffer( size, vsize, src, AbstractAPI::BU_Static );
+                                                          const void *src,
+                                                          AbstractAPI::BufferFlag flg ) {
+  return allocBuffer( size, vsize, src,
+                      AbstractAPI::BU_Static, flg );
   }
 
 AbstractAPI::IndexBuffer *IndexBufferHolder::allocBuffer( size_t size,
