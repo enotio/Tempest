@@ -11,8 +11,7 @@ CONFIG   += dll
 DEFINES += TEMPEST_M_TREADS
 #DEFINES += __ANDROID__
 
-INCLUDEPATH += math
-INCLUDEPATH += squish
+INCLUDEPATH += ./thirdparty/squish
 INCLUDEPATH += "./include"
 DESTDIR = ../lib
 
@@ -156,16 +155,16 @@ SOURCES += \
     utils/tessobject.cpp \
     utils/color.cpp \
     shading/shaderinput.cpp \
-    squish/squish.cpp \
-    squish/singlecolourlookup.inl \
-    squish/singlecolourfit.cpp \
-    squish/rangefit.cpp \
-    squish/maths.cpp \
-    squish/colourset.cpp \
-    squish/colourfit.cpp \
-    squish/colourblock.cpp \
-    squish/clusterfit.cpp \
-    squish/alpha.cpp \
+    thirdparty/squish/squish.cpp \
+    thirdparty/squish/singlecolourlookup.inl \
+    thirdparty/squish/singlecolourfit.cpp \
+    thirdparty/squish/rangefit.cpp \
+    thirdparty/squish/maths.cpp \
+    thirdparty/squish/colourset.cpp \
+    thirdparty/squish/colourfit.cpp \
+    thirdparty/squish/colourblock.cpp \
+    thirdparty/squish/clusterfit.cpp \
+    thirdparty/squish/alpha.cpp \
     dataControl/resourcecontext.cpp \
     system/systemapi.cpp \
     core/wrappers/half.cpp \
@@ -292,20 +291,20 @@ HEADERS += \
     utils/cwnptr.h \
     utils/color.h \
     shading/shaderinput.h \
-    squish/squish.h \
-    squish/singlecolourfit.h \
-    squish/simd_ve.h \
-    squish/simd_sse.h \
-    squish/simd_float.h \
-    squish/simd.h \
-    squish/rangefit.h \
-    squish/maths.h \
-    squish/config.h \
-    squish/colourset.h \
-    squish/colourfit.h \
-    squish/colourblock.h \
-    squish/clusterfit.h \
-    squish/alpha.h \
+    thirdparty/squish/squish.h \
+    thirdparty/squish/singlecolourfit.h \
+    thirdparty/squish/simd_ve.h \
+    thirdparty/squish/simd_sse.h \
+    thirdparty/squish/simd_float.h \
+    thirdparty/squish/simd.h \
+    thirdparty/squish/rangefit.h \
+    thirdparty/squish/maths.h \
+    thirdparty/squish/config.h \
+    thirdparty/squish/colourset.h \
+    thirdparty/squish/colourfit.h \
+    thirdparty/squish/colourblock.h \
+    thirdparty/squish/clusterfit.h \
+    thirdparty/squish/alpha.h \
     system/ddsdef.h \
     dataControl/resourcecontext.h \
     system/systemapi.h \

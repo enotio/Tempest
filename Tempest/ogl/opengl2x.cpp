@@ -88,6 +88,8 @@ struct Opengl2x::Device{
   GLuint vbo, curVBO;
   GLuint ibo, curIBO;
 
+  Detail::GLBuffer *cVBO, *cIBO;
+
   std::vector<bool> vAttrLoc;
 
   int vertexSize, curVboOffsetIndex, curIboOffsetIndex;
@@ -1741,6 +1743,8 @@ AbstractAPI::VertexBuffer *Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
     }
 
   glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
+  vbo->vertexCount = size;
+  vbo->byteCount   = size*elSize;
 
   glBufferData( GL_ARRAY_BUFFER,
                 size*elSize, src,
@@ -1807,6 +1811,8 @@ AbstractAPI::IndexBuffer *Opengl2x::createIndexBuffer( AbstractAPI::Device *d,
   Detail::GLBuffer *ibo = dev->bufPool.alloc();
   ibo->offset = 0;
   ibo->size   = 0;
+  ibo->vertexCount = size;
+  ibo->byteCount   = size*elSize;
 
   glGenBuffers( 1, &ibo->id );
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo->id );
@@ -1858,6 +1864,8 @@ void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
   vbo->offset = offset;
   vbo->size   = size;
 
+  T_ASSERT( vbo->offset+vbo->size <= vbo->byteCount );
+
   T_ASSERT_X( errCk(), "OpenGL error" );
   return vbo->mappedData;
   }
@@ -1903,6 +1911,8 @@ void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
 
   vbo->offset = offset;
   vbo->size   = size;
+
+  T_ASSERT( vbo->offset+vbo->size <= vbo->byteCount );
 
   T_ASSERT_X( errCk(), "OpenGL error" );
   return vbo->mappedData;
@@ -1981,6 +1991,7 @@ void Opengl2x::bindVertexBuffer( AbstractAPI::Device *d,
   if( !setDevice(d) ) return;
 
   dev->vbo        = *(GLuint*)b;
+  dev->cVBO       = (Detail::GLBuffer*)b;
   dev->vertexSize = vsize;
   }
 
@@ -1989,6 +2000,7 @@ void Opengl2x::bindIndexBuffer( AbstractAPI::Device * d,
   if( !setDevice(d) ) return;
 
   dev->ibo = *(GLuint*)b;
+  dev->cIBO       = (Detail::GLBuffer*)b;
   }
 
 void Opengl2x::setupBuffers( int vboOffsetIndex,
@@ -2086,6 +2098,7 @@ void Opengl2x::draw( AbstractAPI::Device *de,
   setDevice(de);
 
   setupBuffers( 0, false, false, true );
+  T_ASSERT( size_t(firstVertex+pCount) <= dev->cVBO->vertexCount );
 
   if( dev->curIBO!=0 ){
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
@@ -2121,6 +2134,8 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
   bool rebind = !(dev->curIBO == dev->ibo && dev->curIboOffsetIndex==iboOffsetIndex );
   setupBuffers( vboOffsetIndex*dev->vertexSize, false, false, true );
 
+  T_ASSERT( size_t(iboOffsetIndex+pCount) <= dev->cIBO->vertexCount );
+
   if( rebind ){
     dev->curIBO            = dev->ibo;
     dev->curIboOffsetIndex = iboOffsetIndex;
@@ -2129,8 +2144,8 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
   T_ASSERT_X( errCk(), "OpenGL error" );
 
   static const GLenum type[] = {
-    GL_POINTS,         // = 1,
-    GL_LINES,          // = 2,
+    GL_POINTS,        // = 1,
+    GL_LINES,         // = 2,
     GL_LINE_STRIP,    // = 3,
     GL_TRIANGLES,     // = 4,
     GL_TRIANGLE_STRIP,// = 5,

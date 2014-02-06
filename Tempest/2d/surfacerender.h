@@ -35,7 +35,8 @@ class SurfaceRender {
                    Tempest::IndexBufferHolder  & ibHolder,
                    Tempest::SpritesHolder & sp,
                    bool clrVbo   = true,
-                   bool flushVbo = true );
+                   bool flushVbo = true,
+                   int pass      = 0 );
 
     template< class T, class F >
     void buildVbo( T &surf,
@@ -45,12 +46,13 @@ class SurfaceRender {
                    Tempest::VertexBufferHolder & vbHolder,
                    Tempest::IndexBufferHolder  & /*ibHolder*/,
                    Tempest::SpritesHolder & sp,
-                   bool clrVbo = true,
-                   bool flushVbo = true  ){
+                   bool clrVbo   = true,
+                   bool flushVbo = true,
+                   int pass      = 0 ){
       surf.nToUpdate = false;
 
       PaintDev p(*this, sstk, sp, 0, 0, w,h);
-      PaintEvent e(p,0);
+      PaintEvent e(p,pass);
 
       invW =  2.0f/w;
       invH = -2.0f/h;

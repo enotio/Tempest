@@ -35,7 +35,6 @@ Widget::Widget(ResourceContext *context):
   chFocus      = false;
   uscissor     = true;
   nToUpdate    = false;
-  multiPaint   = false;
   multiTouch   = false;
 
   deleteLaterFlag = false;
@@ -313,10 +312,14 @@ Point Widget::mapToRoot(const Point &p) const {
   }
 
 void Widget::paintEvent( PaintEvent &pe ) {
-  if( !hasMultiPassPaint() && pe.pass )
+  if( pe.pass )
     return;
 
   nToUpdate = false;
+  paintNested(pe);
+  }
+
+void Widget::multiPaintEvent(PaintEvent &pe) {
   paintNested(pe);
   }
 
@@ -441,14 +444,6 @@ bool Widget::needToUpdate() const {
   return nToUpdate;
   }
 
-void Widget::setMultiPassPaint(bool a) {
-  multiPaint = a;
-  }
-
-bool Widget::hasMultiPassPaint() const {
-  return multiPaint;
-  }
-
 void Widget::impl_keyPressEvent(Widget *wd, KeyEvent &e) {
   DeleteGuard guard(wd);
   (void)guard;
@@ -536,8 +531,7 @@ void Widget::paintNested( PaintEvent &p ){
     Widget *wi = w[i];
     if( wi->wvisible &&
         !(wi->uscissor &&
-          p.painter.scissor().intersected(wi->rect()).isEmpty()) &&
-        !(!wi->hasMultiPassPaint() && p.pass) ){
+          p.painter.scissor().intersected(wi->rect()).isEmpty()) ){
       Tempest::Point pt = wi->pos();
 
       bool uscis = wi->uscissor;
@@ -938,8 +932,12 @@ void Widget::event( Event &e ) {
       shortcutEvent( (Tempest::KeyEvent&)e );
       break;
 
-    case Event::Paint:
-      paintEvent( (Tempest::PaintEvent&)e );
+    case Event::Paint:{
+      Tempest::PaintEvent& pe = (Tempest::PaintEvent&)e;
+      if( pe.pass==0 )
+        paintEvent( pe ); else
+        multiPaintEvent( pe );
+      }
       break;
 
     case Event::Close:

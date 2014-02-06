@@ -22,6 +22,7 @@ namespace Detail{
     char * mappedData;
 
     unsigned offset, size;
+    size_t   vertexCount, byteCount;
     };
 
   class GLTexture;

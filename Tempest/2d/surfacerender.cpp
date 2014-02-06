@@ -71,10 +71,17 @@ void SurfaceRender::buildVbo( Tempest::Widget & surf,
                               IndexBufferHolder  & ibHolder,
                               SpritesHolder &sp,
                               bool clrVbo,
-                              bool flushVbo ) {
-  buildVbo( surf, std::mem_fn(&Tempest::Widget::paintEvent),
-            surf.w(), surf.h(), vbHolder, ibHolder, sp,
-            clrVbo, flushVbo );
+                              bool flushVbo,
+                              int  pass ) {
+  if( pass==0 ){
+    buildVbo( surf, std::mem_fn(&Tempest::Widget::paintEvent),
+              surf.w(), surf.h(), vbHolder, ibHolder, sp,
+              clrVbo, flushVbo, pass );
+    } else {
+    buildVbo( surf, std::mem_fn(&Tempest::Widget::multiPaintEvent),
+              surf.w(), surf.h(), vbHolder, ibHolder, sp,
+              clrVbo, flushVbo, pass );
+    }
   }
 
 void SurfaceRender::render(Device &dev) const {

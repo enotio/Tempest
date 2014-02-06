@@ -109,7 +109,9 @@ class Widget {
 
     Point mapToRoot( const Point & p ) const;
 
-    virtual void paintEvent ( Tempest::PaintEvent & e );
+    virtual void paintEvent      ( Tempest::PaintEvent & e );
+    virtual void multiPaintEvent ( Tempest::PaintEvent & e );
+
     virtual void mouseMoveEvent ( Tempest::MouseEvent & e );
     virtual void mouseDragEvent ( Tempest::MouseEvent & e );
     virtual void mouseDownEvent ( Tempest::MouseEvent & e );
@@ -194,7 +196,7 @@ class Widget {
 
     ResourceContext* rcontext;
 
-    bool nToUpdate, multiPaint, deleteLaterFlag, multiTouch;
+    bool nToUpdate, deleteLaterFlag, multiTouch;
 
     int  deleteLaterFlagGuard;
     void lockDelete();
