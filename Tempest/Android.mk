@@ -8,7 +8,7 @@ Tempest_PATH := $(LOCAL_PATH)
 
 LOCAL_C_INCLUDES := $(Tempest_PATH)/include\
                     $(Tempest_PATH)/math\
-                    $(Tempest_PATH)/squish\
+                    $(Tempest_PATH)/thirdparty/squish\
                     $(Tempest_PATH)/thirdparty\
                     $(Tempest_PATH)/thirdparty/freetype/include
 
@@ -56,12 +56,12 @@ LOCAL_SRC_FILES += \
   $(wildcard $(LOCAL_PATH)/render/*.cpp) \
   $(wildcard $(LOCAL_PATH)/scene/*.cpp) \
   $(wildcard $(LOCAL_PATH)/shading/*.cpp) \
-  $(wildcard $(LOCAL_PATH)/squish/*.cpp) \
   $(wildcard $(LOCAL_PATH)/system/*.cpp) \
   $(wildcard $(LOCAL_PATH)/utils/*.cpp) \
   $(wildcard $(LOCAL_PATH)/ui/*.cpp) \
   $(wildcard $(LOCAL_PATH)/2d/*.cpp) \
   $(wildcard $(LOCAL_PATH)/io/*.cpp) \
+  $(wildcard $(LOCAL_PATH)/thirdparty/squish/*.cpp) \
   $(wildcard $(LOCAL_PATH)/thirdparty/nv_math/*.cpp) \
   $(wildcard $(LOCAL_PATH)/thirdparty/libpng/*.c) \
   $(wildcard $(LOCAL_PATH)/thirdparty/libjpeg/*.c) \
