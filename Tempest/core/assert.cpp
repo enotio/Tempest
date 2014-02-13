@@ -11,6 +11,7 @@
 
 namespace Tempest{
   static void h_default( const char *file, int line,
+                         const char *func,
                          const char *X, const char *msg) {
 #ifdef __ANDROID__
     __android_log_assert("","","%s","");
@@ -20,26 +21,29 @@ namespace Tempest{
 #endif
     (void)file;
     (void)line;
+    (void)func;
     (void)X;
     (void)msg;
     //assert(0 && "T_ASSERT failed");
     }
 
   static void h_default_warn( const char *file, int line,
+                              const char *func,
                               const char *X, const char *msg) {
     (void)file;
     (void)line;
+    (void)func;
     (void)X;
     (void)msg;
     //assert(0 && "T_ASSERT failed");
     }
 
-  static void (*h_assert)( const char *,
-                           int, const char *,
+  static void (*h_assert)( const char *, int, const char *,
+                           const char *,
                            const char *) = h_default;
 
-  static void (*h_assert_warn)( const char *,
-                                int, const char *,
+  static void (*h_assert_warn)( const char *, int, const char *,
+                                const char *,
                                 const char *) = h_default_warn;
 
   }
@@ -47,7 +51,9 @@ namespace Tempest{
 void Tempest::Detail::te_assert_impl( bool a,
                                       const char *file,
                                       int line,
-                                      const char *X, const char *msg) {
+                                      const char* func,
+                                      const char *X,
+                                      const char *msg ) {
   if(a)
     return;
 
@@ -57,7 +63,7 @@ void Tempest::Detail::te_assert_impl( bool a,
   if( msg )
     ss << ",\t\"" << msg <<"\"\t";
 
-  ss << "[file " << file <<", line " << line <<"]";
+  ss << "[file " << file <<", line " << line <<", func: '" << func <<"']";
 
 #ifdef __ANDROID__
   __android_log_print( ANDROID_LOG_ERROR, "Tempest", "%s", ss.str().c_str() );
@@ -66,11 +72,14 @@ void Tempest::Detail::te_assert_impl( bool a,
   std::cerr << ss.str() << std::endl;
 #endif
 
-  h_assert(file, line, X, msg);
+  h_assert(file, line, func, X, msg);
   }
 
-void Tempest::Detail::te_warning_impl( bool a, const char *file,
-                                       int line, const char *X,
+void Tempest::Detail::te_warning_impl( bool a,
+                                       const char *file,
+                                       int line,
+                                       const char* func,
+                                       const char *X,
                                        const char *msg ) {
   if(a)
     return;
@@ -81,7 +90,7 @@ void Tempest::Detail::te_warning_impl( bool a, const char *file,
   if( msg )
     ss << ",\t\"" << msg <<"\"\t";
 
-  ss << "[file " << file <<", line " << line <<"]";
+  ss << "[file " << file <<", line " << line <<", func: '" << func <<"']";
 
 #ifdef __ANDROID__
   __android_log_print( ANDROID_LOG_WARN, "Tempest", "%s", ss.str().c_str() );
@@ -90,11 +99,12 @@ void Tempest::Detail::te_warning_impl( bool a, const char *file,
   std::cerr << ss.str() << std::endl;
 #endif
 
-  h_assert_warn(file, line, X, msg);
+  h_assert_warn(file, line, func, X, msg);
   }
 
-void Tempest::installAssertHandler( void (*f)( const char *,
-                                               int, const char *,
+void Tempest::installAssertHandler( void (*f)( const char *, int,
+                                               const char *,
+                                               const char *,
                                                const char *)) {
   if( f )
     h_assert = f;
@@ -102,8 +112,9 @@ void Tempest::installAssertHandler( void (*f)( const char *,
     h_assert = h_default;
   }
 
-void Tempest::installWarningHandler( void (*f)( const char *,
-                                                int, const char *,
+void Tempest::installWarningHandler( void (*f)( const char *, int,
+                                                const char *,
+                                                const char *,
                                                 const char *)) {
   if( f )
     h_assert_warn = f;

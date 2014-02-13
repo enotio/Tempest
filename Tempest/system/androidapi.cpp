@@ -201,6 +201,8 @@ static struct Android{
     surface = 0;
     context = 0;
 
+    msg.reserve(256);
+
     env        = 0;
     densityDpi = 480;
 
