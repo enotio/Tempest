@@ -181,7 +181,7 @@ class Model {
                const Tempest::VertexDeclaration::Declarator& decl ){
       vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
 
-     setupMSZ( iboSize );
+      setupMSZ( iboSize );
       vbo = vboHolder.load( buf,   bufSize );
       ibo = iboHolder.load( index, iboSize );
 
@@ -221,9 +221,7 @@ class Model {
     void load( const Tempest::VertexBuffer<ModelVertex> & v,
                const Tempest::IndexBuffer<uint16_t>     & i,
                const Tempest::VertexDeclaration   & d ){
-      if( i.size() )
-        setupMSZ(i.size()); else
-        setupMSZ(v.size());
+      setupMSZ(i.size());
 
       vbo   = v;
       ibo   = i;
