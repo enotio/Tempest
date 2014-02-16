@@ -566,6 +566,12 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
     return 0;
 
   const char * ext = (const char*)glGetString(GL_EXTENSIONS);
+  T_ASSERT_X(ext, "opengl context not created");
+
+  if( !ext ){
+    ext = "";
+    }
+
   dev->hasS3tcTextures =
       (strstr(ext, "GL_OES_texture_compression_S3TC")!=0) ||
       (strstr(ext, "GL_EXT_texture_compression_s3tc")!=0);
