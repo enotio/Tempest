@@ -862,6 +862,9 @@ void Widget::shortcutEvent(KeyEvent &e) {
     return;
     }
 
+  DeleteGuard g(this);
+  (void)g;
+
   size_t sz = layout().widgets().size()-1;
   for( size_t i=0; i<layout().widgets().size(); ++i ){
     layout().widgets()[sz-i]->event(e);
