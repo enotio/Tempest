@@ -7,9 +7,12 @@
 #include <Tempest/VertexBuffer>
 #include <Tempest/Assert>
 
+#include <Tempest/GraphicsSubsystem>
+
 #include <set>
 #include <unordered_set>
 #include <sstream>
+#include <algorithm>
 
 using namespace Tempest;
 
@@ -158,6 +161,21 @@ struct Device::Data{
     };
 
   std::vector<Dec> declPool;
+  std::vector<GraphicsSubsystem*> subSystems;
+  
+  void add( GraphicsSubsystem* s ){
+    subSystems.push_back(s);
+    }
+  
+  void del( GraphicsSubsystem* s ){
+    subSystems.resize( std::remove( subSystems.begin(), subSystems.end(), s )
+                       - subSystems.begin() );
+    }
+
+  void event( const GraphicsSubsystem::Event& e ){
+    for( size_t i=0; i<subSystems.size(); ++i )
+      subSystems[i]->event(e);
+    }
 
   AbstractAPI::VertexDecl* createDecl( const VertexDeclaration::Declarator& d ){
     for( size_t i=0; i<declPool.size(); ++i )
@@ -274,6 +292,8 @@ void Device::init( const AbstractAPI &,
   shLang = api.createShadingLang( impl );
 
   data = new Data();
+  data->add(shLang);
+
   data->declPool.reserve(64);
 
   data->windowHwnd = windowHwnd;
@@ -315,6 +335,8 @@ Device::~Device(){
   delete data->vboH;
 
   api.retDSSurfaceTaget( impl, data->depthStencil );
+
+  data->del(shLang);
   delete data;
 
   api.deleteShadingLang( shLang );
@@ -609,6 +631,10 @@ std::string Device::surfaceShader( AbstractShadingLang::ShaderType t,
   return shadingLang().surfaceShader(t, opt);
   }
 
+void Device::event(const GraphicsSubsystem::Event &e) const {
+  data->event(e);
+  }
+
 AbstractAPI::Texture *Device::createTexture( const Pixmap &p,
                                              bool mips,
                                              bool compress ) {
@@ -661,6 +687,11 @@ AbstractAPI::Texture *Device::createTexture3d( int x, int y, int z,
 
 void Device::deleteTexture( AbstractAPI::Texture* & t ){
   forceEndPaint();
+
+  GraphicsSubsystem::DeleteEvent e;
+  e.texture = t;
+  event(e);
+
   data->allockCount.tex--;
   api.deleteTexture( impl, t );
   }
@@ -691,6 +722,11 @@ AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el,
 
 void Device::deleteVertexBuffer( AbstractAPI::VertexBuffer* vbo ){
   forceEndPaint();
+
+  GraphicsSubsystem::DeleteEvent e;
+  e.vertex = vbo;
+  event(e);
+
   data->allockCount.vbo--;
   api.deleteVertexBuffer( impl, vbo );
   }
@@ -720,6 +756,11 @@ AbstractAPI::IndexBuffer *Device::createIndexBuffer( size_t size,
 
 void Device::deleteIndexBuffer( AbstractAPI::IndexBuffer* b ){
   forceEndPaint();
+
+  GraphicsSubsystem::DeleteEvent e;
+  e.index = b;
+  event(e);
+
   data->allockCount.ibo--;
   api.deleteIndexBuffer( impl, b);
   }
@@ -771,10 +812,55 @@ AbstractAPI::VertexDecl *
 void Device::deleteVertexDecl( AbstractAPI::VertexDecl* d ) const {
   forceEndPaint();
 
-  if( data->deleteDecl(d) )
+  if( data->deleteDecl(d) ){
+    GraphicsSubsystem::DeleteEvent e;
+    e.declaration = d;
+    event(e);
     api.deleteVertexDecl( impl, d );
+    }
 
   data->allockCount.dec--;
+}
+
+void *Device::createShaderFromSource( AbstractAPI::ShaderType t,
+                                      const std::string &src,
+                                      std::string &outputLog) const {
+  T_WARNING_X( src.size()!=0, "shader source is empty" );
+
+  switch( t ){
+    case AbstractAPI::Vertex:
+      return createVertexShaderFromSource(src, outputLog);
+    case AbstractAPI::Fragment:
+      return createFragmentShaderFromSource(src, outputLog);
+    }
+
+  return 0;
+  }
+
+AbstractAPI::VertexShader *
+  Device::createVertexShaderFromSource( const std::string &src,
+                                        std::string &log ) const {
+  return shLang->createVertexShaderFromSource(src, log);
+  }
+
+void Device::deleteShader(AbstractAPI::VertexShader *s) const {
+  GraphicsSubsystem::DeleteEvent e;
+  e.vs = s;
+  event(e);
+  shLang->deleteVertexShader(s);
+  }
+
+AbstractAPI::FragmentShader *
+  Device::createFragmentShaderFromSource( const std::string &src,
+                                          std::string &log) const {
+  return shLang->createFragmentShaderFromSource(src, log);
+  }
+
+void Device::deleteShader(AbstractAPI::FragmentShader *s) const {
+  GraphicsSubsystem::DeleteEvent e;
+  e.fs = s;
+  event(e);
+  shLang->deleteFragmentShader(s);
   }
 
 void Device::assertPaint() {
@@ -785,7 +871,6 @@ void Device::bindShaders( const VertexShader &vs,
                           const FragmentShader &fs ) {
   bind(vs);
   bind(fs);
-
   }
 
 void Device::bind( const Tempest::VertexShader &s ){

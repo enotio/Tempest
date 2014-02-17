@@ -11,12 +11,12 @@ class FragmentShader;
 class Device;
 
 struct FragmentShaderHolder: ShaderHolder< FragmentShader,
-                                           AbstractShadingLang::FragmentShader,
-                                           AbstractShadingLang::Fragment > {
+                                           AbstractAPI::FragmentShader,
+                                           AbstractAPI::Fragment > {
   FragmentShaderHolder( Device& d ):ShaderHolder<
                                     FragmentShader,
-                                    AbstractShadingLang::FragmentShader,
-                                    AbstractShadingLang::Fragment >(d){}
+                                    AbstractAPI::FragmentShader,
+                                    AbstractAPI::Fragment >(d){}
   };
 }
 

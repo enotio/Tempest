@@ -4,6 +4,7 @@
 #include <string>
 #include <Tempest/AbstractAPI>
 #include <Tempest/Assert>
+#include <Tempest/GraphicsSubsystem>
 
 #include <map>
 
@@ -18,7 +19,7 @@ class Texture3d;
 
 class ShaderInput;
 
-class AbstractShadingLang {
+class AbstractShadingLang : public GraphicsSubsystem {
   public:
     virtual ~AbstractShadingLang(){}
 
@@ -36,16 +37,8 @@ class AbstractShadingLang {
 
     virtual void setVertexDecl( const Tempest::AbstractAPI::VertexDecl*  ) const{}
 
-    class VertexShader;
-    class FragmentShader;
-
     virtual void* context() const = 0;
 
-    enum ShaderType{
-      Vertex,
-      Fragment/*,
-      Geometry*/
-      };
     virtual void* createShader( ShaderType t,
                                 const std::string& fname,
                                 std::string & outputLog ) const;
@@ -114,6 +107,7 @@ class AbstractShadingLang {
 
     static const ShaderInput &inputOf( const Tempest::VertexShader   & s );
     static const ShaderInput &inputOf( const Tempest::FragmentShader & s );
+
   };
 
 }

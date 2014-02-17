@@ -58,7 +58,7 @@ void* CgDx9::context() const{
   return data->context;
   }
 
-CgDx9::CgDx9( AbstractAPI::DirectX9Device *dev ) {
+CgDx9::CgDx9(AbstractAPI::DirectX9Device *dev ) {
   data = new Data();
   data->currentProgramVS = 0;
   data->currentProgramFS = 0;

@@ -12,7 +12,7 @@ namespace Tempest {
 
   class GLSL: public AbstractShadingLang {
     public:
-      GLSL(AbstractAPI::OpenGL2xDevice *dev);
+      GLSL( AbstractAPI::OpenGL2xDevice *dev );
       ~GLSL();
 
       void beginPaint() const;
@@ -79,6 +79,8 @@ namespace Tempest {
       struct Texture;
 
       static const char* opt( const char* t, const char* f, bool v);
+
+      void event(const DeleteEvent &e);
     };
   }
 

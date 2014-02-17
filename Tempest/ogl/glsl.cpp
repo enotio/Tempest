@@ -122,8 +122,10 @@ struct GLSL::Data{
     GLuint vs;
     GLuint fs;
 
+    const void *decl;
+
     bool operator < ( const ShProgram& sh ) const {
-      return std::tie(vs, fs) < std::tie(sh.vs, sh.fs);
+      return std::tie(vs, fs, decl) < std::tie(sh.vs, sh.fs, sh.decl);
       }
 
     GLuint linked;
@@ -143,7 +145,7 @@ void* GLSL::context() const{
   return data->context;
   }
 
-GLSL::GLSL( AbstractAPI::OpenGL2xDevice * dev ) {
+GLSL::GLSL(AbstractAPI::OpenGL2xDevice * dev) {
   data = new Data();
 
   const char* Tc = "TexCoord";
@@ -228,6 +230,7 @@ void GLSL::deleteVertexShader( VertexShader* s ) const {
       }
     }
 
+  data->prog.resize(nsz);
   delete prog;
   }
 
@@ -381,19 +384,22 @@ void GLSL::enable() const {
   GLuint pixelShader  = *(GLuint*)get( *data->currentFS );
   GLuint program = 0;
 
-  if( data->curProgram.vs == vertexShader &&
-      data->curProgram.fs == pixelShader ){
+  if( data->curProgram.vs   == vertexShader &&
+      data->curProgram.fs   == pixelShader  &&
+      data->curProgram.decl == data->vdecl ){
     program = data->curProgram.linked;
     }
 
   //NON-Cashed
   if( program==0 ){
     Data::ShProgram tmp;
-    tmp.vs = vertexShader;
-    tmp.fs = pixelShader;
+    tmp.vs   = vertexShader;
+    tmp.fs   = pixelShader;
+    tmp.decl = data->vdecl;
 
     auto l = std::lower_bound(data->prog.begin(), data->prog.end(), tmp);
-    if( l!=data->prog.end() && l->vs==tmp.vs && l->fs==tmp.fs ){
+    if( l!=data->prog.end() &&
+        l->vs==tmp.vs && l->fs==tmp.fs && l->decl==tmp.decl ){
       program = (*l).linked;
       }
 
@@ -499,6 +505,7 @@ void GLSL::enable() const {
     Data::ShProgram s;
     s.vs     = vertexShader;
     s.fs     = pixelShader;
+    s.decl   = data->vdecl;
     s.linked = program;
 
     auto l = std::lower_bound(data->prog.begin(), data->prog.end(), s);
@@ -668,6 +675,22 @@ const char *GLSL::opt(const char *t, const char *f, bool v) {
     return t;
 
   return f;
+  }
+
+void GLSL::event(const GraphicsSubsystem::DeleteEvent &e) {
+  size_t nsz = 0;
+  for( size_t i=0; i<data->prog.size(); ++i ){
+    data->prog[nsz] = data->prog[i];
+
+    if( data->prog[i].decl == e.declaration ){
+      if( glIsProgram(data->prog[i].linked) )
+        glDeleteProgram( data->prog[i].linked );
+      } else {
+      ++nsz;
+      }
+    }
+
+  data->prog.resize( nsz );
   }
 
 template< class Sampler >

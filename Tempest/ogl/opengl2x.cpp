@@ -1946,8 +1946,7 @@ void Opengl2x::unlockBuffer( AbstractAPI::Device *d,
   T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
-const AbstractShadingLang*
-        Opengl2x::createShadingLang( AbstractAPI::Device *d ) const {
+AbstractShadingLang *Opengl2x::createShadingLang( AbstractAPI::Device *d ) const {
   if( !setDevice(d) ) return 0;
   AbstractAPI::OpenGL2xDevice *dev =
       reinterpret_cast<AbstractAPI::OpenGL2xDevice*>(d);
@@ -1988,7 +1987,7 @@ void Opengl2x::setVertexDeclaration( AbstractAPI::Device *d,
   dev->decl   = (VertexDeclaration::Declarator*)de;
 
   if( dev->isPainting )
-    setupBuffers( 0, true, true, false );
+    setupAttrPtr( *dev->decl, 0, true, true, true );
   }
 
 void Opengl2x::bindVertexBuffer( AbstractAPI::Device *d,
@@ -2026,6 +2025,18 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
     glBindBuffer( GL_ARRAY_BUFFER, dev->vbo );
     }
 
+  if( rebind )
+    setupAttrPtr( *dev->decl, vboOffsetIndex, enable, on, bind );
+
+  T_ASSERT_X( errCk(), "OpenGL error" );
+  }
+
+void Opengl2x::setupAttrPtr( const Tempest::VertexDeclaration::Declarator& vd,
+                             size_t vboOffsetIndex,
+                             bool enable, bool on, bool bind ) const {
+  if( !dev->decl )
+    return;
+
   static const GLenum vfrm[] = {
     GL_FLOAT, //double0 = 0, // just trick
     GL_FLOAT, //double1 = 1, GL_HALF_FLOAT_OES
@@ -2050,9 +2061,6 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
     };
 
   size_t stride = vboOffsetIndex;
-
-  const Tempest::VertexDeclaration::Declarator& vd
-      = *(const Tempest::VertexDeclaration::Declarator*)dev->decl;
   for( int i=0; i<vd.size(); ++i ){
     const VertexDeclaration::Declarator::Element & e = vd[i];
 
@@ -2083,7 +2091,7 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
         }
       }
 
-    if( bind && dev->vbo && rebind ){
+    if( bind ){
       if( e.component==Decl::color )
         glVertexAttribPointer( loc, count, frm, GL_TRUE,
                                dev->vertexSize, (void*)stride );
@@ -2094,7 +2102,6 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
 
     stride += strides[e.component];
     }
-
   T_ASSERT_X( errCk(), "OpenGL error" );
   }
 

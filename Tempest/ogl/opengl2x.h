@@ -149,8 +149,8 @@ class Opengl2x : public AbstractAPI {
     void unlockBuffer( AbstractAPI::Device *d,
                        AbstractAPI::IndexBuffer*) const;
 
-    const AbstractShadingLang*
-            createShadingLang( AbstractAPI::Device * l ) const;
+    AbstractShadingLang*
+         createShadingLang( AbstractAPI::Device * l ) const;
 
     void deleteShadingLang( const AbstractShadingLang * l ) const;
 
@@ -194,6 +194,9 @@ class Opengl2x : public AbstractAPI {
     struct Device;
     mutable Device * dev;
     void setupBuffers(int vboOffsetIndex, bool on , bool enable, bool bind) const;
+    void setupAttrPtr( const Tempest::VertexDeclaration::Declarator& vd,
+                       size_t vboOffsetIndex,
+                       bool enable, bool on, bool bind ) const;
 
     Opengl2x( const Opengl2x& ){}
     void operator = ( const Opengl2x& ){}

@@ -11,12 +11,12 @@ class VertexShader;
 class Device;
 
 struct VertexShaderHolder: ShaderHolder< VertexShader,
-                                           AbstractShadingLang::VertexShader,
-                                           AbstractShadingLang::Vertex > {
+                                         AbstractAPI::VertexShader,
+                                         AbstractAPI::Vertex > {
   VertexShaderHolder( Device& d ):ShaderHolder<
                                     VertexShader,
-                                    AbstractShadingLang::VertexShader,
-                                    AbstractShadingLang::Vertex >(d){}
+                                    AbstractAPI::VertexShader,
+                                    AbstractAPI::Vertex >(d){}
   };
 }
 

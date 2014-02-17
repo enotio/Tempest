@@ -832,8 +832,7 @@ void DirectX9::unlockBuffer( AbstractAPI::Device *,
   ibo->min.clear();
   }
 
-const AbstractShadingLang*
-        DirectX9::createShadingLang( AbstractAPI::Device *d ) const {
+AbstractShadingLang *DirectX9::createShadingLang( AbstractAPI::Device *d ) const {
   AbstractAPI::DirectX9Device* dev =
       (AbstractAPI::DirectX9Device*)reinterpret_cast<DirectX9::Device*>(d)->dev;
 

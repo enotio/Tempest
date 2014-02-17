@@ -15,8 +15,8 @@ class FragmentShader : public Shader {
     bool isValid() const;
   private:
     FragmentShader( AbstractHolder< Tempest::FragmentShader,
-                                    AbstractShadingLang::FragmentShader >& h );
-    Detail::Ptr< AbstractShadingLang::FragmentShader*,
+                                    AbstractAPI::FragmentShader >& h );
+    Detail::Ptr< AbstractAPI::FragmentShader*,
                  FragmentShaderHolder::ImplManip > data;
 
   friend class AbstractShadingLang;
@@ -24,7 +24,7 @@ class FragmentShader : public Shader {
   template< class Data, class APIDescriptor >
   friend class AbstractHolderWithLoad;
 
-  template< class Shader, class APIDescriptor, AbstractShadingLang::ShaderType >
+  template< class Shader, class APIDescriptor, AbstractAPI::ShaderType >
   friend class ShaderHolder;
   };
 

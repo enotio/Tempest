@@ -194,6 +194,8 @@ class Device {
                                bool& hasHalfpixOffset );
     std::string surfaceShader( AbstractShadingLang::ShaderType t,
                                const AbstractShadingLang::UiShaderOpt& opt );
+
+    void event( const GraphicsSubsystem::Event& e ) const;
   private:
     void bind( const Tempest::VertexShader   &s );
     void bind( const Tempest::FragmentShader &s );
@@ -277,7 +279,21 @@ class Device {
       return *shLang;
       }
 
-    const AbstractShadingLang * shLang;
+    virtual void* createShaderFromSource( AbstractAPI::ShaderType t,
+                                          const std::string& src,
+                                          std::string & outputLog ) const;
+
+    AbstractAPI::VertexShader*
+    createVertexShaderFromSource( const std::string& src,
+                                  std::string & log ) const;
+    void deleteShader( AbstractAPI::VertexShader* s ) const;
+
+    AbstractAPI::FragmentShader*
+    createFragmentShaderFromSource( const std::string& src,
+                                    std::string & log  ) const;
+    void deleteShader( AbstractAPI::FragmentShader* s ) const;
+
+    AbstractShadingLang * shLang;
 
     Device( const Device&d ):api(d.api){}
     void operator = ( const Device& ){}

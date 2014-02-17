@@ -15,9 +15,9 @@ class VertexShader : public Shader {
     bool isValid() const;
   private:
     VertexShader( AbstractHolder< Tempest::VertexShader,
-                                  AbstractShadingLang::VertexShader >& h );
+                                  AbstractAPI::VertexShader >& h );
 
-    Detail::Ptr< AbstractShadingLang::VertexShader*,
+    Detail::Ptr< AbstractAPI::VertexShader*,
                  VertexShaderHolder::ImplManip > data;
 
   friend class AbstractShadingLang;
@@ -25,7 +25,7 @@ class VertexShader : public Shader {
   template< class Data, class APIDescriptor >
   friend class AbstractHolderWithLoad;
 
-  template< class Shader, class APIDescriptor, AbstractShadingLang::ShaderType >
+  template< class Shader, class APIDescriptor, AbstractAPI::ShaderType >
   friend class ShaderHolder;
   };
 

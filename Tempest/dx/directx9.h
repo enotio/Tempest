@@ -136,8 +136,8 @@ class DirectX9 : public AbstractAPI {
     void unlockBuffer( AbstractAPI::Device *d,
                        AbstractAPI::IndexBuffer*) const;
 
-    const AbstractShadingLang*
-            createShadingLang( AbstractAPI::Device * l ) const;
+    AbstractShadingLang*
+         createShadingLang( AbstractAPI::Device * l ) const;
 
     void deleteShadingLang( const AbstractShadingLang * l ) const;
 

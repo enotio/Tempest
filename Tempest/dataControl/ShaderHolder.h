@@ -10,7 +10,7 @@ namespace Tempest{
 class VertexShader;
 class Device;
 
-template< class Shader, class APIDescriptor, AbstractShadingLang::ShaderType type >
+template< class Shader, class APIDescriptor, AbstractAPI::ShaderType type >
 class ShaderHolder : public AbstractHolderWithLoad< Shader, APIDescriptor > {
   public:
     typedef AbstractHolderWithLoad< Shader, APIDescriptor  > BaseType;
@@ -45,7 +45,7 @@ class ShaderHolder : public AbstractHolderWithLoad< Shader, APIDescriptor > {
     virtual void createObjectFromSrc( Shader &obj,
                                       APIDescriptor*& t,
                                       const std::string & src ) {
-      t = (APIDescriptor*)this->device().shadingLang().
+      t = (APIDescriptor*)this->device().
           createShaderFromSource( type, src, obj.logv );
       data->shadersSrc[t] = src;
       }
@@ -54,7 +54,7 @@ class ShaderHolder : public AbstractHolderWithLoad< Shader, APIDescriptor > {
                                       const std::string & src ){
       std::string dummy;
 
-      t = (APIDescriptor*)this->device().shadingLang().
+      t = (APIDescriptor*)this->device().
           createShaderFromSource( type, src, dummy );
       data->shadersSrc[t] = src;
       }
@@ -112,7 +112,7 @@ class ShaderHolder : public AbstractHolderWithLoad< Shader, APIDescriptor > {
       data->restoreSrc[t] = data->shadersSrc[t];
       data->shadersSrc.erase(t);
 
-      this->device().shadingLang().deleteShader(t);
+      this->device().deleteShader(t);
       }
 
     virtual APIDescriptor* restore( APIDescriptor* t ){

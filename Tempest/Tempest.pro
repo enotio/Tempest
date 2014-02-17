@@ -103,7 +103,8 @@ SOURCES += \
   thirdparty/freetype/src/raster/raster.c \
   thirdparty/freetype/src/sfnt/sfnt.c \
   thirdparty/freetype/src/smooth/smooth.c \
-  thirdparty/freetype/src/truetype/truetype.c
+  thirdparty/freetype/src/truetype/truetype.c \
+    core/graphicssubsystem.cpp
 
 SOURCES += \
     ui/window.cpp \
@@ -360,7 +361,8 @@ HEADERS += \
     thirdparty/utf8cpp/utf8/checked.h \
     thirdparty/utf8cpp/utf8/core.h \
     thirdparty/utf8cpp/utf8/unchecked.h \
-    include/Tempest/Windows
+    include/Tempest/Windows \
+    core/graphicssubsystem.h
 
 OTHER_FILES += \
     include/Tempest/Window \
@@ -391,4 +393,5 @@ OTHER_FILES += \
     include/Tempest/Log \
     include/Tempest/Buffer \
     include/Tempest/File \
-    ../.gitignore
+    ../.gitignore \
+    include/Tempest/GraphicsSubsystem

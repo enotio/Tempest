@@ -7,6 +7,7 @@
 #include <Tempest/AbstractTexture>
 #include <Tempest/DisplaySettings>
 #include <Tempest/Pixmap>
+#include <Tempest/GraphicsSubsystem>
 
 namespace Tempest{
 
@@ -22,7 +23,7 @@ enum TextureUsage{
   TU_Dynamic
   };
 
-class AbstractAPI {
+class AbstractAPI: public GraphicsSubsystem {
   public:
     virtual ~AbstractAPI(){}
 
@@ -78,18 +79,7 @@ class AbstractAPI {
       SB_BufferPreserved = 0,
       SB_BufferDestroyed
       };
-
-    class Texture;
-    class StdDSSurface;
-
-    class IndexBuffer;
-    class VertexBuffer;
-    class VertexDecl;
-
-    class FragmentShader;
-    class VertexShader;
-
-    class Device;
+    
     class DirectX9Device;
     class OpenGL2xDevice;
 
@@ -244,10 +234,9 @@ class AbstractAPI {
     virtual void bindIndexBuffer( AbstractAPI::Device *d,
                                    AbstractAPI::IndexBuffer* ) const  = 0;
 
-    virtual const AbstractShadingLang*
-                    createShadingLang( AbstractAPI::Device * d    ) const = 0;
+    virtual AbstractShadingLang*
+                 createShadingLang( AbstractAPI::Device * d    ) const = 0;
     virtual void deleteShadingLang( const AbstractShadingLang * l ) const = 0;
-
 
 
     virtual void draw( AbstractAPI::Device *d,
