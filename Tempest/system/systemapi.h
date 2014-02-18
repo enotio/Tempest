@@ -83,6 +83,10 @@ class SystemAPI{
 
     static void emitEvent( Tempest::Window *w,
                            Event& e );
+    static void emitEvent(Tempest::Window *w,
+                           const KeyEvent &ebase,
+                           const KeyEvent &scut,
+                           Event::Type type );
 
     static void moveEvent( Tempest::Window *w, int cX, int cY);
     static void sizeEvent( Tempest::Window *w, int cW, int cH);
@@ -101,6 +105,7 @@ class SystemAPI{
 
     static const std::string& androidActivityClass();
     static Event::KeyType translateKey( uint64_t scancode );
+    static uint32_t translateChar( uint64_t scancode );
 
     void installImageCodec( ImageCodec* codec );
     size_t imageCodecCount() const;

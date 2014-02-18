@@ -23,6 +23,7 @@ class AndroidAPI:public SystemAPI {
     static int densityDpi();
 
     static void toast( const std::string & s );
+    static void toggleSoftInput();
     static const std::string& iso3Locale();
   protected:
     AndroidAPI();

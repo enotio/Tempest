@@ -1,7 +1,11 @@
 package com.tempest;
 
+import java.util.Locale;
+
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.res.AssetManager;
 
 import android.view.KeyEvent;
@@ -11,11 +15,14 @@ import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 import android.util.Log;
 
 public class TempestActivity extends Activity
 implements SurfaceHolder.Callback  {
   private static String TAG = "TempestActivity";
+  static TempestActivity thiz;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {   
@@ -32,8 +39,9 @@ implements SurfaceHolder.Callback  {
     }
 
   protected void onCreate( Bundle savedInstanceState, SurfaceView surfaceView ) {
+    thiz = this;
+    
     super.onCreate(savedInstanceState);
-
     Log.i(TAG, "onCreate()"); 
 
     nativeSetAssets( getAssets() );
@@ -55,6 +63,9 @@ implements SurfaceHolder.Callback  {
     
     nativeSetupStorage(internal, external);
     nativeSetupDpi( getResources().getDisplayMetrics().densityDpi );
+    
+    Locale loc = getResources().getConfiguration().locale;
+    nativeInitLocale( loc.getISO3Language() );
     nativeOnCreate();
 
     surfaceView.getHolder().addCallback(this);
@@ -94,6 +105,7 @@ implements SurfaceHolder.Callback  {
   
   @Override
   public boolean onTouchEvent(MotionEvent event) {
+    Log.i(TAG, "onTouchEvent()");
     int index   = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK)
                     >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
     int pid = event.getPointerId(index);
@@ -142,9 +154,29 @@ implements SurfaceHolder.Callback  {
     
     if( act>=0 )
       nativeOnTouch( x, y, act, pid );
+    Log.i(TAG, "~onTouchEvent()");
     return true;   
     }
+  @Override
+  public boolean dispatchKeyEvent(KeyEvent event) {
+    
+    Log.i( TAG, "dispatchKeyEvent()" + event.getKeyCode() );
+    Log.i( TAG, "k " + event.getDisplayLabel() + " " + event.getUnicodeChar() );
 
+    if( event.getCharacters()!=null ){
+      if (event.getAction() == KeyEvent.ACTION_DOWN)
+        onKeyCharEvent( event.getCharacters() );
+      return true;
+      } else
+    if( event.getUnicodeChar()!=0 ){
+      if (event.getAction() == KeyEvent.ACTION_DOWN)
+        onKeyCharEvent( Character.toString((char) event.getUnicodeChar()) );
+      return true;
+      }
+    
+    return super.dispatchKeyEvent(event);
+    }
+  
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     if( keyCode==KeyEvent.KEYCODE_BACK ){
@@ -193,6 +225,25 @@ implements SurfaceHolder.Callback  {
     nativeSetSurface(null);
     }
   
+  private static void showToast( String s ){
+    final Context context   = thiz.getApplicationContext();
+    final CharSequence text = s;
+    
+    thiz.runOnUiThread(new Runnable() {
+        public void run() {
+            Toast.makeText(
+                context,
+                text, 
+                Toast.LENGTH_LONG ).show();
+        }
+    });    
+    }
+  
+  private static void toggleSoftInput(){
+    InputMethodManager imm = (InputMethodManager)thiz.getSystemService(INPUT_METHOD_SERVICE);
+    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
+    }
+  
   static void invokeMain(){
     invokeMainImpl();
     exitApp();
@@ -219,6 +270,7 @@ implements SurfaceHolder.Callback  {
   static native void nativeOnTouch( int x, int y, int act, int pid );
   static native void onKeyDownEvent( int k );
   static native void onKeyUpEvent( int k );
+  static native void onKeyCharEvent( String s );
   static native int  nativeCloseEvent();
   static native void nativeSetSurface(Surface surface);
   static native void nativeOnResize( Surface surface, int w, int h );
@@ -231,14 +283,26 @@ implements SurfaceHolder.Callback  {
       }
     catch( java.lang.UnsatisfiedLinkError e ){
       Log.e( "", "lib not loaded: \"" + lib + "\"" );
+      throw e;
       }
+    
     }
     
   static {
-    loadLib("gnustl_shared");
-    loadLib("bullet");
-    loadLib("Tempest");
-    loadLib("network");
-    loadLib("game");
+    try{
+      loadLib("gnustl_shared");
+      loadLib("bullet");
+      loadLib("Tempest");
+      loadLib("network");
+      loadLib("game");
+      }
+    catch( java.lang.UnsatisfiedLinkError e ){
+      //FIXME: no way to display message correctly
+      Context c = TempestApplication.getContext();
+      
+      AlertDialog errorDialog = new AlertDialog.Builder(c).create();
+      errorDialog.setMessage("Fatal error, your application can't be started.");
+      errorDialog.show();
+      }
+    }
   }
-}

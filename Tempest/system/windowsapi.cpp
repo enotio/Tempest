@@ -532,7 +532,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
     switch( msg ) {
       case WM_CHAR:
       {
-         Tempest::KeyEvent e = Tempest::KeyEvent( uint16_t(wParam) );
+         Tempest::KeyEvent e = Tempest::KeyEvent( uint32_t(wParam) );
 
          DWORD wrd[3] = {
            VK_RETURN,
@@ -552,25 +552,19 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
       case WM_KEYDOWN:
       {
-         Tempest::KeyEvent sce = makeKeyEvent(wParam, true);
-
-         Tempest::KeyEvent sc( sce.key, sce.u16, Event::Shortcut );
-         SystemAPI::emitEvent(w, sc);
-
-         if( !sc.isAccepted() ){
-           Tempest::KeyEvent e =  makeKeyEvent(wParam);
-           Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );
-           if( e.key!=Tempest::KeyEvent::K_NoKey )
-             SystemAPI::emitEvent( w, ed );
-           }
+         SystemAPI::emitEvent( w,
+                               makeKeyEvent(wParam),
+                               makeKeyEvent(wParam, true),
+                               Event::KeyDown );
       }
       break;
 
       case WM_KEYUP:
       {
-         Tempest::KeyEvent e =  makeKeyEvent(wParam);
-         Tempest::KeyEvent eu( e.key, e.u16, Event::KeyUp );
-         SystemAPI::emitEvent(w, eu);
+         SystemAPI::emitEvent( w,
+                               makeKeyEvent(wParam),
+                               makeKeyEvent(wParam, true),
+                               Event::KeyUp );
       }
       break;
 

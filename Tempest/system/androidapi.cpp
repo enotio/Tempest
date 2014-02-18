@@ -80,6 +80,7 @@ static struct Android{
     MSG_TOUCH,
     MSG_PAUSE,
     MSG_RESUME,
+    MSG_CHAR,
     MSG_KEYDOWN_EVENT,
     MSG_KEYUP_EVENT,
     MSG_CLOSE,
@@ -259,12 +260,12 @@ AndroidAPI::AndroidAPI(){
     { AKEYCODE_DPAD_DOWN,   Event::K_Down   },
 
     //{ AKEYCODE_BACK, Event::K_ESCAPE },
-    { AKEYCODE_BACK, Event::K_Back   },
-    { AKEYCODE_DEL,  Event::K_Delete },
+    { AKEYCODE_DEL,  Event::K_Back   },
     { AKEYCODE_HOME, Event::K_Home   },
 
     { AKEYCODE_0,      Event::K_0  },
     { AKEYCODE_A,      Event::K_A  },
+    { AKEYCODE_ENTER,  Event::K_Return },
 
     { 0,         Event::K_NoKey }
     };
@@ -313,6 +314,15 @@ void AndroidAPI::toast( const std::string &s ) {
   a.env->CallStaticVoidMethod(clazz, toast, str);
 
   a.env->DeleteLocalRef(str);
+  }
+
+void AndroidAPI::toggleSoftInput() {
+  Android &a = android;
+
+  jclass clazz    = a.tempestClass;
+  jmethodID showKeyboard = a.env->GetStaticMethodID( clazz, "toggleSoftInput", "()V");
+
+  a.env->CallStaticVoidMethod( clazz, showKeyboard );
   }
 
 const std::string &AndroidAPI::iso3Locale() {
@@ -599,19 +609,30 @@ int AndroidAPI::nextEvent(bool &quit) {
       quit = true;
       break;
 
+    case Android::MSG_CHAR:
+    {
+       Tempest::KeyEvent e = Tempest::KeyEvent( uint32_t(msg.data1) );
+
+       int wrd[3] = {
+         AKEYCODE_DEL,
+         AKEYCODE_BACK,
+         0
+         };
+
+       if( 0 == *std::find( wrd, wrd+2, msg.data1) ){
+         Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );
+         SystemAPI::emitEvent( android.wnd, ed);
+
+         Tempest::KeyEvent eu( e.key, e.u16, Event::KeyUp );
+         SystemAPI::emitEvent( android.wnd, eu);
+         }
+    }
+
     case Android::MSG_KEYDOWN_EVENT:{
-        Tempest::KeyEvent sce = makeKeyEvent(msg.data1, true);
-
-        Tempest::KeyEvent sc( sce.key, sce.u16, Event::Shortcut );
-        SystemAPI::emitEvent( android.wnd, sc );
-
-        if( !sc.isAccepted() ){
-          Tempest::KeyEvent e =  makeKeyEvent(msg.data1);
-          if( e.key!=Tempest::KeyEvent::K_NoKey ){
-            Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );
-            SystemAPI::emitEvent( android.wnd, ed);
-            }
-          }
+      SystemAPI::emitEvent( android.wnd,
+                            makeKeyEvent(msg.data1),
+                            makeKeyEvent(msg.data1, true),
+                            Event::KeyDown );
       }
       break;
 
@@ -973,9 +994,26 @@ static void JNICALL onKeyDownEvent(JNIEnv* , jobject, jint key ) {
   (void)w;
 
   if( key!=AKEYCODE_BACK ){
-    Android::Message m = Android::MSG_KEYDOWN_EVENT;
-    m.data1 = key;
-    android.pushMsg(m);
+    const int K_a = AKEYCODE_A, K_A = 29;
+    if( K_a<=key && key<K_a+26 ){
+      Android::Message m = Android::MSG_CHAR;
+      m.data1 = key+97-K_a;
+      android.pushMsg(m);
+      } else
+    if( K_A<=key && key<K_A+26 ){
+      Android::Message m = Android::MSG_CHAR;
+      m.data1 = key+65-K_A;
+      android.pushMsg(m);
+      } else
+    if( AKEYCODE_0<=key && key<AKEYCODE_0+10 ){
+      Android::Message m = Android::MSG_CHAR;
+      m.data1 = key+48-AKEYCODE_0;
+      android.pushMsg(m);
+      } else {
+      Android::Message m = Android::MSG_KEYDOWN_EVENT;
+      m.data1 = key;
+      android.pushMsg(m);
+      }
     } else {
     android.pushMsg( Android::MSG_RENDER_LOOP_EXIT );
     }
@@ -994,6 +1032,25 @@ static void JNICALL onKeyUpEvent(JNIEnv* , jobject, jint key ) {
     } else {
     android.pushMsg( Android::MSG_RENDER_LOOP_EXIT );
     }
+  }
+
+static void JNICALL onKeyCharEvent( JNIEnv* , jobject,
+                                    jstring k ) {
+  JNIEnv * env = 0;
+  android.vm->AttachCurrentThread( &env, NULL);
+
+  const char* str = env->GetStringUTFChars( k, 0);
+  if( str ){
+    std::u16string s16 = SystemAPI::toUtf16(str);
+
+    for( size_t i=0; i<s16.size(); ++i ){
+      Android::Message m = Android::MSG_CHAR;
+      m.data1 = s16[i];
+      android.pushMsg(m);
+      }
+    }
+
+  env->ReleaseStringUTFChars( k, str );
   }
 
 static jint JNICALL nativeCloseEvent( JNIEnv* , jobject ){
@@ -1070,6 +1127,7 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
 
     {"onKeyDownEvent",   "(I)V",   (void *)onKeyDownEvent    },
     {"onKeyUpEvent",     "(I)V",   (void *)onKeyUpEvent      },
+    {"onKeyCharEvent",   "(Ljava/lang/String;)V",   (void *)onKeyCharEvent      },
 
     {"nativeCloseEvent",  "()I", (void *) nativeCloseEvent  },
     {"nativeSetSurface", "(Landroid/view/Surface;)V",   (void *) nativeSetSurface   },

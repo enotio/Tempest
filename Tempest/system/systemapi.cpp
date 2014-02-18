@@ -303,6 +303,26 @@ void SystemAPI::emitEvent( Tempest::Window *w, Event &e ){
   emitEventImpl(w, e);
   }
 
+void SystemAPI::emitEvent( Tempest::Window *w,
+                           const KeyEvent &ebase,
+                           const KeyEvent &scut,
+                           Event::Type type ) {
+  bool scAcepted = false;
+  if( type==Event::KeyDown ){
+    Tempest::KeyEvent sc( scut.key, scut.u16, Event::Shortcut );
+    SystemAPI::emitEvent(w, sc);
+
+    scAcepted = sc.isAccepted();
+    }
+
+  if( 1||scAcepted ){
+    Tempest::KeyEvent ed( ebase.key, ebase.u16, type );
+
+    if( ebase.key!=Tempest::KeyEvent::K_NoKey )
+      SystemAPI::emitEvent( w, ed );
+    }
+  }
+
 void SystemAPI::processEvents( Widget *w,
                                Event &e ) {
   switch( e.type() ){
