@@ -27,19 +27,19 @@ class Pixmap {
     Pixmap& operator = ( const Pixmap & p );
 
     bool load( const std::u16string & f );
-    bool save( const std::u16string & f );
+    bool save( const std::u16string & f ) const;
 
     bool load( const std::string & f );
-    bool save( const std::string & f );
+    bool save( const std::string & f ) const;
 
     bool load( const char* f );
-    bool save( const char* f );
+    bool save( const char* f ) const;
 
     bool load( const char16_t* f );
-    bool save( const char16_t* f );
+    bool save( const char16_t* f ) const;
 
     bool load( IDevice& f );
-    bool save( ODevice &f );
+    bool save( ODevice &f ) const;
 
     inline int width()  const { return info.w; }
     inline int height() const { return info.h; }

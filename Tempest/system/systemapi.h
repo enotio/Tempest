@@ -75,8 +75,8 @@ class SystemAPI{
                            ImageCodec::ImgInfo &info,
                            std::vector<unsigned char>& out );
     static bool saveImage( ODevice& file,
-                           ImageCodec::ImgInfo &info,
-                           std::vector<unsigned char>& in );
+                           const ImageCodec::ImgInfo &info,
+                           const std::vector<unsigned char>& in );
 
     static void processEvents(Tempest::Widget *w,
                                Event &e);
@@ -152,8 +152,8 @@ class SystemAPI{
                                 std::vector<unsigned char>& out );
 
     virtual bool saveImageImpl( ODevice& file,
-                                ImageCodec::ImgInfo &info,
-                                std::vector<unsigned char>& out );
+                                const ImageCodec::ImgInfo &info,
+                                const std::vector<unsigned char>& out );
 
     virtual const std::string& androidActivityClassImpl();
     virtual CpuInfo cpuInfoImpl() = 0;

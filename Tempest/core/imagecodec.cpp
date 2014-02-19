@@ -26,7 +26,7 @@ struct PngCodec:ImageCodec {
     rows.reserve(2048);
     }
 
-  bool canSave(ImgInfo &inf) const{
+  bool canSave(const ImgInfo &inf) const{
     return inf.format == Pixmap::Format_RGB || inf.format==Pixmap::Format_RGBA;
     }
 
@@ -131,6 +131,8 @@ struct PngCodec:ImageCodec {
         rows[y] = &out[ y*info.w*info.bpp ];
 
       png_read_image(png_ptr, &rows[0]);
+      if( !r.err )
+        png_read_end(png_ptr, info_ptr);
       return !r.err;
       }
 
@@ -147,7 +149,7 @@ struct PngCodec:ImageCodec {
     f->flush();
     }
 
-  bool save( ODevice & file, ImgInfo &info, std::vector<unsigned char> &img){
+  bool save( ODevice & file, const ImgInfo &info, const std::vector<unsigned char> &img){
     png_structp png_ptr = png_create_write_struct( PNG_LIBPNG_VER_STRING,
                                                    NULL, NULL, NULL );
 
@@ -187,7 +189,7 @@ struct PngCodec:ImageCodec {
       rows.resize( info.h );
 
       for( int y=0; y<info.h; y++ )
-        rows[y] = &img[ y*info.w*info.bpp ];
+        rows[y] = (png_bytep)&img[ y*info.w*info.bpp ];
       png_write_image(png_ptr, &rows[0]);
 
       if (setjmp(png_jmpbuf(png_ptr)))
@@ -433,7 +435,7 @@ struct S3TCCodec:ImageCodec {
            fout==Pixmap::Format_DXT5;
     }
 
-  bool canConvertTo( ImgInfo &info, Pixmap::Format fout ) const{
+  bool canConvertTo( const ImgInfo &info, Pixmap::Format fout ) const{
     return ( info.format==Pixmap::Format_RGB  && dxtFrm(fout) ) ||
            ( info.format==Pixmap::Format_RGBA && dxtFrm(fout) ) ||
            ( dxtFrm(info.format) && fout==Pixmap::Format_RGBA );
@@ -517,13 +519,13 @@ struct ETCCodec:ImageCodec{
     return fout==Pixmap::Format_ETC1_RGB8;
     }
 
-  bool canConvertTo( ImgInfo &info, Pixmap::Format fout ) const{
+  bool canConvertTo( const ImgInfo &info, Pixmap::Format fout ) const{
     return ( info.format==Pixmap::Format_RGB   && etcFrm(fout) ) ||
            ( info.format==Pixmap::Format_RGBA  && etcFrm(fout) ) ||
            ( etcFrm(info.format) && fout==Pixmap::Format_RGB );
     }
 
-  bool canSave(ImgInfo &inf) const{
+  bool canSave(const ImgInfo &inf) const{
     return etcFrm(inf.format);
     }
 
@@ -632,8 +634,8 @@ struct ETCCodec:ImageCodec{
     }
 
   bool save( ODevice& file,
-             ImgInfo &info,
-             std::vector<unsigned char> &img){
+             const ImgInfo &info,
+             const std::vector<unsigned char> &img){
     if( info.format!=Pixmap::Format_ETC1_RGB8 )
       return 0;
 
@@ -720,11 +722,11 @@ struct ETCCodec:ImageCodec{
 ImageCodec::~ImageCodec() {
   }
 
-bool ImageCodec::canSave(ImageCodec::ImgInfo &) const {
+bool ImageCodec::canSave(const ImageCodec::ImgInfo &) const {
   return 0;
   }
 
-bool ImageCodec::canConvertTo(ImageCodec::ImgInfo &, Pixmap::Format ) const {
+bool ImageCodec::canConvertTo(const ImageCodec::ImgInfo &, Pixmap::Format ) const {
   return 0;
   }
 
@@ -747,8 +749,8 @@ bool ImageCodec::load( IDevice &,
   }
 
 bool ImageCodec::save( ODevice& ,
-                       ImageCodec::ImgInfo &,
-                       std::vector<unsigned char> & ) {
+                       const ImageCodec::ImgInfo &,
+                       const std::vector<unsigned char> & ) {
   T_WARNING_X(0, "overload for ImageCodec::save is unimplemented");
   return false;
   }

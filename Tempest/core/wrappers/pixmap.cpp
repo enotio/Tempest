@@ -177,20 +177,20 @@ Pixmap &Pixmap::operator = (const Pixmap &p) {
   return *this;
   }
 
-bool Pixmap::save(const std::string &f) {
+bool Pixmap::save(const std::string &f)  const {
   return save(f.data());
   }
 
-bool Pixmap::save(const std::u16string &f) {
+bool Pixmap::save(const std::u16string &f)  const {
   return save(f.data());
   }
 
-bool Pixmap::save(const char* f) {
+bool Pixmap::save(const char* f)  const {
   WFile fn(f);
   return save(fn);
   }
 
-bool Pixmap::save(const char16_t* f) {
+bool Pixmap::save(const char16_t* f)  const {
   WFile fn(f);
   return save(fn);
   }
@@ -213,7 +213,7 @@ bool Pixmap::load(const char *f) {
   return load(file);
   }
 
-bool Pixmap::save( ODevice& f ) {
+bool Pixmap::save( ODevice& f ) const {
   if( data.const_value()==0 )
     return false;
 

@@ -16,8 +16,8 @@ class ImageCodec {
 
     typedef Pixmap::ImgInfo ImgInfo;
 
-    virtual bool canSave(ImgInfo &) const;  
-    virtual bool canConvertTo(ImgInfo &, Pixmap::Format fout ) const;
+    virtual bool canSave(const ImgInfo &) const;
+    virtual bool canConvertTo(const ImgInfo &, Pixmap::Format fout ) const;
 
     virtual void toRGB( ImgInfo &info,
                         std::vector<unsigned char> &inout,
@@ -31,8 +31,8 @@ class ImageCodec {
                        std::vector<unsigned char> &out );
 
     virtual bool save( ODevice &file,
-                       ImgInfo &info,
-                       std::vector<unsigned char> &img );
+                       const ImgInfo &info,
+                       const std::vector<unsigned char> &img );
 
     static void installStdCodecs( SystemAPI& s );
 

@@ -235,8 +235,8 @@ bool SystemAPI::loadImage( IDevice &file,
   }
 
 bool SystemAPI::saveImage( ODevice& file,
-                           ImageCodec::ImgInfo &info,
-                           std::vector<unsigned char> &in ) {
+                           const ImageCodec::ImgInfo &info,
+                           const std::vector<unsigned char> &in ) {
   return instance().saveImageImpl( file, info, in );
   }
 
@@ -476,8 +476,8 @@ bool SystemAPI::writeBytesImpl( const char16_t *file,
   }
 
 bool SystemAPI::saveImageImpl( ODevice& file,
-                               ImageCodec::ImgInfo &info,
-                               std::vector<unsigned char> &out) {
+                               const ImageCodec::ImgInfo &info,
+                               const std::vector<unsigned char> &out) {
   for( size_t i=0; i<codecs.size(); ++i ){
     if( codecs[i]->canSave(info) && codecs[i]->save(file, info, out) ){
       return 1;
