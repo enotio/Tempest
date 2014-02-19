@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -160,16 +161,17 @@ implements SurfaceHolder.Callback  {
   @Override
   public boolean dispatchKeyEvent(KeyEvent event) {
     
-    Log.i( TAG, "dispatchKeyEvent()" + event.getKeyCode() );
-    Log.i( TAG, "k " + event.getDisplayLabel() + " " + event.getUnicodeChar() );
+    Log.i( TAG, "dispatchKeyEvent()" + event.getCharacters() );
+    Log.i( TAG, "k "+event.getUnicodeChar() );
 
     if( event.getCharacters()!=null ){
-      if (event.getAction() == KeyEvent.ACTION_DOWN)
-        onKeyCharEvent( event.getCharacters() );
+      onKeyCharEvent( event.getCharacters() );
       return true;
       } else
-    if( event.getUnicodeChar()!=0 ){
-      if (event.getAction() == KeyEvent.ACTION_DOWN)
+    if( event.getUnicodeChar()!=0 &&
+        event.getUnicodeChar()!=10 &&
+        event.getUnicodeChar()!=13 ){
+      if( event.getAction() == KeyEvent.ACTION_DOWN )
         onKeyCharEvent( Character.toString((char) event.getUnicodeChar()) );
       return true;
       }
@@ -239,8 +241,29 @@ implements SurfaceHolder.Callback  {
     });    
     }
   
+  private static void showSoftInput(){
+    InputMethodManager imm = (InputMethodManager)thiz.getSystemService(INPUT_METHOD_SERVICE);
+    if( imm==null )
+      return;
+    //imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
+    View view = thiz.getWindow().getDecorView().getRootView();
+    imm.showSoftInput(view, 0);
+    }
+  
+  private static void hideSoftInput(){
+    InputMethodManager imm = (InputMethodManager)thiz.getSystemService(INPUT_METHOD_SERVICE);
+    if( imm==null )
+      return;
+
+    View view = thiz.getWindow().getDecorView().getRootView();
+    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+  
   private static void toggleSoftInput(){
     InputMethodManager imm = (InputMethodManager)thiz.getSystemService(INPUT_METHOD_SERVICE);
+    if( imm==null )
+      return;
+    
     imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
     }
   

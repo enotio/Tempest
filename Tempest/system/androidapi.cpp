@@ -316,7 +316,25 @@ void AndroidAPI::toast( const std::string &s ) {
   a.env->DeleteLocalRef(str);
   }
 
-void AndroidAPI::toggleSoftInput() {
+void AndroidAPI::showSoftInput() {
+  Android &a = android;
+
+  jclass clazz    = a.tempestClass;
+  jmethodID showKeyboard = a.env->GetStaticMethodID( clazz, "showSoftInput", "()V");
+
+  a.env->CallStaticVoidMethod( clazz, showKeyboard );
+  }
+
+void AndroidAPI::hideSoftInput() {
+  Android &a = android;
+
+  jclass clazz    = a.tempestClass;
+  jmethodID showKeyboard = a.env->GetStaticMethodID( clazz, "hideSoftInput", "()V");
+
+  a.env->CallStaticVoidMethod( clazz, showKeyboard );
+  }
+
+void AndroidAPI::toggleSoftInput(){
   Android &a = android;
 
   jclass clazz    = a.tempestClass;
@@ -329,7 +347,7 @@ const std::string &AndroidAPI::iso3Locale() {
   return android.locale;
   }
 
-AndroidAPI::Window *AndroidAPI::createWindow(int /*w*/, int /*h*/) {
+AndroidAPI::Window* AndroidAPI::createWindow(int /*w*/, int /*h*/) {
   return 0;
   }
 
