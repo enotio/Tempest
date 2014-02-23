@@ -64,7 +64,7 @@ struct RawModel{
 
   static ModelBounds computeBoundRect( const Vertex* vertex, size_t vsize ){
     ModelBounds r;
-    if( vsize==0 ){
+    if( vertex==0 || vsize==0 ){
       std::fill(r.min, r.min+3, 0);
       std::fill(r.max, r.max+3, 0);
       std::fill(r.mid, r.mid+3, 0);

@@ -155,7 +155,7 @@ static struct Android{
     vm->AttachCurrentThread( &env, NULL);
 
     AAssetManager* mgr = AAssetManager_fromJava(env, assets);
-    AAsset* asset = AAssetManager_open(mgr, ass.c_str(), AASSET_MODE_UNKNOWN);
+    AAsset* asset = AAssetManager_open(mgr, ass.c_str(), AASSET_MODE_BUFFER);
 
     if( !asset )
       Log(Log::Error) << "not found: \"" << ass <<'\"';
