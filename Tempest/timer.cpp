@@ -56,8 +56,8 @@ void Timer::reg() {
 void Timer::unreg() {
   for( size_t i=0; i<Application::app.timer.size(); ++i )
     if( Application::app.timer[i]==this ){
-      Application::app.timer[i] = Application::app.timer.back();
-      Application::app.timer.pop_back();
+      Application::app.timer[i] = 0;//Application::app.timer.back();
+      //Application::app.timer.pop_back();
       return;
       }
 
