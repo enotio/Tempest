@@ -4,31 +4,31 @@
 
 using namespace Tempest;
 
-Timer::Timer() {
-  minterval    = 0;//std::chrono::milliseconds::zero();
-  mrepeatCount = 4;
+Timer::Timer():impl( new Data() ), timeout( impl->timeout ) {
+  impl->minterval    = 0;//std::chrono::milliseconds::zero();
+  impl->mrepeatCount = 4;
   }
 
 Timer::~Timer() {
-  if( minterval != 0 )
+  if( impl->minterval != 0 )
     unreg();
   }
 
 void Timer::start(uint64_t t) {
-  if( minterval == 0){
+  if( impl->minterval == 0){
     if( t==0 )
       return;
     reg();
     }
 
   if( t==0 ){
-    minterval = 0;
+    impl->minterval = 0;
     unreg();
     } else {
-    minterval = t;
+    impl->minterval = t;
     }
 
-  lastTimeout = Application::tickCount();
+  impl->lastTimeout = Application::tickCount();
   }
 
 void Timer::stop() {
@@ -36,17 +36,17 @@ void Timer::stop() {
   }
 
 uint64_t Timer::interval() const {
-  return minterval;
+  return impl->minterval;
   }
 
 void Timer::setRepeatCount(uint64_t c) {
-  mrepeatCount = c;
-  if( !mrepeatCount )
-    mrepeatCount = 1;
+  impl->mrepeatCount = c;
+  if( !impl->mrepeatCount )
+    impl->mrepeatCount = 1;
   }
 
 uint64_t Timer::repeatCount() const {
-  return mrepeatCount;
+  return impl->mrepeatCount;
   }
 
 void Timer::reg() {
@@ -61,5 +61,5 @@ void Timer::unreg() {
       return;
       }
 
-  minterval = 0;
+  impl->minterval = 0;
   }

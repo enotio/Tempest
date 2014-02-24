@@ -97,13 +97,14 @@ void Application::processTimers() {
 
   for( size_t i=0; i<a.timer.size(); ++i ){
     if( app.timer[i] ){
+      std::shared_ptr<Timer::Data> timpl = app.timer[i]->impl;
       uint64_t t = tickCount();
 
-      uint64_t dt = (t-a.timer[i]->lastTimeout)/a.timer[i]->minterval;
+      uint64_t dt = (t-timpl->lastTimeout)/timpl->minterval;
 
-      for( size_t r=0; app.timer[i] && r<dt && r<app.timer[i]->mrepeatCount; ++r ){
-        app.timer[i]->lastTimeout = t;
-        app.timer[i]->timeout();
+      for( size_t r=0; app.timer[i] && r<dt && r<timpl->mrepeatCount; ++r ){
+        timpl->lastTimeout = t;
+        timpl->timeout();
         }
       }
     }

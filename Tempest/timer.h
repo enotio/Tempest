@@ -4,12 +4,22 @@
 #include <Tempest/signal>
 #include <cstdint>
 #include <chrono>
+#include <memory>
 
 namespace Tempest{
 
 class Application;
 
 class Timer {
+    struct Data{
+      uint64_t minterval;
+      uint64_t lastTimeout;
+      uint64_t mrepeatCount;
+
+      signal<> timeout;
+      };
+
+    std::shared_ptr<Data> impl;
   public:
     Timer();
     ~Timer();
@@ -17,7 +27,7 @@ class Timer {
     Timer( const Timer& )              = delete;
     Timer& operator = ( const Timer& ) = delete;
 
-    signal<> timeout;
+    signal<>& timeout;
 
     void start( uint64_t t );
     void stop();
@@ -25,14 +35,8 @@ class Timer {
 
     void setRepeatCount( uint64_t c );
     uint64_t repeatCount() const;
+
   private:
-    //std::chrono::milliseconds interval;
-    //std::chrono::time_point<std::chrono::steady_clock> lastTimeout;
-
-    uint64_t minterval;
-    uint64_t lastTimeout;
-    uint64_t mrepeatCount;
-
     void reg();
     void unreg();
 
