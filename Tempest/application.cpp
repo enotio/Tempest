@@ -101,11 +101,9 @@ void Application::processTimers() {
 
       uint64_t dt = (t-a.timer[i]->lastTimeout)/a.timer[i]->minterval;
 
-      for( size_t r=0; r<dt && r<app.timer[i]->mrepeatCount; ++r ){
+      for( size_t r=0; app.timer[i] && r<dt && r<app.timer[i]->mrepeatCount; ++r ){
         app.timer[i]->lastTimeout = t;
         app.timer[i]->timeout();
-        if( app.timer[i]==0 )
-          continue;
         }
       }
     }
