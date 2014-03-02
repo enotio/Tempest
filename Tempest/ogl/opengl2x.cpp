@@ -628,7 +628,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->renderState.setCullFaceMode( RenderState::CullMode::noCull );
   dev->renderState.setZTest(0);
   dev->renderState.setZWriting(1);
-  dev->renderState.setAlphaTestMode( RenderState::AlphaTestMode::Count );
+  dev->renderState.setAlphaTestMode( RenderState::AlphaTestMode::Always );
   dev->renderState.setBlend(0);
 
   dev->clearColor = Color(0);
@@ -2292,6 +2292,7 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
         glEnable( GL_BLEND );
         } else {
         glDisable( GL_BLEND );
+        glBlendFunc( GL_ONE, GL_ZERO );
         }
       }
 

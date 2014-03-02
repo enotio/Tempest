@@ -282,40 +282,20 @@ struct JpegCodec:ImageCodec {
     compress cInfo;
     jpeg_error_mgr cErrMgr;
 
-    // 1. Install error manager.
-    //
     cInfo.err = jpeg_std_error(&cErrMgr);
     cInfo.err->error_exit = handleLibJpegFatalError;
-
-    // 2. Create JPEG decompressor object.
-    //
     cInfo.start();
-
-    // 3. Specify the data source.
-    //
-    //jpeg_stdio_src(&cInfo, pFile);
     make_stream(&cInfo, &d);
 
-    // 4. Read JPEG Header to extract image information.
-    //
     try{
       if( jpeg_read_header(&cInfo, TRUE)!=JPEG_HEADER_OK )
         return false;
 
-      // From now on, you can access information on the jpeg image by
-      // referencing fields of cInfo object.
-      //
-
-      // 5. Set Target Image Format. Here we store the decoded image in JCS_RGB format.
-      //
       cInfo.out_color_space = JCS_RGB;
 
-      // 6. Initiate decompress procedure.
-      //
       if( !jpeg_start_decompress(&cInfo) )
         return 0;
 
-      // 7. Allocate temporary buffer for decoding.
       size_t iRowStride = cInfo.output_width * cInfo.output_components;
       //(*a_pBuffer) = new JSAMPLE[ iRowStride * cInfo.output_height ];
 
@@ -339,8 +319,6 @@ struct JpegCodec:ImageCodec {
       info.h   = cInfo.image_height;
       info.bpp = cInfo.output_components;
 
-      // 8. Finish decompression.
-      //
       if( !jpeg_finish_decompress(&cInfo) )
         Log() << "jpeg_finish_decompress error";
       }
@@ -757,9 +735,9 @@ bool ImageCodec::save( ODevice& ,
 
 void ImageCodec::installStdCodecs(SystemAPI &s) {
   s.installImageCodec( new PngCodec()  );
-  s.installImageCodec( new JpegCodec() );
   s.installImageCodec( new ETCCodec()  );
   s.installImageCodec( new S3TCCodec() );
+  s.installImageCodec( new JpegCodec() );
   }
 
 void ImageCodec::addAlpha( ImgInfo& info, std::vector<unsigned char> &rgb) {
