@@ -948,7 +948,8 @@ static void JNICALL nativeOnTouch( JNIEnv* , jobject ,
   m.data1  = act;
   m.data2  = pid;
 
-  android.pushMsg(m);
+  if( act!=2 || android.msgSize()<64 )
+    android.pushMsg(m);
   }
 
 static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject /*obj*/, jobject surface) {
