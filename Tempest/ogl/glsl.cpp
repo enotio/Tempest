@@ -139,6 +139,126 @@ struct GLSL::Data{
 
   char  texAttrName[14];
   void* notId;
+
+  GLuint link( GLuint vertexShader,
+               GLuint pixelShader,
+               const AbstractAPI::VertexDecl * vdecl,
+               std::string* log ) {
+    if( curProgram.vs   == vertexShader &&
+        curProgram.fs   == pixelShader  &&
+        curProgram.decl == vdecl ){
+      return curProgram.linked;
+      }
+
+    //NON-Cashed
+    Data::ShProgram tmp;
+    tmp.vs   = vertexShader;
+    tmp.fs   = pixelShader;
+    tmp.decl = vdecl;
+
+    auto l = std::lower_bound(prog.begin(), prog.end(), tmp);
+    if( l!=prog.end() &&
+        l->vs==tmp.vs && l->fs==tmp.fs && l->decl==tmp.decl ){
+      return (*l).linked;
+      }
+
+    //Non-Linked
+    GLuint program = glCreateProgram();
+    T_ASSERT( program );
+
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, pixelShader);
+
+    static const char* uType[] = {
+      "Position",
+      "BlendWeight",   // 1
+      "BlendIndices",  // 2
+      "Normal",        // 3
+      "PSize",         // 4
+      "TexCoord",      // 5
+      "Tangent",       // 6
+      "BiNormal",      // 7
+      "TessFactor",    // 8
+      "PositionT",     // 9
+      "Color",         // 10
+      "Fog",           // 11
+      "Depth",         // 12
+      "Sample",        // 13
+      ""
+      };
+
+    const Tempest::VertexDeclaration::Declarator& vd
+        = *(const Tempest::VertexDeclaration::Declarator*)vdecl;
+
+    int usrAttr = -1;
+    for( int i=0; i<vd.size(); ++i ){
+      if( vd[i].usage!=Usage::TexCoord && vd[i].attrName.size()==0 ){
+        glBindAttribLocation( program, i, uType[vd[i].usage] );
+        } else
+      if( vd[i].usage==Usage::TexCoord ){
+        texAttrName[8] = '0';
+        texAttrName[9] = 0;
+
+        int id = vd[i].index;
+        if( id ){
+          int idx = 0;
+          while( id>0 ){
+            ++idx;
+            id/=10;
+            }
+
+          id = vd[i].index;
+          for( int r=0; id>0; ++r ){
+            texAttrName[7+idx-r] = '0'+id%10;
+            id/=10;
+            }
+
+          texAttrName[8+idx] = 0;
+          }
+
+        glBindAttribLocation( program, vd.size()+vd[i].index, texAttrName );
+
+        if( vd[i].index==0 )
+          glBindAttribLocation( program, vd.size()+vd[i].index, "TexCoord" );
+        } else {
+        glBindAttribLocation( program,
+                              vd.size()+vd.texCoordCount()+usrAttr,
+                              vd[i].attrName.c_str() );
+        ++usrAttr;
+        }
+      }
+
+    glLinkProgram (program);
+
+    GLint linkStatus = GL_FALSE;
+    glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
+
+    GLint bufLength = 0;
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
+
+    if( bufLength && log ) {
+      log->resize( bufLength );
+      glGetProgramInfoLog(program, bufLength, NULL, &(*log)[0]);
+      }
+
+    if (linkStatus != GL_TRUE) {
+      glDeleteProgram(program);
+      program = 0;
+      }
+
+    Data::ShProgram s;
+    s.vs     = vertexShader;
+    s.fs     = pixelShader;
+    s.decl   = vdecl;
+    s.linked = program;
+
+    {
+    auto l = std::lower_bound(prog.begin(), prog.end(), s);
+    prog.insert(l, s);
+    }
+    return program;
+    }
+
   };
 
 void* GLSL::context() const{
@@ -375,6 +495,17 @@ void GLSL::unBind( const Tempest::FragmentShader& s ) const {
   //setDevice();
   }
 
+bool GLSL::link( const Tempest::VertexShader &vs,
+                 const Tempest::FragmentShader &fs,
+                 const AbstractAPI::VertexDecl *decl,
+                 std::string &log ) const {
+  GLuint vertexShader = *(GLuint*)get( vs );
+  GLuint pixelShader  = *(GLuint*)get( fs );
+
+  GLuint program = data->link(vertexShader, pixelShader, decl, &log);
+  return program!=0;
+  }
+
 void GLSL::setVertexDecl(const AbstractAPI::VertexDecl *v ) const {
   data->vdecl = v;
   }
@@ -382,137 +513,10 @@ void GLSL::setVertexDecl(const AbstractAPI::VertexDecl *v ) const {
 void GLSL::enable() const {
   GLuint vertexShader = *(GLuint*)get( *data->currentVS );
   GLuint pixelShader  = *(GLuint*)get( *data->currentFS );
-  GLuint program = 0;
 
-  if( data->curProgram.vs   == vertexShader &&
-      data->curProgram.fs   == pixelShader  &&
-      data->curProgram.decl == data->vdecl ){
-    program = data->curProgram.linked;
-    }
+  GLuint program = data->link(vertexShader, pixelShader, data->vdecl, 0);
 
-  //NON-Cashed
-  if( program==0 ){
-    Data::ShProgram tmp;
-    tmp.vs   = vertexShader;
-    tmp.fs   = pixelShader;
-    tmp.decl = data->vdecl;
-
-    auto l = std::lower_bound(data->prog.begin(), data->prog.end(), tmp);
-    if( l!=data->prog.end() &&
-        l->vs==tmp.vs && l->fs==tmp.fs && l->decl==tmp.decl ){
-      program = (*l).linked;
-      }
-
-    /*
-    for( size_t i=0; i<data->prog.size(); ++i )
-      if( data->prog[i].vs == vertexShader &&
-          data->prog[i].fs == pixelShader ){
-        program = data->prog[i].linked;
-        }*/
-    }
-
-  //Non-Linked
-  if( program==0 ){
-    program = glCreateProgram();
-    T_ASSERT( program );
-
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, pixelShader);
-
-    static const char* uType[] = {
-      "Position",
-      "BlendWeight",   // 1
-      "BlendIndices",  // 2
-      "Normal",        // 3
-      "PSize",         // 4
-      "TexCoord",      // 5
-      "Tangent",       // 6
-      "BiNormal",      // 7
-      "TessFactor",    // 8
-      "PositionT",     // 9
-      "Color",         // 10
-      "Fog",           // 11
-      "Depth",         // 12
-      "Sample",        // 13
-      ""
-      };
-
-    const Tempest::VertexDeclaration::Declarator& vd
-        = *(const Tempest::VertexDeclaration::Declarator*)data->vdecl;
-
-    int usrAttr = -1;
-    for( int i=0; i<vd.size(); ++i ){
-      if( vd[i].usage!=Usage::TexCoord && vd[i].attrName.size()==0 ){
-        glBindAttribLocation( program, i, uType[vd[i].usage] );
-        } else
-      if( vd[i].usage==Usage::TexCoord ){
-        data->texAttrName[8] = '0';
-        data->texAttrName[9] = 0;
-
-        int id = vd[i].index;
-        if( id ){
-          int idx = 0;
-          while( id>0 ){
-            ++idx;
-            id/=10;
-            }
-
-          id = vd[i].index;
-          for( int r=0; id>0; ++r ){
-            data->texAttrName[7+idx-r] = '0'+id%10;
-            id/=10;
-            }
-
-          data->texAttrName[8+idx] = 0;
-          }
-
-        glBindAttribLocation( program, vd.size()+vd[i].index, data->texAttrName );
-
-        if( vd[i].index==0 )
-          glBindAttribLocation( program, vd.size()+vd[i].index, "TexCoord" );
-        } else {
-        glBindAttribLocation( program,
-                              vd.size()+vd.texCoordCount()+usrAttr,
-                              vd[i].attrName.c_str() );
-        ++usrAttr;
-        }
-      }
-
-    //glBindAttribLocation( program, 0, "vPosition" );
-    glLinkProgram (program);
-
-    GLint linkStatus = GL_FALSE;
-    glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
-
-    if (linkStatus != GL_TRUE) {
-      GLint bufLength = 0;
-      glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
-
-      if (bufLength) {
-        char* buf = new char[bufLength];
-        if (buf) {
-          glGetProgramInfoLog(program, bufLength, NULL, buf);
-          std::cerr << buf;
-          delete[] (buf);
-          T_ASSERT(0);
-          }
-        }
-
-      glDeleteProgram(program);
-      program = 0;
-      }
-
-    Data::ShProgram s;
-    s.vs     = vertexShader;
-    s.fs     = pixelShader;
-    s.decl   = data->vdecl;
-    s.linked = program;
-
-    auto l = std::lower_bound(data->prog.begin(), data->prog.end(), s);
-    data->prog.insert(l, s);
-
-    //data->prog.push_back( s );
-    }
+  T_ASSERT( program );
 
   if( program != data->curProgram.linked ){
     glUseProgram( program );

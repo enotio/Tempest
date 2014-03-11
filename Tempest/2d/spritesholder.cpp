@@ -26,16 +26,6 @@ Sprite SpritesHolder::load(const std::string &f) {
   }
 
 Sprite SpritesHolder::load(const Tempest::Pixmap &p) {
-  /*
-  for( size_t i=0; i<loadRq.size(); ++i ){
-    if( loadRq[i].p.const_data() == p.const_data() ){
-      Sprite tmp;
-      tmp.holder = this;
-      tmp.deleyd = i;
-      loadRq[i].sprites.push_back(&tmp);
-      }
-    }*/
-
   Sprite tmp;
   tmp.delayd = loadRq.size();
   tmp.holder = this;

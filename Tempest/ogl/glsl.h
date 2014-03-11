@@ -26,6 +26,11 @@ namespace Tempest {
       void unBind( const Tempest::VertexShader& ) const;
       void unBind( const Tempest::FragmentShader& ) const;
 
+      bool link( const Tempest::VertexShader   &vs,
+                 const Tempest::FragmentShader &fs,
+                 const AbstractAPI::VertexDecl *decl,
+                 std::string& log ) const;
+
       void setVertexDecl( const Tempest::AbstractAPI::VertexDecl*  ) const;
 
       void* context() const;

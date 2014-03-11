@@ -90,6 +90,13 @@ class AbstractShadingLang : public GraphicsSubsystem {
     virtual void deleteVertexShader( VertexShader* s ) const = 0;
     virtual void deleteFragmentShader( FragmentShader* s ) const = 0;
 
+    virtual bool link( const Tempest::VertexShader   &/*vs*/,
+                       const Tempest::FragmentShader &/*fs*/,
+                       const AbstractAPI::VertexDecl */*decl*/,
+                       std::string& /*log*/ ) const {
+      return true;
+    }
+
     struct UiShaderOpt{
       UiShaderOpt();
       bool hasTexture;

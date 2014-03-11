@@ -93,6 +93,14 @@ class Device {
       s.setUniform(name.c_str(), t);
       }
 
+    bool link( const Tempest::VertexShader   &vs,
+               const Tempest::FragmentShader &fs,
+               const Tempest::VertexDeclaration &decl,
+               std::string& log ) {
+      const AbstractShadingLang& sh = shadingLang();
+      return sh.link(vs, fs, (AbstractAPI::VertexDecl*)(decl.decl->impl), log);
+      }
+
     template< class T, class ... Args >
     void draw( const T& t, Args& ... a ){
       t.render(*this,a...);
