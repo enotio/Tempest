@@ -1034,7 +1034,7 @@ static void JNICALL onKeyDownEvent(JNIEnv* , jobject, jint key ) {
       android.pushMsg(m);
       }
     } else {
-    android.pushMsg( Android::MSG_RENDER_LOOP_EXIT );
+    android.pushMsg( Android::MSG_CLOSE );
     }
   }
 
