@@ -60,10 +60,14 @@ using namespace Tempest::GLProc;
 #endif
 //#define GL_MAX_VARYING_VECTORS                        0x8DFC
 
+#ifdef __ANDROID__
+#define GLAPIENTRY EGLAPIENTRY
+#endif
+
 using namespace Tempest;
 typedef void (GLAPIENTRY *PFNGLSTARTTILINGQCOMPROC) (GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
 typedef void (GLAPIENTRY *PFNGLENDTILINGQCOMPROC) (GLbitfield preserveMask);
-typedef BOOL (GLAPIENTRY *PFNGLWGLSWAPINTERVALPROC) (GLint interval);
+typedef bool (GLAPIENTRY *PFNGLWGLSWAPINTERVALPROC) (GLint interval);
 
 typedef void (GLAPIENTRY *PFNGLDISCARDFRAMEBUFFERPROC)(GLenum mode, GLsizei count, const GLenum* att );
 
