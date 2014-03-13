@@ -61,11 +61,11 @@ using namespace Tempest::GLProc;
 //#define GL_MAX_VARYING_VECTORS                        0x8DFC
 
 using namespace Tempest;
-typedef void (*PFNGLSTARTTILINGQCOMPROC) (GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
-typedef void (*PFNGLENDTILINGQCOMPROC) (GLbitfield preserveMask);
-typedef void (*PFNGLWGLSWAPINTERVALPROC) (GLint interval);
+typedef void (GLAPIENTRY *PFNGLSTARTTILINGQCOMPROC) (GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
+typedef void (GLAPIENTRY *PFNGLENDTILINGQCOMPROC) (GLbitfield preserveMask);
+typedef BOOL (GLAPIENTRY *PFNGLWGLSWAPINTERVALPROC) (GLint interval);
 
-typedef void (*PFNGLDISCARDFRAMEBUFFERPROC)(GLenum mode, GLsizei count, const GLenum* att );
+typedef void (GLAPIENTRY *PFNGLDISCARDFRAMEBUFFERPROC)(GLenum mode, GLsizei count, const GLenum* att );
 
 struct Opengl2x::Device{
 #ifdef __ANDROID__
@@ -93,8 +93,6 @@ struct Opengl2x::Device{
   std::vector<bool> vAttrLoc;
 
   int vertexSize, curVboOffsetIndex, curIboOffsetIndex;
-
-  GLuint fboId;
   bool   isPainting;
 
   Tempest::RenderState renderState;
@@ -427,7 +425,7 @@ struct Opengl2x::Device{
 
   PFNGLSTARTTILINGQCOMPROC glStartTilingQCOM;
   PFNGLENDTILINGQCOMPROC   glEndTilingQCOM;
-  PFNGLWGLSWAPINTERVALPROC wglSwapInterval;
+  PFNGLWGLSWAPINTERVALPROC wglSwapInterval = 0;
 
   PFNGLDISCARDFRAMEBUFFERPROC glDiscardFrameBuffer;
   bool isTileRenderStarted;
@@ -664,7 +662,6 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->caps.hasNpotTexture = dev->hasNpotTexture;
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glGenFramebuffers(1, &dev->fboId);
 
   reset( (AbstractAPI::Device*)dev, hwnd, opt );
   setRenderState( (AbstractAPI::Device*)dev, Tempest::RenderState() );
@@ -676,8 +673,6 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
   Device* dev = (Device*)d;
   if( !setDevice(d) ) return;
-  glDeleteFramebuffers (1, &dev->fboId);
-
   dev->free(dev->dynVbo);
 
 #ifndef __ANDROID__

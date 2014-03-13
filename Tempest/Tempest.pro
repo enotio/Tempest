@@ -20,7 +20,6 @@ DEFINES += FT2_BUILD_LIBRARY
 
 INCLUDEPATH += \
                "$$(CG_INC_PATH)"\
-               "C:/Users/Try/Home/Programming/SharedLibs/glew-1.5.4-mingw32/include"\               
                "./thirdparty/" \
                "."
 !android:INCLUDEPATH += "./thirdparty/fakeGL"
