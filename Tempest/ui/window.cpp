@@ -219,6 +219,7 @@ void Window::addOverlay(WindowOverlay *wx ) {
   overlaywd.push_back(wx);
   wx->owner = this;
   wx->setGeometry(0,0,w(),h());
+  update();
   }
 
 void Window::removeOverlay(WindowOverlay *w) {
@@ -234,6 +235,7 @@ void Window::removeOverlay(WindowOverlay *w) {
     }
 
   overlaywd.resize(id);
+  update();
   }
 
 AbstractGestureEvent *Window::sendEventToGestureRecognizer( const Event &e ) {

@@ -499,10 +499,20 @@ bool GLSL::link( const Tempest::VertexShader &vs,
                  const Tempest::FragmentShader &fs,
                  const AbstractAPI::VertexDecl *decl,
                  std::string &log ) const {
-  GLuint vertexShader = *(GLuint*)get( vs );
-  GLuint pixelShader  = *(GLuint*)get( fs );
+  GLuint* vertexShader = (GLuint*)get( vs );
+  GLuint* pixelShader  = (GLuint*)get( fs );
 
-  GLuint program = data->link(vertexShader, pixelShader, decl, &log);
+  if( vertexShader==0 ){
+    log = "Vertex shader not created";
+    return 0;
+    }
+
+  if( pixelShader==0 ){
+    log = "Fragment shader not created";
+    return 0;
+    }
+
+  GLuint program = data->link(*vertexShader, *pixelShader, decl, &log);
   return program!=0;
   }
 

@@ -14,8 +14,10 @@ namespace Tempest{
                          const char *func,
                          const char *X, const char *msg) {
 #ifdef __ANDROID__
+#ifdef NDEBUG
     __android_log_assert("","","%s","");
     assert(0);
+#endif
 #else
     __asm__("int $3");
 #endif

@@ -4,7 +4,6 @@ CONFIG -= qt
 
 CONFIG += ogl directx
 
-TARGET   = Tempest
 TEMPLATE = lib
 CONFIG   += dll
 
@@ -76,7 +75,7 @@ ogl:{
     TARGET = Tempest
     }
   }
-android:TARGET = Tempest
+android:TARGET = Tempest-$$ANDROID_TARGET_ARCH
 
 DEFINES += "FT2_BUILD_LIBRARY=1"
 INCLUDEPATH += thirdparty/freetype/include
