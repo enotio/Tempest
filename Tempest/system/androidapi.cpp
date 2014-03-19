@@ -81,6 +81,8 @@ static struct Android{
     MSG_NONE = 0,
     MSG_WINDOW_SET,
     MSG_SURFACE_RESIZE,
+    MSG_START,
+    MSG_STOP,
     MSG_TOUCH,
     MSG_PAUSE,
     MSG_RESUME,
@@ -627,6 +629,9 @@ int AndroidAPI::nextEvent(bool &quit) {
     }
   }
 
+  if( android.wnd==0 )
+    return 0;
+
   switch( msg.msg ) {
     case Android::MSG_SURFACE_RESIZE:
       break;
@@ -710,6 +715,14 @@ int AndroidAPI::nextEvent(bool &quit) {
       }
       break;
 
+    case Android::MSG_START:
+      SystemAPI::setShowMode(android.wnd, Tempest::Window::Maximized);
+      break;
+
+    case Android::MSG_STOP:
+      SystemAPI::setShowMode(android.wnd, Tempest::Window::Minimized);
+      break;
+
     case Android::MSG_PAUSE:
       android.destroy(false);
       break;
@@ -791,7 +804,8 @@ static void render() {
         }
       }
 
-    e.wnd->render();
+    if( e.wnd )
+      e.wnd->render();
     }
   }
 
@@ -919,10 +933,12 @@ static void resize( JNIEnv * , jobject, jobject, jint w, jint h ) {
 
 static void JNICALL start(JNIEnv* /*jenv*/, jobject /*obj*/) {
   Log(Log::Info) << "nativeOnStart";
+  android.pushMsg(Android::MSG_START);
   }
 
 static void JNICALL stop(JNIEnv* /*jenv*/, jobject /*obj*/) {
   Log(Log::Info) << "nativeOnStop";
+  android.pushMsg(Android::MSG_STOP);
   }
 
 static void JNICALL resume(JNIEnv* /*jenv*/, jobject /*obj*/) {
@@ -1147,19 +1163,19 @@ jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
     {"nativeOnPause",  "()V", (void *) pauseA },
     {"nativeOnStop",   "()V", (void *) stop   },
 
-    {"nativeInitLocale", "(Ljava/lang/String;)V", (void *)nativeInitLocale },
-    {"nativeSetupDpi",   "(I)V",                  (void *)setupDpi         },
+    {"nativeInitLocale",  "(Ljava/lang/String;)V", (void *)nativeInitLocale },
+    {"nativeSetupDpi",    "(I)V",                  (void *)setupDpi         },
 
-    {"nativeOnTouch",  "(IIII)V", (void *)nativeOnTouch   },
+    {"nativeOnTouch",     "(IIII)V", (void *)nativeOnTouch   },
 
-    {"onKeyDownEvent",   "(I)V",   (void *)onKeyDownEvent    },
-    {"onKeyUpEvent",     "(I)V",   (void *)onKeyUpEvent      },
-    {"onKeyCharEvent",   "(Ljava/lang/String;)V",   (void *)onKeyCharEvent      },
+    {"onKeyDownEvent",    "(I)V",                    (void *)onKeyDownEvent      },
+    {"onKeyUpEvent",      "(I)V",                    (void *)onKeyUpEvent        },
+    {"onKeyCharEvent",    "(Ljava/lang/String;)V",   (void *)onKeyCharEvent      },
 
-    {"nativeCloseEvent",  "()I", (void *) nativeCloseEvent  },
-    {"nativeSetSurface", "(Landroid/view/Surface;)V",   (void *) nativeSetSurface   },
-    {"nativeOnResize",   "(Landroid/view/Surface;II)V", (void *) resize             },
-    {"nativeSetAssets",  "(Landroid/content/res/AssetManager;)V",   (void *) setAssets          },
+    {"nativeCloseEvent",  "()I",                                        (void *) nativeCloseEvent  },
+    {"nativeSetSurface",  "(Landroid/view/Surface;)V",                  (void *) nativeSetSurface   },
+    {"nativeOnResize",    "(Landroid/view/Surface;II)V",                (void *) resize            },
+    {"nativeSetAssets",   "(Landroid/content/res/AssetManager;)V",      (void *) setAssets         },
 
     {"nativeSetupStorage",  "(Ljava/lang/String;Ljava/lang/String;)V",  (void *)nativeSetupStorage }
   };

@@ -280,6 +280,9 @@ GLSL::GLSL(AbstractAPI::OpenGL2xDevice * dev) {
   data->currentFS = 0;
 
   const char * ext = (const char*)glGetString(GL_EXTENSIONS);
+  if( ext==0 )
+    ext = "";// <- Android bug
+
   data->hasAnisotropic =
       (strstr(ext, "GL_EXT_texture_filter_anisotropic")!=0);
 
