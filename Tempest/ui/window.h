@@ -28,8 +28,8 @@ class Window : public Widget {
     Window( int w, int h );
 
     enum ShowMode{
-      Normal,
       Minimized,
+      Normal,
       Maximized,
       FullScreen
       };
@@ -76,6 +76,8 @@ class Window : public Widget {
   protected:
     SystemAPI::Window *handle();
 
+    Tempest::signal<ShowMode> showModeChanged;
+
   private:
     SystemAPI::Window *wnd;
     std::vector<int>   pressedC;
@@ -89,6 +91,7 @@ class Window : public Widget {
 
     std::vector< std::unique_ptr<GestureRecognizer>> recognizers;
 
+    void setShowMode( ShowMode m );
     ShowMode smode;
     int winW, winH;
     void init(int w, int h);

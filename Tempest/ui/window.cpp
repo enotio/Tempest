@@ -249,6 +249,13 @@ AbstractGestureEvent *Window::sendEventToGestureRecognizer( const Event &e ) {
   return 0;
   }
 
+void Window::setShowMode(Window::ShowMode m) {
+  if( smode==m )
+    return;
+
+  smode = m;
+  showModeChanged(m);
+  }
 
 WindowOverlay::WindowOverlay():owner(0){
   }
