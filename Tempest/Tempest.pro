@@ -10,18 +10,22 @@ CONFIG   += dll
 DEFINES += TEMPEST_M_TREADS
 #DEFINES += __ANDROID__
 
-INCLUDEPATH += ./thirdparty/squish
 INCLUDEPATH += "./include"
-DESTDIR = ../lib
+
+android:{
+  DESTDIR = ../lib/$$ANDROID_TARGET_ARCH
+  }
+else {
+  DESTDIR = ../lib
+  }
 
 QMAKE_CXXFLAGS += -std=gnu++0x -Wall
-DEFINES += FT2_BUILD_LIBRARY
 
 INCLUDEPATH += \
                "$$(CG_INC_PATH)"\
                "./thirdparty/" \
                "."
-!android:INCLUDEPATH += "./thirdparty/fakeGL"
+
 win32:LIBS += -l"gdi32"
 LIBS += -l"z"
 
@@ -75,38 +79,23 @@ ogl:{
     TARGET = Tempest
     }
   }
-android:TARGET = Tempest-$$ANDROID_TARGET_ARCH
+android:TARGET = Tempest
 
-DEFINES += "FT2_BUILD_LIBRARY=1"
-INCLUDEPATH += thirdparty/freetype/include
-
-SOURCES += \
-  thirdparty/freetype/src/autofit/autofit.c \
-  thirdparty/freetype/src/base/basepic.c \
-  thirdparty/freetype/src/base/ftapi.c \
-  thirdparty/freetype/src/base/ftbase.c \
-  thirdparty/freetype/src/base/ftbbox.c \
-  thirdparty/freetype/src/base/ftbitmap.c \
-  thirdparty/freetype/src/base/ftdbgmem.c \
-  thirdparty/freetype/src/base/ftdebug.c \
-  thirdparty/freetype/src/base/ftglyph.c \
-  thirdparty/freetype/src/base/ftinit.c \
-  thirdparty/freetype/src/base/ftpic.c \
-  thirdparty/freetype/src/base/ftstroke.c \
-  thirdparty/freetype/src/base/ftsynth.c \
-  thirdparty/freetype/src/base/ftsystem.c \
-  thirdparty/freetype/src/cff/cff.c \
-  thirdparty/freetype/src/pshinter/pshinter.c \
-  thirdparty/freetype/src/psnames/psnames.c \
-  thirdparty/freetype/src/raster/raster.c \
-  thirdparty/freetype/src/sfnt/sfnt.c \
-  thirdparty/freetype/src/smooth/smooth.c \
-  thirdparty/freetype/src/truetype/truetype.c \
-    core/graphicssubsystem.cpp
+include( thirdparty/libpng/libpng.pri )
+include( thirdparty/libjpeg/libjpeg.pri )
+include( thirdparty/squish/squish.pri )
+include( thirdparty/freetype/freetype.pri )
+include( thirdparty/nv_math/nv_math.pri )
+include( thirdparty/utf8cpp/utf8cpp.pri )
+include( thirdparty/ktx/ktx.pri )
+include( thirdparty/fakeGL/GLES2/gles.pri )
 
 SOURCES += \
-    ui/window.cpp \
     system/windowsapi.cpp \
+    system/systemapi.cpp \
+    system/androidapi.cpp \
+    core/graphicssubsystem.cpp \
+    ui/window.cpp \
     ui/widget.cpp \
     utils/utility.cpp \
     ui/sizepolicy.cpp \
@@ -117,7 +106,6 @@ SOURCES += \
     ui/image.cpp \
     ui/event.cpp \
     application.cpp \
-    system/androidapi.cpp \
     core/renderstate.cpp \
     core/device.cpp \
     core/abstractapi.cpp \
@@ -154,37 +142,8 @@ SOURCES += \
     utils/tessobject.cpp \
     utils/color.cpp \
     shading/shaderinput.cpp \
-    thirdparty/squish/squish.cpp \
-    thirdparty/squish/singlecolourlookup.inl \
-    thirdparty/squish/singlecolourfit.cpp \
-    thirdparty/squish/rangefit.cpp \
-    thirdparty/squish/maths.cpp \
-    thirdparty/squish/colourset.cpp \
-    thirdparty/squish/colourfit.cpp \
-    thirdparty/squish/colourblock.cpp \
-    thirdparty/squish/clusterfit.cpp \
-    thirdparty/squish/alpha.cpp \
     dataControl/resourcecontext.cpp \
-    system/systemapi.cpp \
     core/wrappers/half.cpp \
-    thirdparty/nv_math/nv_quat.cpp \
-    thirdparty/nv_math/nv_matrix.cpp \
-    thirdparty/nv_math/nv_math.cpp \
-    thirdparty/libpng/pngwutil.c \
-    thirdparty/libpng/pngwtran.c \
-    thirdparty/libpng/pngwrite.c \
-    thirdparty/libpng/pngwio.c \
-    thirdparty/libpng/pngtrans.c \
-    thirdparty/libpng/pngset.c \
-    thirdparty/libpng/pngrutil.c \
-    thirdparty/libpng/pngrtran.c \
-    thirdparty/libpng/pngrio.c \
-    thirdparty/libpng/pngread.c \
-    thirdparty/libpng/pngpread.c \
-    thirdparty/libpng/pngmem.c \
-    thirdparty/libpng/pngget.c \
-    thirdparty/libpng/pngerror.c \
-    thirdparty/libpng/png.c \
     core/assert.cpp \
     shading/shader.cpp \
     2d/sprite.cpp \
@@ -200,44 +159,18 @@ SOURCES += \
     utils/mempool.cpp \
     shading/programobject.cpp \
     core/imagecodec.cpp \
-    thirdparty/ktx/etc_dec.cpp \
     utils/log.cpp \
     io/iodevice.cpp \
     io/buffer.cpp \
-    thirdparty/libjpeg/jaricom.c \
-    thirdparty/libjpeg/jcomapi.c \
-    thirdparty/libjpeg/jdapimin.c \
-    thirdparty/libjpeg/jdapistd.c \
-    thirdparty/libjpeg/jdarith.c \
-    thirdparty/libjpeg/jdatadst.c \
-    thirdparty/libjpeg/jdatasrc.c \
-    thirdparty/libjpeg/jdcoefct.c \
-    thirdparty/libjpeg/jdcolor.c \
-    thirdparty/libjpeg/jddctmgr.c \
-    thirdparty/libjpeg/jdhuff.c \
-    thirdparty/libjpeg/jdinput.c \
-    thirdparty/libjpeg/jdmainct.c \
-    thirdparty/libjpeg/jdmarker.c \
-    thirdparty/libjpeg/jdmaster.c \
-    thirdparty/libjpeg/jdmerge.c \
-    thirdparty/libjpeg/jdpostct.c \
-    thirdparty/libjpeg/jdsample.c \
-    thirdparty/libjpeg/jdtrans.c \
-    thirdparty/libjpeg/jerror.c \
-    thirdparty/libjpeg/jidctflt.c \
-    thirdparty/libjpeg/jidctfst.c \
-    thirdparty/libjpeg/jidctint.c \
-    thirdparty/libjpeg/jmemmgr.c \
-    thirdparty/libjpeg/jmemnobs.c \
-    thirdparty/libjpeg/jquant1.c \
-    thirdparty/libjpeg/jquant2.c \
-    thirdparty/libjpeg/jutils.c \
     io/file.cpp \
     ogl/glfn.cpp
 
 HEADERS += \
-    ui/window.h \
     system/windowsapi.h \
+    system/androidapi.h \
+    system/systemapi.h \
+    system/ddsdef.h \
+    ui/window.h \
     ui/widget.h \
     utils/utility.h \
     ui/sizepolicy.h \
@@ -249,7 +182,6 @@ HEADERS += \
     ui/image.h \
     ui/event.h \
     application.h \
-    system/androidapi.h \
     core/renderstate.h \
     core/device.h \
     core/abstractapi.h \
@@ -290,34 +222,8 @@ HEADERS += \
     utils/cwnptr.h \
     utils/color.h \
     shading/shaderinput.h \
-    thirdparty/squish/squish.h \
-    thirdparty/squish/singlecolourfit.h \
-    thirdparty/squish/simd_ve.h \
-    thirdparty/squish/simd_sse.h \
-    thirdparty/squish/simd_float.h \
-    thirdparty/squish/simd.h \
-    thirdparty/squish/rangefit.h \
-    thirdparty/squish/maths.h \
-    thirdparty/squish/config.h \
-    thirdparty/squish/colourset.h \
-    thirdparty/squish/colourfit.h \
-    thirdparty/squish/colourblock.h \
-    thirdparty/squish/clusterfit.h \
-    thirdparty/squish/alpha.h \
-    system/ddsdef.h \
     dataControl/resourcecontext.h \
-    system/systemapi.h \
     core/wrappers/half.h \
-    thirdparty/nv_math/NvVec.h \
-    thirdparty/nv_math/nv_quat.h \
-    thirdparty/nv_math/nv_matrix.h \
-    thirdparty/nv_math/nv_math.h \
-    thirdparty/nv_math/misc.h \
-    thirdparty/fakeGL/GLES2/gl2.h \
-    thirdparty/libpng/pngpriv.h \
-    thirdparty/libpng/pngconf.h \
-    thirdparty/libpng/png.h \
-    thirdparty/libpng/config.h \
     core/assert.h \
     shading/shader.h \
     dataControl/shaderholder.h \
@@ -326,43 +232,32 @@ HEADERS += \
     timer.h \
     2d/surface.h \
     core/wrappers/displaysettings.h \
-    include/Tempest/DisplaySettings \
     2d/surfacerender.h \
-    include/Tempest/SurfaceRender \
     2d/font.h \
-    include/Tempest/Font \
     dataControl/localobjectpool.h \
-    include/Tempest/LocalObjectPool \
     ui/gesturerecognizer.h \
     core/wrappers/texture3d.h \
     dataControl/volumeholder.h \
     utils/mempool.h \
     shading/programobject.h \
     core/imagecodec.h \
-    thirdparty/ktx/etc_dec.h \
     utils/log.h \
     io/iodevice.h \
     io/buffer.h \
-    include/Tempest/IODevice \
-    thirdparty/libjpeg/jconfig.h \
-    thirdparty/libjpeg/jdct.h \
-    thirdparty/libjpeg/jerror.h \
-    thirdparty/libjpeg/jinclude.h \
-    thirdparty/libjpeg/jmemsys.h \
-    thirdparty/libjpeg/jmorecfg.h \
-    thirdparty/libjpeg/jpegint.h \
-    thirdparty/libjpeg/jpeglib.h \
-    thirdparty/libjpeg/jversion.h \
     io/file.h \
     ogl/glfn.h \
-    thirdparty/utf8cpp/utf8.h \
-    thirdparty/utf8cpp/utf8/checked.h \
-    thirdparty/utf8cpp/utf8/core.h \
-    thirdparty/utf8cpp/utf8/unchecked.h \
-    include/Tempest/Windows \
     core/graphicssubsystem.h
 
 OTHER_FILES += \
+    ../.gitignore \
+    Android.mk \
+    android/jni/Android.mk \
+    include/Tempest/Windows \
+    include/Tempest/IODevice \
+    include/Tempest/Font \
+    include/Tempest/SurfaceRender \
+    include/Tempest/DisplaySettings \
+    include/Tempest/LocalObjectPool \
     include/Tempest/Window \
     include/Tempest/Application \
     include/Tempest/Widget \
@@ -375,10 +270,8 @@ OTHER_FILES += \
     include/Tempest/Layout \
     include/Tempest/Image \
     include/Tempest/Event \
-    Android.mk \
     include/Tempest/ResourceContext \
     include/Tempest/SystemAPI \
-    android/jni/Android.mk \
     include/Tempest/SpritesHolder \
     include/Tempest/Sprite \
     include/Tempest/Timer \
@@ -391,5 +284,4 @@ OTHER_FILES += \
     include/Tempest/Log \
     include/Tempest/Buffer \
     include/Tempest/File \
-    ../.gitignore \
     include/Tempest/GraphicsSubsystem
