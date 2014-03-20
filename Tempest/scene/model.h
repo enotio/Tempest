@@ -158,11 +158,12 @@ class Model {
     void load( Tempest::VertexBufferHolder & vboHolder,
                Tempest::IndexBufferHolder  & /*iboHolder*/,
                const Vertex* buf, size_t bufSize,
-               const Tempest::VertexDeclaration::Declarator& decl ){
+               const Tempest::VertexDeclaration::Declarator& decl,
+               AbstractAPI::BufferFlag  bufferFlag = AbstractAPI::BF_NoFlags ){
       vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
 
       setupMSZ( bufSize );
-      vbo = vboHolder.load( buf, bufSize );
+      vbo = vboHolder.load( buf, bufSize, bufferFlag );
 
       bds = Raw::computeBoundRect( buf, bufSize );
       }
@@ -170,22 +171,24 @@ class Model {
     void load( Tempest::VertexBufferHolder & vboHolder,
                Tempest::IndexBufferHolder  & iboHolder,
                const std::vector<Vertex>& buf,
-               const Tempest::VertexDeclaration::Declarator& decl ){
-      load( vboHolder, iboHolder, &buf[0], buf.size(), decl );
+               const Tempest::VertexDeclaration::Declarator& decl,
+               AbstractAPI::BufferFlag  bufferFlag = AbstractAPI::BF_NoFlags ){
+      load( vboHolder, iboHolder, &buf[0], buf.size(), decl, bufferFlag );
       }
 
     void load( Tempest::VertexBufferHolder & vboHolder,
                Tempest::IndexBufferHolder  & iboHolder,
                const Vertex*   buf, size_t bufSize,
                const uint16_t* index,size_t iboSize,
-               const Tempest::VertexDeclaration::Declarator& decl ){
+               const Tempest::VertexDeclaration::Declarator& decl,
+               AbstractAPI::BufferFlag  bufferFlag = AbstractAPI::BF_NoFlags ){
       vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
 
       if( bufSize==0 )
         setupMSZ(0); else
         setupMSZ( iboSize );
-      vbo = vboHolder.load( buf,   bufSize );
-      ibo = iboHolder.load( index, iboSize );
+      vbo = vboHolder.load( buf,   bufSize, bufferFlag );
+      ibo = iboHolder.load( index, iboSize, bufferFlag );
 
       bds = Raw::computeBoundRect( buf, bufSize );
       }
@@ -194,15 +197,16 @@ class Model {
                Tempest::IndexBufferHolder  & iboHolder,
                const std::vector<Vertex>&   buf,
                const std::vector<uint16_t>& index,
-               const Tempest::VertexDeclaration::Declarator& decl ){
+               const Tempest::VertexDeclaration::Declarator& decl,
+               AbstractAPI::BufferFlag  bufferFlag = AbstractAPI::BF_NoFlags ){
       vdecl = Tempest::VertexDeclaration( vboHolder.device(), decl );
 
       if( buf.size()==0 )
         setupMSZ(0); else
         setupMSZ( index.size() );
 
-      vbo = vboHolder.load( buf   );
-      ibo = iboHolder.load( index );
+      vbo = vboHolder.load( buf,   bufferFlag );
+      ibo = iboHolder.load( index, bufferFlag );
 
       bds = Raw::computeBoundRect( buf );
       }
@@ -210,10 +214,11 @@ class Model {
     void load( Tempest::VertexBufferHolder & vboHolder,
                Tempest::IndexBufferHolder  & iboHolder,
                const Raw& data,
-               const Tempest::VertexDeclaration::Declarator& decl ){
+               const Tempest::VertexDeclaration::Declarator& decl,
+               AbstractAPI::BufferFlag  bufferFlag = AbstractAPI::BF_NoFlags ){
       if( data.hasIndex )
-        load( vboHolder, iboHolder, data.vertex, data.index, decl ); else
-        load( vboHolder, iboHolder, data.vertex, decl );
+        load( vboHolder, iboHolder, data.vertex, data.index, decl, bufferFlag ); else
+        load( vboHolder, iboHolder, data.vertex, decl, bufferFlag );
       }
 
     void load( Tempest::VertexBufferHolder & vboHolder,

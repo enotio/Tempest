@@ -8,7 +8,6 @@ TEMPLATE = lib
 CONFIG   += dll
 
 DEFINES += TEMPEST_M_TREADS
-#DEFINES += __ANDROID__
 
 INCLUDEPATH += "./include"
 
