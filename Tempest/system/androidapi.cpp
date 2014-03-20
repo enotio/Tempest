@@ -586,6 +586,7 @@ int AndroidAPI::nextEvents(bool &quit) {
       Android::MainThreadMessage msg = android.takeMsg().msg;
 
       if( android.window==0 && msg!=Android::MSG_RENDER_LOOP_EXIT  ){
+        Application::sleep(100);
         return 1;
         }
 
@@ -618,13 +619,15 @@ int AndroidAPI::nextEvent(bool &quit) {
     msg = android.msg[0];
 
     if( !hasWindow && msg.msg!=Android::MSG_RENDER_LOOP_EXIT ){
+      Application::sleep(100);
       return 0;
       }
 
     android.msg.erase( android.msg.begin() );
     } else {
     if( !android.isPaused && hasWindow )
-      render();
+      render(); else
+      Application::sleep(100);
     return 0;
     }
   }
