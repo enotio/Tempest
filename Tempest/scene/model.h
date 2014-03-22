@@ -187,6 +187,14 @@ class Model {
       if( bufSize==0 )
         setupMSZ(0); else
         setupMSZ( iboSize );
+
+      if( iboSize==0 ){
+        vbo   = Tempest::VertexBuffer<Vertex>();
+        ibo   = Tempest::IndexBuffer<uint16_t>();
+        bds = Raw::computeBoundRect( vbo );
+        return;
+        }
+
       vbo = vboHolder.load( buf,   bufSize, bufferFlag );
       ibo = iboHolder.load( index, iboSize, bufferFlag );
 
@@ -204,6 +212,13 @@ class Model {
       if( buf.size()==0 )
         setupMSZ(0); else
         setupMSZ( index.size() );
+
+      if( index.size()==0 ){
+        vbo   = Tempest::VertexBuffer<Vertex>();
+        ibo   = Tempest::IndexBuffer<uint16_t>();
+        bds = Raw::computeBoundRect( vbo );
+        return;
+        }
 
       vbo = vboHolder.load( buf,   bufferFlag );
       ibo = iboHolder.load( index, bufferFlag );
@@ -228,16 +243,24 @@ class Model {
       load( vboHolder, iboHolder, r.vertex, DefaultVertex::decl() );
       }
 
-    void load( const Tempest::VertexBuffer<ModelVertex> & v,
-               const Tempest::IndexBuffer<uint16_t>     & i,
-               const Tempest::VertexDeclaration   & d ){
+    void load( const Tempest::VertexBuffer<Vertex>  & v,
+               const Tempest::IndexBuffer<uint16_t> & i,
+               const Tempest::VertexDeclaration     & d ){
       if( v.size()==0 )
         setupMSZ(0); else
         setupMSZ(i.size());
 
+      vdecl = d;
+
+      if( i.size()==0 ){
+        vbo   = Tempest::VertexBuffer<Vertex>();
+        ibo   = Tempest::IndexBuffer<uint16_t>();
+        bds = Raw::computeBoundRect( vbo );
+        return;
+        }
+
       vbo   = v;
       ibo   = i;
-      vdecl = d;
 
       bds = Raw::computeBoundRect( v );
       }

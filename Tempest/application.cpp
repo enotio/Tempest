@@ -104,7 +104,8 @@ void Application::processTimers() {
 
       for( size_t r=0; app.timer[i] && r<dt && r<timpl->mrepeatCount; ++r ){
         timpl->lastTimeout = t;
-        timpl->timeout();
+        if( !timpl.unique() )
+          timpl->timeout();
         }
       }
     }

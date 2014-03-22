@@ -36,9 +36,10 @@ VertexBufferHolder::VertexBufferHolder( const VertexBufferHolder& h)
   data = new Data();
   }
 
-void VertexBufferHolder::createObject(AbstractAPI::VertexBuffer*& t,
+void VertexBufferHolder::createObject( AbstractAPI::VertexBuffer*& t,
                                        const char * src,
-                                       int size, int vsize , AbstractAPI::BufferFlag flg){
+                                       int size, int vsize,
+                                       AbstractAPI::BufferFlag flg ){
   t = allocBuffer( size, vsize, src, flg );
 
   if( !t )

@@ -203,6 +203,10 @@ static struct Android{
       mouse.pop_back();
     }
 
+  static void sleep(){
+    Application::sleep(10);
+    }
+
   Android(){
     display = EGL_NO_DISPLAY;
     surface = 0;
@@ -586,7 +590,7 @@ int AndroidAPI::nextEvents(bool &quit) {
       Android::MainThreadMessage msg = android.takeMsg().msg;
 
       if( android.window==0 && msg!=Android::MSG_RENDER_LOOP_EXIT  ){
-        Application::sleep(100);
+        android.sleep();
         return 1;
         }
 
@@ -619,7 +623,7 @@ int AndroidAPI::nextEvent(bool &quit) {
     msg = android.msg[0];
 
     if( !hasWindow && msg.msg!=Android::MSG_RENDER_LOOP_EXIT ){
-      Application::sleep(100);
+      android.sleep();
       return 0;
       }
 
@@ -627,7 +631,7 @@ int AndroidAPI::nextEvent(bool &quit) {
     } else {
     if( !android.isPaused && hasWindow )
       render(); else
-      Application::sleep(100);
+      android.sleep();
     return 0;
     }
   }
