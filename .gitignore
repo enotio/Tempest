@@ -1,4 +1,24 @@
 #################
+## MakeFile - generated
+#################
+Makefile
+Makefile.Debug
+Makefile.Release
+
+#################
+## QtCreator
+#################
+*.pro.user
+*.pro.user.*
+
+#################
+## Android
+#################
+ant.properties
+local.properties
+project.properties
+
+#################
 ## Eclipse
 #################
 
