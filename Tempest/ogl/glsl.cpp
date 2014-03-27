@@ -265,6 +265,12 @@ void* GLSL::context() const{
   return data->context;
   }
 
+static const GLubyte* vstr( const GLubyte* v ){
+  if( v )
+    return v; else
+    return (GLubyte*)""; //avoid Android bug
+  }
+
 GLSL::GLSL(AbstractAPI::OpenGL2xDevice * dev) {
   data = new Data();
 
@@ -279,9 +285,7 @@ GLSL::GLSL(AbstractAPI::OpenGL2xDevice * dev) {
   data->currentVS = 0;
   data->currentFS = 0;
 
-  const char * ext = (const char*)glGetString(GL_EXTENSIONS);
-  if( ext==0 )
-    ext = "";// <- Android bug
+  const char * ext = (const char*)vstr(glGetString(GL_EXTENSIONS));
 
   data->hasAnisotropic =
       (strstr(ext, "GL_EXT_texture_filter_anisotropic")!=0);

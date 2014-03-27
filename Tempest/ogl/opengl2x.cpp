@@ -465,6 +465,12 @@ struct Opengl2x::Device{
     }
   };
 
+static const GLubyte* vstr( const GLubyte* v ){
+  if( v )
+    return v; else
+    return (GLubyte*)"";
+  }
+
 bool Opengl2x::errCk() const {
 #ifdef OGL_DEBUG
   GLenum err = glGetError();
@@ -505,14 +511,14 @@ Opengl2x::Caps Opengl2x::caps( AbstractAPI::Device* d ) const {
 std::string Opengl2x::vendor( AbstractAPI::Device* d ) const {
   if( !setDevice(d) ) return "";
 
-  const GLubyte *s = glGetString(GL_VENDOR);
+  const GLubyte *s = vstr(glGetString(GL_VENDOR));
   return (const char*)s;
   }
 
 std::string Opengl2x::renderer(AbstractAPI::Device *d) const {
   if( !setDevice(d) ) return "";
 
-  const GLubyte *s = glGetString(GL_RENDERER);
+  const GLubyte *s = vstr(glGetString(GL_RENDERER));
   return (const char*)s;
   }
 
@@ -567,12 +573,8 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   if( !createContext(dev, hwnd, opt) )
     return 0;
 
-  const char * ext = (const char*)glGetString(GL_EXTENSIONS);
+  const char * ext = (const char*)vstr(glGetString(GL_EXTENSIONS));
   T_ASSERT_X(ext, "opengl context not created");
-
-  if( !ext ){
-    ext = "";
-    }
 
   dev->hasS3tcTextures =
       (strstr(ext, "GL_OES_texture_compression_S3TC")!=0) ||
@@ -618,8 +620,8 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 #endif
 
 #ifdef __ANDROID__
-  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "vendor = %s", glGetString(GL_VENDOR) );
-  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "render = %s", glGetString(GL_RENDERER) );
+  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "vendor = %s", vstr(glGetString(GL_VENDOR)) );
+  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "render = %s", vstr(glGetString(GL_RENDERER)) );
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "extensions = %s", ext );
 #endif
 
