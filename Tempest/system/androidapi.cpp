@@ -928,7 +928,7 @@ void Android::destroy( bool killContext ) {
 
 static void* tempestMainFunc(void*);
 
-static void resize( JNIEnv * , jobject, jobject, jint w, jint h ) {
+static void JNICALL resize( JNIEnv * , jobject, jobject, jint w, jint h ) {
   SyncMethod wm;
   (void)wm;
 
@@ -1153,12 +1153,12 @@ static void JNICALL nativeInitLocale( JNIEnv* , jobject,
   env->ReleaseStringUTFChars( loc, str );
   }
 
-static void setupDpi( JNIEnv* , jobject,
-                      jint d ){
+static void JNICALL setupDpi( JNIEnv* , jobject,
+                              jint d ){
   android.densityDpi = d;
   }
 
-jint JNI_OnLoad(JavaVM *vm, void */*reserved*/){
+extern "C" jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/){
   Log(Log::Info) << "Tempest JNI_OnLoad";
 
   static JNINativeMethod methodTable[] = {
