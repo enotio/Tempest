@@ -59,8 +59,8 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
   normal  = texHolder.load("data/rocks_norm.png");
   height  = texHolder.load("data/rock_h.png");
 
-  vs = vsHolder.load("data/bump_vs.glsl");
-  fs = fsHolder.load("data/bump_fs.glsl" );
+  vs = vsHolder.load("shader/bump_vs.glsl");
+  fs = fsHolder.load("shader/bump_fs.glsl" );
 
   VertexDeclaration::Declarator decl;
   decl.add( Decl::float3, Usage::Position )
