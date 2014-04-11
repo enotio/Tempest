@@ -114,6 +114,7 @@ extern void ( GLAPIENTRY *glFramebufferTexture2D) (GLenum target, GLenum attachm
 extern void ( GLAPIENTRY *glFramebufferRenderbuffer) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
 extern GLenum ( GLAPIENTRY *glCheckFramebufferStatus) (GLenum target);
 extern void ( GLAPIENTRY *glGenerateMipmap) (GLenum target);
+extern void ( GLAPIENTRY *glDrawBuffers)( GLsizei n, const GLenum *bufs);
 extern void ( GLAPIENTRY *glCompressedTexImage2D) (GLenum target, GLint level, GLenum internalformat,
                                        GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid* data);
 extern void ( GLAPIENTRY *glActiveTexture) (GLenum texture);

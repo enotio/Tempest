@@ -18,6 +18,7 @@ struct IndexBufferHolder::Data {
     // const void * data;
     };
 
+  LDData noData;
   std::unordered_map< AbstractAPI::IndexBuffer*, LDData* > ibos, restore;
   typedef std::unordered_map< AbstractAPI::IndexBuffer*, LDData* >::iterator Iterator;
   };
@@ -45,16 +46,18 @@ void IndexBufferHolder::createObject( AbstractAPI::IndexBuffer*& t,
   if( !t )
     return;
 
-  Data::LDData *d = new Data::LDData;
+  Data::LDData *d = 0;
 
-  d->vsize = vsize;
-  d->size  = size;
   //d.data  = src;
 
   if( (flg & AbstractAPI::BF_NoReadback) && device().hasManagedStorge() ){
+    d = &data->noData;
     d->vsize = 0;
     d->size  = 0;
     } else {
+    d = new Data::LDData;
+    d->vsize = vsize;
+    d->size  = size;
     d->data.resize( size*vsize );
     std::copy( src, src + size*vsize, d->data.begin() );
     }
@@ -65,7 +68,8 @@ void IndexBufferHolder::createObject( AbstractAPI::IndexBuffer*& t,
 void IndexBufferHolder::deleteObject( AbstractAPI::IndexBuffer* t ){
   if( t ){
     Data::Iterator i = data->ibos.find(t);
-    delete i->second;
+    if( i->second!=&data->noData )
+      delete i->second;
 
     data->ibos.erase(i);
     device().deleteIndexBuffer(t);
@@ -105,7 +109,8 @@ AbstractAPI::IndexBuffer* IndexBufferHolder::restore( AbstractAPI::IndexBuffer* 
 
     createObject( t, &ld->data[0], ld->size, ld->vsize );
 
-    delete ld;
+    if( ld!=&data->noData )
+      delete ld;
     }
 
   return t;

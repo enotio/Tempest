@@ -29,6 +29,7 @@ using namespace Tempest;
 #include <android/native_window_jni.h>
 
 #include <android/keycodes.h>
+#include <android/obb.h>
 
 #ifdef __arm__
 #include <machine/cpu-features.h>

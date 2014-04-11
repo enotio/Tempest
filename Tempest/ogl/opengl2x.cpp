@@ -950,9 +950,6 @@ bool Opengl2x::setupFBO() const {
 
   GLuint & fbo = dev->fbo.getTarget(dev->target, mrtSize, tex->fboHash);
   if( fbo==0 ){
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
     for( int i=0; i<maxMRT; ++i ){
       if( dev->target.color[i] ){
         // NVidia old driver bug issue
@@ -988,8 +985,14 @@ bool Opengl2x::setupFBO() const {
           glBindTexture( GL_TEXTURE_2D, 0 );
           }
         dev->target.color[i]->mips = false;
-        //*****
+        }
+      }
 
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    for( int i=0; i<mrtSize; ++i )
+      if( dev->target.color[i] ){
         glFramebufferTexture2D( GL_FRAMEBUFFER,
                                 GL_COLOR_ATTACHMENT0+i,
                                 GL_TEXTURE_2D,
@@ -997,7 +1000,6 @@ bool Opengl2x::setupFBO() const {
                                 dev->target.mip[i] );
         dev->target.color[i]->mips = false;
         }
-      }
 
     if( dev->target.depth ){
       if( dev->target.depth->id )
@@ -1016,6 +1018,15 @@ bool Opengl2x::setupFBO() const {
                                  GL_RENDERBUFFER,
                                  0 );
       }
+
+#ifndef __ANDROID__
+    {
+      GLenum buf[32];
+      for( int i=0; i<mrtSize; ++i )
+        buf[i] = GL_COLOR_ATTACHMENT0+i;
+      glDrawBuffers(mrtSize, buf);
+    }
+#endif
     } else {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     }
@@ -1060,6 +1071,33 @@ bool Opengl2x::setupFBO() const {
 
   T_ASSERT_X( errCk(), "OpenGL error" );
   return 1;
+  }
+
+void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
+                               AbstractAPI::Texture *t,
+                               int mip,
+                               int mrtSlot ) const {
+  if( !setDevice(d) ) return;
+  Detail::GLTexture *tex = (Detail::GLTexture*)t;
+  dev->target.color[mrtSlot] = tex;
+  dev->target.mip  [mrtSlot] = mip;
+  }
+
+void Opengl2x::unsetRenderTagets( AbstractAPI::Device *d,
+                                  int /*count*/  ) const {
+  if( !setDevice(d) ) return;
+  endTiledRender();
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  /*
+  glReadBuffer(GL_BACK);
+  glDrawBuffer(GL_BACK);
+  */
+
+  memset( &dev->target, 0, sizeof(dev->target) );
+
+  glViewport( 0, 0, dev->scrW, dev->scrH );
+  T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
 void Opengl2x::startTiledRender() const {
@@ -1180,29 +1218,6 @@ void Opengl2x::endTiledRender() const {
     T_ASSERT_X( errCk(), "OpenGL error" );
     dev->isTileRenderStarted = false;
     }
-  }
-
-void Opengl2x::setRenderTaget( AbstractAPI::Device  *d,
-                               AbstractAPI::Texture *t,
-                               int mip,
-                               int mrtSlot ) const {
-  if( !setDevice(d) ) return;
-  Detail::GLTexture *tex = (Detail::GLTexture*)t;
-  dev->target.color[mrtSlot] = tex;
-  dev->target.mip  [mrtSlot] = mip;
-  }
-
-void Opengl2x::unsetRenderTagets( AbstractAPI::Device *d,
-                                  int /*count*/  ) const {
-  if( !setDevice(d) ) return;
-  endTiledRender();
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  memset( &dev->target, 0, sizeof(dev->target) );
-
-  glViewport( 0, 0, dev->scrW, dev->scrH );
-  T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
 AbstractAPI::StdDSSurface *Opengl2x::getDSSurfaceTaget( AbstractAPI::Device * ) const {

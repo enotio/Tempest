@@ -27,6 +27,7 @@ void ( GLAPIENTRY *glBindFramebuffer)(GLenum target, GLuint framebuffer) = 0;
 void ( GLAPIENTRY *glFramebufferTexture2D) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) = 0;
 void ( GLAPIENTRY *glFramebufferRenderbuffer) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) = 0;
 GLenum ( GLAPIENTRY *glCheckFramebufferStatus) (GLenum target) = 0;
+void ( GLAPIENTRY *glDrawBuffers)( GLsizei n, const GLenum *bufs) = 0;
 void ( GLAPIENTRY *glGenerateMipmap) (GLenum target) = 0;
 void ( GLAPIENTRY *glCompressedTexImage2D) (GLenum target, GLint level, GLenum internalformat,
                                        GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid* data) = 0;
@@ -126,6 +127,7 @@ bool Detail::initGLProc() {
       get(glFramebufferTexture2D) &
       get(glFramebufferRenderbuffer) &
       get(glCheckFramebufferStatus) &
+      get(glDrawBuffers) &
       get(glGenerateMipmap) &
       get(glCompressedTexImage2D) &
       get(glActiveTexture) &

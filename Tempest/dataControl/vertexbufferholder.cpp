@@ -19,6 +19,7 @@ struct VertexBufferHolder::Data {
     // const void * data;
     };
 
+  LDData noData;
   std::unordered_map< AbstractAPI::VertexBuffer*, LDData* > vbos, restore;
   typedef std::unordered_map< AbstractAPI::VertexBuffer*, LDData* >::iterator Iterator;
   };
@@ -45,21 +46,22 @@ void VertexBufferHolder::createObject( AbstractAPI::VertexBuffer*& t,
   if( !t )
     return;
 
-  Data::LDData *d = new Data::LDData();
-  d->vsize = vsize;
-  d->size  = size;
-  d->lockBegin = 0;
-  d->lockSize  = 0;
-  //d.data  = src;
+  Data::LDData *d = 0;
 
   if( (flg & AbstractAPI::BF_NoReadback) && device().hasManagedStorge() ){
+    d = &data->noData;
     d->vsize = 0;
     d->size  = 0;
     } else {
+    d = new Data::LDData();
+    d->vsize = vsize;
+    d->size  = size;
     d->data.resize( size*vsize );
     std::copy( src, src + size*vsize, d->data.begin() );
     }
 
+  d->lockBegin = 0;
+  d->lockSize  = 0;
   data->vbos[t] = d;
   }
 
@@ -82,7 +84,8 @@ AbstractAPI::VertexBuffer *VertexBufferHolder::allocBuffer( size_t size,
 void VertexBufferHolder::deleteObject( AbstractAPI::VertexBuffer* t ){
   if( t ){
     Data::Iterator i = data->vbos.find(t);
-    delete i->second;
+    if( i->second!=&data->noData )
+      delete i->second;
 
     data->vbos.erase(i);
     device().deleteVertexBuffer(t);
@@ -105,7 +108,8 @@ AbstractAPI::VertexBuffer* VertexBufferHolder::restore( AbstractAPI::VertexBuffe
     data->restore.erase(t);
 
     createObject( t, &ld->data[0], ld->size, ld->vsize );
-    delete ld;
+    if( ld!=&data->noData )
+      delete ld;
     }
 
   return t;
