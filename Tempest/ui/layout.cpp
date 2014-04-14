@@ -135,6 +135,21 @@ void Layout::placeIn(Widget *wx, const Rect &r) {
                    h );
   }
 
+Size Layout::sizeHint(Widget *wx) {
+  Size sz;
+  if( wx->sizePolicy().typeH==FixedMax )
+    sz.w = wx->sizePolicy().maxSize.w;
+  if( wx->sizePolicy().typeH==FixedMin)
+    sz.w = wx->sizePolicy().minSize.w;
+
+  if( wx->sizePolicy().typeV==FixedMax )
+    sz.h = wx->sizePolicy().maxSize.h;
+  if( wx->sizePolicy().typeV==FixedMin)
+    sz.h = wx->sizePolicy().minSize.h;
+
+  return sz;
+  }
+
 void Layout::rebind( Widget* wx) {
   ow = wx;
 
