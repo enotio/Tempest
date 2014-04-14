@@ -45,8 +45,20 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
                   const std::vector<uint16_t> &index ){
     Tempest::VertexBuffer<Vertex>   vbo;
     Tempest::IndexBuffer <uint16_t> ibo;
-    vbo     = vboHolder.load( vert  );
-    ibo     = iboHolder.load( index );
+
+    if( id==12 ){
+      std::vector<Vertex> v = vert;
+      for( size_t i=0; i<v.size(); ++i ){
+        v[i].tu = v[i].x*0.01;
+        v[i].tv = v[i].y*0.01;
+        }
+
+      vbo     = vboHolder.load( v     );
+      ibo     = iboHolder.load( index );
+      } else {
+      vbo     = vboHolder.load( vert  );
+      ibo     = iboHolder.load( index );
+      }
 
     Model<Vertex> md;
     md.load( vbo, ibo, vdecl );
@@ -56,6 +68,7 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     mat.diffuse = texture;
     mat.color   = cl[ (id+1)%7 ];
 
+    mat.shaderType = Material::MonoColor;
     if( id%5==1 )
       mat.shaderType = Material::Transparent;
 
@@ -66,8 +79,10 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
       mat.color = Color(1);
       }
 
-    if( id==0 ){
-      mat.color = Color(0.6);
+    if( id==12 ){ // floor
+      mat.color   = Color(0.25);
+      mat.diffuse = texture;
+      mat.shaderType = Material::Main;
       }
 
     obj.setMaterial( mat );
@@ -76,35 +91,56 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     ++id;
     });
 
-  loadShader( shader,  "data/main",
+  loadShader( shader,  "shader/main",
               {
-                "some_def 1"
+                "use_shadow_map",
+                "use_rsm"
+              } );  
+  loadShader( gbuf,  "shader/main",
+              {
+                "gbuffer",
+                "shadow_pass"
               } );
-  loadShader( refract, "data/main",
+
+  loadShader( refract, "shader/main",
               {
                 "refractions",
-                "emissionv 0.85"
+                "emissionv 0.85",
+                "no_texture"
               });
-  loadShader( emission, "data/main",
+  loadShader( mono, "shader/main",
+              {
+                "no_texture",
+                "use_shadow_map",
+                "use_rsm"
+              });
+  loadShader( emission, "shader/main",
               {
                 "emissionv 1.0"
               });
-  loadShader( shadow, "data/main",
+  loadShader( gemission, "shader/main",
               {
+                "emissionv 1.0",
+                "gbuffer",
                 "shadow_pass"
               });
-  loadShader( shadow_refract, "data/main",
+  loadShader( shadow, "shader/main",
+              {
+                "shadow_pass",
+                "shadow_out"
+              });
+  loadShader( shadow_refract, "shader/main",
               {
                 "shadow_pass",
                 "refractions",
                 "emissionv 1.0"
               });
 
-  loadShader( gauss,   "data/post/gaus" );
-  loadShader( bright,  "data/post/bright" );
-  loadShader( combine, "data/post/combine" );
+  loadShader( gauss,   "shader/post/gaus" );
+  loadShader( bright,  "shader/post/bright" );
+  loadShader( combine, "shader/post/combine" );
 
-  loadShader( blt, "data/blt" );
+  loadShader( blt, "shader/blt" );
 
   updateCamera();
   }
@@ -127,13 +163,32 @@ void MainWindow::loadShader( ProgramObject &shader,
 void MainWindow::loadShader( ProgramObject &shader,
                              const std::string &file,
                              const std::initializer_list<const char *> &def ) {
-  shader.vs = vsHolder.load( file+".vs.glsl", def );
-  shader.fs = fsHolder.load( file+".fs.glsl", def );
+  shader.vs = vsHolder.loadFromSource( shaderSource(file+".vs.glsl", def ));
+  shader.fs = fsHolder.loadFromSource( shaderSource(file+".fs.glsl", def ));
 
   if( !shader.isValid() ){
     Log() << shader.vs.log();
     Log() << shader.fs.log();
     }
+  }
+
+std::string MainWindow::shaderSource(const std::string &f, const std::initializer_list<const char *> &def) {
+  RFile file( f.c_str() );
+  return (shaderSource(file, def));
+  }
+
+std::string MainWindow::shaderSource(RFile &f, const std::initializer_list<const char *> &def) {
+  std::string s;
+  s.resize( f.size() );
+  f.readData( &s[0], s.size() );
+
+  std::stringstream ss;
+  for( auto i:def )
+    ss <<"#define "<< i << "\n";
+  ss << s;
+
+  //Log() << ss.str();
+  return ss.str();
   }
 
 template< class F >
@@ -243,14 +298,6 @@ MainWindow::Vertex MainWindow::mkVertex( const aiMesh *mesh,
     std::fill( v.normal, v.normal+3, 0 );
     }
 
-  /*
-  if( mesh->mColors[0] ){
-    std::fill( v.color, v.color+4, 1 );
-    } else {
-    std::fill( v.color, v.color+4, 1 );
-    }
-  */
-
   return v;
   }
 
@@ -268,33 +315,101 @@ Texture2d MainWindow::mkBuffer( int w, int h ){
   return r;
   }
 
-void MainWindow::render() {
-  if( !device.startRender() )
-    return;
-
+void MainWindow::renderShadow( ProgramObject& shadow,
+                               Texture2d& sh,
+                               Texture2d& depth,
+                               bool inv,
+                               int smSz ) {
   setShadowConstants( shadow );
 
-  const int smSz = 1024;
-  Texture2d tex   = ltexHolder.create(smSz, smSz, Texture2d::Format::RGB10_A2),
-            depth = ltexHolder.create(smSz, smSz, Texture2d::Format::Depth24 );
+  //const int smSz = 1024;
+  depth = ltexHolder.create(smSz, smSz, Texture2d::Format::Depth24 );
+
+  sh = ltexHolder.create(smSz, smSz, Texture2d::Format::RGB10_A2);
+  Texture2d::Sampler sm;
+  sm.setClamping( Texture2d::ClampMode::ClampToBorder );
+  sh.setSampler(sm);
 
   RenderState st;
-  st.setCullFaceMode( RenderState::CullMode::front );
+  if( inv )
+    st.setCullFaceMode( RenderState::CullMode::front );
+
   device.setRenderState(st);
-  device.beginPaint(tex, depth);
-  device.clear( Tempest::Color(1), 1.0 );
+
+  device.beginPaint( sh, depth);
+  device.clear( inv?Color(1.0):Color(0.0), 1.0 );
   for( size_t i=0; i<objects.size(); ++i ){
     SceneObject& obj = objects[i];
 
-    if( obj.material().shaderType != Material::Transparent ){
+    if( obj.material().shaderType != Material::Transparent || inv ){
       setShaderConstants( obj, shadow );
       device.draw( obj, shadow );
       }
     }
   device.endPaint();
-  tex = distorsion(tex, depth, shadow_refract);
+  }
 
-  mainPasss(shader, tex);
+void MainWindow::renderShadow( Texture2d* sh, int cnt,
+                               Texture2d& depth,
+                               int smSz ) {
+  setShadowConstants( shadow );
+
+  //const int smSz = 1024;
+  depth = ltexHolder.create(smSz, smSz, Texture2d::Format::Depth24 );
+
+  for( int i=0; i<cnt; ++i ){
+    sh[i] = ltexHolder.create(smSz, smSz, Texture2d::Format::RGB10_A2);
+    Texture2d::Sampler sm;
+    sm.setClamping( Texture2d::ClampMode::ClampToBorder );
+    sh[i].setSampler(sm);
+    }
+
+  RenderState st;
+  device.setRenderState(st);
+
+  device.beginPaint( sh, cnt, depth);
+  device.clear( Color(0.0), 1.0 );
+  for( size_t i=0; i<objects.size(); ++i ){
+    SceneObject& obj = objects[i];
+
+    if( obj.material().shaderType != Material::Emission ){
+      setShaderConstants( obj, gbuf );
+      device.draw( obj, gbuf );
+      }
+    }
+
+  for( size_t i=0; i<objects.size(); ++i ){
+    SceneObject& obj = objects[i];
+
+    if( obj.material().shaderType == Material::Emission ){
+      setShaderConstants( obj, gemission );
+      device.draw( obj, gemission );
+      }
+    }
+  device.endPaint();
+  }
+
+void MainWindow::render() {
+  if( !device.startRender() )
+    return;
+
+  Shadow sh;
+  renderShadow(shadow, sh.sm, sh.depth, true, 1024 );
+  //sh.sm = distorsion( sh.sm, sh.depth, shadow_refract);
+
+  setupLigting( scene, gbuf, sh, true );
+  setupLigting( scene, gemission, sh, true );
+  renderShadow( sh.rsm, 3, sh.depth, 128 );
+
+  mainPasss( sh );
+
+/*
+  device.beginPaint();
+  device.clear( Color(0.0), 1.0 );
+  blt.fs.setUniform("texture", sh.rsm[0]);
+  device.drawFullScreenQuad( blt );
+  device.endPaint();
+*/
 
   device.present();
   }
@@ -345,9 +460,9 @@ Texture2d MainWindow::distorsion( const Texture2d& scene,
   return rt3;
   }
 
-void MainWindow::mainPasss( ProgramObject &shader,
-                            const Texture2d & sm ){
+void MainWindow::mainPasss( const Shadow & sm ){
   setupLigting( scene, shader,   sm );
+  setupLigting( scene, mono,     sm );
   setupLigting( scene, refract,  sm );
   setupLigting( scene, emission, sm );
 
@@ -358,6 +473,14 @@ void MainWindow::mainPasss( ProgramObject &shader,
 
   device.beginPaint(rt, depth);
   device.clear( Tempest::Color(0), 1.0 );
+
+  for( size_t i=0; i<objects.size(); ++i ){
+    SceneObject& obj = objects[i];
+    if( obj.material().shaderType == Material::MonoColor ){
+      setShaderConstants( obj, mono );
+      device.draw( obj, mono );
+      }
+    }
 
   for( size_t i=0; i<objects.size(); ++i ){
     SceneObject& obj = objects[i];
@@ -393,6 +516,12 @@ void MainWindow::mainPasss( ProgramObject &shader,
     bright[i] = blur(bright[i]);
 
   combinePass( rt3, bright );
+
+  return;
+  blt.fs.setUniform("texture", rt);
+  device.beginPaint();
+  device.drawFullScreenQuad( blt );
+  device.endPaint();
   }
 
 Texture2d MainWindow::brightPass( const Texture2d &tex ) {
@@ -478,13 +607,26 @@ Texture2d MainWindow::blur( const Texture2d &tex ) {
 
 void MainWindow::setupLigting( Scene &scene,
                                ProgramObject &shader,
-                               const Tempest::Texture2d & shadow ) {
-  const Matrix4x4& m = scene.camera().view();
+                               const Shadow & sm,
+                               bool sh ) {
   float ld[3];
-  getLightDir( ld, m );
+
+  if( sh ){
+    const Matrix4x4 m = shadowMatrix();
+    getLightDir( ld, m );
+    } else {
+    const Matrix4x4 m = scene.camera().view();
+    getLightDir( ld, m );
+    }
+  Matrix4x4 inv = shadowMatrix();//scene.camera().viewProjective();
+  inv.inverse();
 
   shader.fs.setUniform("lightDir", ld, 3);
-  shader.fs.setUniform("shadow", shadow );
+  shader.fs.setUniform("shadow", sm.sm );
+  shader.fs.setUniform("invMvp", inv   );
+
+  shader.fs.setUniform("rsmColor",  sm.rsm[0] );
+  shader.fs.setUniform("rsmNormal", sm.rsm[2] );
   }
 
 void MainWindow::setShaderConstants( SceneObject& obj,
@@ -519,24 +661,29 @@ void MainWindow::getLightDir(float d[], const Matrix4x4& m ) {
     d[i] = ld[i]/l;
   }
 
-void MainWindow::setShadowConstants(ProgramObject &shader) {
+Matrix4x4 MainWindow::shadowMatrix(){
   float d[3];
   Matrix4x4 m;
   m.identity();
   getLightDir( d, m );
 
   float z = 0.004*sqrt(zoom/0.01);
-  for( int i=0; i<3; ++i )
+  for( int i=0; i<3; ++i ){
     d[i] *= z;
+    }
 
   Matrix4x4 mx = {
       z,    0,  d[0],   0,
       0,    z,  d[1],   0,
-      0,    0, -d[2], 1,
+      0,    0, -d[2],   1,
       0,    0,     0,   1
     };
 
-  shader.vs.setUniform( "shadowMatrix", mx );
+  return mx;
+  }
+
+void MainWindow::setShadowConstants(ProgramObject &shader) {
+  shader.vs.setUniform( "shadowMatrix", shadowMatrix() );
   }
 
 void MainWindow::resizeEvent(Tempest::SizeEvent &) {

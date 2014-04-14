@@ -30,6 +30,7 @@ struct Material{
 
   enum Shader{
     Main,
+    MonoColor,
     Transparent,
     Emission
     } shaderType = Main;
@@ -48,6 +49,9 @@ class MainWindow : public Tempest::Window {
     void resizeEvent(Tempest::SizeEvent &e);
 
   private:
+    struct Shadow{
+      Tempest::Texture2d sm, rsm[3], depth;
+      };
     void loadShader( Tempest::ProgramObject & prog, const std::string &file);
     void loadShader( Tempest::ProgramObject & prog,
                      const std::string &file,
@@ -60,12 +64,20 @@ class MainWindow : public Tempest::Window {
     void setShaderConstants(SceneObject &obj, Tempest::ProgramObject &shader);
     void getLightDir(float d[] , const Tempest::Matrix4x4 &m);
 
-    void mainPasss(Tempest::ProgramObject &shader , const Tempest::Texture2d &sm);
-    Tempest::Texture2d distorsion(const Tempest::Texture2d& scene , Tempest::Texture2d &depth, Tempest::ProgramObject &shader);
+    void mainPasss(const Shadow &sm);
+    Tempest::Texture2d distorsion( const Tempest::Texture2d& scene,
+                                   Tempest::Texture2d &depth,
+                                   Tempest::ProgramObject &shader );
     Tempest::Texture2d blur( const Tempest::Texture2d & in );
     Tempest::Texture2d brightPass( const Tempest::Texture2d &tex );
     Tempest::Texture2d resizeTex( const Tempest::Texture2d &tex,
                                   const Tempest::Size & nsz );
+    void renderShadow( Tempest::ProgramObject &shader,
+                       Tempest::Texture2d &sh,
+                       Tempest::Texture2d &depth,
+                       bool inv, int smSz);
+    void renderShadow(Tempest::Texture2d *sh, int cnt,
+                       Tempest::Texture2d &depth, int smSz);
     void combinePass( const Tempest::Texture2d &tex,
                       const Tempest::Texture2d *bloom );
 
@@ -99,7 +111,8 @@ class MainWindow : public Tempest::Window {
     Tempest::VertexShaderHolder   vsHolder;
     Tempest::FragmentShaderHolder fsHolder;
 
-    Tempest::ProgramObject shadow, shadow_refract, shader, refract, emission;
+    Tempest::ProgramObject shadow, shadow_refract;
+    Tempest::ProgramObject shader, gbuf, mono, refract, emission, gemission;
     Tempest::ProgramObject blt, gauss, bright, combine;
 
     struct Vertex {
@@ -115,8 +128,13 @@ class MainWindow : public Tempest::Window {
     std::vector<SceneObject> objects;
     void setupLigting(Scene &scene,
                        Tempest::ProgramObject &shader,
-                       const Tempest::Texture2d &shadow );
+                       const Shadow &sm,
+                       bool sh = false );
     void updateCamera();
+    Tempest::Matrix4x4 shadowMatrix();
+
+    std::string shaderSource( const std::string& f, const std::initializer_list<const char*>& def );
+    std::string shaderSource( Tempest::RFile& f, const std::initializer_list<const char*>& def );
     float zoom;
   };
 
