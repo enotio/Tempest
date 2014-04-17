@@ -45,8 +45,8 @@ class signal{
       new (&v.back()) EmitFunc<Ret, FuncArgs...>(f);
       }
 
-    template< class T >
-    void ubind( T &t, void (T::*f)( Args... ) ){
+    template< class T, class TBase >
+    void ubind( T &t, void (TBase::*f)( Args... ) ){
       for( size_t i=0; i<v.size(); ){
         IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
         char * x = (char*)(void*)(&f);
@@ -63,8 +63,8 @@ class signal{
         }
       }
 
-    template< class T >
-    void ubind( T *t, void (T::*f)( Args... ) ){
+    template< class T, class TBase >
+    void ubind( T *t, void (TBase::*f)( Args... ) ){
       ubind(*t,f);
       }
 

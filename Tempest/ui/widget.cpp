@@ -957,5 +957,3 @@ void Widget::event( Event &e ) {
     }
   }
 
-
-
