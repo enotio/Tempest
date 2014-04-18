@@ -16,13 +16,15 @@ size_t MemReader::readData(char *dest, size_t count) {
 
   memcpy(dest, vec, c);
   vec+=c;
+  sz -= c;
 
   return c;
   }
 
 void MemReader::skip(size_t count) {
   size_t c = std::min(count, sz);
-  vec+=c;
+  vec+= c;
+  sz -= c;
   }
 
 size_t MemReader::peek(size_t skip, char* dest, size_t count ) const {
@@ -51,6 +53,7 @@ size_t MemWriter::writeData(char *src, size_t count) {
 
   memcpy(vec, src, c);
   vec += c;
+  sz  -= c;
   return c;
   }
 

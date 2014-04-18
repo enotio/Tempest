@@ -29,6 +29,11 @@ class signal{
       bind( t, &signal<FuncArgs...>::operator() );
       }
 
+    template< class ... FuncArgs >
+    void ubind( signal<FuncArgs...> & t ){
+      ubind( t, &signal<FuncArgs...>::operator() );
+      }
+
     template< class T, class Ret, class TBase, class ... FuncArgs >
     void bind( T &t, Ret (TBase::*f)( FuncArgs... ) ){
       v.push_back( Impl() );
