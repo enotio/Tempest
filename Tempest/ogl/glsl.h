@@ -58,25 +58,25 @@ namespace Tempest {
       void setUniform( unsigned int s,
                        const Matrix4x4& m,
                        const char* name,
-                       void *&id ) const;
+                       int32_t &id ) const;
 
       void setUniform( unsigned int s,
                        const float v[],
                        int l,
                        const char* name,
-                       void *&id ) const;
+                       int32_t &id ) const;
 
       void setUniform( unsigned int s,
                        const Texture2d& t,
                        const char* name,
                        int slot,
-                       void *& id ) const;
+                       int32_t & id ) const;
 
       void setUniform( unsigned int s,
                        const Texture3d& t,
                        const char* name,
                        int slot,
-                       void *& id ) const;
+                       int32_t & id ) const;
 
       template< class T >
       void setUniforms( unsigned int s, const T & vN, int c ) const;

@@ -154,7 +154,7 @@ int WindowsAPI::nextEvent(bool &quit) {
     return uMsg.wParam;
     } else {
     for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
-      i->second->render();
+      render( i->second );
 
     return 0;
     }

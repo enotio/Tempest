@@ -2,6 +2,7 @@
 
 #include "system/windowsapi.h"
 #include "system/androidapi.h"
+#include "system/linuxapi.h"
 
 #include <Tempest/Window>
 #include <cstring>
@@ -21,6 +22,10 @@ SystemAPI &SystemAPI::instance() {
 
 #ifdef __ANDROID__
   static AndroidAPI api;
+#endif
+
+#ifdef __linux__
+  static LinuxAPI api;
 #endif
 
   return api;

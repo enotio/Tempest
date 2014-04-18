@@ -6,7 +6,15 @@
 #include <EGL/egl.h>
 #endif
 
-#ifndef __ANDROID__
+#ifdef __linux__
+#include <GL/gl.h>
+#include <GL/glx.h>
+
+#undef Always // in X11/X.h
+#undef PSize
+#endif
+
+#if defined(__WIN32__) || defined(__linux__)
 #include <GL/gl.h>
 
 #define GL_HALF_FLOAT 0x140B
@@ -87,12 +95,16 @@ typedef HGLRC GLContext;
 typedef EGLContext GLContext;
 #endif
 
+#ifdef __linux__
+typedef GLXContext GLContext;
+#endif
+
   bool initGLProc();
   GLContext createContext( void* hdc );
   }
 
 namespace GLProc{
-#ifndef __ANDROID__
+#if defined(__WIN32__) || defined(__linux__)
 extern void ( GLAPIENTRY *glGenFramebuffers)(GLsizei n, const GLuint* framebuffers);
 extern void ( GLAPIENTRY *glDeleteFramebuffers)(GLsizei n, const GLuint* framebuffers);
 
@@ -115,15 +127,16 @@ extern void ( GLAPIENTRY *glFramebufferRenderbuffer) (GLenum target, GLenum atta
 extern GLenum ( GLAPIENTRY *glCheckFramebufferStatus) (GLenum target);
 extern void ( GLAPIENTRY *glGenerateMipmap) (GLenum target);
 extern void ( GLAPIENTRY *glDrawBuffers)( GLsizei n, const GLenum *bufs);
+#ifdef __WIN32__
 extern void ( GLAPIENTRY *glCompressedTexImage2D) (GLenum target, GLint level, GLenum internalformat,
                                        GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid* data);
 extern void ( GLAPIENTRY *glActiveTexture) (GLenum texture);
+extern void ( GLAPIENTRY *glTexImage3D)(	GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth,
+                              GLint border, GLenum format, GLenum type, const GLvoid * data);
+#endif
 extern void ( GLAPIENTRY *glEnableVertexAttribArray) (GLuint index);
 extern void ( GLAPIENTRY *glDisableVertexAttribArray) (GLuint index);
 extern void ( GLAPIENTRY *glVertexAttribPointer) (GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr);
-
-extern void ( GLAPIENTRY *glTexImage3D)(	GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth,
-                              GLint border, GLenum format, GLenum type, const GLvoid * data);
 
 extern GLuint ( GLAPIENTRY *glCreateShader) (GLenum type);
 extern void   ( GLAPIENTRY *glDeleteShader) (GLuint shader);

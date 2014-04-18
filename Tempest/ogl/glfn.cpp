@@ -29,15 +29,16 @@ void ( GLAPIENTRY *glFramebufferRenderbuffer) (GLenum target, GLenum attachment,
 GLenum ( GLAPIENTRY *glCheckFramebufferStatus) (GLenum target) = 0;
 void ( GLAPIENTRY *glDrawBuffers)( GLsizei n, const GLenum *bufs) = 0;
 void ( GLAPIENTRY *glGenerateMipmap) (GLenum target) = 0;
+#ifdef __WIN32__
 void ( GLAPIENTRY *glCompressedTexImage2D) (GLenum target, GLint level, GLenum internalformat,
                                        GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid* data) = 0;
 void ( GLAPIENTRY *glActiveTexture) (GLenum texture) = 0;
+void ( GLAPIENTRY *glTexImage3D)(	GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth,
+                              GLint border, GLenum format, GLenum type, const GLvoid * data) = 0;
+#endif
 void ( GLAPIENTRY *glEnableVertexAttribArray) (GLuint index) = 0;
 void ( GLAPIENTRY *glDisableVertexAttribArray) (GLuint index) = 0;
 void ( GLAPIENTRY *glVertexAttribPointer) (GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) = 0;
-
-void ( GLAPIENTRY *glTexImage3D)(	GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth,
-                              GLint border, GLenum format, GLenum type, const GLvoid * data) = 0;
 
 GLuint ( GLAPIENTRY *glCreateShader) (GLenum type) = 0;
 void   ( GLAPIENTRY *glDeleteShader) (GLuint shader) = 0;
@@ -129,14 +130,16 @@ bool Detail::initGLProc() {
       get(glCheckFramebufferStatus) &
       get(glDrawBuffers) &
       get(glGenerateMipmap) &
+
+    #ifdef __WIN32__
       get(glCompressedTexImage2D) &
       get(glActiveTexture) &
+      get(glTexImage3D) &
+    #endif
 
       get(glEnableVertexAttribArray) &
       get(glDisableVertexAttribArray) &
       get(glVertexAttribPointer) &
-
-      get(glTexImage3D) &
 
       get(glCreateShader) &
       get(glDeleteShader) &

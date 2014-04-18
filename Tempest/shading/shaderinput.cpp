@@ -4,7 +4,7 @@
 
 using namespace Tempest;
 
-void* ShaderInput::non_id = (void*)size_t(-1);
+int32_t ShaderInput::non_id = (-1);
 
 void ShaderInput::set(const char *name, const Texture2d &t) {
   tex.set( name, &t );

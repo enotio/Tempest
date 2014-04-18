@@ -9,12 +9,11 @@
 
 #ifdef __WIN32
 #include <windows.h>
-#endif
-
-#ifdef __ANDROID__
+#else
 #include <unistd.h>
 #include <pthread.h>
 #endif
+
 #include <time.h>
 
 #include <iostream>

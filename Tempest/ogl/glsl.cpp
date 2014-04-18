@@ -138,7 +138,7 @@ struct GLSL::Data{
   ShProgram curProgram;
 
   char  texAttrName[14];
-  void* notId;
+  int32_t notId;
 
   GLuint link( GLuint vertexShader,
                GLuint pixelShader,
@@ -280,7 +280,7 @@ GLSL::GLSL(AbstractAPI::OpenGL2xDevice * dev) {
     data->texAttrName[i] = Tc[i];
 
   data->context = dev;
-  data->notId = (void*)size_t(-1);
+  data->notId   = -1;
 
   data->currentVS = 0;
   data->currentFS = 0;
@@ -587,19 +587,19 @@ void GLSL::setUniforms( unsigned int s, const T & vN, int c ) const{
     }
   }
 
-void GLSL::setUniform( unsigned int s,
+void GLSL::setUniform(unsigned int s,
                        const Matrix4x4& m,
                        const char *name,
-                       void *&id  ) const{
+                       int32_t &id  ) const{
   GLint prm = -1;
   if( id==data->notId ){
     GLuint    prog = s;
     prm = data->location( prog, name );
     if( prm==-1 )
       return;
-    id = (void*)size_t(prm);
+    id  = prm;
     } else {
-    prm = (GLint)id;
+    prm = id;
     }
 
   if( !data->uCash.fetch(prm, m) ){
@@ -610,20 +610,20 @@ void GLSL::setUniform( unsigned int s,
     }
   }
 
-void GLSL::setUniform( unsigned int s,
+void GLSL::setUniform(unsigned int s,
                        const float v[],
                        int l,
                        const char *name,
-                       void *&id ) const{
+                       int32_t &id ) const{
   GLint prm = -1;
   if( id==data->notId ){
     GLuint    prog = s;
     prm = data->location( prog, name );
     if( prm==-1 )
       return;
-    id = (void*)size_t(prm);
+    id  = prm;
     } else {
-    prm = (GLint)id;
+    prm = id;
     }
 
   if( !data->uCash.fetch(prm, v, l) ){
@@ -638,20 +638,20 @@ void GLSL::setUniform( unsigned int s,
     }
   }
 
-void GLSL::setUniform( unsigned int sh,
+void GLSL::setUniform(unsigned int sh,
                        const Texture2d& u,
                        const char *name,
                        int slot,
-                       void *&id ) const{
+                       int32_t &id ) const{
   GLint prm = -1;
   if( id==data->notId ){
     GLuint    prog = sh;
     prm = data->location( prog, name );
     if( prm==-1 )
       return;
-    id = (void*)size_t(prm);
+    id  = prm;
     } else {
-    prm = (GLint)id;
+    prm = id;
     }
 
   if( !data->uCash.fetch(prm, u.handle()) ){
@@ -663,19 +663,20 @@ void GLSL::setUniform( unsigned int sh,
     }
   }
 
-void GLSL::setUniform( unsigned int sh,
+void GLSL::setUniform(unsigned int sh,
                        const Texture3d &u,
                        const char *name,
-                       int slot, void *&id) const {
+                       int slot,
+                       int32_t &id ) const {
   GLint prm = -1;
   if( id==data->notId ){
     GLuint    prog = sh;
     prm = data->location( prog, name );
     if( prm==-1 )
       return;
-    id = (void*)size_t(prm);
+    id  = prm;
     } else {
-    prm = (GLint)id;
+    prm = id;
     }
 
   if( !data->uCash.fetch(prm, u.handle()) ){

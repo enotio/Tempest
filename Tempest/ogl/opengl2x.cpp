@@ -10,7 +10,7 @@
 #include <GLES2/gl2.h>
 #include <android/log.h>
 #else
-#include <windows.h>
+#include "system/platform.h"
 #include "glfn.h"
 #include <GL/gl.h>
 
@@ -76,10 +76,20 @@ struct Opengl2x::Device{
   EGLDisplay disp;
   EGLSurface s;
   EGLint     swapEfect;
-#else
+#endif
+
+#ifdef __WIN32
   HDC   hDC;
   HGLRC hRC;
 #endif
+
+#ifdef __linux__
+  GLXContext   glc;
+  XVisualInfo  *vi;
+  Display      *dpy;
+  XID           window;
+#endif
+
   bool hasS3tcTextures,
        hasETC1Textures,
        hasHalfSupport,
@@ -525,7 +535,7 @@ std::string Opengl2x::renderer(AbstractAPI::Device *d) const {
 bool Opengl2x::createContext( Device* dev, void *hwnd, const Options & ) const {
   (void)hwnd;
 
-#ifndef __ANDROID__
+#ifdef __WIN32__
   GLuint PixelFormat;
 
   PIXELFORMATDESCRIPTOR pfd;
@@ -553,13 +563,22 @@ bool Opengl2x::createContext( Device* dev, void *hwnd, const Options & ) const {
   if( !Detail::initGLProc() ) {
     return 0;
     }
-#else
+#endif
+
+#ifdef __ANDROID__
   dev->disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   dev->s    = eglGetCurrentSurface(EGL_DRAW);
 
   dev->swapEfect = EGL_BUFFER_PRESERVED;
 #endif
 
+#ifdef __linux__
+
+  Display                 *dpy = 0;//FIXME
+  GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+  dev->vi  = glXChooseVisual (dpy, 0, att);
+  dev->glc = glXCreateContext(dpy, dev->vi, NULL, GL_TRUE);
+#endif
   return 1;
   }
 
@@ -572,6 +591,10 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 
   if( !createContext(dev, hwnd, opt) )
     return 0;
+
+#ifdef __linux__
+  dev->window = *((::Window*)hwnd);
+#endif
 
   const char * ext = (const char*)vstr(glGetString(GL_EXTENSIONS));
   T_ASSERT_X(ext, "opengl context not created");
@@ -681,9 +704,13 @@ void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
   if( !setDevice(d) ) return;
   dev->free(dev->dynVbo);
 
-#ifndef __ANDROID__
+#ifdef __WIN32__
   wglMakeCurrent( NULL, NULL );
   wglDeleteContext( dev->hRC );
+#endif
+
+#ifdef __linux__
+  glXMakeCurrent( dev->dpy, dev->window, dev->glc);
 #endif
 
   delete dev;
@@ -1255,10 +1282,16 @@ bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
 
 bool Opengl2x::present(AbstractAPI::Device *d, SwapBehavior b) const {
   Device* dev = (Device*)d;
-#ifndef __ANDROID__
+#ifdef __WIN32__
   (void)b;
   SwapBuffers( dev->hDC );
-#else
+#endif
+
+#ifdef __linux__
+  glXSwapBuffers( dev->dpy, dev->window );
+#endif
+
+#ifdef __ANDROID__
   static const EGLint se[2] = {EGL_BUFFER_PRESERVED, EGL_BUFFER_DESTROYED};
 
   if( dev->swapEfect!=se[b] ){
@@ -1277,7 +1310,7 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
                       const Options &opt ) const {
   if( !setDevice(d) ) return 0;
 
-#ifndef __ANDROID__
+#ifdef __WIN32__
   RECT rectWindow;
   GetClientRect( HWND(hwnd), &rectWindow);
 
@@ -1298,7 +1331,9 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
 
   if( dev->wglSwapInterval )
     dev->wglSwapInterval( opt.vSync );
-#else
+#endif
+
+#ifdef __ANDROID__
   (void)hwnd;
   (void)opt;
 

@@ -58,7 +58,7 @@ class ShaderInput {
 
       std::vector<std::string>   names;
       std::vector<T>             values;
-      mutable std::vector<void*> id;
+      mutable std::vector<int32_t> id;
 
       void set( const char* name, const T & t ){
         for( size_t i=0; i<names.size(); ++i )
@@ -100,7 +100,7 @@ class ShaderInput {
       mat.resetID();
       }
 
-    static void* non_id;
+    static int32_t non_id;
   };
 
 }

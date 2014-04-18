@@ -39,6 +39,12 @@ android:{
   CONFIG -= directx
   }
 
+unix: {
+  DEFINES -= TEMPEST_M_TREADS
+  CONFIG += ogl
+  CONFIG -= directx
+  }
+
 ogl:{
   LIBS += -L"$$(CG_LIB_PATH)"
   win32:  LIBS += -l"opengl32" -l"cg" -l"cgGL"
@@ -79,6 +85,7 @@ ogl:{
     }
   }
 android:TARGET = Tempest
+unix   :TARGET = Tempest
 
 include( thirdparty/libpng/libpng.pri )
 include( thirdparty/libjpeg/libjpeg.pri )
@@ -162,7 +169,8 @@ SOURCES += \
     io/iodevice.cpp \
     io/buffer.cpp \
     io/file.cpp \
-    ogl/glfn.cpp
+    ogl/glfn.cpp \
+    system/linuxapi.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -245,7 +253,9 @@ HEADERS += \
     io/buffer.h \
     io/file.h \
     ogl/glfn.h \
-    core/graphicssubsystem.h
+    core/graphicssubsystem.h \
+    system/platform.h \
+    system/linuxapi.h
 
 OTHER_FILES += \
     ../.gitignore \

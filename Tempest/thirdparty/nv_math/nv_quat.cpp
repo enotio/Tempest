@@ -20,6 +20,7 @@
 //----------------------------------------------------------------------------------
 #include "nv_quat.h"
 #include <stdlib.h>
+#include <string.h>
 
 void NvQuatCopy(GLfloat r[4], const GLfloat q[4])
 {
