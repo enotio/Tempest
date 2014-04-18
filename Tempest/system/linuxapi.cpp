@@ -18,6 +18,7 @@
 using namespace Tempest;
 
 static std::unordered_map<LinuxAPI::Window*, Tempest::Window*> wndWx;
+static Display* dpy = 0;
 
 LinuxAPI::LinuxAPI() {
   /*
@@ -59,10 +60,9 @@ bool LinuxAPI::setDisplaySettings( const DisplaySettings &s ) {
   }
 
 Size LinuxAPI::implScreenSize() {
-  DEVMODE mode;
-  EnumDisplaySettings( 0, ENUM_CURRENT_SETTINGS, &mode );
-  int w = mode.dmPelsWidth;
-  int h = mode.dmPelsHeight;
+  Screen * scr = XDefaultScreenOfDisplay(dpy);
+  int w = XWidthOfScreen (scr);
+  int h = XHeightOfScreen(scr);
 
   return Size(w,h);
   }
