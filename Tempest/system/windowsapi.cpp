@@ -140,6 +140,11 @@ void WindowsAPI::endApplication() {
   UnregisterClass( L"Tempest_Window_Class", GetModuleHandle(0) );
   }
 
+static void render( Tempest::Window* w ){
+  if( w->showMode()!=Tempest::Window::Minimized && w->isActive() )
+    w->render();
+  }
+
 int WindowsAPI::nextEvent(bool &quit) {
   MSG uMsg;
   memset(&uMsg,0,sizeof(uMsg));
@@ -158,11 +163,6 @@ int WindowsAPI::nextEvent(bool &quit) {
 
     return 0;
     }
-  }
-
-static void render( Tempest::Window* w ){
-  if( w->showMode()!=Tempest::Window::Minimized && w->isActive() )
-    w->render();
   }
 
 int WindowsAPI::nextEvents(bool &quit) {
