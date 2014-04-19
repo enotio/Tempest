@@ -583,6 +583,7 @@ bool Opengl2x::createContext( Device* dev, void *hwnd, const Options & ) const {
   GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
   dev->vi  = glXChooseVisual (dpy, 0, att);
   dev->glc = glXCreateContext(dpy, dev->vi, NULL, GL_TRUE);
+  glXMakeCurrent( dev->dpy, dev->window, dev->glc);
 
   if( !Detail::initGLProc() ) {
     return 0;
@@ -719,7 +720,7 @@ void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
 #endif
 
 #ifdef __linux__
-  glXMakeCurrent( dev->dpy, dev->window, dev->glc);
+  glXMakeCurrent( dev->dpy, None, NULL);
 #endif
 
   delete dev;
@@ -1285,6 +1286,9 @@ void Opengl2x::setDSSurfaceTaget( AbstractAPI::Device *d,
 bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
 #ifdef  __ANDROID__
   return AndroidAPI::startRender(0);
+#endif
+#ifdef __linux__
+  glXMakeCurrent( dev->dpy, dev->window, dev->glc);
 #endif
   return 1;
   }

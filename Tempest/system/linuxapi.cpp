@@ -23,7 +23,7 @@ typedef Window HWND;
 
 using namespace Tempest;
 
-static std::unordered_map<LinuxAPI::Window*, Tempest::Window*> wndWx;
+static std::unordered_map<HWND, Tempest::Window*> wndWx;
 
 static Display*  dpy  = 0;
 static HWND      root = 0;
@@ -34,7 +34,7 @@ static HWND pin( LinuxAPI::Window* w ){
   return *((HWND*)w);
   }
 
-static void xProc(XEvent& xev, HWND *hWnd);
+static void xProc(XEvent& xev, HWND &hWnd, bool &quit);
 
 static Atom& wmDeleteMessage(){
   static Atom w  = XInternAtom( dpy, "WM_DELETE_WINDOW", 0);
@@ -116,26 +116,16 @@ int LinuxAPI::nextEvent(bool &quit) {
   XEvent xev;
   memset(&xev,0,sizeof(xev));
 
-  if( !XCheckMaskEvent(dpy, event_mask, &xev) )
-    return 0;
-
-  if(xev.type == Expose) {
+  if( !XPending(dpy) ){
+    XNextEvent(dpy, &xev);
     for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
       render( i->second );
-
-    return 0;
-    } else {
-    /*
-    if( uMsg.message==WM_QUIT )
-      quit = 1;
-
-    TranslateMessage( &uMsg );
-    DispatchMessage ( &uMsg );
-    */
-    xProc( xev, &xev.xclient.window );
-    //Sleep(0);
     return 0;
     }
+
+  xProc( xev, xev.xclient.window, quit);
+  //Sleep(0);
+  return 0;
   }
 
 int LinuxAPI::nextEvents(bool &quit) {
@@ -143,20 +133,12 @@ int LinuxAPI::nextEvents(bool &quit) {
   memset(&xev,0,sizeof(xev));
 
   while( !quit ){
-    if( XCheckMaskEvent( dpy, event_mask, &xev ) ){
-      /*
-      if( uMsg.message==WM_QUIT )
-        quit = 1;
-
-      TranslateMessage( &uMsg );
-      DispatchMessage ( &uMsg );
-      */
-      xProc( xev, &xev.xclient.window );
+    if( XPending( dpy ) ){
+      XNextEvent(dpy, &xev);
+      xProc( xev, xev.xclient.window, quit );
       } else {
       for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
         render( i->second );
-
-      //Sleep(1);
       return 0;
       }
     }
@@ -174,7 +156,7 @@ LinuxAPI::Window *LinuxAPI::createWindow(int w, int h) {
   cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
 
   swa.colormap   = cmap;
-  swa.event_mask = ExposureMask | KeyPressMask;
+  swa.event_mask = event_mask;
 
   *win = XCreateWindow( dpy, root, 0, 0, w, h,
                         0, vi->depth, InputOutput, vi->visual,
@@ -227,7 +209,7 @@ Size LinuxAPI::windowClientRect( SystemAPI::Window * hWnd ) {
 void LinuxAPI::deleteWindow( Window *w ) {
   XDestroyWindow(dpy, *((::Window*)w));
   //DestroyWindow( (HWND)w );
-  wndWx.erase(w);
+  wndWx.erase( pin(w) );
   }
 
 void LinuxAPI::show(Window *hWnd) {
@@ -284,7 +266,7 @@ void LinuxAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
   }
 
 void LinuxAPI::bind( Window *w, Tempest::Window *wx ) {
-  wndWx[w] = wx;
+  wndWx[ pin(w) ] = wx;
   }
 
 LinuxAPI::CpuInfo LinuxAPI::cpuInfoImpl(){
@@ -304,13 +286,13 @@ LinuxAPI::File *LinuxAPI::fopenImpl( const char16_t *fname, const char *mode ) {
   }
 
 static Event::MouseButton toButton( XButtonEvent& msg ){
-  if( msg.button==Button1Mask )
+  if( msg.button==Button1 )
     return Event::ButtonLeft;
 
-  if( msg.button==Button3Mask )
+  if( msg.button==Button3 )
     return Event::ButtonRight;
 
-  if( msg.button==Button2Mask )
+  if( msg.button==Button2 )
     return Event::ButtonMid;
 
   return Event::ButtonNone;
@@ -331,10 +313,10 @@ static Tempest::KeyEvent makeKeyEvent( XKeyEvent& k,
   return Tempest::KeyEvent( e );
   }
 
-void xProc(XEvent& xev, HWND *hWnd ) {
+void xProc( XEvent& xev, HWND &hWnd, bool &quit ) {
     Tempest::Window* w = 0;
-    std::unordered_map<LinuxAPI::Window*, Tempest::Window*>::iterator i
-        = wndWx.find( (LinuxAPI::Window*)hWnd );
+    std::unordered_map<HWND, Tempest::Window*>::iterator i
+        = wndWx.find( hWnd );
 
     if( i!= wndWx.end() )
       w = i->second;
@@ -342,7 +324,13 @@ void xProc(XEvent& xev, HWND *hWnd ) {
     if( !w )
       return;
 
-    switch( xev.type ) {/*
+    std::cout <<"xev = " << xev.type << std::endl;
+    switch( xev.type ) {
+      case Expose:
+        render( w );
+        break;
+
+    /*
       case WM_CHAR:
       {
          Tempest::KeyEvent e = Tempest::KeyEvent( uint32_t(wParam) );
@@ -382,55 +370,54 @@ void xProc(XEvent& xev, HWND *hWnd ) {
       break;
 
 
-      case ButtonPress: {
-        MouseEvent e( xev.xbutton.x,
-                      xev.xbutton.y,
-                      toButton( xev.xbutton ),
-                      0,
-                      0,
-                      Event::MouseDown );
-        SystemAPI::emitEvent(w, e);
-        }
-        break;
-
+      case ButtonPress:
       case ButtonRelease: {
-        MouseEvent e( xev.xbutton.x,
-                      xev.xbutton.y,
-                      toButton( xev.xbutton ),
-                      0,
-                      0,
-                      Event::MouseUp  );
-        SystemAPI::emitEvent(w, e);
+        bool isWheel = false;
+        if( xev.type==ButtonPress && XPending(dpy) ){
+          XEvent ev;
+          XPeekEvent(dpy, &ev);
+          isWheel = (ev.type==ButtonRelease);
+          }
+
+        if( isWheel ){
+          int ticks = 0;
+          if( xev.xbutton.button == Button4 ) {
+            ticks = 1;
+            }
+          else if ( xev.xbutton.button == Button5 ) {
+            ticks = -1;
+            }
+          Tempest::MouseEvent e( xev.xbutton.x,
+                                 xev.xbutton.y,
+                                 Tempest::Event::ButtonNone,
+                                 ticks,
+                                 0,
+                                 Event::MouseWheel );
+          SystemAPI::emitEvent(w, e);
+          } else {
+          MouseEvent e( xev.xbutton.x,
+                        xev.xbutton.y,
+                        toButton( xev.xbutton ),
+                        0,
+                        0,
+                        xev.type==ButtonPress ? Event::MouseDown:Event::MouseUp );
+          SystemAPI::emitEvent(w, e);
+          }
         }
         break;
 
-      case PointerMotionMask: {
+      case MotionNotify: {
         MouseEvent e( xev.xmotion.x,
                       xev.xmotion.y,
                       Event::ButtonNone,
                       0,
                       0,
                       Event::MouseMove  );
+        std::cout << "motion" << std::endl;
         SystemAPI::emitEvent(w, e);
         }
         break;
 /*
-       case WM_MOUSEWHEEL:{
-          POINT p;
-          p.x = LOWORD (lParam);
-          p.y = HIWORD (lParam);
-
-          ScreenToClient(hWnd, &p);
-
-          Tempest::MouseEvent e( p.x, p.y,
-                                 Tempest::Event::ButtonNone,
-                                 GET_WHEEL_DELTA_WPARAM(wParam),
-                                 0,
-                                 Event::MouseWheel );
-          SystemAPI::emitEvent(w, e);
-          }
-        break;
-
       case WM_MOVING:
         if( w ){
           RECT rpos = {0,0,0,0};
@@ -481,16 +468,19 @@ void xProc(XEvent& xev, HWND *hWnd ) {
             ShowWindow( hWnd, SW_MINIMIZE );
             }
       }
-      break;
+      break;*/
 
-      case WM_CLOSE:{
-        Tempest::CloseEvent e;
-        SystemAPI::emitEvent(w, e);
-        if( !e.isAccepted() )
-          PostQuitMessage(0);
+      case ClientMessage:{
+        if( xev.xclient.data.l[0] == long(wmDeleteMessage()) ){
+          Tempest::CloseEvent e;
+          SystemAPI::emitEvent(w, e);
+          if( !e.isAccepted() )
+            quit = true;
+          }
         }
         break;
 
+      /*
       case WM_DESTROY: {
         PostQuitMessage(0);
         }
