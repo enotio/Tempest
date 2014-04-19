@@ -95,6 +95,9 @@ static void* getAddr( const char* name ){
   return (void*)eglGetProcAddress( name );
 #endif
 
+#ifdef __linux__
+  return (void*)glXGetProcAddress( (const GLubyte*)name );
+#endif
   return 0;
   }
 

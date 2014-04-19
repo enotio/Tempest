@@ -1,5 +1,9 @@
 #include "opengl2x.h"
 
+#ifdef __linux__
+#include "system/linuxapi.h"
+#endif
+
 #ifdef __ANDROID__
 //GL_HALF_FLOAT -> GL_HALF_FLOAT_OES -> 0x8D61
 #define GL_HALF_FLOAT 0x8D61
@@ -574,10 +578,15 @@ bool Opengl2x::createContext( Device* dev, void *hwnd, const Options & ) const {
 
 #ifdef __linux__
 
-  Display                 *dpy = 0;//FIXME
+  dev->dpy = (Display*)LinuxAPI::display();
+  Display *dpy = dev->dpy;//FIXME
   GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
   dev->vi  = glXChooseVisual (dpy, 0, att);
   dev->glc = glXCreateContext(dpy, dev->vi, NULL, GL_TRUE);
+
+  if( !Detail::initGLProc() ) {
+    return 0;
+    }
 #endif
   return 1;
   }

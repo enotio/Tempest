@@ -72,6 +72,10 @@ LinuxAPI::LinuxAPI() {
 LinuxAPI::~LinuxAPI() {
   }
 
+void *LinuxAPI::display() {
+  return dpy;
+  }
+
 bool LinuxAPI::testDisplaySettings( const DisplaySettings & s ) {
   return 1;
   }
@@ -161,11 +165,13 @@ int LinuxAPI::nextEvents(bool &quit) {
   }
 
 LinuxAPI::Window *LinuxAPI::createWindow(int w, int h) {
-  /*
-  ::Window win = new ::Window;
+  HWND * win = new HWND;
   GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
   XVisualInfo * vi = glXChooseVisual(dpy, 0, att);
   XSetWindowAttributes    swa;
+
+  Colormap                cmap;
+  cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
 
   swa.colormap   = cmap;
   swa.event_mask = ExposureMask | KeyPressMask;
@@ -173,12 +179,12 @@ LinuxAPI::Window *LinuxAPI::createWindow(int w, int h) {
   *win = XCreateWindow( dpy, root, 0, 0, w, h,
                         0, vi->depth, InputOutput, vi->visual,
                         CWColormap | CWEventMask, &swa );
-  XSetWMProtocols(dpy, *win, &wmDeleteMessage, 1);
+  XSetWMProtocols(dpy, *win, &wmDeleteMessage(), 1);
 
   XMapWindow(dpy, *win);
   XStoreName(dpy, *win, "Tempest Application");
-*/
-  return 0;//(Window*)win;
+
+  return (Window*)win;
   }
 
 SystemAPI::Window *LinuxAPI::createWindowMaximized() {

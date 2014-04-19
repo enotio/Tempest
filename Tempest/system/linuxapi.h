@@ -9,6 +9,8 @@ class Window;
 
 #ifdef __linux__
 class LinuxAPI:public SystemAPI {
+  public:
+    static void* display();
   protected:
     LinuxAPI();
     ~LinuxAPI();
