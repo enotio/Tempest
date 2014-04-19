@@ -1323,6 +1323,22 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
                       const Options &opt ) const {
   if( !setDevice(d) ) return 0;
 
+#ifdef __linux__
+  ::Window* w = (::Window*)hwnd;
+
+  ::Window root;
+  int x, y;
+  unsigned ww, hh, border, depth;
+
+  XGetGeometry(dev->dpy, *w, &root, &x, &y, &ww, &hh, &border, &depth);
+
+  dev->scrW = ww;
+  dev->scrH = hh;
+
+  AbstractAPI::setDisplaySettings( opt.displaySettings );
+  glViewport(0,0, dev->scrW, dev->scrH);
+#endif
+
 #ifdef __WIN32__
   RECT rectWindow;
   GetClientRect( HWND(hwnd), &rectWindow);

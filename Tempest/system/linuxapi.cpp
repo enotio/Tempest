@@ -156,7 +156,7 @@ LinuxAPI::Window *LinuxAPI::createWindow(int w, int h) {
   cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
 
   swa.colormap   = cmap;
-  swa.event_mask = event_mask;
+  swa.event_mask = event_mask ^ (ResizeRedirectMask);
 
   *win = XCreateWindow( dpy, root, 0, 0, w, h,
                         0, vi->depth, InputOutput, vi->visual,
@@ -261,7 +261,7 @@ void LinuxAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
 
   if( lStyles & WS_MAXIMIZE )
     return;
-*/
+  */
   XMoveResizeWindow( dpy, *((::Window*)hw), x, y, w, h );
   }
 
@@ -324,10 +324,23 @@ void xProc( XEvent& xev, HWND &hWnd, bool &quit ) {
     if( !w )
       return;
 
+    {
+      HWND root;
+      int x, y;
+      unsigned ww, hh, border, depth;
+
+      XGetGeometry(dpy, hWnd, &root, &x, &y, &ww, &hh, &border, &depth);
+
+      SystemAPI::moveEvent( w, x, y );
+      SystemAPI::sizeEvent( w, ww, hh );
+    }
+
     std::cout <<"xev = " << xev.type << std::endl;
     switch( xev.type ) {
       case Expose:
-        render( w );
+        if ( xev.xexpose.count == 0){
+          render( w );
+          }
         break;
 
     /*
@@ -417,6 +430,14 @@ void xProc( XEvent& xev, HWND &hWnd, bool &quit ) {
         SystemAPI::emitEvent(w, e);
         }
         break;
+
+      case ConfigureNotify:{
+        if( false ){
+          SystemAPI::moveEvent( w, xev.xconfigure.x, xev.xconfigure.y );
+          SystemAPI::sizeEvent( w, xev.xconfigure.width, xev.xconfigure.height );
+          }
+        }
+        break;
 /*
       case WM_MOVING:
         if( w ){
@@ -480,11 +501,10 @@ void xProc( XEvent& xev, HWND &hWnd, bool &quit ) {
         }
         break;
 
-      /*
-      case WM_DESTROY: {
-        PostQuitMessage(0);
+      case DestroyNotify:{
+        quit = true;
         }
-        break;*/
+        break;
 
       default: break;
       }
