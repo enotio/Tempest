@@ -3,6 +3,10 @@
 #ifdef __linux__
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <GL/glx.h>
+
+#undef Always // in X11/X.h
+#undef PSize
 
 #include <Tempest/Window>
 #include <Tempest/Event>
@@ -15,10 +19,27 @@
 #include <iostream>
 #include "core/wrappers/atomic.h"
 
+typedef Window HWND;
+
 using namespace Tempest;
 
 static std::unordered_map<LinuxAPI::Window*, Tempest::Window*> wndWx;
-static Display* dpy = 0;
+
+static Display*  dpy  = 0;
+static HWND      root = 0;
+
+static const long event_mask = 0xFFFFFF;
+
+static HWND pin( LinuxAPI::Window* w ){
+  return *((HWND*)w);
+  }
+
+static void xProc(XEvent& xev, HWND *hWnd);
+
+static Atom& wmDeleteMessage(){
+  static Atom w  = XInternAtom( dpy, "WM_DELETE_WINDOW", 0);
+  return w;
+  }
 
 LinuxAPI::LinuxAPI() {
   /*
@@ -82,9 +103,17 @@ void LinuxAPI::endApplication() {
   XCloseDisplay(dpy);
   }
 
+static void render( Tempest::Window* w ){
+  if( w->showMode()!=Tempest::Window::Minimized && w->isActive() )
+    w->render();
+  }
+
 int LinuxAPI::nextEvent(bool &quit) {
   XEvent xev;
-  XNextEvent(dpy, &xev);
+  memset(&xev,0,sizeof(xev));
+
+  if( !XCheckMaskEvent(dpy, event_mask, &xev) )
+    return 0;
 
   if(xev.type == Expose) {
     for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
@@ -92,133 +121,76 @@ int LinuxAPI::nextEvent(bool &quit) {
 
     return 0;
     } else {
+    /*
     if( uMsg.message==WM_QUIT )
       quit = 1;
 
     TranslateMessage( &uMsg );
     DispatchMessage ( &uMsg );
-    Sleep(0);
-    return uMsg.wParam;
+    */
+    xProc( xev, &xev.xclient.window );
+    //Sleep(0);
+    return 0;
     }
   }
 
-static void render( Tempest::Window* w ){
-  if( w->showMode()!=Tempest::Window::Minimized && w->isActive() )
-    w->render();
-  }
-
 int LinuxAPI::nextEvents(bool &quit) {
-  MSG uMsg;
-  memset(&uMsg,0,sizeof(uMsg));
-  int r = 0;
+  XEvent xev;
+  memset(&xev,0,sizeof(xev));
 
   while( !quit ){
-    if( PeekMessage( &uMsg, NULL, 0, 0, PM_REMOVE ) ){
+    if( XCheckMaskEvent( dpy, event_mask, &xev ) ){
+      /*
       if( uMsg.message==WM_QUIT )
         quit = 1;
 
       TranslateMessage( &uMsg );
       DispatchMessage ( &uMsg );
-
-      if( uMsg.message==WM_QUIT )
-        r = uMsg.wParam;
+      */
+      xProc( xev, &xev.xclient.window );
       } else {
       for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
         render( i->second );
 
-      Sleep(1);
-      return r;
+      //Sleep(1);
+      return 0;
       }
     }
 
-  return r;
+  return 0;
   }
 
 LinuxAPI::Window *LinuxAPI::createWindow(int w, int h) {
-  ::Window win;
-  win = XCreateWindow( dpy, root, 0, 0, w, h,
-                       0, vi->depth, InputOutput, vi->visual,
-                       CWColormap | CWEventMask, &swa ;
-  Atom wmDeleteMessage = XInternAtom( dpy, "WM_DELETE_WINDOW", 0);
-  XSetWMProtocols(dpy, win, &wmDeleteMessage, 1);
+  /*
+  ::Window win = new ::Window;
+  GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+  XVisualInfo * vi = glXChooseVisual(dpy, 0, att);
+  XSetWindowAttributes    swa;
 
-  XMapWindow(dpy, win);
-  XStoreName(dpy, win, "Tempest Application");
+  swa.colormap   = cmap;
+  swa.event_mask = ExposureMask | KeyPressMask;
 
-  return (Window*)hwnd;
+  *win = XCreateWindow( dpy, root, 0, 0, w, h,
+                        0, vi->depth, InputOutput, vi->visual,
+                        CWColormap | CWEventMask, &swa );
+  XSetWMProtocols(dpy, *win, &wmDeleteMessage, 1);
+
+  XMapWindow(dpy, *win);
+  XStoreName(dpy, *win, "Tempest Application");
+*/
+  return 0;//(Window*)win;
   }
 
 SystemAPI::Window *LinuxAPI::createWindowMaximized() {
-  int w = GetSystemMetrics(SM_CXFULLSCREEN),
-      h = GetSystemMetrics(SM_CYFULLSCREEN);
-  DEVMODE mode;
-  EnumDisplaySettings( 0, ENUM_CURRENT_SETTINGS, &mode );
-  w = mode.dmPelsWidth;
-  h = mode.dmPelsHeight;
-
-  DWORD wflags    = WS_OVERLAPPEDWINDOW | WS_POPUP | WS_VISIBLE;
-  DWORD dwExStyle = WS_EX_APPWINDOW;
-
-  wflags |= WS_CLIPSIBLINGS |	WS_CLIPCHILDREN;
-
-  HWND hwnd = CreateWindowEx( dwExStyle,
-                              L"Tempest_Window_Class",
-                              L"Tempest_Window_Class",
-                              wflags,
-                              0, 0,
-                              w, h,
-                              NULL,
-                              NULL,
-                              GetModuleHandle(0), NULL );
-
-  ShowWindow( hwnd, SW_MAXIMIZE );
-  UpdateWindow( hwnd );
-  return (Window*)hwnd;
+  return 0;
   }
 
 SystemAPI::Window *LinuxAPI::createWindowMinimized() {
-  int w = GetSystemMetrics(SM_CXFULLSCREEN),
-      h = GetSystemMetrics(SM_CYFULLSCREEN);
-  DEVMODE mode;
-  EnumDisplaySettings( 0, ENUM_CURRENT_SETTINGS, &mode );
-  w = mode.dmPelsWidth;
-  h = mode.dmPelsHeight;
-
-  DWORD wflags = WS_OVERLAPPEDWINDOW | WS_POPUP | WS_VISIBLE;
-  HWND hwnd = CreateWindowEx( 0,
-                              L"Tempest_Window_Class",
-                              L"Tempest_Window_Class",
-                              wflags,
-                              0, 0,
-                              w, h,
-                              NULL, NULL,
-                              GetModuleHandle(0), NULL );
-
-  return (Window*)hwnd;
+  return 0;
   }
 
 SystemAPI::Window *LinuxAPI::createWindowFullScr() {
-  int w = GetSystemMetrics(SM_CXFULLSCREEN),
-      h = GetSystemMetrics(SM_CYFULLSCREEN);
-  DEVMODE mode;
-  EnumDisplaySettings( 0, ENUM_CURRENT_SETTINGS, &mode );
-  w = mode.dmPelsWidth;
-  h = mode.dmPelsHeight;
-
-  DWORD wflags = WS_POPUP;
-  HWND hwnd = CreateWindowEx( 0,
-                              L"Tempest_Window_Class",
-                              L"Tempest_Window_Class",
-                              wflags,
-                              0, 0,
-                              w, h,
-                              NULL, NULL,
-                              GetModuleHandle(0),
-                              NULL );
-
-  ShowWindow( hwnd, SW_NORMAL );
-  UpdateWindow( hwnd );
-  return (Window*)hwnd;
+  return 0;
   }
 
 Widget* LinuxAPI::addOverlay(WindowOverlay *ov) {
@@ -233,26 +205,27 @@ Widget* LinuxAPI::addOverlay(WindowOverlay *ov) {
   }
 
 Point LinuxAPI::windowClientPos( SystemAPI::Window * hWnd ) {
-  RECT rectWindow;
-  GetClientRect( HWND(hWnd), &rectWindow);
-  return Point(rectWindow.left,rectWindow.top);
+  XWindowAttributes xwa;
+  XGetWindowAttributes(dpy, pin(hWnd), &xwa);
+
+  return Point( xwa.x, xwa.y );
   }
 
 Size LinuxAPI::windowClientRect( SystemAPI::Window * hWnd ) {
-  RECT rectWindow;
-  GetClientRect( HWND(hWnd), &rectWindow);
-  int cW = rectWindow.right  - rectWindow.left;
-  int cH = rectWindow.bottom - rectWindow.top;
+  XWindowAttributes xwa;
+  XGetWindowAttributes(dpy, pin(hWnd), &xwa);
 
-  return Size(cW,cH);
+  return Size( xwa.width, xwa.height );
   }
 
 void LinuxAPI::deleteWindow( Window *w ) {
-  DestroyWindow( (HWND)w );
+  XDestroyWindow(dpy, *((::Window*)w));
+  //DestroyWindow( (HWND)w );
   wndWx.erase(w);
   }
 
 void LinuxAPI::show(Window *hWnd) {
+  /*
   Tempest::Window* w = 0;
   std::unordered_map<LinuxAPI::Window*, Tempest::Window*>::iterator i
       = wndWx.find( (LinuxAPI::Window*)hWnd );
@@ -284,9 +257,11 @@ void LinuxAPI::show(Window *hWnd) {
     }
 
   UpdateWindow( hwnd );
+  */
   }
 
 void LinuxAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
+  /*
   DWORD wflags = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
   RECT r = {0,0,w,h};
   AdjustWindowRect(&r, wflags, false);
@@ -298,13 +273,8 @@ void LinuxAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
 
   if( lStyles & WS_MAXIMIZE )
     return;
-
-  MoveWindow( (HWND)hw,
-              x,
-              y,
-              r.right-r.left,
-              r.bottom-r.top,
-              false );
+*/
+  XMoveResizeWindow( dpy, *((::Window*)hw), x, y, w, h );
   }
 
 void LinuxAPI::bind( Window *w, Tempest::Window *wx ) {
@@ -320,32 +290,29 @@ LinuxAPI::CpuInfo LinuxAPI::cpuInfoImpl(){
   }
 
 LinuxAPI::File *LinuxAPI::fopenImpl( const char *fname, const char *mode ) {
-  return fopenImpl( fname, mode );
+  return SystemAPI::fopenImpl( fname, mode );
   }
 
 LinuxAPI::File *LinuxAPI::fopenImpl( const char16_t *fname, const char *mode ) {
-  return fopenImpl( toUtf8(fname).data(), mode );
+  return SystemAPI::fopenImpl( toUtf8(fname).data(), mode );
   }
 
-static Event::MouseButton toButton( UINT msg ){
-  if( msg==WM_LBUTTONDOWN ||
-      msg==WM_LBUTTONUP )
+static Event::MouseButton toButton( XButtonEvent& msg ){
+  if( msg.button==Button1Mask )
     return Event::ButtonLeft;
 
-  if( msg==WM_RBUTTONDOWN  ||
-      msg==WM_RBUTTONUP)
+  if( msg.button==Button3Mask )
     return Event::ButtonRight;
 
-  if( msg==WM_MBUTTONDOWN ||
-      msg==WM_MBUTTONUP )
+  if( msg.button==Button2Mask )
     return Event::ButtonMid;
 
   return Event::ButtonNone;
   }
 
-static Tempest::KeyEvent makeKeyEvent( WPARAM k,
+static Tempest::KeyEvent makeKeyEvent( XKeyEvent& k,
                                        bool scut = false ){
-  Tempest::KeyEvent::KeyType e = SystemAPI::translateKey(k);
+  Tempest::KeyEvent::KeyType e = SystemAPI::translateKey(k.keycode);
 
   if( !scut ){
     if( Event::K_0<=e && e<= Event::K_9 )
@@ -358,12 +325,7 @@ static Tempest::KeyEvent makeKeyEvent( WPARAM k,
   return Tempest::KeyEvent( e );
   }
 
-LRESULT CALLBACK WindowProc( HWND   hWnd,
-                             UINT   msg,
-                             WPARAM wParam,
-                             LPARAM lParam ) {
-    //return DefWindowProc( hWnd, msg, wParam, lParam );
-
+void xProc(XEvent& xev, HWND *hWnd ) {
     Tempest::Window* w = 0;
     std::unordered_map<LinuxAPI::Window*, Tempest::Window*>::iterator i
         = wndWx.find( (LinuxAPI::Window*)hWnd );
@@ -372,9 +334,9 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       w = i->second;
 
     if( !w )
-      return DefWindowProc( hWnd, msg, wParam, lParam );
+      return;
 
-    switch( msg ) {
+    switch( xev.type ) {/*
       case WM_CHAR:
       {
          Tempest::KeyEvent e = Tempest::KeyEvent( uint32_t(wParam) );
@@ -393,33 +355,31 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
            SystemAPI::emitEvent(w, eu);
            }
       }
-      break;
+      break;*/
 
-      case WM_KEYDOWN:
+      case KeyPressMask:
       {
          SystemAPI::emitEvent( w,
-                               makeKeyEvent(wParam),
-                               makeKeyEvent(wParam, true),
+                               makeKeyEvent( xev.xkey ),
+                               makeKeyEvent( xev.xkey, true),
                                Event::KeyDown );
       }
       break;
 
-      case WM_KEYUP:
+      case KeyRelease:
       {
          SystemAPI::emitEvent( w,
-                               makeKeyEvent(wParam),
-                               makeKeyEvent(wParam, true),
+                               makeKeyEvent( xev.xkey ),
+                               makeKeyEvent( xev.xkey, true),
                                Event::KeyUp );
       }
       break;
 
 
-      case WM_LBUTTONDOWN:
-      case WM_MBUTTONDOWN:
-      case WM_RBUTTONDOWN: {
-        MouseEvent e( LOWORD (lParam),
-                      HIWORD (lParam),
-                      toButton(msg),
+      case ButtonPress: {
+        MouseEvent e( xev.xbutton.x,
+                      xev.xbutton.y,
+                      toButton( xev.xbutton ),
                       0,
                       0,
                       Event::MouseDown );
@@ -427,12 +387,10 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         }
         break;
 
-      case WM_LBUTTONUP:
-      case WM_RBUTTONUP:
-      case WM_MBUTTONUP: {
-        MouseEvent e( LOWORD (lParam),
-                      HIWORD (lParam),
-                      toButton(msg),
+      case ButtonRelease: {
+        MouseEvent e( xev.xbutton.x,
+                      xev.xbutton.y,
+                      toButton( xev.xbutton ),
                       0,
                       0,
                       Event::MouseUp  );
@@ -440,9 +398,9 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         }
         break;
 
-      case WM_MOUSEMOVE: {
-        MouseEvent e( LOWORD (lParam),
-                      HIWORD (lParam),
+      case PointerMotionMask: {
+        MouseEvent e( xev.xmotion.x,
+                      xev.xmotion.y,
                       Event::ButtonNone,
                       0,
                       0,
@@ -450,7 +408,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         SystemAPI::emitEvent(w, e);
         }
         break;
-
+/*
        case WM_MOUSEWHEEL:{
           POINT p;
           p.x = LOWORD (lParam);
@@ -464,7 +422,6 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
                                  0,
                                  Event::MouseWheel );
           SystemAPI::emitEvent(w, e);
-          //w->mouseWheelEvent(e);
           }
         break;
 
@@ -475,6 +432,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           SystemAPI::moveEvent( w, rpos.left, rpos.top );
           }
         break;
+
       case WM_SIZE:{
           RECT rpos = {0,0,0,0};
           GetWindowRect( hWnd, &rpos );
@@ -516,12 +474,6 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           if( !a && w->isFullScreenMode() ){
             ShowWindow( hWnd, SW_MINIMIZE );
             }
-
-          if( !a ){
-            //ChangeDisplaySettings(&defaultMode, 0);
-            } else {
-            //ChangeDisplaySettings(&appMode, appDevModeFlg);
-            }
       }
       break;
 
@@ -532,28 +484,16 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           PostQuitMessage(0);
         }
         break;
+
       case WM_DESTROY: {
         PostQuitMessage(0);
         }
-        break;
-/*
-      case WM_SETCURSOR:
-      // If the window is minimized, draw hCurs1.
-      // If the window is not minimized, draw the
-      // default cursor (class cursor).
-
-        if (IsIconic(hWnd)) {
-          //SetCursor(hCurs1);
-          break;
-          }
         break;*/
 
-      default: {
-        return DefWindowProc( hWnd, msg, wParam, lParam );
-        }
+      default: break;
       }
 
-    return 0;
-  }
+    return;
+    }
 
 #endif

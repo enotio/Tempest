@@ -46,8 +46,9 @@ unix: {
   }
 
 ogl:{
-  LIBS += -L"$$(CG_LIB_PATH)"
+  !isEmpty($$(CG_LIB_PATH)):LIBS += -L"$$(CG_LIB_PATH)"
   win32:  LIBS += -l"opengl32" -l"cg" -l"cgGL"
+  unix:   LIBS += -lX11 -lGL
   android:LIBS += -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics
 
   HEADERS +=\
