@@ -41,31 +41,53 @@ static Atom& wmDeleteMessage(){
   return w;
   }
 
+static LinuxAPI::Window* X11_CreateWindow(int w, int h, Tempest::Window::ShowMode m ){
+  HWND * win = new HWND;
+  GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+  XVisualInfo * vi = glXChooseVisual(dpy, 0, att);
+  XSetWindowAttributes    swa;
+
+  Colormap cmap;
+  cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
+
+  swa.colormap   = cmap;
+  swa.event_mask = event_mask ^ (ResizeRedirectMask);
+
+  *win = XCreateWindow( dpy, root, 0, 0, w, h,
+                        0, vi->depth, InputOutput, vi->visual,
+                        CWColormap | CWEventMask, &swa );
+  XSetWMProtocols(dpy, *win, &wmDeleteMessage(), 1);
+
+  XStoreName(dpy, *win, "Tempest Application");
+
+  XFreeColormap( dpy, cmap );
+  return (LinuxAPI::Window*)win;
+  }
+
 LinuxAPI::LinuxAPI() {
-  /*
   TranslateKeyPair k[] = {
-    { VK_LEFT,   Event::K_Left   },
-    { VK_RIGHT,  Event::K_Right  },
-    { VK_UP,     Event::K_Up     },
-    { VK_DOWN,   Event::K_Down   },
+    { XK_KP_Left,   Event::K_Left   },
+    { XK_KP_Right,  Event::K_Right  },
+    { XK_KP_Up,     Event::K_Up     },
+    { XK_KP_Down,   Event::K_Down   },
 
-    { VK_ESCAPE, Event::K_ESCAPE },
-    { VK_BACK,   Event::K_Back   },
-    { VK_DELETE, Event::K_Delete },
-    { VK_INSERT, Event::K_Insert },
-    { VK_HOME,   Event::K_Home   },
-    { VK_END,    Event::K_End    },
-    { VK_PAUSE,  Event::K_Pause  },
-    { VK_RETURN, Event::K_Return },
+    { XK_Escape, Event::K_ESCAPE },
+    { XK_BackSpace,   Event::K_Back   },
+    { XK_Delete, Event::K_Delete },
+    { XK_Insert, Event::K_Insert },
+    { XK_Home,   Event::K_Home   },
+    { XK_End,    Event::K_End    },
+    { XK_Pause,  Event::K_Pause  },
+    { XK_Return, Event::K_Return },
 
-    { VK_F1,     Event::K_F1 },
+    { XK_F1,     Event::K_F1 },
     { 0x30,      Event::K_0  },
     { 0x41,      Event::K_A  },
 
     { 0,         Event::K_NoKey }
     };
 
-  setupKeyTranslate(k);*/
+  setupKeyTranslate(k);
   setFuncKeysCount(24);
   }
 
@@ -147,38 +169,19 @@ int LinuxAPI::nextEvents(bool &quit) {
   }
 
 LinuxAPI::Window *LinuxAPI::createWindow(int w, int h) {
-  HWND * win = new HWND;
-  GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
-  XVisualInfo * vi = glXChooseVisual(dpy, 0, att);
-  XSetWindowAttributes    swa;
-
-  Colormap                cmap;
-  cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
-
-  swa.colormap   = cmap;
-  swa.event_mask = event_mask ^ (ResizeRedirectMask);
-
-  *win = XCreateWindow( dpy, root, 0, 0, w, h,
-                        0, vi->depth, InputOutput, vi->visual,
-                        CWColormap | CWEventMask, &swa );
-  XSetWMProtocols(dpy, *win, &wmDeleteMessage(), 1);
-
-  XMapWindow(dpy, *win);
-  XStoreName(dpy, *win, "Tempest Application");
-
-  return (Window*)win;
+  return X11_CreateWindow(w, h, Tempest::Window::Normal );
   }
 
 SystemAPI::Window *LinuxAPI::createWindowMaximized() {
-  return 0;
+  return X11_CreateWindow( 800, 600, Tempest::Window::Maximized );
   }
 
 SystemAPI::Window *LinuxAPI::createWindowMinimized() {
-  return 0;
+  return X11_CreateWindow( 800, 600, Tempest::Window::Minimized );
   }
 
 SystemAPI::Window *LinuxAPI::createWindowFullScr() {
-  return 0;
+  return X11_CreateWindow( 800, 600, Tempest::Window::FullScreen );
   }
 
 Widget* LinuxAPI::addOverlay(WindowOverlay *ov) {
@@ -208,60 +211,14 @@ Size LinuxAPI::windowClientRect( SystemAPI::Window * hWnd ) {
 
 void LinuxAPI::deleteWindow( Window *w ) {
   XDestroyWindow(dpy, *((::Window*)w));
-  //DestroyWindow( (HWND)w );
   wndWx.erase( pin(w) );
   }
 
 void LinuxAPI::show(Window *hWnd) {
-  /*
-  Tempest::Window* w = 0;
-  std::unordered_map<LinuxAPI::Window*, Tempest::Window*>::iterator i
-      = wndWx.find( (LinuxAPI::Window*)hWnd );
-
-  if( i!= wndWx.end() )
-    w = i->second;
-
-  if( !w )
-    return;
-
-  if( w->showMode()==Tempest::Window::FullScreen )
-    return;
-
-  HWND hwnd = (HWND)hWnd;
-
-  switch( w->showMode() ){
-    case Tempest::Window::Normal:
-    case Tempest::Window::FullScreen:
-      ShowWindow( hwnd, SW_NORMAL );
-      break;
-
-    case Tempest::Window::Minimized:
-      ShowWindow( hwnd, SW_MINIMIZE );
-      break;
-
-    default:
-      ShowWindow( hwnd, SW_MAXIMIZE );
-      break;
-    }
-
-  UpdateWindow( hwnd );
-  */
+  XMapWindow(dpy, pin(hWnd) );
   }
 
 void LinuxAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
-  /*
-  DWORD wflags = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
-  RECT r = {0,0,w,h};
-  AdjustWindowRect(&r, wflags, false);
-
-  LONG lStyles = GetWindowLong( (HWND)hw, GWL_STYLE );
-
-  if( lStyles & WS_MINIMIZE )
-    return;
-
-  if( lStyles & WS_MAXIMIZE )
-    return;
-  */
   XMoveResizeWindow( dpy, *((::Window*)hw), x, y, w, h );
   }
 
@@ -329,10 +286,10 @@ void xProc( XEvent& xev, HWND &hWnd, bool &quit ) {
       int x, y;
       unsigned ww, hh, border, depth;
 
-      XGetGeometry(dpy, hWnd, &root, &x, &y, &ww, &hh, &border, &depth);
-
-      SystemAPI::moveEvent( w, x, y );
-      SystemAPI::sizeEvent( w, ww, hh );
+      if( XGetGeometry(dpy, hWnd, &root, &x, &y, &ww, &hh, &border, &depth) ){
+        SystemAPI::moveEvent( w, x, y );
+        SystemAPI::sizeEvent( w, ww, hh );
+        }
     }
 
     std::cout <<"xev = " << xev.type << std::endl;
@@ -413,7 +370,7 @@ void xProc( XEvent& xev, HWND &hWnd, bool &quit ) {
                         toButton( xev.xbutton ),
                         0,
                         0,
-                        xev.type==ButtonPress ? Event::MouseDown:Event::MouseUp );
+                        xev.type==ButtonPress ? Event::MouseDown : Event::MouseUp );
           SystemAPI::emitEvent(w, e);
           }
         }
@@ -430,56 +387,7 @@ void xProc( XEvent& xev, HWND &hWnd, bool &quit ) {
         SystemAPI::emitEvent(w, e);
         }
         break;
-
-      case ConfigureNotify:{
-        if( false ){
-          SystemAPI::moveEvent( w, xev.xconfigure.x, xev.xconfigure.y );
-          SystemAPI::sizeEvent( w, xev.xconfigure.width, xev.xconfigure.height );
-          }
-        }
-        break;
 /*
-      case WM_MOVING:
-        if( w ){
-          RECT rpos = {0,0,0,0};
-          GetWindowRect( hWnd, &rpos );
-          SystemAPI::moveEvent( w, rpos.left, rpos.top );
-          }
-        break;
-
-      case WM_SIZE:{
-          RECT rpos = {0,0,0,0};
-          GetWindowRect( hWnd, &rpos );
-
-          RECT rectWindow;
-          GetClientRect( HWND(hWnd), &rectWindow);
-          int cW = rectWindow.right  - rectWindow.left;
-          int cH = rectWindow.bottom - rectWindow.top;
-
-          if( w ){
-            int smode = int( w->showMode() );
-
-            if( wParam==SIZE_RESTORED )
-              smode = Window::Normal;
-
-            if( wParam==SIZE_MAXIMIZED ||
-                wParam==SIZE_MAXSHOW   )
-              smode = Window::Maximized;
-
-            if( wParam==SIZE_MINIMIZED )
-              smode = Window::Minimized;
-
-            SystemAPI::setShowMode( w, smode);
-
-            if( wParam!=SIZE_MINIMIZED ){
-              SystemAPI::sizeEvent( w, cW, cH );
-              //GetWindowRect( HWND(hWnd), &rectWindow );
-              SystemAPI::moveEvent( w, rpos.left, rpos.top );
-              }
-            }
-          }
-        break;
-
       case WM_ACTIVATEAPP:
       {
           bool a = (wParam==TRUE);

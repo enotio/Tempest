@@ -104,8 +104,6 @@ class Font{
                             const char* ttf  );
 
     static bool cmpS( const std::string &tg, const std::string& s, const char* ss);
-
-    static std::map<Key, Leters*> letterBox;
     const Letter& fetchLeter(char16_t ch, SpritesHolder &sp) const;
     const Letter& nullLeter (char16_t ch ) const;
 

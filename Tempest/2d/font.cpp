@@ -18,13 +18,14 @@ struct Tempest::Font::FreeTypeLib{
 
     std::map<Tempest::Font::Key, Tempest::Font::Leters*>::iterator
         b, e;
-    b = Tempest::Font::letterBox.begin();
-    e = Tempest::Font::letterBox.end();
+    b = letterBox.begin();
+    e = letterBox.end();
 
     for( ; b!=e; ++b )
       delete b->second;
     }
 
+  std::map<Key, Leters*> letterBox;
   FT_Library    library;
 
   static unsigned long ft_stream_io( FT_Stream       stream,
@@ -64,9 +65,6 @@ struct Tempest::Font::FreeTypeLib{
     return FT_Open_Face( library, &args, face_index, aface );
     }
   };
-
-std::map<Tempest::Font::Key, Tempest::Font::Leters*>
-  Tempest::Font::letterBox;
 
 std::vector< std::string > Tempest::Font::fnames;
 
@@ -134,10 +132,10 @@ void Tempest::Font::init( const std::string& name, int sz ) {
   key.bold   = false;
   key.italic = false;
 
-  lt = letterBox[key];
+  lt = ft().letterBox[key];
   if( !lt ){
     lt = new Leters();
-    letterBox[key] = lt;
+    ft().letterBox[key] = lt;
     }
   }
 
@@ -374,10 +372,10 @@ void Tempest::Font::update() {
     key.name =  findFontNameTtf( fnames[key.baseName], "i.ttf"); else
     key.name =  findFontNameTtf( fnames[key.baseName], ".ttf");
 
-  lt = letterBox[key];
+  lt = ft().letterBox[key];
   if( !lt ){
     lt = new Leters();
-    letterBox[key] = lt;
+    ft().letterBox[key] = lt;
     }
   }
 
