@@ -263,7 +263,15 @@ static Event::MouseButton toButton( XButtonEvent& msg ){
 
 static Tempest::KeyEvent makeKeyEvent( XKeyEvent& k,
                                        bool scut = false ){
-  Tempest::KeyEvent::KeyType e = SystemAPI::translateKey(k.keycode);
+  int keysyms_per_keycode_return = 0;
+  KeySym *ksym = XGetKeyboardMapping( dpy, k.keycode,
+                                      1,
+                                      &keysyms_per_keycode_return );
+
+  char txt[10];
+  XLookupString(&k, txt, sizeof(txt), ksym, 0 );
+
+  Tempest::KeyEvent::KeyType e = SystemAPI::translateKey(*ksym);
 
   if( !scut ){
     if( Event::K_0<=e && e<= Event::K_9 )
@@ -273,6 +281,7 @@ static Tempest::KeyEvent makeKeyEvent( XKeyEvent& k,
       e = Tempest::KeyEvent::K_NoKey;
     }
 
+  XFree(ksym);
   return Tempest::KeyEvent( e );
   }
 
@@ -298,7 +307,6 @@ void xProc( XEvent& xev, HWND &hWnd, bool &quit ) {
         }
     }
 
-    std::cout <<"xev = " << xev.type << std::endl;
     switch( xev.type ) {
       case Expose:
         if ( xev.xexpose.count == 0){
@@ -327,7 +335,7 @@ void xProc( XEvent& xev, HWND &hWnd, bool &quit ) {
       }
       break;*/
 
-      case KeyPressMask:
+      case KeyPress:
       {
          SystemAPI::emitEvent( w,
                                makeKeyEvent( xev.xkey ),
@@ -390,7 +398,6 @@ void xProc( XEvent& xev, HWND &hWnd, bool &quit ) {
                       0,
                       0,
                       Event::MouseMove  );
-        std::cout << "motion" << std::endl;
         SystemAPI::emitEvent(w, e);
         }
         break;
