@@ -133,6 +133,9 @@ struct PngCodec:ImageCodec {
       png_read_image(png_ptr, &rows[0]);
       if( !r.err )
         png_read_end(png_ptr, info_ptr);
+
+      png_destroy_info_struct(png_ptr, &info_ptr);
+      png_destroy_read_struct(&png_ptr, NULL, NULL);
       return !r.err;
       }
 

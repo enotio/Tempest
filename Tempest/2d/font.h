@@ -55,23 +55,13 @@ class Font{
     void init(const std::string &name, int sz);
 
     struct LMap{
-      LMap(){
-        l = 0;
-        e = 0;
-        std::fill( n, n+256, (LMap*)0 );
-        }
-      ~LMap(){
-        delete l;
-        delete e;
-        for( int i=0; i<256; ++i )
-          delete n[i];
-        }
-
+      LMap();
+      ~LMap();
       Letter* find( char16_t c ) const;
       Letter& operator[]( char16_t c );
 
       private:
-        mutable Letter* l;
+        mutable Letter* let;
         mutable bool * e;
         mutable LMap*  n[256];
       };
@@ -81,14 +71,7 @@ class Font{
       int size;
       bool bold, italic;
 
-      bool operator < ( const Key& other ) const{
-        if( size < other.size )
-          return 1;
-        if( size > other.size )
-          return 0;
-
-        return name < other.name;
-        }
+      bool operator < ( const Key& other ) const;
       };
 
     typedef LMap Leters;

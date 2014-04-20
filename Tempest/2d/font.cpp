@@ -14,8 +14,6 @@ struct Tempest::Font::FreeTypeLib{
     }
 
   ~FreeTypeLib(){
-    FT_Done_FreeType( library );
-
     std::map<Tempest::Font::Key, Tempest::Font::Leters*>::iterator
         b, e;
     b = letterBox.begin();
@@ -23,6 +21,8 @@ struct Tempest::Font::FreeTypeLib{
 
     for( ; b!=e; ++b )
       delete b->second;
+
+    FT_Done_FreeType( library );
     }
 
   std::map<Key, Leters*> letterBox;
@@ -379,6 +379,19 @@ void Tempest::Font::update() {
     }
   }
 
+Tempest::Font::LMap::LMap():let(0), e(0){
+  std::fill( n, n+256, (LMap*)0 );
+  }
+
+Tempest::Font::LMap::~LMap() {
+  delete[] e;
+  delete[] let;
+
+  for( int i=0; i<256; ++i )
+    delete n[i];
+  }
+
+
 Tempest::Font::Letter *Tempest::Font::LMap::find(char16_t c) const {
   unsigned char cp[sizeof(c)];
   for( size_t i=0; i<sizeof(char16_t); ++i){
@@ -396,14 +409,14 @@ Tempest::Font::Letter *Tempest::Font::LMap::find(char16_t c) const {
     l = l->n[cx];
     }
 
-  if( l->l==0 ){
-    l->l = new Letter[256];
-    l->e = new bool[256];
+  if( l->let==0 ){
+    l->let = new Letter[256];
+    l->e   = new bool[256];
     std::fill( l->e, l->e+256, false );
     }
 
   if( l->e[cp[0]] )
-    return l->l+cp[0];
+    return l->let+cp[0];
 
   return 0;
   }
@@ -426,12 +439,31 @@ Tempest::Font::Letter &Tempest::Font::LMap::operator [](char16_t c) {
     l = l->n[cx];
     }
 
-  if( l->l==0 ){
-    l->l = new Letter[256];
-    l->e = new bool[256];
+  if( l->let==0 ){
+    l->let = new Letter[256];
+    l->e   = new bool[256];
     std::fill( l->e, l->e+256, false );
     }
 
   l->e[cp[0]] = 1;
-  return *(l->l+cp[0]);
+  return *(l->let+cp[0]);
+  }
+
+bool Tempest::Font::Key::operator < (const Tempest::Font::Key &other) const {
+  if( size < other.size )
+    return 1;
+  if( size > other.size )
+    return 0;
+
+  if( bold < other.bold )
+    return 1;
+  if( bold > other.bold )
+    return 0;
+
+  if( italic < other.italic )
+    return 1;
+  if( italic > other.italic )
+    return 0;
+
+  return name < other.name;
   }

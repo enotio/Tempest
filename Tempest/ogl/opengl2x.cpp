@@ -89,7 +89,6 @@ struct Opengl2x::Device{
 
 #ifdef __linux__
   GLXContext   glc;
-  XVisualInfo  *vi;
   Display      *dpy;
   XID           window;
 #endif
@@ -581,8 +580,10 @@ bool Opengl2x::createContext( Device* dev, void *hwnd, const Options & ) const {
   dev->dpy = (Display*)LinuxAPI::display();
   Display *dpy = dev->dpy;//FIXME
   GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
-  dev->vi  = glXChooseVisual (dpy, 0, att);
-  dev->glc = glXCreateContext(dpy, dev->vi, NULL, GL_TRUE);
+  XVisualInfo  *vi = glXChooseVisual (dpy, 0, att);
+  dev->glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
+  XFree( vi );
+
   glXMakeCurrent( dev->dpy, dev->window, dev->glc);
 
   if( !Detail::initGLProc() ) {
@@ -720,6 +721,7 @@ void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
 #endif
 
 #ifdef __linux__
+  glXDestroyContext( dev->dpy, dev->glc );
   glXMakeCurrent( dev->dpy, None, NULL);
 #endif
 

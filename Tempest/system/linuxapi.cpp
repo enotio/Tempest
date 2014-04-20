@@ -41,7 +41,8 @@ static Atom& wmDeleteMessage(){
   return w;
   }
 
-static LinuxAPI::Window* X11_CreateWindow(int w, int h, Tempest::Window::ShowMode m ){
+static LinuxAPI::Window* X11_CreateWindow( int w, int h,
+                                           Tempest::Window::ShowMode m ){
   HWND * win = new HWND;
   GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
   XVisualInfo * vi = glXChooseVisual(dpy, 0, att);
@@ -61,6 +62,7 @@ static LinuxAPI::Window* X11_CreateWindow(int w, int h, Tempest::Window::ShowMod
   XStoreName(dpy, *win, "Tempest Application");
 
   XFreeColormap( dpy, cmap );
+  XFree(vi);
   return (LinuxAPI::Window*)win;
   }
 
@@ -210,8 +212,9 @@ Size LinuxAPI::windowClientRect( SystemAPI::Window * hWnd ) {
   }
 
 void LinuxAPI::deleteWindow( Window *w ) {
-  XDestroyWindow(dpy, *((::Window*)w));
+  XDestroyWindow(dpy, pin(w));
   wndWx.erase( pin(w) );
+  delete (HWND*)w;
   }
 
 void LinuxAPI::show(Window *hWnd) {

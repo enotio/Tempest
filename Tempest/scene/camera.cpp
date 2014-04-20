@@ -6,16 +6,18 @@
 using namespace Tempest;
 
 Camera::Camera(){
-  setDistance(4);
-  setPosition(0,0,0);
+  dist   = 4;
+  pos[0] = 0;
+  pos[1] = 0;
+  pos[2] = 0;
 
-  setSpinX(0);
-  setSpinY(0);
+  sx = 0;
+  sy = 0;
 
-  setZoom(1);
-  setPerspective(0);
-
+  m_zoom = 1;
   updateView();
+
+  setPerspective(0);
   }
 
 Matrix4x4 Camera::view() const {
