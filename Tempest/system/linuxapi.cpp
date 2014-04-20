@@ -52,13 +52,16 @@ static LinuxAPI::Window* X11_CreateWindow( int w, int h,
   cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
 
   swa.colormap   = cmap;
-  swa.event_mask = event_mask ^ (ResizeRedirectMask);
+  swa.event_mask = PointerMotionMask | ExposureMask |
+                   ButtonPressMask |ButtonReleaseMask|
+                   KeyPressMask | KeyReleaseMask;
 
   *win = XCreateWindow( dpy, root, 0, 0, w, h,
                         0, vi->depth, InputOutput, vi->visual,
                         CWColormap | CWEventMask, &swa );
   XSetWMProtocols(dpy, *win, &wmDeleteMessage(), 1);
 
+  //XSelectInput(dpy, *win, );
   XStoreName(dpy, *win, "Tempest Application");
 
   XFreeColormap( dpy, cmap );
