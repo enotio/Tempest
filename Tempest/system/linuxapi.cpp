@@ -346,7 +346,8 @@ void xProc( XEvent& xev, HWND &hWnd, bool &quit ) {
       case ButtonPress:
       case ButtonRelease: {
         bool isWheel = false;
-        if( xev.type==ButtonPress && XPending(dpy) ){
+        if( xev.type==ButtonPress && XPending(dpy) &&
+            (xev.xbutton.button == Button4 || xev.xbutton.button == Button5) ){
           XEvent ev;
           XPeekEvent(dpy, &ev);
           isWheel = (ev.type==ButtonRelease);
