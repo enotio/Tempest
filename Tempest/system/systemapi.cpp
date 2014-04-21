@@ -24,7 +24,7 @@ SystemAPI &SystemAPI::instance() {
   static AndroidAPI api;
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
   static LinuxAPI api;
 #endif
 

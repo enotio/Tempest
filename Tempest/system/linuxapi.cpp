@@ -1,6 +1,6 @@
 #include "linuxapi.h"
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <GL/glx.h>

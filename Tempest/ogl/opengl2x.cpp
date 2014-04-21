@@ -87,7 +87,7 @@ struct Opengl2x::Device{
   HGLRC hRC;
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
   GLXContext   glc;
   Display      *dpy;
   XID           window;
@@ -575,8 +575,7 @@ bool Opengl2x::createContext( Device* dev, void *hwnd, const Options & ) const {
   dev->swapEfect = EGL_BUFFER_PRESERVED;
 #endif
 
-#ifdef __linux__
-
+#if defined(__linux__) && !defined(__ANDROID__)
   dev->dpy = (Display*)LinuxAPI::display();
   Display *dpy = dev->dpy;//FIXME
   GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
@@ -603,7 +602,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   if( !createContext(dev, hwnd, opt) )
     return 0;
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
   dev->window = *((::Window*)hwnd);
 #endif
 
@@ -720,7 +719,7 @@ void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
   wglDeleteContext( dev->hRC );
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
   glXDestroyContext( dev->dpy, dev->glc );
   glXMakeCurrent( dev->dpy, None, NULL);
 #endif
@@ -1289,7 +1288,7 @@ bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
 #ifdef  __ANDROID__
   return AndroidAPI::startRender(0);
 #endif
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
   glXMakeCurrent( dev->dpy, dev->window, dev->glc);
 #endif
   return 1;
@@ -1302,7 +1301,7 @@ bool Opengl2x::present(AbstractAPI::Device *d, SwapBehavior b) const {
   SwapBuffers( dev->hDC );
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
   glXSwapBuffers( dev->dpy, dev->window );
 #endif
 
@@ -1325,7 +1324,7 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
                       const Options &opt ) const {
   if( !setDevice(d) ) return 0;
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
   ::Window* w = (::Window*)hwnd;
 
   ::Window root;

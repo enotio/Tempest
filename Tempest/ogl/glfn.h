@@ -6,7 +6,7 @@
 #include <EGL/egl.h>
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
 #include <GL/gl.h>
 #include <GL/glx.h>
 
@@ -14,7 +14,7 @@
 #undef PSize
 #endif
 
-#if defined(__WIN32__) || defined(__linux__)
+#if defined(__WIN32__) || (defined(__linux__) && !defined(__ANDROID__) )
 #include <GL/gl.h>
 
 #define GL_HALF_FLOAT 0x140B
@@ -95,7 +95,7 @@ typedef HGLRC GLContext;
 typedef EGLContext GLContext;
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
 typedef GLXContext GLContext;
 #endif
 
@@ -104,7 +104,7 @@ typedef GLXContext GLContext;
   }
 
 namespace GLProc{
-#if defined(__WIN32__) || defined(__linux__)
+#if defined(__WIN32__) || (defined(__linux__) && !defined(__ANDROID__) )
 extern void ( GLAPIENTRY *glGenFramebuffers)(GLsizei n, const GLuint* framebuffers);
 extern void ( GLAPIENTRY *glDeleteFramebuffers)(GLsizei n, const GLuint* framebuffers);
 
