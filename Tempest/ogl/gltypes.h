@@ -23,6 +23,9 @@ namespace Detail{
 
     unsigned offset, size;
     size_t   vertexCount, byteCount;
+
+    //opengl-es only
+    std::vector<char> vba;
     };
 
   class GLTexture;

@@ -13,8 +13,9 @@ namespace Tempest {
 template< class Holder >
 class LocalBufferHolder : public Holder {
   public:
-    LocalBufferHolder( Tempest::Device &d )
-      :Holder(d){
+    LocalBufferHolder( Tempest::Device &d,
+                       AbstractAPI::BufferUsage bu = AbstractAPI::BU_Dynamic )
+      :Holder(d), bufferUsage(bu) {
       dynVBOs .reserve(2048);
 
       setReserveSize( 0xFFFF );
@@ -37,7 +38,6 @@ class LocalBufferHolder : public Holder {
       return nonFreed.maxColletIterations;
       }
 
-
     void setReserveSize( int sz ){
       reserveSize = sz;
       }
@@ -57,6 +57,7 @@ class LocalBufferHolder : public Holder {
     bool isCollectPaused() const{
       return pcollect;
       }
+
   protected:
     int reserveSize, maxReserved;
     int minVboSize;
@@ -198,7 +199,7 @@ class LocalBufferHolder : public Holder {
                                                   size_t vsize,
                                                   const void *src,
                                                   AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags ){
-      return Holder::allocBuffer(size, vsize, src, AbstractAPI::BU_Dynamic, flg);
+      return Holder::allocBuffer(size, vsize, src, bufferUsage, flg);
       }
 
     std::vector< NonFreed >    dynVBOs;
@@ -217,14 +218,23 @@ class LocalBufferHolder : public Holder {
 
     bool needToRestore;
     bool pcollect;
+    AbstractAPI::BufferUsage bufferUsage;
   };
 
 struct LocalVertexBufferHolder: LocalBufferHolder< Tempest::VertexBufferHolder > {
-  LocalVertexBufferHolder( Tempest::Device &d ):LocalBufferHolder< Tempest::VertexBufferHolder >(d){}
+  LocalVertexBufferHolder( Tempest::Device &d )
+    :LocalBufferHolder< Tempest::VertexBufferHolder >(d){}
+  LocalVertexBufferHolder( Tempest::Device &d,
+                           AbstractAPI::BufferUsage bu )
+    :LocalBufferHolder< Tempest::VertexBufferHolder >(d, bu){}
   };
 
 struct LocalIndexBufferHolder: LocalBufferHolder< Tempest::IndexBufferHolder  > {
-  LocalIndexBufferHolder( Tempest::Device &d ):LocalBufferHolder< Tempest::IndexBufferHolder >(d){}
+  LocalIndexBufferHolder( Tempest::Device &d )
+    :LocalBufferHolder< Tempest::IndexBufferHolder >(d){}
+  LocalIndexBufferHolder( Tempest::Device &d,
+                           AbstractAPI::BufferUsage bu )
+    :LocalBufferHolder< Tempest::IndexBufferHolder >(d, bu){}
   };
 }
 

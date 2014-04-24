@@ -98,6 +98,15 @@ struct Opengl2x::Device{
        hasHalfSupport,
        hasWriteonlyRendering;
 
+  bool useVBA( BufferUsage usage ){
+    (void)usage;
+#ifdef __ANDROID__
+    return usage==BU_Dynamic;
+#else
+    return 0;
+#endif
+    }
+
   int scrW, scrH;
   AbstractAPI::Caps caps;
 
@@ -109,7 +118,8 @@ struct Opengl2x::Device{
 
   std::vector<bool> vAttrLoc;
 
-  int vertexSize, curVboOffsetIndex, curIboOffsetIndex;
+  int vertexSize;
+  char* curVboOffsetIndex, curIboOffsetIndex;
   bool   isPainting;
 
   Tempest::RenderState renderState;
@@ -1823,27 +1833,33 @@ AbstractAPI::VertexBuffer *Opengl2x::createVertexBuffer( AbstractAPI::Device *d,
   Detail::GLBuffer *vbo = dev->bufPool.alloc();
   vbo->offset = 0;
   vbo->size   = 0;
-
-  if( dev->dynVbo.freed.size() ){
-    vbo->id = *dev->dynVbo.freed.begin();
-    dev->dynVbo.freed.erase( dev->dynVbo.freed.begin() );
-    } else {
-    glGenBuffers( 1, &vbo->id );
-    }
-
-  glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
   vbo->vertexCount = size;
   vbo->byteCount   = size*elSize;
 
-  glBufferData( GL_ARRAY_BUFFER,
-                size*elSize, src,
-                gu[u] );
+  if( dev->useVBA(u) ){
+    vbo->vba.insert( vbo->vba.begin(),
+                     (const char*)src,
+                     (const char*)src+size*elSize );
+    vbo->id = 0;
+    } else {
+    if( dev->dynVbo.freed.size() ){
+      vbo->id = *dev->dynVbo.freed.begin();
+      dev->dynVbo.freed.erase( dev->dynVbo.freed.begin() );
+      } else {
+      glGenBuffers( 1, &vbo->id );
+      }
 
-  if( u==BU_Dynamic ){
-    dev->dynVbo.used.insert(vbo->id);
+    glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
+    glBufferData( GL_ARRAY_BUFFER,
+                  size*elSize, src,
+                  gu[u] );
+
+    if( u==BU_Dynamic ){
+      dev->dynVbo.used.insert(vbo->id);
+      }
+
+    T_ASSERT_X( errCk(), "OpenGL error" );
     }
-
-  T_ASSERT_X( errCk(), "OpenGL error" );
 
   return (AbstractAPI::VertexBuffer*)vbo;
   }
@@ -1854,26 +1870,30 @@ void Opengl2x::deleteVertexBuffer(  AbstractAPI::Device *d,
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
 
-  if( dev->dynVbo.used.find(vbo->id)!=dev->dynVbo.used.end() ){
-    glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
-    glBufferData( GL_ARRAY_BUFFER, 1, 0, GL_DYNAMIC_DRAW );
-
-    dev->dynVbo.used .erase ( vbo->id );
-    dev->dynVbo.freed.insert( vbo->id );
+  if( vbo->id==0 ){
+    //vbo->vba.clear();
     } else {
-    if( glIsBuffer(vbo->id) ){
-      if( dev->curVBO==vbo->id ){
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        dev->curVBO = 0;
-        }
+    if( dev->dynVbo.used.find(vbo->id)!=dev->dynVbo.used.end() ){
+      glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
+      glBufferData( GL_ARRAY_BUFFER, 1, 0, GL_DYNAMIC_DRAW );
 
-      glDeleteBuffers( 1, &vbo->id );
+      dev->dynVbo.used .erase ( vbo->id );
+      dev->dynVbo.freed.insert( vbo->id );
       } else {
-      T_ASSERT_X(0, "bad glDeleteBuffers call");
+      if( glIsBuffer(vbo->id) ){
+        if( dev->curVBO==vbo->id ){
+          glBindBuffer(GL_ARRAY_BUFFER, 0);
+          dev->curVBO = 0;
+          }
+
+        glDeleteBuffers( 1, &vbo->id );
+        } else {
+        T_ASSERT_X(0, "bad glDeleteBuffers call");
+        }
       }
     }
-  dev->bufPool.free(vbo);
 
+  dev->bufPool.free(vbo);
   T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
@@ -1903,11 +1923,18 @@ AbstractAPI::IndexBuffer *Opengl2x::createIndexBuffer( AbstractAPI::Device *d,
   ibo->vertexCount = size;
   ibo->byteCount   = size*elSize;
 
-  glGenBuffers( 1, &ibo->id );
-  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo->id );
-  glBufferData( GL_ELEMENT_ARRAY_BUFFER,
-                size*elSize, src,
-                gu[u] );
+  if( dev->useVBA(u) ){
+    ibo->vba.insert( ibo->vba.begin(),
+                     (const char*)src, (const char*)src+size*elSize );
+    ibo->id = 0;
+    } else {
+    glGenBuffers( 1, &ibo->id );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo->id );
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER,
+                  size*elSize, src,
+                  gu[u] );
+    }
+
   T_ASSERT_X( errCk(), "OpenGL error" );
 
   return (AbstractAPI::IndexBuffer*)ibo;
@@ -1938,9 +1965,14 @@ void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
   if( !setDevice(d) ) return 0;
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
+  T_ASSERT( offset+size <= vbo->byteCount );
 
   //glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
   //vbo->mappedData = (char*)glMapBuffer( GL_ARRAY_BUFFER, GL_READ_WRITE );
+
+  if( vbo->id==0 ){
+    return &vbo->vba[ offset ];
+    }
 
   if( !dev->lbUseed ){
     dev->lbUseed = true;
@@ -1953,8 +1985,6 @@ void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
   vbo->offset = offset;
   vbo->size   = size;
 
-  T_ASSERT( vbo->offset+vbo->size <= vbo->byteCount );
-
   T_ASSERT_X( errCk(), "OpenGL error" );
   return vbo->mappedData;
   }
@@ -1964,6 +1994,9 @@ void Opengl2x::unlockBuffer( AbstractAPI::Device *d,
   if( !setDevice(d) ) return;
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
+
+  if( vbo->id==0 )
+    return;
 
   glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
   glBufferSubData( GL_ARRAY_BUFFER, vbo->offset, vbo->size, vbo->mappedData );
@@ -1990,6 +2023,12 @@ void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
 
+  T_ASSERT( offset+size <= vbo->byteCount );
+
+  if( vbo->id==0 ){
+    return &vbo->vba[ offset ];
+    }
+
   if( !dev->lbUseed ){
     dev->lbUseed = true;
     dev->tmpLockBuffer.resize( size );
@@ -2001,8 +2040,6 @@ void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
   vbo->offset = offset;
   vbo->size   = size;
 
-  T_ASSERT( vbo->offset+vbo->size <= vbo->byteCount );
-
   T_ASSERT_X( errCk(), "OpenGL error" );
   return vbo->mappedData;
   }
@@ -2012,6 +2049,9 @@ void Opengl2x::unlockBuffer( AbstractAPI::Device *d,
   if( !setDevice(d) ) return;
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
+
+  if( vbo->id==0 )
+    return;
 
   glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, vbo->id );
   glBufferSubData( GL_ELEMENT_ARRAY_BUFFER, vbo->offset, vbo->size, vbo->mappedData );
@@ -2091,7 +2131,7 @@ void Opengl2x::bindIndexBuffer( AbstractAPI::Device * d,
   dev->cIBO       = (Detail::GLBuffer*)b;
   }
 
-void Opengl2x::setupBuffers( int vboOffsetIndex,
+void Opengl2x::setupBuffers( char* vboOffsetIndex,
                              bool on,
                              bool enable,
                              bool bind ) const {
@@ -2106,6 +2146,10 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
 
     T_ASSERT( glIsBuffer(dev->vbo) );
     glBindBuffer( GL_ARRAY_BUFFER, dev->vbo );
+    } else {
+    dev->curVBO            = dev->vbo;
+    dev->curVboOffsetIndex = vboOffsetIndex;
+    glBindBuffer( GL_ARRAY_BUFFER, 0 );
     }
 
   if( rebind )
@@ -2115,7 +2159,7 @@ void Opengl2x::setupBuffers( int vboOffsetIndex,
   }
 
 void Opengl2x::setupAttrPtr( const Tempest::VertexDeclaration::Declarator& vd,
-                             size_t vboOffsetIndex,
+                             char* vboOffsetIndex,
                              bool enable, bool on, bool bind ) const {
   if( !dev->decl )
     return;
@@ -2143,7 +2187,7 @@ void Opengl2x::setupAttrPtr( const Tempest::VertexDeclaration::Declarator& vd,
     0,  4*1, 4*2, 4*3, 4*4,  4, 2*2, 2*4, 2*2, 2*4
     };
 
-  size_t stride = vboOffsetIndex;
+  char* stride = vboOffsetIndex;
   for( int i=0; i<vd.size(); ++i ){
     const VertexDeclaration::Declarator::Element & e = vd[i];
 
@@ -2193,7 +2237,12 @@ void Opengl2x::draw( AbstractAPI::Device *de,
                      int firstVertex, int pCount ) const {
   setDevice(de);
 
-  setupBuffers( 0, false, false, true );
+  if( dev->cVBO->id==0 ){
+    setupBuffers( &dev->cVBO->vba[0], false, false, true );
+    } else {
+    setupBuffers( 0, false, false, true );
+    }
+
   T_ASSERT( size_t(firstVertex+pCount) <= dev->cVBO->vertexCount );
 
   if( dev->curIBO!=0 ){
@@ -2216,7 +2265,6 @@ void Opengl2x::draw( AbstractAPI::Device *de,
   T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
-//unstable
 void Opengl2x::drawIndexed( AbstractAPI::Device *de,
                             AbstractAPI::PrimitiveType t,
                             int vboOffsetIndex,
@@ -2228,7 +2276,14 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
     return;
 
   bool rebind = !(dev->curIBO == dev->ibo && dev->curIboOffsetIndex==iboOffsetIndex );
-  setupBuffers( vboOffsetIndex*dev->vertexSize, false, false, true );
+
+  if( dev->cVBO->id==0 ){
+    char *offset = &dev->cVBO->vba[0]+(size_t(vboOffsetIndex)*dev->vertexSize);
+    setupBuffers( offset, false, false, true );
+    } else {
+    char *offset = (char*)(size_t(vboOffsetIndex)*dev->vertexSize);
+    setupBuffers( offset, false, false, true );
+    }
 
   T_ASSERT( size_t(iboOffsetIndex+pCount) <= dev->cIBO->vertexCount );
 

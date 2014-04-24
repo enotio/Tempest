@@ -193,9 +193,9 @@ class Opengl2x : public AbstractAPI {
   private:
     struct Device;
     mutable Device * dev;
-    void setupBuffers(int vboOffsetIndex, bool on , bool enable, bool bind) const;
-    void setupAttrPtr( const Tempest::VertexDeclaration::Declarator& vd,
-                       size_t vboOffsetIndex,
+    void setupBuffers(char *vboOffsetIndex, bool on , bool enable, bool bind) const;
+    void setupAttrPtr(const Tempest::VertexDeclaration::Declarator& vd,
+                       char *vboOffsetIndex,
                        bool enable, bool on, bool bind ) const;
 
     Opengl2x( const Opengl2x& ){}
