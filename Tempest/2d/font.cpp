@@ -7,14 +7,14 @@
 #include FT_FREETYPE_H
 #include <freetype/freetype.h>
 
-struct Tempest::Font::FreeTypeLib{
+struct Tempest::FontElement::FreeTypeLib{
   FreeTypeLib(){
     FT_Init_FreeType( &library );
-    Tempest::Font::fnames.reserve(16);
+    Tempest::FontElement::fnames.reserve(16);
     }
 
   ~FreeTypeLib(){
-    std::map<Tempest::Font::Key, Tempest::Font::Leters*>::iterator
+    std::map<Tempest::FontElement::Key, Tempest::FontElement::Leters*>::iterator
         b, e;
     b = letterBox.begin();
     e = letterBox.end();
@@ -66,15 +66,15 @@ struct Tempest::Font::FreeTypeLib{
     }
   };
 
-std::vector< std::string > Tempest::Font::fnames;
+std::vector< std::string > Tempest::FontElement::fnames;
 
-Tempest::Font::FreeTypeLib& Tempest::Font::ft(){
+Tempest::FontElement::FreeTypeLib& Tempest::FontElement::ft(){
   static FreeTypeLib lib;
   return lib;
   }
 
-size_t Tempest::Font::findFontNameTtf( const std::string &ft,
-                                       const char* ttf ) {
+size_t Tempest::FontElement::findFontNameTtf( const std::string &ft,
+                                              const char* ttf ) {
   for( size_t i=0; i<fnames.size(); ++i ){
     if( cmpS( fnames[i], ft, ttf ) )
       return i;
@@ -84,7 +84,7 @@ size_t Tempest::Font::findFontNameTtf( const std::string &ft,
   return fnames.size()-1;
   }
 
-size_t Tempest::Font::findFontName(const std::string &n) {
+size_t Tempest::FontElement::findFontName(const std::string &n) {
   for( size_t i=0; i<fnames.size(); ++i )
     if( fnames[i]==n )
       return i;
@@ -93,9 +93,9 @@ size_t Tempest::Font::findFontName(const std::string &n) {
   return fnames.size()-1;
   }
 
-bool Tempest::Font::cmpS( const std::string &tg,
-                          const std::string& s,
-                          const char* ss ){
+bool Tempest::FontElement::cmpS( const std::string &tg,
+                                 const std::string& s,
+                                 const char* ss ){
   if( tg.size()<s.size() )
     return 0;
 
@@ -110,12 +110,12 @@ bool Tempest::Font::cmpS( const std::string &tg,
   return 1;
   }
 
-Tempest::Font::Font( const std::string &name,
-                     int sz) {
+Tempest::FontElement::FontElement( const std::string &name,
+                                   int sz) {
   init(name, sz);
   }
 
-Tempest::Font::Font() {
+Tempest::FontElement::FontElement() {
 #ifdef __ANDROID__
   init("/system/fonts/DroidSans", 16);
 #else
@@ -123,14 +123,13 @@ Tempest::Font::Font() {
 #endif
   }
 
-void Tempest::Font::init( const std::string& name, int sz ) {
-  key.name     = findFontNameTtf(name, ".ttf");
-  key.baseName = findFontName(name);
-
+void Tempest::FontElement::init( const std::string& name, int sz ) {
+  //key.name     = findFontNameTtf(name, ".ttf");
+  key.name = findFontName(name);
   key.size = sz;
 
-  key.bold   = false;
-  key.italic = false;
+  //key.bold   = false;
+  //key.italic = false;
 
   lt = ft().letterBox[key];
   if( !lt ){
@@ -139,8 +138,8 @@ void Tempest::Font::init( const std::string& name, int sz ) {
     }
   }
 
-const Tempest::Font::Letter&
-    Tempest::Font::fetchLeter( char16_t ch,
+const Tempest::FontElement::Letter&
+    Tempest::FontElement::fetchLeter( char16_t ch,
                                Tempest::SpritesHolder & res  ) const {
   Leters & leters = *lt;
 
@@ -205,7 +204,7 @@ const Tempest::Font::Letter&
   return ref;
   }
 
-Tempest::Font::LetterGeometry Tempest::Font::letterGeometry( char16_t ch ) const {
+Tempest::FontElement::LetterGeometry Tempest::FontElement::letterGeometry( char16_t ch ) const {
   Leters & leters = *lt;
 
   if( Letter *l = leters.find(ch) ){
@@ -254,8 +253,8 @@ Tempest::Font::LetterGeometry Tempest::Font::letterGeometry( char16_t ch ) const
   return letter;
   }
 
-const Tempest::Font::Letter &
-  Tempest::Font::nullLeter(char16_t ch) const {
+const Tempest::FontElement::Letter &
+  Tempest::FontElement::nullLeter(char16_t ch) const {
   Leters & leters = *lt;
   Letter letter;
 
@@ -265,39 +264,39 @@ const Tempest::Font::Letter &
   return ref;
   }
 
-void Tempest::Font::fetch(const std::u16string &str,
-                           Tempest::SpritesHolder & sp  ) const {
+void Tempest::FontElement::fetch(const std::u16string &str,
+                                 Tempest::SpritesHolder & sp  ) const {
   for( size_t i=0; i<str.size(); ++i )
     fetchLeter( str[i], sp );
   }
 
-void Tempest::Font::fetch( const std::string &str,
-                           Tempest::SpritesHolder & sp ) const {
+void Tempest::FontElement::fetch( const std::string &str,
+                                  Tempest::SpritesHolder & sp ) const {
   for( size_t i=0; i<str.size(); ++i )
     fetchLeter( str[i], sp );
   }
 
-Tempest::Size Tempest::Font::textSize(const std::u16string &str ) {
+Tempest::Size Tempest::FontElement::textSize(const std::u16string &str ) {
   return textSize( &str[0], &str[0]+str.size() );
   }
 
-Tempest::Size Tempest::Font::textSize(const std::string &str ) {
+Tempest::Size Tempest::FontElement::textSize(const std::string &str ) {
   return textSize( &str[0], &str[0]+str.size() );
   }
 
-Tempest::Size Tempest::Font::textSize(const char16_t *str) {
+Tempest::Size Tempest::FontElement::textSize(const char16_t *str) {
   const char16_t *e = str;
   while(*e) ++e;
   return textSize(str, e);
   }
 
-Tempest::Size Tempest::Font::textSize(const char *str) {
+Tempest::Size Tempest::FontElement::textSize(const char *str) {
   const char *e = str;
   while(*e) ++e;
   return textSize(str, e);
   }
 
-Tempest::Size Tempest::Font::textSize(const char16_t *b, const char16_t *e) {
+Tempest::Size Tempest::FontElement::textSize(const char16_t *b, const char16_t *e) {
   int tx = 0, ty = 0, tw = 0, th = 0;
   for( const char16_t* i=b; i<e; ++i ){
     const LetterGeometry& l = letterGeometry( *i );
@@ -312,7 +311,7 @@ Tempest::Size Tempest::Font::textSize(const char16_t *b, const char16_t *e) {
   return Tempest::Size(tw,th);
   }
 
-Tempest::Size Tempest::Font::textSize(const char *b, const char *e) {
+Tempest::Size Tempest::FontElement::textSize(const char *b, const char *e) {
   int tx = 0, ty = 0, tw = 0, th = 0;
   for( const char* i=b; i<e; ++i ){
     const LetterGeometry& l = letterGeometry( *i );
@@ -327,41 +326,15 @@ Tempest::Size Tempest::Font::textSize(const char *b, const char *e) {
   return Tempest::Size(tw,th);
   }
 
-int Tempest::Font::size() const {
-  return key.size;
-  }
-
-void Tempest::Font::setBold(bool b) {
-  key.bold = b;
-  update();
-  }
-
-bool Tempest::Font::isBold() const {
-  return key.bold;
-  }
-
-void Tempest::Font::setItalic(bool b) {
-  key.italic = b;
-  update();
-  }
-
-bool Tempest::Font::isItalic() const {
-  return key.italic;
-  }
-
-void Tempest::Font::setSize(int s) {
-  key.size = s;
-  update();
-  }
-
-const Tempest::Font::Letter&
-  Tempest::Font::letter( char16_t ch,
+const Tempest::FontElement::Letter&
+  Tempest::FontElement::letter( char16_t ch,
                          Tempest::SpritesHolder & sp ) const {
-  const Tempest::Font::Letter& tmp = fetchLeter(ch,sp);
+  const Tempest::FontElement::Letter& tmp = fetchLeter(ch,sp);
   return tmp;
   }
 
-void Tempest::Font::update() {
+void Tempest::FontElement::update() {
+  /*
   key.name = key.baseName;
 
   if( key.bold && key.italic )
@@ -370,7 +343,7 @@ void Tempest::Font::update() {
     key.name =  findFontNameTtf( fnames[key.baseName], "b.ttf"); else
   if( key.italic )
     key.name =  findFontNameTtf( fnames[key.baseName], "i.ttf"); else
-    key.name =  findFontNameTtf( fnames[key.baseName], ".ttf");
+    key.name =  findFontNameTtf( fnames[key.baseName], ".ttf");*/
 
   lt = ft().letterBox[key];
   if( !lt ){
@@ -379,11 +352,11 @@ void Tempest::Font::update() {
     }
   }
 
-Tempest::Font::LMap::LMap():let(0), e(0){
+Tempest::FontElement::LMap::LMap():let(0), e(0){
   std::fill( n, n+256, (LMap*)0 );
   }
 
-Tempest::Font::LMap::~LMap() {
+Tempest::FontElement::LMap::~LMap() {
   delete[] e;
   delete[] let;
 
@@ -392,7 +365,7 @@ Tempest::Font::LMap::~LMap() {
   }
 
 
-Tempest::Font::Letter *Tempest::Font::LMap::find(char16_t c) const {
+Tempest::FontElement::Letter *Tempest::FontElement::LMap::find(char16_t c) const {
   unsigned char cp[sizeof(c)];
   for( size_t i=0; i<sizeof(char16_t); ++i){
     cp[i] = c%256;
@@ -421,7 +394,7 @@ Tempest::Font::Letter *Tempest::Font::LMap::find(char16_t c) const {
   return 0;
   }
 
-Tempest::Font::Letter &Tempest::Font::LMap::operator [](char16_t c) {
+Tempest::FontElement::Letter &Tempest::FontElement::LMap::operator [](char16_t c) {
   unsigned char cp[sizeof(c)];
   for( size_t i=0; i<sizeof(char16_t); ++i){
     cp[i] = c%256;
@@ -449,12 +422,12 @@ Tempest::Font::Letter &Tempest::Font::LMap::operator [](char16_t c) {
   return *(l->let+cp[0]);
   }
 
-bool Tempest::Font::Key::operator < (const Tempest::Font::Key &other) const {
+bool Tempest::FontElement::Key::operator < (const Tempest::FontElement::Key &other) const {
   if( size < other.size )
     return 1;
   if( size > other.size )
     return 0;
-
+/*
   if( bold < other.bold )
     return 1;
   if( bold > other.bold )
@@ -464,6 +437,99 @@ bool Tempest::Font::Key::operator < (const Tempest::Font::Key &other) const {
     return 1;
   if( italic > other.italic )
     return 0;
+  */
 
   return name < other.name;
+  }
+
+
+Tempest::Font::Font(){
+  }
+
+Tempest::Font::Font(const std::string &name, int sz) {
+  ttf[0][0] = FontElement(name +   ".ttf", sz);
+  ttf[0][1] = FontElement(name +  "b.ttf", sz);
+  ttf[1][0] = FontElement(name +  "i.ttf", sz);
+  ttf[1][1] = FontElement(name + "bi.ttf", sz);
+  }
+
+Tempest::Font::Font( const Tempest::FontElement &n,
+                     const Tempest::FontElement &b,
+                     const Tempest::FontElement &i,
+                     const Tempest::FontElement &bi ) {
+  ttf[0][0] = n;
+  ttf[0][1] = b;
+  ttf[1][0] = i;
+  ttf[1][1] = bi;
+  }
+
+void Tempest::Font::fetch( const std::u16string &str,
+                           Tempest::SpritesHolder &sp ) const {
+  ttf[bold][italic].fetch(str, sp);
+  }
+
+void Tempest::Font::fetch( const std::string &str,
+                           Tempest::SpritesHolder &sp ) const {
+  ttf[bold][italic].fetch(str, sp);
+  }
+
+const Tempest::Font::Letter &Tempest::Font::letter( char16_t ch,
+                                                    Tempest::SpritesHolder &sp) const {
+  return ttf[bold][italic].letter(ch, sp);
+  }
+
+Tempest::Font::LetterGeometry Tempest::Font::letterGeometry(char16_t ch) const {
+  return ttf[bold][italic].letterGeometry(ch);
+  }
+
+Tempest::Size Tempest::Font::textSize(const std::u16string &s) {
+  return ttf[bold][italic].textSize(s);
+  }
+
+Tempest::Size Tempest::Font::textSize(const std::string &s) {
+  return ttf[bold][italic].textSize(s);
+  }
+
+Tempest::Size Tempest::Font::textSize(const char16_t *b, const char16_t *e) {
+  return ttf[bold][italic].textSize(b,e);
+  }
+
+Tempest::Size Tempest::Font::textSize(const char *b, const char *e) {
+  return ttf[bold][italic].textSize(b,e);
+  }
+
+Tempest::Size Tempest::Font::textSize(const char16_t *s) {
+  return ttf[bold][italic].textSize(s);
+  }
+
+Tempest::Size Tempest::Font::textSize(const char *s) {
+  return ttf[bold][italic].textSize(s);
+  }
+
+int Tempest::Font::size() const {
+  return ttf[bold][italic].key.size;
+  }
+
+void Tempest::Font::setBold(bool b) {
+  bold = b? 1:0;
+  }
+
+bool Tempest::Font::isBold() const {
+  return bold>0;
+  }
+
+void Tempest::Font::setItalic(bool i) {
+  italic = i ? 1:0;
+  }
+
+bool Tempest::Font::isItalic() const {
+  return italic>0;
+  }
+
+void Tempest::Font::setSize(int s) {
+  for( int i=0; i<1; ++i )
+    for( int r=0; r<1; ++r ){
+      ttf[i][r].key.size = s;
+      ttf[i][r].update();
+      }
   }

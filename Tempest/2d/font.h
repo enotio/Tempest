@@ -10,11 +10,9 @@
 
 namespace Tempest {
 
-class Font{
+class FontElement{
   public:
-    Font( const std::string& name, int sz );
-    //Font( int sz );
-    Font();
+    FontElement( const std::string& name, int sz );
 
     struct LetterGeometry{
       Tempest::Size    size;
@@ -23,14 +21,15 @@ class Font{
 
     struct Letter{
       Tempest::Sprite surf;
-      Tempest::Size    size;
-      Tempest::Point   dpos, advance;
+      Tempest::Size   size;
+      Tempest::Point  dpos, advance;
       };
-
-    const Letter& letter(char16_t ch, SpritesHolder &sp) const;
 
     void fetch(const std::u16string& str, SpritesHolder &sp) const;
     void fetch(const std::string& str, SpritesHolder &sp) const;
+
+    const Letter& letter(char16_t ch, SpritesHolder &sp) const;
+    LetterGeometry letterGeometry( char16_t ch ) const;
 
     Size textSize(const std::u16string& );
     Size textSize(const std::string& );
@@ -41,17 +40,8 @@ class Font{
     Size textSize(const char16_t* str );
     Size textSize(const char* str );
 
-    int  size() const;
-
-    void setBold( bool b );
-    bool isBold() const;
-
-    void setItalic( bool b );
-    bool isItalic() const;
-
-    void setSize( int s );
-    LetterGeometry letterGeometry( char16_t ch ) const;
   private:
+    FontElement();
     void init(const std::string &name, int sz);
 
     struct LMap{
@@ -67,10 +57,8 @@ class Font{
       };
 
     struct Key{
-      size_t name, baseName;
-      int size;
-      bool bold, italic;
-
+      size_t name;//, baseName;
+      int    size;
       bool operator < ( const Key& other ) const;
       };
 
@@ -91,6 +79,50 @@ class Font{
     const Letter& nullLeter (char16_t ch ) const;
 
     void update();
+
+  friend class Font;
+  };
+
+class Font{
+  public:
+    Font();
+    Font( const std::string& name, int sz );
+    Font( const FontElement& n,
+          const FontElement& b,
+          const FontElement& i,
+          const FontElement& bi );
+
+    typedef FontElement::LetterGeometry LetterGeometry;
+    typedef FontElement::Letter         Letter;
+
+    int  size() const;
+
+    void setBold( bool b );
+    bool isBold() const;
+
+    void setItalic( bool b );
+    bool isItalic() const;
+
+    void setSize( int s );
+
+    void fetch(const std::u16string& str, SpritesHolder &sp) const;
+    void fetch(const std::string& str, SpritesHolder &sp) const;
+
+    const Letter& letter(char16_t ch, SpritesHolder &sp) const;
+    LetterGeometry letterGeometry( char16_t ch ) const;
+
+    Size textSize(const std::u16string& );
+    Size textSize(const std::string& );
+
+    Size textSize(const char16_t* b, const char16_t* e );
+    Size textSize(const char* b, const char* e );
+
+    Size textSize(const char16_t* str );
+    Size textSize(const char* str );
+
+  private:
+    uint8_t bold = 0, italic = 0;
+    FontElement ttf[2][2];
   };
 
 }
