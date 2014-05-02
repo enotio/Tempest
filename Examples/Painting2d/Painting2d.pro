@@ -13,7 +13,8 @@ SOURCES += main.cpp \
     mainwindow.cpp
 
 HEADERS += \
-    mainwindow.h
+    mainwindow.h \
+    cube.h
 
 OTHER_FILES += \
     ../bin/shader/basic.vs.glsl \
