@@ -21,7 +21,6 @@ else {
 QMAKE_CXXFLAGS += -std=gnu++0x -Wall
 
 INCLUDEPATH += \
-               "$$(CG_INC_PATH)"\
                "./thirdparty/" \
                "."
 
@@ -46,8 +45,7 @@ unix: {
   }
 
 ogl:{
-  !isEmpty($$(CG_LIB_PATH)):LIBS += -L"$$(CG_LIB_PATH)"
-  win32:          LIBS += -l"opengl32" -l"cg" -l"cgGL"
+  win32:          LIBS += -l"opengl32"
   unix: !android: LIBS += -lX11 -lGL
   android:        LIBS += -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics
 
@@ -67,17 +65,26 @@ ogl:{
 directx: {
   INCLUDEPATH += "$$(DXSDK_DIR)/include"
   LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
-  LIBS += -L"$$(CG_LIB_PATH)" -l"cg" -l"cgD3D9"
 
   HEADERS += \
-    dx/cgdx9.h \
     dx/hlsl.h \
     dx/directx9.h
 
   SOURCES += \
-    dx/cgdx9.cpp \
     dx/hlsl.cpp \
     dx/directx9.cpp
+
+  use_cg:{
+    !isEmpty($$(CG_INC_PATH)):INCLUDEPATH += "$$(CG_INC_PATH)"
+
+    HEADERS += \
+      dx/cgdx9.h
+
+    SOURCES += \
+      dx/cgdx9.cpp
+
+    !isEmpty($$(CG_LIB_PATH)):LIBS += -L"$$(CG_LIB_PATH)" -l"cg" -l"cgD3D9"
+    }
 
   TARGET = Tempest_dx
   }
@@ -297,4 +304,5 @@ OTHER_FILES += \
     include/Tempest/Buffer \
     include/Tempest/File \
     include/Tempest/GraphicsSubsystem \
-    include/Tempest/HLSL
+    include/Tempest/HLSL \
+    ../README.md

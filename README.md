@@ -13,15 +13,17 @@ Crossplatform 3d engine.
 
 ### 1. Install dependencies:
 
- 1.1. Install CgToolkit,              from [developer.nvidia.com/cg-toolkit-download](developer.nvidia.com/cg-toolkit-download)
 
- 1.2. Install DirectXSDK,             from [www.microsoft.com](www.microsoft.com/en-us/download/details.aspx?id=6812)
+ 1.1. Install DirectXSDK,             from [www.microsoft.com](www.microsoft.com/en-us/download/details.aspx?id=6812)
 
- 1.3. Install QtSDK(need qmake, plus mingw4.8+), from [http://qt-project.org/downloads](http://qt-project.org/downloads)
+ 1.2. Install QtSDK(need qmake, plus mingw4.8+), from [http://qt-project.org/downloads](http://qt-project.org/downloads)
 
- 1.4. Install Android SDK+NDK to compile android version
+ 1.3. Install Android SDK+NDK to compile android version
+
+ 1.4. Install CgToolkit(optional),              from [developer.nvidia.com/cg-toolkit-download](developer.nvidia.com/cg-toolkit-download)
 
      hint: you can disable directx support in .pro file.
+     hint: you can enable cg support in .pro file.
 
 ### 2. Build(Console):
  2.1 open Tempest directory  
