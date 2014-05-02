@@ -165,7 +165,7 @@ void MainWindow::setupShaderConstants( ProgramObject &sh ) {
 
   view.translate(0,0,4);
   view.rotate(rotate.y, 1, 0, 0);
-  view.rotate(rotate.x, 0, 1, 0);
+  view.rotate(rotate.x, 0, 0, 1);
   view.scale(zoom);
   view.mul( this->view );
 
