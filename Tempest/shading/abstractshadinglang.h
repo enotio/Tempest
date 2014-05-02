@@ -21,7 +21,11 @@ class ShaderInput;
 
 class AbstractShadingLang : public GraphicsSubsystem {
   public:
+    AbstractShadingLang() = default;
+    AbstractShadingLang( const AbstractShadingLang& ) = delete;
     virtual ~AbstractShadingLang(){}
+
+    AbstractShadingLang& operator = ( const AbstractShadingLang& ) = delete;
 
     virtual void beginPaint() const {}
     virtual void endPaint()   const {}

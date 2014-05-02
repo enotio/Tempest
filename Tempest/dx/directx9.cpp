@@ -4,7 +4,7 @@
 
 #include <d3dx9.h>
 
-#include <Tempest/CgDx9>
+#include <Tempest/HLSL>
 #include <Tempest/RenderState>
 
 #include <map>
@@ -836,7 +836,7 @@ AbstractShadingLang *DirectX9::createShadingLang( AbstractAPI::Device *d ) const
   AbstractAPI::DirectX9Device* dev =
       (AbstractAPI::DirectX9Device*)reinterpret_cast<DirectX9::Device*>(d)->dev;
 
-  return new CgDx9( dev );
+  return new HLSL( dev );
   }
 
 void DirectX9::deleteShadingLang( const AbstractShadingLang * l ) const {

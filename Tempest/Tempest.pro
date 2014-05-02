@@ -71,10 +71,12 @@ directx: {
 
   HEADERS += \
     dx/cgdx9.h \
+    dx/hlsl.h \
     dx/directx9.h
 
   SOURCES += \
     dx/cgdx9.cpp \
+    dx/hlsl.cpp \
     dx/directx9.cpp
 
   TARGET = Tempest_dx
@@ -294,4 +296,5 @@ OTHER_FILES += \
     include/Tempest/Log \
     include/Tempest/Buffer \
     include/Tempest/File \
-    include/Tempest/GraphicsSubsystem
+    include/Tempest/GraphicsSubsystem \
+    include/Tempest/HLSL
