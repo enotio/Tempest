@@ -552,18 +552,21 @@ void GLSL::setUniforms( unsigned int program,
                         const ShaderInput &in,
                         bool textures ) const {
   if( textures ){
+    int texSlot = 0;
     for( size_t i=0; i<in.tex3d.names.size(); ++i ){
       setUniform( program,
                   *in.tex3d.values[i],
-                  in.tex3d.names[i].data(), i,
+                  in.tex3d.names[i].data(), texSlot,
                   in.tex3d.id[i] );
+      ++texSlot;
       }
 
     for( size_t i=0; i<in.tex.names.size(); ++i ){
       setUniform( program,
                   *in.tex.values[i],
-                  in.tex.names[i].data(), i,
+                  in.tex.names[i].data(), texSlot,
                   in.tex.id[i] );
+      ++texSlot;
       }
     }
 
