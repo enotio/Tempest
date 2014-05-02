@@ -57,7 +57,7 @@ class FontElement{
       };
 
     struct Key{
-      size_t name;//, baseName;
+      size_t name;
       int    size;
       bool operator < ( const Key& other ) const;
       };
@@ -96,14 +96,13 @@ class Font{
     typedef FontElement::Letter         Letter;
 
     int  size() const;
+    void setSize( int s );
 
     void setBold( bool b );
     bool isBold() const;
 
     void setItalic( bool b );
     bool isItalic() const;
-
-    void setSize( int s );
 
     void fetch(const std::u16string& str, SpritesHolder &sp) const;
     void fetch(const std::string& str, SpritesHolder &sp) const;
