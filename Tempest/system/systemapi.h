@@ -100,8 +100,10 @@ class SystemAPI{
       };
     virtual GraphicsContexState isGraphicsContextAviable( Tempest::Window *w );
 
-    static std::string    toUtf8 (const std::u16string& str);
+    static std::string    toUtf8 ( const std::u16string& str );
+    static std::string    toUtf8 ( const char16_t* b, const char16_t* e );
     static std::u16string toUtf16( const std::string& str );
+    static std::u16string toUtf16( const char* b, const char* e );
 
     static const std::string& androidActivityClass();
     static Event::KeyType translateKey( uint64_t scancode );
@@ -165,7 +167,7 @@ class SystemAPI{
 
     void setupKeyTranslate( const TranslateKeyPair k[] );
     void setFuncKeysCount( int c );    
-private:
+  private:
     SystemAPI( const SystemAPI& ){}
 
     SystemAPI& operator = ( const SystemAPI&){return *this;}

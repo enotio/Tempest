@@ -419,11 +419,30 @@ std::string SystemAPI::toUtf8(const std::u16string &str) {
   return std::move(r);
   }
 
+std::string SystemAPI::toUtf8(const char16_t* b, const char16_t* e) {
+  using namespace utf8::unchecked;
+
+  std::string r;
+  utf16to8( b,e, std::back_inserter(r) );
+
+  return std::move(r);
+  }
+
+
 std::u16string SystemAPI::toUtf16(const std::string &str) {
   using namespace utf8::unchecked;
 
   std::u16string r;
   utf8to16( str.begin(), str.end(), std::back_inserter(r) );
+
+  return std::move(r);
+  }
+
+std::u16string SystemAPI::toUtf16(const char *b, const char *e) {
+  using namespace utf8::unchecked;
+
+  std::u16string r;
+  utf8to16( b, e, std::back_inserter(r) );
 
   return std::move(r);
   }
