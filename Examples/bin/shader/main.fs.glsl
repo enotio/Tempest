@@ -39,7 +39,8 @@ float shadowVal( vec2 ddx ){
   bool border = ( 0.0<tc.x && tc.x<1.0 &&
                   0.0<tc.y && tc.y<1.0 );
 
-  return border ? step(shPosition.z, sh.r/sh.g+0.001):1.0;
+  //return sh.r/sh.g - shPosition.z;
+  return border ? (1.0-step(-shPosition.z, sh.r/sh.g-0.001)) : 1.0;
   }
 
 float shadowDiff(){
@@ -84,7 +85,7 @@ vec4 shPass(){
   vec3 x =  pos.xyz/pos.w;
   x.xy = x.xy*0.5 + vec2(0.5);
 
-  return vec4( pos.z, pos.w, 0.0, 0.0 );
+  return vec4( -pos.z, pos.w, 0.0, 0.0 );
   }
 
 vec3 colorDiff(){
@@ -125,7 +126,7 @@ vec4 rsm(){
 
   for( int i=-n; i<=n; ++i )
     for( int r=-n; r<=n; ++r ){
-      vec2 crd = tc+vec2(i,r)*0.015;
+      vec2 crd = tc+vec2(i,r)*0.02;
       nx  = texture2D( rsmNormal, crd );
       px  = reconstructPos( crd*2.0-vec2(1.0), nx.w);
       d   = ( curPos-px );
@@ -144,10 +145,11 @@ vec4 rsm(){
 #endif
 
 vec3 phong( float sh ){
+  float ablimient = 0.3;
 #ifndef emissionv
-  return vec3( light()*sh )*0.7 + 0.3;
+  return vec3( light()*sh )*0.7;// + ablimient;
 #else
-  return vec3( mix( light()*sh, 1.0, emissionv) )*0.7 + 0.3;
+  return vec3( mix( light()*sh, 1.0, emissionv) );// + ablimient;
 #endif
   }
 

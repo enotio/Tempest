@@ -80,7 +80,7 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
       }
 
     if( id==12 ){ // floor
-      mat.color   = Color(0.25);
+      mat.color   = Color(0.65);
       mat.diffuse = texture;
       mat.shaderType = Material::Main;
       }
@@ -327,7 +327,7 @@ void MainWindow::renderShadow( ProgramObject& shadow,
 
   sh = ltexHolder.create(smSz, smSz, Texture2d::Format::RGB10_A2);
   Texture2d::Sampler sm;
-  sm.setClamping( Texture2d::ClampMode::ClampToBorder );
+  sm.setClamping( Texture2d::ClampMode::ClampToEdge );
   sh.setSampler(sm);
 
   RenderState st;
@@ -337,7 +337,7 @@ void MainWindow::renderShadow( ProgramObject& shadow,
   device.setRenderState(st);
 
   device.beginPaint( sh, depth);
-  device.clear( inv?Color(1.0):Color(0.0), 1.0 );
+  device.clear( inv?Color(0.0):Color(0.0), 1.0 );
   for( size_t i=0; i<objects.size(); ++i ){
     SceneObject& obj = objects[i];
 
@@ -360,7 +360,7 @@ void MainWindow::renderShadow( Texture2d* sh, int cnt,
   for( int i=0; i<cnt; ++i ){
     sh[i] = ltexHolder.create(smSz, smSz, Texture2d::Format::RGB10_A2);
     Texture2d::Sampler sm;
-    sm.setClamping( Texture2d::ClampMode::ClampToBorder );
+    sm.setClamping( Texture2d::ClampMode::ClampToEdge );
     sh[i].setSampler(sm);
     }
 
@@ -372,7 +372,8 @@ void MainWindow::renderShadow( Texture2d* sh, int cnt,
   for( size_t i=0; i<objects.size(); ++i ){
     SceneObject& obj = objects[i];
 
-    if( obj.material().shaderType != Material::Emission ){
+    if( obj.material().shaderType != Material::Emission &&
+        obj.material().shaderType != Material::Transparent ){
       setShaderConstants( obj, gbuf );
       device.draw( obj, gbuf );
       }
@@ -394,7 +395,7 @@ void MainWindow::render() {
     return;
 
   Shadow sh;
-  renderShadow(shadow, sh.sm, sh.depth, true, 1024 );
+  renderShadow( shadow, sh.sm, sh.depth, true, 1024 );
   //sh.sm = distorsion( sh.sm, sh.depth, shadow_refract);
 
   setupLigting( scene, gbuf, sh, true );
@@ -403,13 +404,14 @@ void MainWindow::render() {
 
   mainPasss( sh );
 
-/*
-  device.beginPaint();
-  device.clear( Color(0.0), 1.0 );
-  blt.fs.setUniform("texture", sh.rsm[0]);
-  device.drawFullScreenQuad( blt );
-  device.endPaint();
-*/
+  if( 0 ){
+    device.beginPaint();
+    device.clear( Color(0.0), 1.0 );
+    blt.fs.setUniform("texture", sh.rsm[0]);
+    blt.fs.setUniform("texture", sh.sm );
+    device.drawFullScreenQuad( blt );
+    device.endPaint();
+    }
 
   device.present();
   }
@@ -662,24 +664,36 @@ void MainWindow::getLightDir(float d[], const Matrix4x4& m ) {
   }
 
 Matrix4x4 MainWindow::shadowMatrix(){
-  float d[3];
-  Matrix4x4 m;
-  m.identity();
-  getLightDir( d, m );
+  float dir[3];
+  getLightDir( dir, Matrix4x4() );
 
-  float z = 0.004*sqrt(zoom/0.01);
-  for( int i=0; i<3; ++i ){
-    d[i] *= z;
-    }
+  const Camera& c = (const Camera&)scene.camera();
+  float s0 = 0.05,
+        s  = 0.005,//0.05*pow( 0.25*c.zoom(), 1.0/3.0),
+        h  = 0.25*s0,
+        x  = -s*c.x(), y = -s*c.y(), z = h + (c.z()+1)*h;
 
-  Matrix4x4 mx = {
-      z,    0,  d[0],   0,
-      0,    z,  d[1],   0,
-      0,    0, -d[2],   1,
-      0,    0,     0,   1
+  dir[0]*=s;
+  dir[1]*=s;
+
+  float d[4][4] = {
+    { s,  0,  0,  0 },
+    { 0,  s,  0,  0 },
+    { dir[0], dir[1], h,  0 },
+    { x,  y,  -z,  1 }
     };
 
-  return mx;
+  Matrix4x4 m = Matrix4x4( &d[0][0] );
+  Matrix4x4 proj;
+
+  //float k = std::min( rtSize.w, rtSize.h );
+  //proj.scale( k/rtSize.w, k/rtSize.h, 1 );
+
+  //proj.rotate( c.spinX(), 0, 0, 1 );
+
+  proj.mul( m );
+
+  return proj;
   }
 
 void MainWindow::setShadowConstants(ProgramObject &shader) {
