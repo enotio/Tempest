@@ -17,6 +17,7 @@ using namespace Tempest;
 #include <GLES/gl.h>
 
 #include <pthread.h>
+#include <errno.h>
 #include <unistd.h>
 #include <sys/stat.h>
 
@@ -118,6 +119,18 @@ static struct Android{
     };
 
   std::vector<Message> msg;
+
+  static int thread_create( pthread_t *thread, const pthread_attr_t *attr,
+                            void *(*start_routine) (void *), void *arg ){
+    int ret = pthread_create(thread, attr, start_routine, arg);
+
+    while( ret==EAGAIN ){
+      Application::sleep(100);
+      ret=pthread_create(thread, attr, start_routine, arg);
+      }
+
+    return ret;
+    }
 
   void pushMsg( const Message& m ){
     Guard g( appMutex );
@@ -998,8 +1011,9 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject /*obj*/, jobject sur
         SystemAPI::activateEvent( android.wnd, android.window!=0);
       }
 
-    if( android.mainThread==0 )
-      pthread_create(&android.mainThread, 0, tempestMainFunc, 0);    
+    if( android.mainThread==0 ){
+      android.thread_create(&android.mainThread, 0, tempestMainFunc, 0);
+      }
     } else {
     Log(Log::Info) << "Releasing window";
     {
