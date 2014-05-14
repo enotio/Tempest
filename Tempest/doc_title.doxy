@@ -1,0 +1,22 @@
+/*! \mainpage Crossplatform 3d engine.
+ *
+ * \section intro_sec Introduction
+ *
+ * This is the introduction.
+ * \section platforms_sec Supported platforms and API:
+ *
+ * Windows: OpenGL2/GLSL, DirectX9/HLSL, DirectX9/Cg
+ * Android: OpenGLES2/GLSL
+ *
+ * \section install_sec Installation
+ *
+ * \subsection step1 Step 1: Opening the box
+ *
+ * etc...
+ *\example Cube/main.cpp
+ *\example Cube/mainwindow.h
+ *\example Cube/mainwindow.cpp
+ *\example Painting2d/main.cpp
+ *\example Painting2d/mainwindow.h
+ *\example Painting2d/mainwindow.cpp
+ */
