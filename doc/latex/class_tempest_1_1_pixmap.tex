@@ -1,0 +1,132 @@
+\hypertarget{class_tempest_1_1_pixmap}{\section{Tempest\+:\+:Pixmap Class Reference}
+\label{class_tempest_1_1_pixmap}\index{Tempest\+::\+Pixmap@{Tempest\+::\+Pixmap}}
+}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_tempest_1_1_pixmap_1_1_img_info}{Img\+Info}
+\item 
+struct \hyperlink{struct_pixmap_1_1_mem_pool}{Mem\+Pool}
+\item 
+struct \hyperlink{struct_tempest_1_1_pixmap_1_1_pixel}{Pixel}
+\end{DoxyCompactItemize}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_pixmap_aff6e4cb1e57c2eaf87520f4f8b87ebea}{enum {\bfseries Format} \{ \\*
+{\bfseries Format\+\_\+\+R\+G\+B}, 
+{\bfseries Format\+\_\+\+R\+G\+B\+A}, 
+{\bfseries Format\+\_\+\+D\+X\+T1}, 
+{\bfseries Format\+\_\+\+D\+X\+T3}, 
+\\*
+{\bfseries Format\+\_\+\+D\+X\+T5}, 
+{\bfseries Format\+\_\+\+E\+T\+C1\+\_\+\+R\+G\+B8}, 
+{\bfseries Format\+\_\+\+User} = 1024
+ \}}\label{class_tempest_1_1_pixmap_aff6e4cb1e57c2eaf87520f4f8b87ebea}
+
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a2a47a698020acbe0632280e47b6cf551}{{\bfseries Pixmap} (const std\+::string \&p)}\label{class_tempest_1_1_pixmap_a2a47a698020acbe0632280e47b6cf551}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a4303f9f7ecd3b16e5c3bd42154b7c447}{{\bfseries Pixmap} (const std\+::u16string \&p)}\label{class_tempest_1_1_pixmap_a4303f9f7ecd3b16e5c3bd42154b7c447}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a051cd017b7ff8ea9ba94ffc4dfd4ebe4}{{\bfseries Pixmap} (int w, int h, bool alpha)}\label{class_tempest_1_1_pixmap_a051cd017b7ff8ea9ba94ffc4dfd4ebe4}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a7d6d75bff92f9cf763e76641b0ef0568}{{\bfseries Pixmap} (const \hyperlink{class_tempest_1_1_pixmap}{Pixmap} \&p)}\label{class_tempest_1_1_pixmap_a7d6d75bff92f9cf763e76641b0ef0568}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a9bafab34da8ac8fa09616865b10cb9d8}{\hyperlink{class_tempest_1_1_pixmap}{Pixmap} \& {\bfseries operator=} (const \hyperlink{class_tempest_1_1_pixmap}{Pixmap} \&p)}\label{class_tempest_1_1_pixmap_a9bafab34da8ac8fa09616865b10cb9d8}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a9325328c1062c806e07999485efa10f5}{bool {\bfseries load} (const std\+::u16string \&f)}\label{class_tempest_1_1_pixmap_a9325328c1062c806e07999485efa10f5}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_ac3ac646769688efb46dff2e3b894bfba}{bool {\bfseries save} (const std\+::u16string \&f) const }\label{class_tempest_1_1_pixmap_ac3ac646769688efb46dff2e3b894bfba}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a0313f9d7401122aae5c6b73efc8f317c}{bool {\bfseries load} (const std\+::string \&f)}\label{class_tempest_1_1_pixmap_a0313f9d7401122aae5c6b73efc8f317c}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_ae2454067ffd2511e74d486c96956146c}{bool {\bfseries save} (const std\+::string \&f) const }\label{class_tempest_1_1_pixmap_ae2454067ffd2511e74d486c96956146c}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_ad2cb21ca4302d3fbc9f916ac2bafa575}{bool {\bfseries load} (const char $\ast$f)}\label{class_tempest_1_1_pixmap_ad2cb21ca4302d3fbc9f916ac2bafa575}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a05b90216ba870ab6ce88a25e7a56381f}{bool {\bfseries save} (const char $\ast$f) const }\label{class_tempest_1_1_pixmap_a05b90216ba870ab6ce88a25e7a56381f}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_aba81d08131ec82c32195380266601881}{bool {\bfseries load} (const char16\+\_\+t $\ast$f)}\label{class_tempest_1_1_pixmap_aba81d08131ec82c32195380266601881}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a7aeb1aa1fab3f70eea035eeafa0ad10f}{bool {\bfseries save} (const char16\+\_\+t $\ast$f) const }\label{class_tempest_1_1_pixmap_a7aeb1aa1fab3f70eea035eeafa0ad10f}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a8ac3fda5c5c8833b749d01c5ffb307b8}{bool {\bfseries load} (\hyperlink{class_tempest_1_1_i_device}{I\+Device} \&f)}\label{class_tempest_1_1_pixmap_a8ac3fda5c5c8833b749d01c5ffb307b8}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a2d8644fe24ed126911608cecb90be7fb}{bool {\bfseries save} (\hyperlink{class_tempest_1_1_o_device}{O\+Device} \&f) const }\label{class_tempest_1_1_pixmap_a2d8644fe24ed126911608cecb90be7fb}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a06012fc215706e4e661cf3ef00a9a8df}{int {\bfseries width} () const }\label{class_tempest_1_1_pixmap_a06012fc215706e4e661cf3ef00a9a8df}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a8139267cb4d99b43c3a54b6f5c69076d}{int {\bfseries height} () const }\label{class_tempest_1_1_pixmap_a8139267cb4d99b43c3a54b6f5c69076d}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a22a74083d1eed19b7cddc79de01f586c}{\hyperlink{struct_tempest_1_1_size}{Size} {\bfseries size} () const }\label{class_tempest_1_1_pixmap_a22a74083d1eed19b7cddc79de01f586c}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a63895b7ef4cd4960563d76694d84d5b4}{bool {\bfseries is\+Empty} () const }\label{class_tempest_1_1_pixmap_a63895b7ef4cd4960563d76694d84d5b4}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a632dc4b21236a95579927b2bf6ccb678}{int {\bfseries mips\+Count} () const }\label{class_tempest_1_1_pixmap_a632dc4b21236a95579927b2bf6ccb678}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a3f72ee075f7fd67eb7f40347f3290d7e}{void {\bfseries downsample} ()}\label{class_tempest_1_1_pixmap_a3f72ee075f7fd67eb7f40347f3290d7e}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_ae74e78a8d066ed8f776f37e70898e2ee}{void {\bfseries to\+P\+O\+T} (int max\+Size)}\label{class_tempest_1_1_pixmap_ae74e78a8d066ed8f776f37e70898e2ee}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a63a07e6ada9e24a0ec1ef3fda2d84dab}{const unsigned char $\ast$ {\bfseries const\+\_\+data} () const }\label{class_tempest_1_1_pixmap_a63a07e6ada9e24a0ec1ef3fda2d84dab}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_acecf0c9cf9372639a4f446576e768046}{void {\bfseries fill} (const \hyperlink{struct_tempest_1_1_pixmap_1_1_pixel}{Pixel} \&p)}\label{class_tempest_1_1_pixmap_acecf0c9cf9372639a4f446576e768046}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a9ce41d3167b07991d7fcb64cdccaef34}{\hyperlink{struct_tempest_1_1_pixmap_1_1_pixel}{Pixel} {\bfseries at} (int x, int y) const }\label{class_tempest_1_1_pixmap_a9ce41d3167b07991d7fcb64cdccaef34}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a655a08ff819b811d41020caeb59295a3}{void {\bfseries set} (int x, int y, const \hyperlink{class_tempest_1_1_color}{Color} \&p)}\label{class_tempest_1_1_pixmap_a655a08ff819b811d41020caeb59295a3}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a67293a67f7d86a0f22a31c7342295111}{void {\bfseries set} (int x, int y, const \hyperlink{struct_tempest_1_1_pixmap_1_1_pixel}{Pixel} \&p)}\label{class_tempest_1_1_pixmap_a67293a67f7d86a0f22a31c7342295111}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a0367f2e179d2b9d87a9b0a798592aa76}{bool {\bfseries has\+Alpha} () const }\label{class_tempest_1_1_pixmap_a0367f2e179d2b9d87a9b0a798592aa76}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_a823dfb258d3990c44b64a1cd900370bc}{Format {\bfseries format} () const }\label{class_tempest_1_1_pixmap_a823dfb258d3990c44b64a1cd900370bc}
+
+\item 
+\hypertarget{class_tempest_1_1_pixmap_af066c23fdf752a5b5caeb0bc7aec3410}{void {\bfseries set\+Format} (Format f)}\label{class_tempest_1_1_pixmap_af066c23fdf752a5b5caeb0bc7aec3410}
+
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_pixmap_ae9157eb4124a780977e1c8b2d9c6a40e}{class {\bfseries Pix\+Editor}}\label{class_tempest_1_1_pixmap_ae9157eb4124a780977e1c8b2d9c6a40e}
+
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+core/wrappers/pixmap.\+h\item 
+core/wrappers/pixmap.\+cpp\end{DoxyCompactItemize}

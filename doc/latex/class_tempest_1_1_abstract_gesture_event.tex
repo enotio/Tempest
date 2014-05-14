@@ -1,0 +1,64 @@
+\hypertarget{class_tempest_1_1_abstract_gesture_event}{\section{Tempest\+:\+:Abstract\+Gesture\+Event Class Reference}
+\label{class_tempest_1_1_abstract_gesture_event}\index{Tempest\+::\+Abstract\+Gesture\+Event@{Tempest\+::\+Abstract\+Gesture\+Event}}
+}
+Inheritance diagram for Tempest\+:\+:Abstract\+Gesture\+Event\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_tempest_1_1_abstract_gesture_event}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_abstract_gesture_event_a0811942a3545cccda892c3e3bcbd767f}{enum {\bfseries Gesture\+Type} \{ {\bfseries gt\+None} = 0, 
+{\bfseries gt\+Drag\+Gesture}, 
+{\bfseries gt\+User} = 1024
+ \}}\label{class_tempest_1_1_abstract_gesture_event_a0811942a3545cccda892c3e3bcbd767f}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_gesture_event_a5043ef1de12eae615db6bc57dc914c19}{enum {\bfseries State} \{ {\bfseries Gesture\+Started}, 
+{\bfseries Gesture\+Updated}, 
+{\bfseries Gesture\+Finished}, 
+{\bfseries Gesture\+Canceled}
+ \}}\label{class_tempest_1_1_abstract_gesture_event_a5043ef1de12eae615db6bc57dc914c19}
+
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_abstract_gesture_event_aac69fff05d2516183e4135022051ee50}{const \hyperlink{struct_tempest_1_1_point}{Point} \& {\bfseries hot\+Spot} () const }\label{class_tempest_1_1_abstract_gesture_event_aac69fff05d2516183e4135022051ee50}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_gesture_event_a9a8a21cfb5f828c1528ea41f6627f3b9}{void {\bfseries set\+Hot\+Spot} (const \hyperlink{struct_tempest_1_1_point}{Point} \&h)}\label{class_tempest_1_1_abstract_gesture_event_a9a8a21cfb5f828c1528ea41f6627f3b9}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_gesture_event_a87832a01ae66366d02767873ec57b20a}{Gesture\+Type {\bfseries gesture\+Type} () const }\label{class_tempest_1_1_abstract_gesture_event_a87832a01ae66366d02767873ec57b20a}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_gesture_event_aa0c2015baf132350fe9a151fd6db808b}{State {\bfseries state} () const }\label{class_tempest_1_1_abstract_gesture_event_aa0c2015baf132350fe9a151fd6db808b}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_gesture_event_a5a1f63c60f6d7af665b988c240304554}{\hyperlink{class_tempest_1_1_gesture_recognizer}{Gesture\+Recognizer} \& {\bfseries owner} ()}\label{class_tempest_1_1_abstract_gesture_event_a5a1f63c60f6d7af665b988c240304554}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_gesture_event_a9386e2aa1101777ed025f475be8f486c}{const \hyperlink{class_tempest_1_1_gesture_recognizer}{Gesture\+Recognizer} \& {\bfseries owner} () const }\label{class_tempest_1_1_abstract_gesture_event_a9386e2aa1101777ed025f475be8f486c}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_abstract_gesture_event_a3f3fa312a143aa76066a58f2b7472196}{{\bfseries Abstract\+Gesture\+Event} (\hyperlink{class_tempest_1_1_gesture_recognizer}{Gesture\+Recognizer} $\ast$owner)}\label{class_tempest_1_1_abstract_gesture_event_a3f3fa312a143aa76066a58f2b7472196}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_gesture_event_a19c364480a3a7cc38eacc5f4a2c69b58}{void {\bfseries set\+State} (State s)}\label{class_tempest_1_1_abstract_gesture_event_a19c364480a3a7cc38eacc5f4a2c69b58}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_gesture_event_a274dfad490043c6bcaa84697545f1f69}{void {\bfseries set\+Gesture\+Type} (Gesture\+Type t)}\label{class_tempest_1_1_abstract_gesture_event_a274dfad490043c6bcaa84697545f1f69}
+
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+ui/event.\+h\item 
+ui/event.\+cpp\end{DoxyCompactItemize}

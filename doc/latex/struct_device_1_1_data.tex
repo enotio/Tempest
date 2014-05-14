@@ -1,0 +1,127 @@
+\hypertarget{struct_device_1_1_data}{\section{Tempest\+:\+:Device\+:\+:Data Struct Reference}
+\label{struct_device_1_1_data}\index{Tempest\+::\+Device\+::\+Data@{Tempest\+::\+Device\+::\+Data}}
+}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_device_1_1_data_1_1_alloc_count}{Alloc\+Count}
+\item 
+struct \hyperlink{struct_device_1_1_data_1_1_begin_paint_arg}{Begin\+Paint\+Arg}
+\item 
+struct \hyperlink{struct_device_1_1_data_1_1_dec}{Dec}
+\item 
+struct \hyperlink{struct_device_1_1_data_1_1_quad_vertex}{Quad\+Vertex}
+\end{DoxyCompactItemize}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{struct_device_1_1_data_a003eff2609adc66b946229162ce8812c}{typedef std\+::unordered\+\_\+set\\*
+$<$ \hyperlink{class_tempest_1_1_abstract_holder_base}{Abstract\+Holder\+Base} $\ast$ $>$ {\bfseries Holders}}\label{struct_device_1_1_data_a003eff2609adc66b946229162ce8812c}
+
+\item 
+\hypertarget{struct_device_1_1_data_a6e96dd87468a2eebcf843aa5e6fdb7a7}{typedef Holders\+::iterator {\bfseries H\+Iterator}}\label{struct_device_1_1_data_a6e96dd87468a2eebcf843aa5e6fdb7a7}
+
+\item 
+\hypertarget{struct_device_1_1_data_af7fcf104f7c33515279dbcb7784c33d8}{typedef std\+::set\\*
+$<$ \hyperlink{class_tempest_1_1_vertex_declaration}{Vertex\+Declaration} $\ast$ $>$ {\bfseries Declarations}}\label{struct_device_1_1_data_af7fcf104f7c33515279dbcb7784c33d8}
+
+\item 
+\hypertarget{struct_device_1_1_data_a8e72f55d04cc7bfeef27eddf8a6a75e8}{typedef Declarations\+::iterator {\bfseries V\+D\+Iterator}}\label{struct_device_1_1_data_a8e72f55d04cc7bfeef27eddf8a6a75e8}
+
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{struct_device_1_1_data_aa2b8aac2435adca7aba3479a31346cc3}{void {\bfseries add} (\hyperlink{class_tempest_1_1_graphics_subsystem}{Graphics\+Subsystem} $\ast$s)}\label{struct_device_1_1_data_aa2b8aac2435adca7aba3479a31346cc3}
+
+\item 
+\hypertarget{struct_device_1_1_data_a46741e251155850df4cc591bcda2d619}{void {\bfseries del} (\hyperlink{class_tempest_1_1_graphics_subsystem}{Graphics\+Subsystem} $\ast$s)}\label{struct_device_1_1_data_a46741e251155850df4cc591bcda2d619}
+
+\item 
+\hypertarget{struct_device_1_1_data_a1002fd08301ce54d08a823c1357ae1f8}{void {\bfseries event} (const \hyperlink{struct_tempest_1_1_graphics_subsystem_1_1_event}{Graphics\+Subsystem\+::\+Event} \&e)}\label{struct_device_1_1_data_a1002fd08301ce54d08a823c1357ae1f8}
+
+\item 
+\hypertarget{struct_device_1_1_data_a324746ed2d5cc66d8e673668f443ab15}{Abstract\+A\+P\+I\+::\+Vertex\+Decl $\ast$ {\bfseries create\+Decl} (const \hyperlink{class_tempest_1_1_vertex_declaration_1_1_declarator}{Vertex\+Declaration\+::\+Declarator} \&d)}\label{struct_device_1_1_data_a324746ed2d5cc66d8e673668f443ab15}
+
+\item 
+\hypertarget{struct_device_1_1_data_ab717aec0d0f630f88222a16f1bc7937f}{void {\bfseries add\+Decl} (const \hyperlink{class_tempest_1_1_vertex_declaration_1_1_declarator}{Vertex\+Declaration\+::\+Declarator} \&de, Abstract\+A\+P\+I\+::\+Vertex\+Decl $\ast$v)}\label{struct_device_1_1_data_ab717aec0d0f630f88222a16f1bc7937f}
+
+\item 
+\hypertarget{struct_device_1_1_data_a25d5564599bce447177d95889c814f3b}{bool {\bfseries delete\+Decl} (Abstract\+A\+P\+I\+::\+Vertex\+Decl $\ast$v)}\label{struct_device_1_1_data_a25d5564599bce447177d95889c814f3b}
+
+\item 
+\hypertarget{struct_device_1_1_data_ae8a75b07129d898605c4687f74aa28cd}{{\footnotesize template$<$class... Args$>$ }\\Abstract\+A\+P\+I\+::\+Texture $\ast$ {\bfseries create\+Texture} (const \hyperlink{class_tempest_1_1_abstract_a_p_i}{Abstract\+A\+P\+I} \&api, Abstract\+A\+P\+I\+::\+Texture $\ast$(Abstract\+A\+P\+I\+::$\ast$c)(Abstract\+A\+P\+I\+::\+Device $\ast$impl, const \hyperlink{class_tempest_1_1_pixmap}{Pixmap} \&p, Args...) const, \hyperlink{class_tempest_1_1_device}{Device} \&dev, Abstract\+A\+P\+I\+::\+Device $\ast$impl, const \hyperlink{class_tempest_1_1_pixmap}{Pixmap} \&p, Args \&...args)}\label{struct_device_1_1_data_ae8a75b07129d898605c4687f74aa28cd}
+
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{struct_device_1_1_data_a281b67b4d9c5a973f30e60f429daa9b3}{Holders {\bfseries holders}}\label{struct_device_1_1_data_a281b67b4d9c5a973f30e60f429daa9b3}
+
+\item 
+\hypertarget{struct_device_1_1_data_aaaaca4f0981dfbc8ab557c7b6a2ef1ce}{\hyperlink{struct_tempest_1_1_abstract_a_p_i_1_1_options}{Device\+::\+Options} {\bfseries actual\+Options}}\label{struct_device_1_1_data_aaaaca4f0981dfbc8ab557c7b6a2ef1ce}
+
+\item 
+\hypertarget{struct_device_1_1_data_a8643fc54059b83a0b0ebfe8927fd87ea}{Declarations {\bfseries declarations}}\label{struct_device_1_1_data_a8643fc54059b83a0b0ebfe8927fd87ea}
+
+\item 
+\hypertarget{struct_device_1_1_data_a0d980eb5c848d17fbc02d36577e82c5d}{Tempest\+::\+Abstract\+A\+P\+I\+::\+Std\+D\+S\+Surface $\ast$ {\bfseries depth\+Stencil}}\label{struct_device_1_1_data_a0d980eb5c848d17fbc02d36577e82c5d}
+
+\item 
+\hypertarget{struct_device_1_1_data_a204be360486d42c5ce69c03e1a90ecb5}{\begin{tabbing}
+xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=\kill
+struct \{\\
+\hypertarget{struct_device_1_1_data_1_1@0_ae716ea3fedc7ae5c995723eb87b2edcd}{\>AbstractAPI::VertexBuffer $\ast$ {\bfseries vbo}\\
+\hypertarget{struct_device_1_1_data_1_1@0_a5cf6055ff5dc958f4ef9d92e08478b47}{\>int {\bfseries vboSize}\\
+\hypertarget{struct_device_1_1_data_1_1@0_a79afbc23178033e6fabfc9867ce541a9}{\>AbstractAPI::IndexBuffer $\ast$ {\bfseries ibo}\\
+\} {\bfseries cash}}\label{struct_device_1_1_data_a204be360486d42c5ce69c03e1a90ecb5}
+\\
+
+\end{tabbing}\item 
+\hypertarget{struct_device_1_1_data_a0995510bf95f04fbcd32a8ba693d20fc}{int {\bfseries mrt\+Size}}\label{struct_device_1_1_data_a0995510bf95f04fbcd32a8ba693d20fc}
+
+\item 
+\hypertarget{struct_device_1_1_data_a5780383912ab47eaa7257b4e9836fd8b}{bool {\bfseries is\+Lost}}\label{struct_device_1_1_data_a5780383912ab47eaa7257b4e9836fd8b}
+
+\item 
+\hypertarget{struct_device_1_1_data_a681b75334887a7c4f5603c836458805d}{bool {\bfseries is\+Paint\+Mode}}\label{struct_device_1_1_data_a681b75334887a7c4f5603c836458805d}
+
+\item 
+\hypertarget{struct_device_1_1_data_aa5ca3b9176acdf3c79f8cff5a9e68b23}{void $\ast$ {\bfseries window\+Hwnd}}\label{struct_device_1_1_data_aa5ca3b9176acdf3c79f8cff5a9e68b23}
+
+\item 
+\hypertarget{struct_device_1_1_data_a7f0a869c94510cadfe0712f9d6afa2b7}{\hyperlink{struct_tempest_1_1_size}{Tempest\+::\+Size} {\bfseries view\+Port\+Size}}\label{struct_device_1_1_data_a7f0a869c94510cadfe0712f9d6afa2b7}
+
+\item 
+\hypertarget{struct_device_1_1_data_a931a3c6a403825ca9dcc71e7a4f83607}{\hyperlink{struct_device_1_1_data_1_1_begin_paint_arg}{Begin\+Paint\+Arg} {\bfseries paint\+Taget}}\label{struct_device_1_1_data_a931a3c6a403825ca9dcc71e7a4f83607}
+
+\item 
+\hypertarget{struct_device_1_1_data_a845fd3f000916f8812b6da84f14b0e9d}{\hyperlink{class_tempest_1_1_render_state}{Render\+State} {\bfseries rs}}\label{struct_device_1_1_data_a845fd3f000916f8812b6da84f14b0e9d}
+
+\item 
+\hypertarget{struct_device_1_1_data_a5f860a642fe2a8fb4612c942bf5a5f2a}{bool {\bfseries delayd\+R\+S}}\label{struct_device_1_1_data_a5f860a642fe2a8fb4612c942bf5a5f2a}
+
+\item 
+\hypertarget{struct_device_1_1_data_aaeda1b8cb41c4861e74057c978c9a6dd}{\hyperlink{class_tempest_1_1_vertex_declaration}{Tempest\+::\+Vertex\+Declaration} {\bfseries quad\+Decl}}\label{struct_device_1_1_data_aaeda1b8cb41c4861e74057c978c9a6dd}
+
+\item 
+\hypertarget{struct_device_1_1_data_a4f19c802ed6fa589d85f8b9a9eecef7a}{\hyperlink{class_tempest_1_1_vertex_buffer_holder}{Vertex\+Buffer\+Holder} $\ast$ {\bfseries vbo\+H}}\label{struct_device_1_1_data_a4f19c802ed6fa589d85f8b9a9eecef7a}
+
+\item 
+\hypertarget{struct_device_1_1_data_ad4467d35a4d0ab06bf6a64eb54a4329b}{\hyperlink{class_tempest_1_1_vertex_buffer}{Tempest\+::\+Vertex\+Buffer}$<$ \hyperlink{struct_device_1_1_data_1_1_quad_vertex}{Quad\+Vertex} $>$ {\bfseries quad}}\label{struct_device_1_1_data_ad4467d35a4d0ab06bf6a64eb54a4329b}
+
+\item 
+\hypertarget{struct_device_1_1_data_a8d4c22f0c53afa1bb6c948b55b002395}{std\+::vector$<$ \hyperlink{struct_device_1_1_data_1_1_dec}{Dec} $>$ {\bfseries decl\+Pool}}\label{struct_device_1_1_data_a8d4c22f0c53afa1bb6c948b55b002395}
+
+\item 
+\hypertarget{struct_device_1_1_data_ae42223c60a0bb18747a6d72163bb0008}{std\+::vector$<$ \hyperlink{class_tempest_1_1_graphics_subsystem}{Graphics\+Subsystem} $\ast$ $>$ {\bfseries sub\+Systems}}\label{struct_device_1_1_data_ae42223c60a0bb18747a6d72163bb0008}
+
+\item 
+\hypertarget{struct_device_1_1_data_a92fd578381ccfd7657d4bd78e2d34578}{struct \hyperlink{struct_device_1_1_data_1_1_alloc_count}{Device\+::\+Data\+::\+Alloc\+Count} {\bfseries allock\+Count}}\label{struct_device_1_1_data_a92fd578381ccfd7657d4bd78e2d34578}
+
+\end{DoxyCompactItemize}
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+core/device.\+cpp\end{DoxyCompactItemize}

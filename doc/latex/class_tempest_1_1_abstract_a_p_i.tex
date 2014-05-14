@@ -1,0 +1,249 @@
+\hypertarget{class_tempest_1_1_abstract_a_p_i}{\section{Tempest\+:\+:Abstract\+A\+P\+I Class Reference}
+\label{class_tempest_1_1_abstract_a_p_i}\index{Tempest\+::\+Abstract\+A\+P\+I@{Tempest\+::\+Abstract\+A\+P\+I}}
+}
+Inheritance diagram for Tempest\+:\+:Abstract\+A\+P\+I\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_tempest_1_1_abstract_a_p_i}
+\end{center}
+\end{figure}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_tempest_1_1_abstract_a_p_i_1_1_caps}{Caps}
+\item 
+struct \hyperlink{struct_tempest_1_1_abstract_a_p_i_1_1_options}{Options}
+\end{DoxyCompactItemize}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_aef6ae893cb6a74e488237d01bf87e1b3}{enum {\bfseries Primitive\+Type} \{ \\*
+{\bfseries Points} = 1, 
+{\bfseries Lines} = 2, 
+{\bfseries Lines\+Strip} = 3, 
+{\bfseries Triangle} = 4, 
+\\*
+{\bfseries Triangle\+Strip} = 5, 
+{\bfseries Triangle\+Fan} = 6, 
+{\bfseries last\+Primitive\+Type}
+ \}}\label{class_tempest_1_1_abstract_a_p_i_aef6ae893cb6a74e488237d01bf87e1b3}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ad8fd92988d12f1d30d4e86e2bf2c79be}{enum {\bfseries Texture\+Flag} \{ {\bfseries T\+F\+\_\+\+Inialized}
+ \}}\label{class_tempest_1_1_abstract_a_p_i_ad8fd92988d12f1d30d4e86e2bf2c79be}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_aab56c4529c001035167fd491b8ecf78e}{enum {\bfseries Buffer\+Flag} \{ {\bfseries B\+F\+\_\+\+No\+Flags} = 0, 
+{\bfseries B\+F\+\_\+\+No\+Readback} = 1
+ \}}\label{class_tempest_1_1_abstract_a_p_i_aab56c4529c001035167fd491b8ecf78e}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a7e6dc64a080b456af6599e71168d5797}{enum {\bfseries Buffer\+Usage} \{ {\bfseries B\+U\+\_\+\+Stream}, 
+{\bfseries B\+U\+\_\+\+Static}, 
+{\bfseries B\+U\+\_\+\+Dynamic}
+ \}}\label{class_tempest_1_1_abstract_a_p_i_a7e6dc64a080b456af6599e71168d5797}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a06f9ac3e2e0a44d7f68eb6256da854cd}{enum {\bfseries Swap\+Behavior} \{ {\bfseries S\+B\+\_\+\+Buffer\+Preserved} = 0, 
+{\bfseries S\+B\+\_\+\+Buffer\+Destroyed}
+ \}}\label{class_tempest_1_1_abstract_a_p_i_a06f9ac3e2e0a44d7f68eb6256da854cd}
+
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ae20a6283cdebdf7d18bced2545bce436}{virtual \hyperlink{struct_tempest_1_1_abstract_a_p_i_1_1_caps}{Caps} {\bfseries caps} (\hyperlink{class_tempest_1_1_device}{Device} $\ast$d) const =0}\label{class_tempest_1_1_abstract_a_p_i_ae20a6283cdebdf7d18bced2545bce436}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_aafc6504fc8feda65b8701f28e2cffe4d}{virtual std\+::string {\bfseries vendor} (Abstract\+A\+P\+I\+::\+Device $\ast$d) const =0}\label{class_tempest_1_1_abstract_a_p_i_aafc6504fc8feda65b8701f28e2cffe4d}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a2fd9c3d74ea1e5f9e7a6ed63de8cd486}{virtual std\+::string {\bfseries renderer} (Abstract\+A\+P\+I\+::\+Device $\ast$d) const =0}\label{class_tempest_1_1_abstract_a_p_i_a2fd9c3d74ea1e5f9e7a6ed63de8cd486}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a58aa6ddf621445ddc81c78efba3b0268}{virtual bool {\bfseries test\+Display\+Settings} (const \hyperlink{class_tempest_1_1_display_settings}{Display\+Settings} \&d) const }\label{class_tempest_1_1_abstract_a_p_i_a58aa6ddf621445ddc81c78efba3b0268}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_aa2701ff138a25d99dec5af40498e7c19}{bool {\bfseries set\+Display\+Settings} (const \hyperlink{class_tempest_1_1_display_settings}{Display\+Settings} \&d) const }\label{class_tempest_1_1_abstract_a_p_i_aa2701ff138a25d99dec5af40498e7c19}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ab35df327428760701a1cab83e818c40b}{virtual \hyperlink{class_tempest_1_1_device}{Device} $\ast$ {\bfseries create\+Device} (void $\ast$hwnd, const \hyperlink{struct_tempest_1_1_abstract_a_p_i_1_1_options}{Options} \&opt) const =0}\label{class_tempest_1_1_abstract_a_p_i_ab35df327428760701a1cab83e818c40b}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a7daa4b8a59155e343aed3fea2aad93e6}{virtual void {\bfseries delete\+Device} (\hyperlink{class_tempest_1_1_device}{Device} $\ast$d) const =0}\label{class_tempest_1_1_abstract_a_p_i_a7daa4b8a59155e343aed3fea2aad93e6}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_affd423de51d71fbfdad9e185272f9e8b}{virtual void {\bfseries clear} (Abstract\+A\+P\+I\+::\+Device $\ast$d, const \hyperlink{class_tempest_1_1_color}{Color} \&cl, float z, unsigned stencil) const =0}\label{class_tempest_1_1_abstract_a_p_i_affd423de51d71fbfdad9e185272f9e8b}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a2952dc6512930ecc5dc1261546e8b101}{virtual void {\bfseries clear} (Abstract\+A\+P\+I\+::\+Device $\ast$d, const \hyperlink{class_tempest_1_1_color}{Color} \&cl) const =0}\label{class_tempest_1_1_abstract_a_p_i_a2952dc6512930ecc5dc1261546e8b101}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ab42f66adfad57306230f650b258ec06b}{virtual void {\bfseries clear} (Abstract\+A\+P\+I\+::\+Device $\ast$d, const \hyperlink{class_tempest_1_1_color}{Color} \&cl, float z) const =0}\label{class_tempest_1_1_abstract_a_p_i_ab42f66adfad57306230f650b258ec06b}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a32bae4cb4727291d2efcffcebae18e23}{virtual void {\bfseries clear} (Abstract\+A\+P\+I\+::\+Device $\ast$d, float z, unsigned stencil) const =0}\label{class_tempest_1_1_abstract_a_p_i_a32bae4cb4727291d2efcffcebae18e23}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a185ee467c3ea79eaaa8eac19a86d3504}{virtual void {\bfseries clear\+Z} (Abstract\+A\+P\+I\+::\+Device $\ast$d, float z) const =0}\label{class_tempest_1_1_abstract_a_p_i_a185ee467c3ea79eaaa8eac19a86d3504}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ac17b047ae75ddabbbed0ee24546ae08f}{virtual void {\bfseries clear\+Stencil} (Abstract\+A\+P\+I\+::\+Device $\ast$d, unsigned stencil) const =0}\label{class_tempest_1_1_abstract_a_p_i_ac17b047ae75ddabbbed0ee24546ae08f}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a9451b56332bbba29a63034c5e7de1db0}{virtual void {\bfseries set\+Render\+State} (Abstract\+A\+P\+I\+::\+Device $\ast$d, const \hyperlink{class_tempest_1_1_render_state}{Render\+State} \&) const =0}\label{class_tempest_1_1_abstract_a_p_i_a9451b56332bbba29a63034c5e7de1db0}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_adfce57b87f21ddf5c862102c5602ad09}{virtual void {\bfseries begin\+Paint} (Abstract\+A\+P\+I\+::\+Device $\ast$d) const =0}\label{class_tempest_1_1_abstract_a_p_i_adfce57b87f21ddf5c862102c5602ad09}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a68d5d0f28e19f399c4a50c002e7fe2e6}{virtual void {\bfseries end\+Paint} (Abstract\+A\+P\+I\+::\+Device $\ast$d) const =0}\label{class_tempest_1_1_abstract_a_p_i_a68d5d0f28e19f399c4a50c002e7fe2e6}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a2a684662e079a18c988119c3f9d8189b}{virtual void {\bfseries set\+D\+S\+Surface\+Taget} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Texture $\ast$tx) const =0}\label{class_tempest_1_1_abstract_a_p_i_a2a684662e079a18c988119c3f9d8189b}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ade18acce678494f34261fb91c5853ade}{virtual void {\bfseries set\+D\+S\+Surface\+Taget} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Std\+D\+S\+Surface $\ast$tx) const =0}\label{class_tempest_1_1_abstract_a_p_i_ade18acce678494f34261fb91c5853ade}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_acb7d27fd6be139ccd83e4081e8fce27c}{virtual Abstract\+A\+P\+I\+::\+Std\+D\+S\+Surface $\ast$ {\bfseries get\+D\+S\+Surface\+Taget} (Abstract\+A\+P\+I\+::\+Device $\ast$d) const =0}\label{class_tempest_1_1_abstract_a_p_i_acb7d27fd6be139ccd83e4081e8fce27c}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_af4c9d074d3436de39d211595c9f6b9fc}{virtual void {\bfseries ret\+D\+S\+Surface\+Taget} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Std\+D\+S\+Surface $\ast$s) const =0}\label{class_tempest_1_1_abstract_a_p_i_af4c9d074d3436de39d211595c9f6b9fc}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a04ddc3f1f6d11d899f6c86761978e633}{virtual void {\bfseries set\+Render\+Taget} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Texture $\ast$tx, int mip, int mrt\+Slot) const =0}\label{class_tempest_1_1_abstract_a_p_i_a04ddc3f1f6d11d899f6c86761978e633}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a099c9cb9e0de13c7bfa052d4cf24ac08}{virtual void {\bfseries unset\+Render\+Tagets} (Abstract\+A\+P\+I\+::\+Device $\ast$d, int count) const =0}\label{class_tempest_1_1_abstract_a_p_i_a099c9cb9e0de13c7bfa052d4cf24ac08}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a664cfe6c07d3abaf67e2c46102f5092e}{virtual bool {\bfseries start\+Render} (Abstract\+A\+P\+I\+::\+Device $\ast$d, bool is\+Lost) const =0}\label{class_tempest_1_1_abstract_a_p_i_a664cfe6c07d3abaf67e2c46102f5092e}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a675fa685e3f5dac3596fe429417d6ed4}{virtual bool {\bfseries present} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Swap\+Behavior b) const =0}\label{class_tempest_1_1_abstract_a_p_i_a675fa685e3f5dac3596fe429417d6ed4}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a55827fb1eeea2c1e727b8119bc0d82d9}{virtual bool {\bfseries reset} (Abstract\+A\+P\+I\+::\+Device $\ast$d, void $\ast$hwnd, const \hyperlink{struct_tempest_1_1_abstract_a_p_i_1_1_options}{Options} \&opt) const =0}\label{class_tempest_1_1_abstract_a_p_i_a55827fb1eeea2c1e727b8119bc0d82d9}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ac4d98dc7f94caa3163971cc452df01f0}{virtual bool {\bfseries is\+Format\+Supported} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Pixmap\+::\+Format f) const =0}\label{class_tempest_1_1_abstract_a_p_i_ac4d98dc7f94caa3163971cc452df01f0}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ab03f7dda94ea39f2464766061988a339}{virtual Abstract\+A\+P\+I\+::\+Texture $\ast$ {\bfseries create\+Texture} (Abstract\+A\+P\+I\+::\+Device $\ast$d, const \hyperlink{class_tempest_1_1_pixmap}{Pixmap} \&p, bool mips, bool compress) const =0}\label{class_tempest_1_1_abstract_a_p_i_ab03f7dda94ea39f2464766061988a339}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_aaeaf86ad91427fd43f0a29f9863b11c8}{virtual Abstract\+A\+P\+I\+::\+Texture $\ast$ {\bfseries recreate\+Texture} (Abstract\+A\+P\+I\+::\+Device $\ast$d, const \hyperlink{class_tempest_1_1_pixmap}{Pixmap} \&p, bool mips, bool compress, Abstract\+A\+P\+I\+::\+Texture $\ast$t) const =0}\label{class_tempest_1_1_abstract_a_p_i_aaeaf86ad91427fd43f0a29f9863b11c8}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_af6d00c14576d566e9e2f80e1db55a75c}{virtual Abstract\+A\+P\+I\+::\+Texture $\ast$ {\bfseries create\+Texture} (Abstract\+A\+P\+I\+::\+Device $\ast$d, int w, int h, bool mips, \hyperlink{struct_tempest_1_1_abstract_texture_1_1_format_a231a1f516e53783bf72c713669b115b3}{Abstract\+Texture\+::\+Format\+::\+Type} f, Texture\+Usage usage) const =0}\label{class_tempest_1_1_abstract_a_p_i_af6d00c14576d566e9e2f80e1db55a75c}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ab1c23b369fce94a5fb658045336fbc54}{virtual Abstract\+A\+P\+I\+::\+Texture $\ast$ {\bfseries create\+Texture3d} (Abstract\+A\+P\+I\+::\+Device $\ast$d, int x, int y, int z, bool mips, \hyperlink{struct_tempest_1_1_abstract_texture_1_1_format_a231a1f516e53783bf72c713669b115b3}{Abstract\+Texture\+::\+Format\+::\+Type} f, Texture\+Usage usage, const char $\ast$data) const =0}\label{class_tempest_1_1_abstract_a_p_i_ab1c23b369fce94a5fb658045336fbc54}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ae88b1529a07bcfa94a0d6e250fc5a7c2}{virtual void {\bfseries generate\+Mipmaps} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Texture $\ast$t) const =0}\label{class_tempest_1_1_abstract_a_p_i_ae88b1529a07bcfa94a0d6e250fc5a7c2}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a21b87fc9351e1d1a245a3dca4ddfdf56}{virtual void {\bfseries delete\+Texture} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Texture $\ast$t) const =0}\label{class_tempest_1_1_abstract_a_p_i_a21b87fc9351e1d1a245a3dca4ddfdf56}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ad77c4a18ef0b9d404170205a26cc518f}{virtual void {\bfseries set\+Texture\+Flag} (Abstract\+A\+P\+I\+::\+Device $\ast$, Abstract\+A\+P\+I\+::\+Texture $\ast$, Texture\+Flag, bool) const }\label{class_tempest_1_1_abstract_a_p_i_ad77c4a18ef0b9d404170205a26cc518f}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a8d8f5921ef27bad80d461bec915bf147}{virtual Abstract\+A\+P\+I\+::\+Vertex\+Buffer $\ast$ {\bfseries create\+Vertex\+Buffer} (Abstract\+A\+P\+I\+::\+Device $\ast$d, size\+\_\+t size, size\+\_\+t el\+Size, Buffer\+Usage u) const =0}\label{class_tempest_1_1_abstract_a_p_i_a8d8f5921ef27bad80d461bec915bf147}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a798d51e0cc29fbe75bc129b56bfa8f98}{virtual Abstract\+A\+P\+I\+::\+Vertex\+Buffer $\ast$ {\bfseries create\+Vertex\+Buffer} (Abstract\+A\+P\+I\+::\+Device $\ast$d, size\+\_\+t size, size\+\_\+t el\+Size, const void $\ast$src, Buffer\+Usage u) const }\label{class_tempest_1_1_abstract_a_p_i_a798d51e0cc29fbe75bc129b56bfa8f98}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ae7a9f0e429269d59bba0d477af0f16bf}{virtual void {\bfseries delete\+Vertex\+Buffer} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Vertex\+Buffer $\ast$) const =0}\label{class_tempest_1_1_abstract_a_p_i_ae7a9f0e429269d59bba0d477af0f16bf}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a05d72cb753661c3ebdc77f5c96207f31}{virtual Abstract\+A\+P\+I\+::\+Index\+Buffer $\ast$ {\bfseries create\+Index\+Buffer} (Abstract\+A\+P\+I\+::\+Device $\ast$d, size\+\_\+t size, size\+\_\+t el\+Size, Buffer\+Usage u) const =0}\label{class_tempest_1_1_abstract_a_p_i_a05d72cb753661c3ebdc77f5c96207f31}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a77337d2b7c43b5f05416dbd40c29ec14}{virtual Abstract\+A\+P\+I\+::\+Index\+Buffer $\ast$ {\bfseries create\+Index\+Buffer} (Abstract\+A\+P\+I\+::\+Device $\ast$d, size\+\_\+t size, size\+\_\+t el\+Size, const void $\ast$src, Buffer\+Usage u) const }\label{class_tempest_1_1_abstract_a_p_i_a77337d2b7c43b5f05416dbd40c29ec14}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a8a92d0109a5db7f25a33bd01be7729ce}{virtual void {\bfseries delete\+Index\+Buffer} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Index\+Buffer $\ast$) const =0}\label{class_tempest_1_1_abstract_a_p_i_a8a92d0109a5db7f25a33bd01be7729ce}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a33c795515ca0bc6155a9121fc9801526}{virtual Abstract\+A\+P\+I\+::\+Vertex\+Decl $\ast$ {\bfseries create\+Vertex\+Decl} (Abstract\+A\+P\+I\+::\+Device $\ast$d, const \hyperlink{class_tempest_1_1_vertex_declaration_1_1_declarator}{Vertex\+Declaration\+::\+Declarator} \&de) const =0}\label{class_tempest_1_1_abstract_a_p_i_a33c795515ca0bc6155a9121fc9801526}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ae30afa9fe163d353e4a24d23e0ada367}{virtual void {\bfseries delete\+Vertex\+Decl} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Vertex\+Decl $\ast$) const =0}\label{class_tempest_1_1_abstract_a_p_i_ae30afa9fe163d353e4a24d23e0ada367}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_acccef1d3855bd5f091948e2e6a542549}{virtual void {\bfseries set\+Vertex\+Declaration} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Vertex\+Decl $\ast$) const =0}\label{class_tempest_1_1_abstract_a_p_i_acccef1d3855bd5f091948e2e6a542549}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a55d9204dc4d2c52a412be643b6453bbe}{virtual void $\ast$ {\bfseries lock\+Buffer} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Vertex\+Buffer $\ast$, unsigned offset, unsigned size) const =0}\label{class_tempest_1_1_abstract_a_p_i_a55d9204dc4d2c52a412be643b6453bbe}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a3471f33086243e0321fc7476c8810f2c}{virtual void {\bfseries unlock\+Buffer} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Vertex\+Buffer $\ast$) const =0}\label{class_tempest_1_1_abstract_a_p_i_a3471f33086243e0321fc7476c8810f2c}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ac747d2c83a5083ff3469e8e650a31d43}{virtual void $\ast$ {\bfseries lock\+Buffer} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Index\+Buffer $\ast$, unsigned offset, unsigned size) const =0}\label{class_tempest_1_1_abstract_a_p_i_ac747d2c83a5083ff3469e8e650a31d43}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a0f16d9a4d885dfc4e6dfeb2bc1c9b1e6}{virtual void {\bfseries unlock\+Buffer} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Index\+Buffer $\ast$) const =0}\label{class_tempest_1_1_abstract_a_p_i_a0f16d9a4d885dfc4e6dfeb2bc1c9b1e6}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_af9bec771be9a930e1d2ec3187d3cce52}{virtual void {\bfseries bind\+Vertex\+Buffer} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Vertex\+Buffer $\ast$, int vsize) const =0}\label{class_tempest_1_1_abstract_a_p_i_af9bec771be9a930e1d2ec3187d3cce52}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_abc16b469cb382c220f5b3b3d41b770ed}{virtual void {\bfseries bind\+Index\+Buffer} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Index\+Buffer $\ast$) const =0}\label{class_tempest_1_1_abstract_a_p_i_abc16b469cb382c220f5b3b3d41b770ed}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a5c44e8dc0dcd053136f12c0160a02b19}{virtual \hyperlink{class_tempest_1_1_abstract_shading_lang}{Abstract\+Shading\+Lang} $\ast$ {\bfseries create\+Shading\+Lang} (Abstract\+A\+P\+I\+::\+Device $\ast$d) const =0}\label{class_tempest_1_1_abstract_a_p_i_a5c44e8dc0dcd053136f12c0160a02b19}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a7c217892a2e80505ac1f9976dfcdeca5}{virtual void {\bfseries delete\+Shading\+Lang} (const \hyperlink{class_tempest_1_1_abstract_shading_lang}{Abstract\+Shading\+Lang} $\ast$l) const =0}\label{class_tempest_1_1_abstract_a_p_i_a7c217892a2e80505ac1f9976dfcdeca5}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a21ee70304424b733fc22d567d5fc2a8b}{virtual void {\bfseries draw} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Primitive\+Type t, int first\+Vertex, int p\+Count) const =0}\label{class_tempest_1_1_abstract_a_p_i_a21ee70304424b733fc22d567d5fc2a8b}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_afc4d33c0d4da947bc0c682c5348affad}{virtual void {\bfseries draw\+Indexed} (Abstract\+A\+P\+I\+::\+Device $\ast$d, Abstract\+A\+P\+I\+::\+Primitive\+Type t, int vbo\+Offset\+Index, int ibo\+Offset\+Index, int p\+Count) const =0}\label{class_tempest_1_1_abstract_a_p_i_afc4d33c0d4da947bc0c682c5348affad}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a2c5966f646e4a10c79d1d44bd84c786f}{virtual \hyperlink{struct_tempest_1_1_size}{Size} {\bfseries window\+Size} (\hyperlink{class_tempest_1_1_device}{Device} $\ast$dev) const =0}\label{class_tempest_1_1_abstract_a_p_i_a2c5966f646e4a10c79d1d44bd84c786f}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a7d0b1a35c0e21cd262cabfdeec7807ff}{virtual bool {\bfseries has\+Managed\+Storge} () const }\label{class_tempest_1_1_abstract_a_p_i_a7d0b1a35c0e21cd262cabfdeec7807ff}
+
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a8ed8829adee6a2d8288800b96e03e957}{static size\+\_\+t {\bfseries primitive\+Count} (size\+\_\+t vert, Primitive\+Type t)}\label{class_tempest_1_1_abstract_a_p_i_a8ed8829adee6a2d8288800b96e03e957}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a59a30e599f1401066525ba307725a35c}{static int {\bfseries mip\+Count} (int width, int height, int depth)}\label{class_tempest_1_1_abstract_a_p_i_a59a30e599f1401066525ba307725a35c}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a838e14dd3f0889fff2d19dd60dc7f273}{static int {\bfseries mip\+Count} (int width, int height)}\label{class_tempest_1_1_abstract_a_p_i_a838e14dd3f0889fff2d19dd60dc7f273}
+
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_a6df9a3a81de6826fbe00a27dd67156a8}{static int {\bfseries mip\+Count} (int width)}\label{class_tempest_1_1_abstract_a_p_i_a6df9a3a81de6826fbe00a27dd67156a8}
+
+\end{DoxyCompactItemize}
+\subsection*{Static Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_abstract_a_p_i_ac9197dbb6415bfe44eefaaedc3cb3ddf}{static int {\bfseries vertex\+Count} (Primitive\+Type t, int pcount)}\label{class_tempest_1_1_abstract_a_p_i_ac9197dbb6415bfe44eefaaedc3cb3ddf}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\begin{Desc}
+\item[Examples\+: ]\par
+\hyperlink{_cube_2mainwindow_8cpp-example}{Cube/mainwindow.\+cpp}, \hyperlink{_cube_2mainwindow_8h-example}{Cube/mainwindow.\+h}, \hyperlink{_painting2d_2mainwindow_8cpp-example}{Painting2d/mainwindow.\+cpp}, and \hyperlink{_painting2d_2mainwindow_8h-example}{Painting2d/mainwindow.\+h}.\end{Desc}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+core/abstractapi.\+h\item 
+core/abstractapi.\+cpp\end{DoxyCompactItemize}

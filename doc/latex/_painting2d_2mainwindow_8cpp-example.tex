@@ -1,0 +1,109 @@
+\hypertarget{_painting2d_2mainwindow_8cpp-example}{\section{Painting2d/mainwindow.\+cpp}
+}
+
+\begin{DoxyCodeInclude}
+\textcolor{preprocessor}{#include "mainwindow.h"}
+\textcolor{preprocessor}{#include "cube.h"}
+
+\textcolor{preprocessor}{#include <Tempest/Assert>}
+\textcolor{preprocessor}{#include <Tempest/RenderState>}
+\textcolor{preprocessor}{#include <Tempest/Painter>}
+
+\textcolor{keyword}{using namespace }Tempest;
+
+MainWindow::MainWindow(\hyperlink{class_tempest_1_1_abstract_a_p_i}{Tempest::AbstractAPI} &api)
+   :device( api, handle() ),
+    texHolder(device),
+    vboHolder(device),
+    iboHolder(device),
+    vsHolder (device),
+    fsHolder (device),
+    spHolder (texHolder),
+    uiRender ( vsHolder, fsHolder )
+    \{
+  zoom = 1;
+
+  vbo = vboHolder.load(quadVb, \textcolor{keyword}{sizeof}(quadVb)/\textcolor{keyword}{sizeof}(quadVb[0]));
+  ibo = iboHolder.load(quadId, \textcolor{keyword}{sizeof}(quadId)/\textcolor{keyword}{sizeof}(quadId[0]));
+
+  \hyperlink{class_tempest_1_1_vertex_declaration_1_1_declarator}{VertexDeclaration::Declarator} decl;
+  decl.add( Decl::float3, Usage::Position )
+      .add( Decl::float2, Usage::TexCoord );
+  vdecl = \hyperlink{class_tempest_1_1_vertex_declaration}{VertexDeclaration}(device, decl);
+
+  texture   = texHolder.load(\textcolor{stringliteral}{"data/texture.png"});
+
+  shader.vs = vsHolder.load(\textcolor{stringliteral}{"shader/basic.vs.glsl"});
+  shader.fs = fsHolder.load(\textcolor{stringliteral}{"shader/basic.fs.glsl"});
+
+  T\_ASSERT( shader.isValid() );  
+  \}
+
+\textcolor{keywordtype}{void} MainWindow::paintEvent(\hyperlink{class_tempest_1_1_paint_event}{PaintEvent} &e) \{
+  \hyperlink{class_tempest_1_1_painter}{Painter} p(e);
+
+  p.setTexture(texture);
+  p.drawRect( \hyperlink{struct_tempest_1_1_rect}{Rect}(0,0, 100, 100), texture.rect() );
+
+  p.setFont( \hyperlink{class_tempest_1_1_font}{Font}(\textcolor{stringliteral}{"data/arial"}, 16) );
+  p.drawText(100, 100, \textcolor{stringliteral}{"This is cat!"});
+  \}
+
+\textcolor{keywordtype}{void} MainWindow::mouseDownEvent(\hyperlink{class_tempest_1_1_mouse_event}{MouseEvent} &e) \{
+  mpos = e.pos();
+  \}
+
+\textcolor{keywordtype}{void} MainWindow::mouseDragEvent(\hyperlink{class_tempest_1_1_mouse_event}{MouseEvent} &e) \{
+  rotate += (e.pos()-mpos);
+  mpos = e.pos();
+  \}
+
+\textcolor{keywordtype}{void} MainWindow::mouseWheelEvent(\hyperlink{class_tempest_1_1_mouse_event}{MouseEvent} &e) \{
+  \textcolor{keywordflow}{if}( e.delta>0 )
+    zoom *= 1.1; \textcolor{keywordflow}{else}
+    zoom /= 1.1;
+  \}
+
+\textcolor{keywordtype}{void} MainWindow::render() \{
+  \textcolor{keywordflow}{if}( !device.startRender() )
+    \textcolor{keywordflow}{return};
+
+  uiRender.buildVbo(*\textcolor{keyword}{this}, vboHolder, iboHolder, spHolder );
+  device.clear( \hyperlink{class_tempest_1_1_color}{Color}(0,0,1), 1 );
+
+  device.beginPaint();
+  device.setRenderState( \hyperlink{class_tempest_1_1_render_state}{RenderState}() );
+
+  setupShaderConstants(shader);
+  device.drawIndexed( AbstractAPI::Triangle,
+                      shader, vdecl,
+                      vbo, ibo,
+                      0,0, ibo.size()/3 );
+  device.draw( uiRender );
+  device.endPaint();
+
+  device.present();
+  \}
+
+\textcolor{keywordtype}{void} MainWindow::resizeEvent( \hyperlink{class_tempest_1_1_size_event}{SizeEvent} & ) \{
+  device.reset();
+  \}
+
+\textcolor{keywordtype}{void} MainWindow::setupShaderConstants( \hyperlink{class_tempest_1_1_program_object}{ProgramObject} &sh ) \{
+  \hyperlink{class_tempest_1_1_matrix4x4}{Matrix4x4} mvpMatrix, projective, view;
+
+  projective.perspective( 45.0, (\textcolor{keywordtype}{float})w()/h(), 0.1, 100.0 );
+
+  view.translate(0,0,4);
+  view.rotate(rotate.y, 1, 0, 0);
+  view.rotate(rotate.x, 0, 1, 0);
+  view.scale(zoom);
+
+  mvpMatrix = projective;
+  mvpMatrix.mul(view);
+
+  sh.vs.setUniform(\textcolor{stringliteral}{"mvpMatrix"}, mvpMatrix);
+  sh.fs.setUniform(\textcolor{stringliteral}{"texture"},   texture  );
+  \}
+\end{DoxyCodeInclude}
+ 

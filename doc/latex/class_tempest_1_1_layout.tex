@@ -1,0 +1,87 @@
+\hypertarget{class_tempest_1_1_layout}{\section{Tempest\+:\+:Layout Class Reference}
+\label{class_tempest_1_1_layout}\index{Tempest\+::\+Layout@{Tempest\+::\+Layout}}
+}
+
+
+The \hyperlink{class_tempest_1_1_layout}{Layout} class is the base class of ui-\/geometry managers.  
+
+
+
+
+{\ttfamily \#include $<$layout.\+h$>$}
+
+Inheritance diagram for Tempest\+:\+:Layout\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_tempest_1_1_layout}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_layout_a29d7b2b1816bf008ba9ea3eda2725fda}{\hyperlink{class_tempest_1_1_widget}{Widget} $\ast$ {\bfseries owner} ()}\label{class_tempest_1_1_layout_a29d7b2b1816bf008ba9ea3eda2725fda}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_a444a047bb69354ec6f76264a9e31e04c}{const \hyperlink{class_tempest_1_1_widget}{Widget} $\ast$ {\bfseries owner} () const }\label{class_tempest_1_1_layout_a444a047bb69354ec6f76264a9e31e04c}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_aa3b2af0f1f32ed681e40215e3f48b283}{void {\bfseries add} (\hyperlink{class_tempest_1_1_widget}{Widget} $\ast$widget)}\label{class_tempest_1_1_layout_aa3b2af0f1f32ed681e40215e3f48b283}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_a2e30bb81cf8c464e6f1bda11fee2fdf4}{void {\bfseries del} (\hyperlink{class_tempest_1_1_widget}{Widget} $\ast$widget)}\label{class_tempest_1_1_layout_a2e30bb81cf8c464e6f1bda11fee2fdf4}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_a3b479d59cef4b31228d0ae0e7f446d07}{void {\bfseries remove\+All} ()}\label{class_tempest_1_1_layout_a3b479d59cef4b31228d0ae0e7f446d07}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_a8604c30ec4d0192d7535d0411f89b4fc}{\hyperlink{class_tempest_1_1_widget}{Widget} $\ast$ {\bfseries take} (\hyperlink{class_tempest_1_1_widget}{Widget} $\ast$widget)}\label{class_tempest_1_1_layout_a8604c30ec4d0192d7535d0411f89b4fc}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_a4819902514d0731c00f33e09892d0f98}{const std\+::vector$<$ \hyperlink{class_tempest_1_1_widget}{Widget} $\ast$ $>$ \& {\bfseries widgets} ()}\label{class_tempest_1_1_layout_a4819902514d0731c00f33e09892d0f98}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_a90f8470da068f33f79bdd8aab15944ad}{virtual void {\bfseries apply\+Layout} ()}\label{class_tempest_1_1_layout_a90f8470da068f33f79bdd8aab15944ad}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_af418c6fbe4f82e1a3a14c596cf50b895}{void {\bfseries set\+Spacing} (int s)}\label{class_tempest_1_1_layout_af418c6fbe4f82e1a3a14c596cf50b895}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_a5dd98a7f5bd3b4bb2eea2c1e022c9598}{int {\bfseries spacing} () const }\label{class_tempest_1_1_layout_a5dd98a7f5bd3b4bb2eea2c1e022c9598}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_a605f2680fb9ddd005805da1d212be1f1}{void {\bfseries set\+Margin} (const \hyperlink{struct_tempest_1_1_margin}{Margin} \&m)}\label{class_tempest_1_1_layout_a605f2680fb9ddd005805da1d212be1f1}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_a9ebf5d9fa194a2b13dc2a228ba6126c0}{void {\bfseries set\+Margin} (int l, int r, int t, int b)}\label{class_tempest_1_1_layout_a9ebf5d9fa194a2b13dc2a228ba6126c0}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_a1d099fd11854fdfbdbcce0317a8bdc3a}{const \hyperlink{struct_tempest_1_1_margin}{Margin} \& {\bfseries margin} () const }\label{class_tempest_1_1_layout_a1d099fd11854fdfbdbcce0317a8bdc3a}
+
+\end{DoxyCompactItemize}
+\subsection*{Static Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_layout_a2859f142bec996dcd51100d57cfb3213}{static void {\bfseries place\+In} (\hyperlink{class_tempest_1_1_widget}{Widget} $\ast$wx, int x, int y, int w, int h)}\label{class_tempest_1_1_layout_a2859f142bec996dcd51100d57cfb3213}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_a8a6fe7f26e1fe6d8509a2a9c0a1ae438}{static void {\bfseries place\+In} (\hyperlink{class_tempest_1_1_widget}{Widget} $\ast$wx, const \hyperlink{struct_tempest_1_1_rect}{Rect} \&r)}\label{class_tempest_1_1_layout_a8a6fe7f26e1fe6d8509a2a9c0a1ae438}
+
+\item 
+\hypertarget{class_tempest_1_1_layout_af03db7399995fda263a98cdc68eee76a}{static \hyperlink{struct_tempest_1_1_size}{Size} {\bfseries size\+Hint} (\hyperlink{class_tempest_1_1_widget}{Widget} $\ast$wx)}\label{class_tempest_1_1_layout_af03db7399995fda263a98cdc68eee76a}
+
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_layout_a29fa75ce3911bef8c5f4414f6f0242b8}{class {\bfseries Widget}}\label{class_tempest_1_1_layout_a29fa75ce3911bef8c5f4414f6f0242b8}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The \hyperlink{class_tempest_1_1_layout}{Layout} class is the base class of ui-\/geometry managers. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+ui/layout.\+h\item 
+ui/layout.\+cpp\end{DoxyCompactItemize}

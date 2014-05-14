@@ -1,0 +1,71 @@
+\hypertarget{_painting2d_2mainwindow_8h-example}{\section{Painting2d/mainwindow.\+h}
+}
+
+\begin{DoxyCodeInclude}
+\textcolor{preprocessor}{#ifndef MAINWINDOW\_H}
+\textcolor{preprocessor}{#define MAINWINDOW\_H}
+
+\textcolor{preprocessor}{#include <Tempest/Window>}
+\textcolor{preprocessor}{#include <Tempest/Device>}
+
+\textcolor{preprocessor}{#include <Tempest/TextureHolder>}
+\textcolor{preprocessor}{#include <Tempest/VertexBufferHolder>}
+\textcolor{preprocessor}{#include <Tempest/IndexBufferHolder>}
+\textcolor{preprocessor}{#include <Tempest/VertexShaderHolder>}
+\textcolor{preprocessor}{#include <Tempest/FragmentShaderHolder>}
+
+\textcolor{preprocessor}{#include <Tempest/VertexBuffer>}
+\textcolor{preprocessor}{#include <Tempest/IndexBuffer>}
+\textcolor{preprocessor}{#include <Tempest/Texture2d>}
+\textcolor{preprocessor}{#include <Tempest/VertexShader>}
+\textcolor{preprocessor}{#include <Tempest/FragmentShader>}
+\textcolor{preprocessor}{#include <Tempest/ProgramObject>}
+
+\textcolor{preprocessor}{#include <Tempest/SurfaceRender>}
+\textcolor{preprocessor}{#include <Tempest/SpritesHolder>}
+
+\textcolor{keyword}{class }MainWindow:\textcolor{keyword}{public} \hyperlink{class_tempest_1_1_window}{Tempest::Window} \{
+  \textcolor{keyword}{public}:
+    MainWindow( \hyperlink{class_tempest_1_1_abstract_a_p_i}{Tempest::AbstractAPI}& api );
+
+    \textcolor{keyword}{struct }Vertex \{
+      \textcolor{keywordtype}{float} x,y,z;
+      \textcolor{keywordtype}{float} u,v;
+      \};
+  \textcolor{keyword}{protected}:
+    \hyperlink{class_tempest_1_1_device}{Tempest::Device} device;
+    \hyperlink{class_tempest_1_1_texture_holder}{Tempest::TextureHolder}        texHolder;
+    \hyperlink{class_tempest_1_1_vertex_buffer_holder}{Tempest::VertexBufferHolder}   vboHolder;
+    \hyperlink{class_tempest_1_1_index_buffer_holder}{Tempest::IndexBufferHolder}    iboHolder;
+
+    \hyperlink{struct_tempest_1_1_vertex_shader_holder}{Tempest::VertexShaderHolder}   vsHolder;
+    \hyperlink{struct_tempest_1_1_fragment_shader_holder}{Tempest::FragmentShaderHolder} fsHolder;
+
+    \hyperlink{class_tempest_1_1_vertex_buffer}{Tempest::VertexBuffer<Vertex>}  vbo;
+    \hyperlink{class_tempest_1_1_index_buffer}{Tempest::IndexBuffer<uint16\_t>} ibo;
+    \hyperlink{class_tempest_1_1_vertex_declaration}{Tempest::VertexDeclaration}     vdecl;
+    \hyperlink{class_tempest_1_1_texture2d}{Tempest::Texture2d}             texture;
+
+    \hyperlink{class_tempest_1_1_program_object}{Tempest::ProgramObject}         shader;
+
+    \hyperlink{class_tempest_1_1_sprites_holder}{Tempest::SpritesHolder}         spHolder;
+    \hyperlink{class_tempest_1_1_surface_render}{Tempest::SurfaceRender}         uiRender;
+
+    \hyperlink{struct_tempest_1_1_point}{Tempest::Point} rotate, mpos;
+    \textcolor{keywordtype}{float} zoom;
+
+    \textcolor{keywordtype}{void} paintEvent( \hyperlink{class_tempest_1_1_paint_event}{Tempest::PaintEvent}& e );
+
+    \textcolor{keywordtype}{void} mouseDownEvent ( \hyperlink{class_tempest_1_1_mouse_event}{Tempest::MouseEvent}& e );
+    \textcolor{keywordtype}{void} mouseDragEvent ( \hyperlink{class_tempest_1_1_mouse_event}{Tempest::MouseEvent}& e );
+    \textcolor{keywordtype}{void} mouseWheelEvent( \hyperlink{class_tempest_1_1_mouse_event}{Tempest::MouseEvent}& e );
+
+    \textcolor{keywordtype}{void} render();
+    \textcolor{keywordtype}{void} resizeEvent( \hyperlink{class_tempest_1_1_size_event}{Tempest::SizeEvent}& e );
+
+    \textcolor{keywordtype}{void} setupShaderConstants( \hyperlink{class_tempest_1_1_program_object}{Tempest::ProgramObject} & sh );
+  \};
+
+\textcolor{preprocessor}{#endif // MAINWINDOW\_H}
+\end{DoxyCodeInclude}
+ 

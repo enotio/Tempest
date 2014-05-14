@@ -1,0 +1,106 @@
+\hypertarget{class_tempest_1_1_window}{\section{Tempest\+:\+:Window Class Reference}
+\label{class_tempest_1_1_window}\index{Tempest\+::\+Window@{Tempest\+::\+Window}}
+}
+Inheritance diagram for Tempest\+:\+:Window\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_tempest_1_1_window}
+\end{center}
+\end{figure}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_window_1_1_drag_gesture_recognizer}{Drag\+Gesture\+Recognizer}
+\end{DoxyCompactItemize}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_window_a3175d8ef35fe6a81144aabafae9930f1}{enum {\bfseries Show\+Mode} \{ {\bfseries Minimized}, 
+{\bfseries Normal}, 
+{\bfseries Maximized}, 
+{\bfseries Full\+Screen}
+ \}}\label{class_tempest_1_1_window_a3175d8ef35fe6a81144aabafae9930f1}
+
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_window_a78facfb5b14b45089de94e6ff26373cd}{{\bfseries Window} (int w, int h)}\label{class_tempest_1_1_window_a78facfb5b14b45089de94e6ff26373cd}
+
+\item 
+\hypertarget{class_tempest_1_1_window_aa7ee382fc65116901f1f94e12b579340}{{\bfseries Window} (Show\+Mode sm)}\label{class_tempest_1_1_window_aa7ee382fc65116901f1f94e12b579340}
+
+\item 
+\hypertarget{class_tempest_1_1_window_a8f986e19a11c4c97ed8e6ad3d0e648b7}{void {\bfseries show} ()}\label{class_tempest_1_1_window_a8f986e19a11c4c97ed8e6ad3d0e648b7}
+
+\item 
+\hypertarget{class_tempest_1_1_window_a397289ae6968f13beec07f071560a4e7}{virtual void {\bfseries set\+Position} (int x, int y)}\label{class_tempest_1_1_window_a397289ae6968f13beec07f071560a4e7}
+
+\item 
+\hypertarget{class_tempest_1_1_window_a86ff9b43289e79e46c33a9ff5e8303b5}{virtual void {\bfseries resize} (int w, int h)}\label{class_tempest_1_1_window_a86ff9b43289e79e46c33a9ff5e8303b5}
+
+\item 
+\hypertarget{class_tempest_1_1_window_a2835781d50184e43c3992f6a595b5715}{virtual void {\bfseries render} ()}\label{class_tempest_1_1_window_a2835781d50184e43c3992f6a595b5715}
+
+\item 
+\hypertarget{class_tempest_1_1_window_a34d8191e6e04b0ad5e0349ae86997a9a}{size\+\_\+t {\bfseries overlay\+Count} () const }\label{class_tempest_1_1_window_a34d8191e6e04b0ad5e0349ae86997a9a}
+
+\item 
+\hypertarget{class_tempest_1_1_window_ad2ac3aa24b9de95cf294159a66ae2848}{\hyperlink{struct_tempest_1_1_window_overlay}{Window\+Overlay} \& {\bfseries overlay} (size\+\_\+t i)}\label{class_tempest_1_1_window_ad2ac3aa24b9de95cf294159a66ae2848}
+
+\item 
+\hypertarget{class_tempest_1_1_window_ae8c3733a022d749dff27b15af4fc1dc1}{const \hyperlink{struct_tempest_1_1_window_overlay}{Window\+Overlay} \& {\bfseries overlay} (size\+\_\+t i) const }\label{class_tempest_1_1_window_ae8c3733a022d749dff27b15af4fc1dc1}
+
+\item 
+\hypertarget{class_tempest_1_1_window_a9821d6989b5aed15aba9e8849070ea8d}{bool {\bfseries need\+To\+Update} () const }\label{class_tempest_1_1_window_a9821d6989b5aed15aba9e8849070ea8d}
+
+\item 
+\hypertarget{class_tempest_1_1_window_afc13aedcaed3394ecced49d0fc518cce}{bool {\bfseries is\+Full\+Screen\+Mode} () const }\label{class_tempest_1_1_window_afc13aedcaed3394ecced49d0fc518cce}
+
+\item 
+\hypertarget{class_tempest_1_1_window_aed69ab67995faf8f0406f29c2d9cde36}{Show\+Mode {\bfseries show\+Mode} () const }\label{class_tempest_1_1_window_aed69ab67995faf8f0406f29c2d9cde36}
+
+\item 
+\hypertarget{class_tempest_1_1_window_a1e6a112f40362a80eca1c4200ce14f6d}{{\footnotesize template$<$class G $>$ }\\void {\bfseries instal\+Gesture\+Recognizer} (G $\ast$g)}\label{class_tempest_1_1_window_a1e6a112f40362a80eca1c4200ce14f6d}
+
+\item 
+\hypertarget{class_tempest_1_1_window_a7f90868c08f53519327525edd582ecf2}{{\footnotesize template$<$class G $>$ }\\void {\bfseries remove\+Gesture\+Recognizer} ()}\label{class_tempest_1_1_window_a7f90868c08f53519327525edd582ecf2}
+
+\item 
+\hypertarget{class_tempest_1_1_window_ac65039dd7a01080ca3ee6d8354033002}{bool {\bfseries is\+Active} () const }\label{class_tempest_1_1_window_ac65039dd7a01080ca3ee6d8354033002}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_window_a6769a61e64a4f312332e0deded0f4f26}{System\+A\+P\+I\+::\+Window $\ast$ {\bfseries handle} ()}\label{class_tempest_1_1_window_a6769a61e64a4f312332e0deded0f4f26}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_window_abfa4c2ebad4b4f6bcca001ff16c0a8a7}{\hyperlink{class_tempest_1_1signal}{Tempest\+::signal}$<$ Show\+Mode $>$ {\bfseries show\+Mode\+Changed}}\label{class_tempest_1_1_window_abfa4c2ebad4b4f6bcca001ff16c0a8a7}
+
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tempest_1_1_window_afd869fcf20ed42328fe80e572b16de6e}{class {\bfseries Window\+Overlay}}\label{class_tempest_1_1_window_afd869fcf20ed42328fe80e572b16de6e}
+
+\item 
+\hypertarget{class_tempest_1_1_window_a81a96e8e06bdd16bd87b9bff53d8f1d7}{class {\bfseries System\+A\+P\+I}}\label{class_tempest_1_1_window_a81a96e8e06bdd16bd87b9bff53d8f1d7}
+
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+\begin{Desc}
+\item[Examples\+: ]\par
+\hyperlink{_cube_2mainwindow_8h-example}{Cube/mainwindow.\+h}, and \hyperlink{_painting2d_2mainwindow_8h-example}{Painting2d/mainwindow.\+h}.\end{Desc}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+ui/window.\+h\item 
+ui/window.\+cpp\end{DoxyCompactItemize}
