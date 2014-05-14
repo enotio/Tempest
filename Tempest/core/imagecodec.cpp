@@ -339,6 +339,8 @@ struct S3TCCodec:ImageCodec {
   bool load( IDevice &img,
              ImgInfo &info,
              std::vector<unsigned char> &out ) {
+    using namespace Tempest::Detail;
+
     DDSURFACEDESC2 ddsd;
     char dds4[4];
     if( img.readData(dds4, 4)!=4 )

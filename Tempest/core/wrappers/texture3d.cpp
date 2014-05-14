@@ -1,17 +1,15 @@
 #include "texture3d.h"
 
-#include <Tempest/Render>
-
 using namespace Tempest;
 
 Texture3d::Sampler::Sampler(){
-  minFilter = Texture2d::FilterType::Linear;
+  minFilter = Texture3d::FilterType::Linear;
   magFilter = minFilter;
   mipFilter = minFilter;
 
-  uClamp = Texture2d::ClampMode::Repeat;
-  vClamp = Texture2d::ClampMode::Repeat;
-  wClamp = Texture2d::ClampMode::ClampToEdge;
+  uClamp = Texture3d::ClampMode::Repeat;
+  vClamp = Texture3d::ClampMode::Repeat;
+  wClamp = Texture3d::ClampMode::ClampToEdge;
   }
 
 Texture3d::Texture3d():data( VolumeHolder::ImplManip(0) ),

@@ -1,7 +1,5 @@
 #include "texture2d.h"
 
-#include <Tempest/Render>
-
 using namespace Tempest;
 
 Texture2d::Sampler::Sampler(){

@@ -149,7 +149,6 @@ SOURCES += \
     scene/abstractgraphicobject.cpp \
     scene/abstractcamera.cpp \
     shading/vertexshader.cpp \
-    shading/uniformtable.cpp \
     shading/uniformcash.cpp \
     shading/fragmentshader.cpp \
     shading/abstractshadinglang.cpp \
@@ -227,7 +226,6 @@ HEADERS += \
     scene/abstractgraphicobject.h \
     scene/abstractcamera.h \
     shading/vertexshader.h \
-    shading/uniformtable.h \
     shading/uniformcash.h \
     shading/fragmentshader.h \
     shading/abstractshadinglang.h \
