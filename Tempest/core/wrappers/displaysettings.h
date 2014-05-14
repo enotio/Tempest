@@ -5,6 +5,7 @@ namespace Tempest{
 
 class Size;
 
+//! screen display settings
 class DisplaySettings {
   public:
     DisplaySettings( int w, int h, int bits = 32, bool fullScreen = false );

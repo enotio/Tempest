@@ -138,7 +138,6 @@ SOURCES += \
     dataControl/indexbufferholder.cpp \
     dataControl/abstractholder.cpp \
     math/matrix4x4.cpp \
-    render/render.cpp \
     scene/viewtester.cpp \
     scene/model.cpp \
     scene/lightcollection.cpp \
@@ -146,7 +145,6 @@ SOURCES += \
     scene/graphicobject.cpp \
     scene/camera.cpp \
     scene/abstractscene.cpp \
-    scene/abstractmaterial.cpp \
     scene/abstractlightcollection.cpp \
     scene/abstractgraphicobject.cpp \
     scene/abstractcamera.cpp \
@@ -218,7 +216,6 @@ HEADERS += \
     dataControl/fragmentshaderholder.h \
     dataControl/abstractholder.h \
     math/matrix4x4.h \
-    render/render.h \
     scene/viewtester.h \
     scene/model.h \
     scene/lightcollection.h \
@@ -226,7 +223,6 @@ HEADERS += \
     scene/graphicobject.h \
     scene/camera.h \
     scene/abstractscene.h \
-    scene/abstractmaterial.h \
     scene/abstractlightcollection.h \
     scene/abstractgraphicobject.h \
     scene/abstractcamera.h \
@@ -305,4 +301,9 @@ OTHER_FILES += \
     include/Tempest/File \
     include/Tempest/GraphicsSubsystem \
     include/Tempest/HLSL \
-    ../README.md
+    ../README.md \
+    Doxyfile \
+    doc_title.doxy \
+    ../doc/header.html \
+    ../doc/footer.html \
+    ../doc/html/style.css

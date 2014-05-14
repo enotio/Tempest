@@ -5,7 +5,6 @@
 #include <typeinfo>
 
 #include <Tempest/Model>
-#include <Tempest/AbstractMaterial>
 #include <Tempest/AbstractScene>
 
 namespace Tempest{
@@ -55,12 +54,6 @@ class AbstractSceneObject {
 
     virtual float radius() const = 0;
   protected:
-    virtual void render( const Tempest::AbstractMaterial & mat,
-                         Tempest::Render & r,
-                         const Tempest::Matrix4x4 & object,
-                         const Tempest::AbstractCamera & camera ) const = 0;
-
-    virtual void render( Tempest::Render & r ) const = 0;
     virtual void onTransformChanged( const Tempest::Matrix4x4& old ) const = 0;
   private:
     bool visible;

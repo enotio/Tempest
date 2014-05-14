@@ -66,6 +66,7 @@ class VertexDeclaration {
 
     VertexDeclaration& operator = ( const VertexDeclaration & v );
 
+    //! Vertex declaration initalizer
     class Declarator{
       public:
         Declarator();

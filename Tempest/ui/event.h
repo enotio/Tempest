@@ -7,7 +7,7 @@
 namespace Tempest{
 
 class PainterDevice;
-
+//! abstract event class
 class Event {
   public:
     Event();

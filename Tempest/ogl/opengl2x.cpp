@@ -75,7 +75,7 @@ typedef bool (GLAPIENTRY *PFNGLWGLSWAPINTERVALPROC) (GLint interval);
 
 typedef void (GLAPIENTRY *PFNGLDISCARDFRAMEBUFFERPROC)(GLenum mode, GLsizei count, const GLenum* att );
 
-struct Opengl2x::Device{
+struct Tempest::Opengl2x::Device{
 #ifdef __ANDROID__
   EGLDisplay disp;
   EGLSurface s;

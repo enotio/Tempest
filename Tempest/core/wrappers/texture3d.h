@@ -9,6 +9,7 @@
 
 namespace Tempest{
 
+//! simple 3d texture class
   class Texture3d : public AbstractTexture {
     public:
       Texture3d();

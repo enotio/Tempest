@@ -4,7 +4,6 @@
 #include <Tempest/AbstractGraphicObject>
 #include <Tempest/Matrix4x4>
 #include <Tempest/Model>
-#include <Tempest/Render>
 #include <Tempest/AbstractScene>
 
 namespace Tempest{
@@ -251,12 +250,6 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       virtual ~IModelPtr(){}
       virtual const ModelBounds& bounds() const = 0;
       virtual void cloneTo( void* ) const = 0;
-      virtual void draw( const AbstractMaterial &mat,
-                         Render &r,
-                         const Tempest::Matrix4x4 & object,
-                         const AbstractCamera & camera) const = 0;
-
-      virtual void draw( Render &r ) const = 0;
       virtual void draw( Device &r, VertexShader& vs, FragmentShader &fs ) const = 0;
 
       virtual size_t vboHandle() const = 0;
@@ -272,17 +265,6 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       const ModelBounds& bounds() const { return model.bounds(); }
       virtual void cloneTo( void* p ) const {
         new(p) ModelPtr(model);
-        }
-
-      void draw( const AbstractMaterial &mat,
-                 Render &r,
-                 const Tempest::Matrix4x4 & object,
-                 const AbstractCamera & camera) const {
-        r.draw( mat, model, object, camera );
-        }
-
-      void draw( Render &r ) const {
-        r.draw( model );
         }
 
       void draw( Device &dev, VertexShader& vs, FragmentShader &fs ) const {
@@ -312,21 +294,6 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       };
 
     IModelPtr* m_model;
-
-    void render( const AbstractMaterial &mat,
-                 Render &r,
-                 const Tempest::Matrix4x4 & object,
-                 const AbstractCamera & camera ) const {
-      //r.draw( mat, m_model, object, camera );
-      const IModelPtr *m  = reinterpret_cast<const IModelPtr*>(m_model);
-      return m->draw( mat, r, object, camera );
-      }
-
-    void render( Render &r ) const {
-      //r.draw( mat, m_model, object, camera );
-      const IModelPtr *m  = reinterpret_cast<const IModelPtr*>(m_model);
-      return m->draw( r );
-      }
 
     float pos[3], size[3], rx, ry, rz;
 

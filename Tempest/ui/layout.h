@@ -12,6 +12,7 @@ class WidgetBase;
 
 class LinearLayout;
 
+//! The Layout class is the base class of ui-geometry managers
 class Layout {
   public:
     Layout();

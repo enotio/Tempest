@@ -6,7 +6,10 @@
 #include <cstddef>
 
 namespace Tempest{
-
+/**
+ * \addtogroup Core
+ */
+//! signal class, for signals and slots system.
 template< class ... Args >
 class signal{
   public:

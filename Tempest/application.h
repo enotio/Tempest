@@ -7,7 +7,9 @@
 namespace Tempest{
 
 class Timer;
-  
+/**
+ * \addtogroup Core
+ */
 class Application {
   public:
     Application();

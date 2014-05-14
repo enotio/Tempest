@@ -6,7 +6,6 @@
 #include <map>
 
 #include <Tempest/Camera>
-#include <Tempest/AbstractMaterial>
 #include <Tempest/LightCollection>
 #include <Tempest/ViewTester>
 
@@ -20,7 +19,6 @@ class AbstractGraphicObject;
 
 class Device;
 class AbstractCamera;
-//class AbstractMaterial;
 
 class AbstractRenderPass;
 class ViewTester;
