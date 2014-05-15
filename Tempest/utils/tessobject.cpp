@@ -5,16 +5,18 @@
 Tempest::RawModel<> Tempest::TessObject::sphere( int passCount, double R ){
   Tempest::RawModel<>::VertexList r;
 
+  static const double pi = 3.141592654;
+
   Tempest::DefaultVertex v1 = {
     1, 0, -0.5,
     0,0, {0,0,0}
     };
   Tempest::DefaultVertex v2 = {
-    (float)cos(2*M_PI/3), (float)sin(2*M_PI/3), -0.50,
+    (float)cos(2*pi/3), (float)sin(2*pi/3), -0.50,
     0,0, {0,0,0}
     };
   Tempest::DefaultVertex v3 = {
-    (float)cos(2*M_PI/3), -(float)sin(2*M_PI/3), -0.5,
+    (float)cos(2*pi/3), -(float)sin(2*pi/3), -0.5,
     0,0, {0,0,0}
     };
 

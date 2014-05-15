@@ -18,7 +18,7 @@ else {
   DESTDIR = ../lib
   }
 
-QMAKE_CXXFLAGS += -std=gnu++0x -Wall
+QMAKE_CXXFLAGS += -std=c++11 -Wall
 
 INCLUDEPATH += \
                "./thirdparty/" \

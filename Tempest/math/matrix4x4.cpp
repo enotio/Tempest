@@ -171,7 +171,7 @@ void Matrix4x4::project( float   x, float   y, float   z, float   w,
 
 void Matrix4x4::perspective(float angle, float aspect, float zNear, float zFar) {
 
-  float range = tan( M_PI*(angle / float(2))/180.0 ) * zNear;
+  float range = tan( 3.141592654*(double(angle) / 2.0)/180.0 ) * zNear;
   float left = -range * aspect;
   float right = range * aspect;
   float bottom = -range;
