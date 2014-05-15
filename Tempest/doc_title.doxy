@@ -5,14 +5,17 @@
  * This is the introduction.
  * \section platforms_sec Supported platforms and API:
  *
- * Windows: OpenGL2/GLSL, DirectX9/HLSL, DirectX9/Cg
- * Android: OpenGLES2/GLSL
+ * \subsection  windows Windows: OpenGL2/GLSL, DirectX9/HLSL, DirectX9/Cg
+ * \subsection  android Android: OpenGLES2/GLSL
  *
- * \section install_sec Installation
+ * \section install_sec Dependencies
  *
- * \subsection step1 Step 1: Opening the box
+ * \subsection directx Install DirectXSDK, from <a href="www.microsoft.com/en-us/download/details.aspx?id=6812">www.microsoft.com</a>
+ * \subsection qt Install QtSDK(need qmake, plus mingw4.8+), from <a href="http://qt-project.org/downloads">http://qt-project.org/downloads</a>
+ * \subsection android_sdk Install Android SDK+NDK to compile android version
+ * \subsection cg Install CgToolkit(optional), from  <a href="developer.nvidia.com/cg-toolkit-download">developer.nvidia.com/cg-toolkit-download</a>
  *
- * etc...
+ *
  *\example Cube/main.cpp
  *\example Cube/mainwindow.h
  *\example Cube/mainwindow.cpp
