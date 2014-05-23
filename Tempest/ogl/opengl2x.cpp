@@ -1252,7 +1252,9 @@ bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
 #if defined(__linux__) && !defined(__ANDROID__)
   glXMakeCurrent( dev->dpy, dev->window, dev->glc);
 #endif
+#ifdef __WIN32
   wglMakeCurrent( dev->hDC, dev->hRC );
+#endif
   //glViewport(0,0, dev->scrW, dev->scrH);
   return 1;
   }

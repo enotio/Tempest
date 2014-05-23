@@ -1,5 +1,6 @@
 #include "opengl4x.h"
 
+#ifndef __ANDROID__
 #include <GL/gl.h>
 
 #ifdef __WIN32
@@ -50,3 +51,5 @@ AbstractAPI::Device *OpenGL4x::createDevice( void *hwnd,
 
 void OpenGL4x::deleteDevice(Opengl2x::Device *d) const {
   }
+
+#endif

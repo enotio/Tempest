@@ -397,7 +397,7 @@ Widget *AndroidAPI::addOverlay(WindowOverlay *ov) {
   return ov;
   }
 
-bool AndroidAPI::testDisplaySettings( Window* w, const DisplaySettings & s ) {
+bool AndroidAPI::testDisplaySettings( Window* , const DisplaySettings & s ) {
   return s.width ==android.window_w  &&
          s.height==android.window_h &&
          s.bits==16 &&
@@ -405,7 +405,7 @@ bool AndroidAPI::testDisplaySettings( Window* w, const DisplaySettings & s ) {
   }
 
 bool AndroidAPI::setDisplaySettings( Window* w, const DisplaySettings &s) {
-  return testDisplaySettings(s);
+  return testDisplaySettings(w,s);
   }
 
 AndroidAPI::CpuInfo AndroidAPI::cpuInfoImpl(){
