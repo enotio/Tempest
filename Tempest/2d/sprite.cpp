@@ -65,8 +65,7 @@ Size Sprite::size() const {
   }
 
 Rect Sprite::rect() const {
-  flush();
-  return Rect(0,0,prect.w,prect.h);
+  return size().toRect();
   }
 
 const Tempest::Texture2d &Sprite::pageRawData() const {
