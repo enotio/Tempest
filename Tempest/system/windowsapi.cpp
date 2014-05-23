@@ -102,11 +102,6 @@ bool WindowsAPI::setDisplaySettings( Window* w, const DisplaySettings &s ) {
 
     DWORD style   = WS_POPUP,
           exStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
-    /*
-    SetWindowPos( (HWND)w, HWND_TOP,
-                  0, 0,
-                  s.width, s.height,
-                  0 );*/
 
     SetWindowLong((HWND)w, GWL_STYLE,   style   );
     SetWindowLong((HWND)w, GWL_EXSTYLE, exStyle );
@@ -706,7 +701,8 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
             }
 
           if( !a ){
-            changeDisplaySettings(nullptr, CDS_RESET);
+            if( w->isFullScreenMode() )
+              changeDisplaySettings(nullptr, 0);
             } else {
             if( w->isFullScreenMode() ){
               changeDisplaySettings(&appMode, appDevModeFlg);

@@ -536,6 +536,7 @@ bool Opengl2x::createContext( ImplDevice* dev, void *hwnd, const Options & ) con
   if( !Detail::initGLProc() ) {
     return 0;
     }
+  return 1;
 #endif
 
 #ifdef __ANDROID__
@@ -543,6 +544,7 @@ bool Opengl2x::createContext( ImplDevice* dev, void *hwnd, const Options & ) con
   dev->s    = eglGetCurrentSurface(EGL_DRAW);
 
   dev->swapEfect = EGL_BUFFER_PRESERVED;
+  return 1;
 #endif
 
 #if defined(__linux__) && !defined(__ANDROID__)
@@ -558,6 +560,7 @@ bool Opengl2x::createContext( ImplDevice* dev, void *hwnd, const Options & ) con
   if( !Detail::initGLProc() ) {
     return 0;
     }
+  return 1;
 #endif
   return 0;
   }
@@ -1319,7 +1322,8 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   dev->scrH = h;
 
   glViewport(0,0, w,h);
-  AbstractAPI::setDisplaySettings( hwnd, opt.displaySettings );
+  if( opt.displaySettings!=DisplaySettings(-1,-1) )
+    AbstractAPI::setDisplaySettings( hwnd, opt.displaySettings );
 
   if( dev->wglSwapInterval )
     dev->wglSwapInterval( opt.vSync );

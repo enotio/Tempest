@@ -19,6 +19,17 @@ class DisplaySettings {
 
     Size size() const;
     void setSize( const Size& s );
+
+    bool operator == ( const DisplaySettings& s ) const {
+      return width      == s.width &&
+             height     == s.height &&
+             bits       == s.bits &&
+             fullScreen == s.fullScreen;
+      }
+
+    bool operator != ( const DisplaySettings& s ) const {
+      return !(*this==s);
+      }
   };
 
 }

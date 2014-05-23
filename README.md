@@ -1,4 +1,4 @@
-[![Tempest Logo](https://raw.githubusercontent.com/Try/Tempest/master/doc/icon.png)]
+![Tempest Logo](https://raw.githubusercontent.com/Try/Tempest/master/doc/icon.png)
 =
 
 Crossplatform 3d engine.
