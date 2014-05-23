@@ -70,12 +70,6 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
   shader.fs = fsHolder.load("shader/basic.fs.glsl");
 
   T_ASSERT( shader.isValid() );
-
-  Device::Options opt;
-  opt.displaySettings.width  = 1024;
-  opt.displaySettings.height = 768;
-  opt.displaySettings.fullScreen = true;
-  device.reset( opt );
   }
 
 void MainWindow::mouseDownEvent(MouseEvent &e) {
@@ -111,11 +105,7 @@ void MainWindow::render() {
   }
 
 void MainWindow::resizeEvent( SizeEvent & ) {
-  Device::Options opt;
-  opt.displaySettings.width  = 1024;
-  opt.displaySettings.height = 768;
-  opt.displaySettings.fullScreen = true;
-  device.reset( opt );
+  device.reset();
   }
 
 void MainWindow::setupShaderConstants( ProgramObject &sh ) {

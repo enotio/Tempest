@@ -89,8 +89,8 @@ struct Tempest::Opengl2x::ImplDevice {
 
 #if defined(__linux__) && !defined(__ANDROID__)
   GLXContext   glc;
-  Display      *dpy;
-  XID           window;
+  Display*     dpy;
+  XID          window;
 #endif
 
   bool hasS3tcTextures,
@@ -559,7 +559,7 @@ bool Opengl2x::createContext( ImplDevice* dev, void *hwnd, const Options & ) con
     return 0;
     }
 #endif
-  return 1;
+  return 0;
   }
 
 AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) const {
