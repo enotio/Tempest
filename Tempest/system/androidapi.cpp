@@ -397,14 +397,14 @@ Widget *AndroidAPI::addOverlay(WindowOverlay *ov) {
   return ov;
   }
 
-bool AndroidAPI::testDisplaySettings( const DisplaySettings & s ) {
+bool AndroidAPI::testDisplaySettings( Window* w, const DisplaySettings & s ) {
   return s.width ==android.window_w  &&
          s.height==android.window_h &&
          s.bits==16 &&
          s.fullScreen;
   }
 
-bool AndroidAPI::setDisplaySettings(const DisplaySettings &s) {
+bool AndroidAPI::setDisplaySettings( Window* w, const DisplaySettings &s) {
   return testDisplaySettings(s);
   }
 

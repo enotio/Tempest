@@ -385,11 +385,11 @@ void Device::clearStencil( unsigned s ) {
   api.clearStencil(impl, s);
   }
 
-bool Device::testDisplaySettings( const DisplaySettings &s ) {
-  return api.testDisplaySettings(s);
+bool Device::testDisplaySettings( Window* w, const DisplaySettings &s ) {
+  return api.testDisplaySettings( w, s);
   }
 
-bool Device::setDisplaySettings( const DisplaySettings &s ) {
+bool Device::setDisplaySettings( Window* w, const DisplaySettings &s ) {
   data->actualOptions.displaySettings = s;
   return reset( data->actualOptions );
   }

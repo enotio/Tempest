@@ -15,8 +15,8 @@ class LinuxAPI:public SystemAPI {
     LinuxAPI();
     ~LinuxAPI();
 
-    bool testDisplaySettings( const DisplaySettings& );
-    bool setDisplaySettings( const DisplaySettings& );
+    bool testDisplaySettings( Window* w, const DisplaySettings& );
+    bool setDisplaySettings( Window* w, const DisplaySettings& );
     Size implScreenSize();
 
     void startApplication( ApplicationInitArgs* );

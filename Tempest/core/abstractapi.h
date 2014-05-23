@@ -25,6 +25,7 @@ enum TextureUsage{
 
 class AbstractAPI: public GraphicsSubsystem {
   public:
+    AbstractAPI() = default;
     virtual ~AbstractAPI(){}
 
     struct Options{
@@ -87,8 +88,8 @@ class AbstractAPI: public GraphicsSubsystem {
     virtual std::string vendor( AbstractAPI::Device* d ) const = 0;
     virtual std::string renderer( AbstractAPI::Device* d ) const = 0;
 
-    virtual bool testDisplaySettings( const DisplaySettings& d ) const;
-    bool setDisplaySettings( const DisplaySettings& d ) const;
+    virtual bool testDisplaySettings( void* hwnd, const DisplaySettings& d ) const;
+    virtual bool setDisplaySettings ( void* hwnd, const DisplaySettings& d ) const;
 
     virtual Device* createDevice( void * hwnd, const Options & opt ) const = 0;
     virtual void    deleteDevice( Device* d )  const = 0;
@@ -255,6 +256,10 @@ class AbstractAPI: public GraphicsSubsystem {
 
   protected:
     static int vertexCount( PrimitiveType t, int pcount );
+
+  private:
+    AbstractAPI( const AbstractAPI& ) = delete;
+    AbstractAPI& operator = ( const AbstractAPI& ) = delete;
   };
 
 }

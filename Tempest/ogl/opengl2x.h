@@ -1,21 +1,17 @@
 #ifndef OPENGL2X_H
 #define OPENGL2X_H
 
-#include <Tempest/AbstractAPI>
 #include <Tempest/Color>
-
-#include <string>
+#include "openglbase.h"
 
 namespace Tempest{
 
-class Opengl2x : public AbstractAPI {
+class Opengl2x : public OpenGLBase {
   public:
     Opengl2x();
     ~Opengl2x();
 
     Caps caps(Device *d) const;
-    std::string vendor( AbstractAPI::Device* d ) const;
-    std::string renderer( AbstractAPI::Device* d ) const;
 
     Device* createDevice( void * hwnd, const Options & opt ) const;
     void    deleteDevice( Device* d )  const;
@@ -181,8 +177,6 @@ class Opengl2x : public AbstractAPI {
 
     bool setDevice(  AbstractAPI::Device *d ) const;
 
-    bool errCk() const;
-
     bool setupFBO() const;
     void startTiledRender() const;
     void endTiledRender() const;
@@ -190,18 +184,15 @@ class Opengl2x : public AbstractAPI {
     AbstractAPI::Texture* createDepthStorage( AbstractAPI::Device *d,
                                               int w, int h,
                                               AbstractTexture::Format::Type f ) const;
+
+    struct ImplDevice;
+    mutable ImplDevice * dev;
+    virtual bool createContext( ImplDevice*, void* hwnd, const Options &opt ) const;
   private:
-    struct Device;
-    mutable Device * dev;
     void setupBuffers(char *vboOffsetIndex, bool on , bool enable, bool bind) const;
     void setupAttrPtr(const Tempest::VertexDeclaration::Declarator& vd,
                        char *vboOffsetIndex,
                        bool enable, bool on, bool bind ) const;
-
-    Opengl2x( const Opengl2x& ){}
-    void operator = ( const Opengl2x& ){}
-
-    bool createContext( Device*, void* hwnd, const Options &opt ) const;
   };
 
 }

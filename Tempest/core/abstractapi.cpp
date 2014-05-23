@@ -10,12 +10,12 @@ AbstractAPI::Options::Options():displaySettings(-1, -1, 32, false){
   //windowed = true;
   }
 
-bool AbstractAPI::testDisplaySettings( const DisplaySettings &d ) const {
-  return SystemAPI::instance().testDisplaySettings(d);
+bool AbstractAPI::testDisplaySettings( void *hwnd, const DisplaySettings &d ) const {
+  return SystemAPI::instance().testDisplaySettings( (SystemAPI::Window*)hwnd, d );
   }
 
-bool AbstractAPI::setDisplaySettings(const DisplaySettings &d) const {
-  return SystemAPI::instance().setDisplaySettings(d);
+bool AbstractAPI::setDisplaySettings( void *hwnd, const DisplaySettings &d ) const {
+  return SystemAPI::instance().setDisplaySettings( (SystemAPI::Window*)hwnd, d );
   }
 
 int AbstractAPI::mipCount(int width, int height, int depth) {

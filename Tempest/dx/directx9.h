@@ -161,9 +161,6 @@ class DirectX9 : public AbstractAPI {
     struct Device;
     //Data  *data;
 
-    DirectX9( const DirectX9& ){}
-    void operator = ( const DirectX9& ){}
-
     void makePresentParams( void * p, void *hwnd, const Options &opt ) const;
   };
 

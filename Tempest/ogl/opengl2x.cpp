@@ -75,7 +75,7 @@ typedef bool (GLAPIENTRY *PFNGLWGLSWAPINTERVALPROC) (GLint interval);
 
 typedef void (GLAPIENTRY *PFNGLDISCARDFRAMEBUFFERPROC)(GLenum mode, GLsizei count, const GLenum* att );
 
-struct Tempest::Opengl2x::Device{
+struct Tempest::Opengl2x::ImplDevice {
 #ifdef __ANDROID__
   EGLDisplay disp;
   EGLSurface s;
@@ -494,32 +494,6 @@ static const GLubyte* vstr( const GLubyte* v ){
     return (GLubyte*)"";
   }
 
-bool Opengl2x::errCk() const {
-#ifdef OGL_DEBUG
-  GLenum err = glGetError();
-  bool ok = true;
-
-  while( err!=GL_NO_ERROR ){
-    const char* glErrorDesc = Device::glErrorDesc(err);
-#ifndef __ANDROID__
-    std::cout << "[OpenGL]: ";
-    if( glErrorDesc )
-      std::cout << glErrorDesc <<" ";
-    std::cout  <<"0x"<< std::hex << err << std::dec << std::endl;
-#else
-    void* ierr = (void*)err;
-    if( glErrorDesc )
-      __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "error %s", glErrorDesc); else
-      __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "error %p", ierr);
-#endif
-    err = glGetError();
-    ok = false;
-    }
-#endif
-
-  return ok;
-  }
-
 Opengl2x::Opengl2x(){
   }
 
@@ -527,25 +501,11 @@ Opengl2x::~Opengl2x(){
   }
 
 Opengl2x::Caps Opengl2x::caps( AbstractAPI::Device* d ) const {
-  Device * dev = (Device*)d;
+  ImplDevice * dev = (ImplDevice*)d;
   return dev->caps;
   }
 
-std::string Opengl2x::vendor( AbstractAPI::Device* d ) const {
-  if( !setDevice(d) ) return "";
-
-  const GLubyte *s = vstr(glGetString(GL_VENDOR));
-  return (const char*)s;
-  }
-
-std::string Opengl2x::renderer(AbstractAPI::Device *d) const {
-  if( !setDevice(d) ) return "";
-
-  const GLubyte *s = vstr(glGetString(GL_RENDERER));
-  return (const char*)s;
-  }
-
-bool Opengl2x::createContext( Device* dev, void *hwnd, const Options & ) const {
+bool Opengl2x::createContext( ImplDevice* dev, void *hwnd, const Options & ) const {
   (void)hwnd;
 
 #ifdef __WIN32__
@@ -603,7 +563,7 @@ bool Opengl2x::createContext( Device* dev, void *hwnd, const Options & ) const {
   }
 
 AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) const {
-  Device* dev = new Device();
+  ImplDevice* dev = new ImplDevice();
   dev->isPainting = false;
   memset( &dev->target, 0, sizeof(dev->target) );
   dev->lbUseed = false;
@@ -720,7 +680,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   }
 
 void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
-  Device* dev = (Device*)d;
+  ImplDevice* dev = (ImplDevice*)d;
   if( !setDevice(d) ) return;
   dev->free(dev->dynVbo);
 
@@ -738,7 +698,7 @@ void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
   }
 
 bool Opengl2x::setDevice( AbstractAPI::Device * d ) const {
-  dev = (Device*)d;
+  dev = (ImplDevice*)d;
   T_ASSERT_X( errCk(), "OpenGL error" );
 
 #ifdef __ANDROID__
@@ -770,11 +730,7 @@ void Opengl2x::clear( AbstractAPI::Device *d,
 
   if( dev->clearDepth!=z ){
     dev->clearDepth = z;
-  #ifdef __ANDROID__
-    glClearDepthf( z );
-  #else
-    glClearDepth( z );
-  #endif
+    setClearDepth(z);
     }
 
   if( dev->clearS!=stencil ){
@@ -814,11 +770,7 @@ void Opengl2x::clearZ(AbstractAPI::Device *d, float z ) const  {
 
   if( dev->clearDepth!=z ){
     dev->clearDepth = z;
-  #ifdef __ANDROID__
-    glClearDepthf( z );
-  #else
-    glClearDepth( z );
-  #endif
+    setClearDepth(z);
     }
 
   RenderState r0 = dev->renderState, rs = r0;
@@ -846,11 +798,7 @@ void Opengl2x::clear(AbstractAPI::Device *d,
 
   if( dev->clearDepth!=z ){
     dev->clearDepth = z;
-  #ifdef __ANDROID__
-    glClearDepthf( z );
-  #else
-    glClearDepth( z );
-  #endif
+    setClearDepth(z);
     }
 
   if( dev->clearS!=s ){
@@ -1301,11 +1249,13 @@ bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
 #if defined(__linux__) && !defined(__ANDROID__)
   glXMakeCurrent( dev->dpy, dev->window, dev->glc);
 #endif
+  wglMakeCurrent( dev->hDC, dev->hRC );
+  //glViewport(0,0, dev->scrW, dev->scrH);
   return 1;
   }
 
 bool Opengl2x::present(AbstractAPI::Device *d, SwapBehavior b) const {
-  Device* dev = (Device*)d;
+  ImplDevice* dev = (ImplDevice*)d;
 #ifdef __WIN32__
   (void)b;
   SwapBuffers( dev->hDC );
@@ -1368,8 +1318,8 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   dev->scrW = w;
   dev->scrH = h;
 
-  AbstractAPI::setDisplaySettings( opt.displaySettings );
   glViewport(0,0, w,h);
+  AbstractAPI::setDisplaySettings( hwnd, opt.displaySettings );
 
   if( dev->wglSwapInterval )
     dev->wglSwapInterval( opt.vSync );
@@ -1403,7 +1353,7 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   }
 
 bool Opengl2x::isFormatSupported(AbstractAPI::Device *d, Pixmap::Format f) const {
-  Device* dev = (Device*)d;
+  ImplDevice* dev = (ImplDevice*)d;
 
   if( f==Pixmap::Format_RGB || f==Pixmap::Format_RGBA )
     return 1;
@@ -2084,14 +2034,14 @@ void Opengl2x::deleteShadingLang( const AbstractShadingLang * l ) const {
 AbstractAPI::VertexDecl*
       Opengl2x::createVertexDecl( AbstractAPI::Device *d,
                                   const VertexDeclaration::Declarator &de ) const {
-  Device* dev = (Device*)d;
+  ImplDevice* dev = (ImplDevice*)d;
   VertexDeclaration::Declarator *dx = dev->declPool.alloc(de);
   return (AbstractAPI::VertexDecl*)dx;
   }
 
 void Opengl2x::deleteVertexDecl( AbstractAPI::Device *d,
                                  AbstractAPI::VertexDecl* de ) const {
-  Device* dev = (Device*)d;
+  ImplDevice* dev = (ImplDevice*)d;
 
   VertexDeclaration::Declarator *dx = (VertexDeclaration::Declarator*)(de);
   if( dev->decl==dx )
@@ -2320,7 +2270,7 @@ bool Opengl2x::hasManagedStorge() const {
   }
 
 Size Opengl2x::windowSize( Tempest::AbstractAPI::Device * d ) const {
-  Device *dev = (Device*)d;
+  ImplDevice *dev = (ImplDevice*)d;
   return Size(dev->scrW, dev->scrH);
   }
 

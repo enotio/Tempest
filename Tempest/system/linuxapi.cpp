@@ -103,11 +103,11 @@ void *LinuxAPI::display() {
   return dpy;
   }
 
-bool LinuxAPI::testDisplaySettings( const DisplaySettings & s ) {
+bool LinuxAPI::testDisplaySettings( SystemAPI::Window* w, const DisplaySettings & s ) {
   return 1;
   }
 
-bool LinuxAPI::setDisplaySettings( const DisplaySettings &s ) {
+bool LinuxAPI::setDisplaySettings( SystemAPI::Window* w, const DisplaySettings &s ) {
   return 0;
   }
 

@@ -17,6 +17,12 @@
 using namespace Tempest;
 
 static std::unordered_map<WindowsAPI::Window*, Tempest::Window*> wndWx;
+static DEVMODE appMode;
+static DWORD   appDevModeFlg = 0;
+
+static LONG changeDisplaySettings( DEVMODE* m, DWORD w ){
+  return ChangeDisplaySettings(m,w);
+  }
 
 static LRESULT CALLBACK WindowProc( HWND   hWnd,
                                     UINT   msg,
@@ -53,7 +59,7 @@ WindowsAPI::WindowsAPI() {
 WindowsAPI::~WindowsAPI() {
   }
 
-bool WindowsAPI::testDisplaySettings( const DisplaySettings & s ) {
+bool WindowsAPI::testDisplaySettings( Window*, const DisplaySettings & s ) {
   DEVMODE mode;                   // Device Mode
   memset(&mode,0,sizeof(mode));
   mode.dmSize=sizeof(mode);
@@ -72,10 +78,10 @@ bool WindowsAPI::testDisplaySettings( const DisplaySettings & s ) {
   if( s.fullScreen )
     flg |= CDS_FULLSCREEN;
 
-  return ChangeDisplaySettings(&mode,flg)==DISP_CHANGE_SUCCESSFUL;
+  return changeDisplaySettings(&mode,flg)==DISP_CHANGE_SUCCESSFUL;
   }
 
-bool WindowsAPI::setDisplaySettings( const DisplaySettings &s ) {
+bool WindowsAPI::setDisplaySettings( Window* w, const DisplaySettings &s ) {
   DEVMODE mode;                   // Device Mode
   memset(&mode,0,sizeof(mode));
   mode.dmSize=sizeof(mode);
@@ -91,14 +97,43 @@ bool WindowsAPI::setDisplaySettings( const DisplaySettings &s ) {
     mode.dmFields |= DM_PELSHEIGHT;
 
   DWORD flg = 0;
-  if( s.fullScreen )
+  if( s.fullScreen ){
     flg |= CDS_FULLSCREEN;
 
-  return 0;
+    DWORD style   = WS_POPUP,
+          exStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
+    /*
+    SetWindowPos( (HWND)w, HWND_TOP,
+                  0, 0,
+                  s.width, s.height,
+                  0 );*/
 
-  if( ChangeDisplaySettings(&mode,flg)==DISP_CHANGE_SUCCESSFUL ){
-    //appMode       = mode;
-    //appDevModeFlg = flg;
+    SetWindowLong((HWND)w, GWL_STYLE,   style   );
+    SetWindowLong((HWND)w, GWL_EXSTYLE, exStyle );
+
+    RECT rect;
+    AdjustWindowRectEx(&rect, style, FALSE, exStyle);
+    SetWindowPos( (HWND)w, HWND_TOP,
+                  0, 0,
+                  s.width, s.height,
+                  SWP_FRAMECHANGED );
+
+    ShowWindow((HWND)w, SW_SHOW);
+    SetForegroundWindow((HWND)w);
+    SetFocus((HWND)w);
+    UpdateWindow((HWND)w);
+    } else {
+    SetWindowLong((HWND)w, GWL_STYLE,   WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+    SetWindowLong((HWND)w, GWL_EXSTYLE, WS_EX_APPWINDOW);
+    }
+
+  if( changeDisplaySettings(&mode,flg)==DISP_CHANGE_SUCCESSFUL ){
+    appMode       = mode;
+    appDevModeFlg = flg;
+
+    if( s.fullScreen )
+      SystemAPI::setShowMode( wndWx[w], Tempest::Window::FullScreen ); else
+      SystemAPI::setShowMode( wndWx[w], Tempest::Window::Normal );
     return 1;
     }
 
@@ -115,9 +150,6 @@ Size WindowsAPI::implScreenSize() {
   }
 
 void WindowsAPI::startApplication(ApplicationInitArgs *) {
-  //EnumDisplaySettings( 0, ENUM_CURRENT_SETTINGS, &defaultMode );
-  //appMode = defaultMode;
-
   WNDCLASSEX winClass;
 
   winClass.lpszClassName = L"Tempest_Window_Class";
@@ -652,7 +684,8 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
             if( wParam==SIZE_MINIMIZED )
               smode = Window::Minimized;
 
-            SystemAPI::setShowMode( w, smode);
+            if( !w->isFullScreenMode() )
+              SystemAPI::setShowMode( w, smode);
 
             if( wParam!=SIZE_MINIMIZED ){
               SystemAPI::sizeEvent( w, cW, cH );
@@ -673,9 +706,12 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
             }
 
           if( !a ){
-            //ChangeDisplaySettings(&defaultMode, 0);
+            changeDisplaySettings(nullptr, CDS_RESET);
             } else {
-            //ChangeDisplaySettings(&appMode, appDevModeFlg);
+            if( w->isFullScreenMode() ){
+              changeDisplaySettings(&appMode, appDevModeFlg);
+              UpdateWindow((HWND)w);
+              }
             }
       }
       break;

@@ -177,7 +177,9 @@ SOURCES += \
     io/buffer.cpp \
     io/file.cpp \
     ogl/glfn.cpp \
-    system/linuxapi.cpp
+    system/linuxapi.cpp \
+    ogl/openglbase.cpp \
+    ogl/opengl4x.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -259,7 +261,9 @@ HEADERS += \
     ogl/glfn.h \
     core/graphicssubsystem.h \
     system/platform.h \
-    system/linuxapi.h
+    system/linuxapi.h \
+    ogl/openglbase.h \
+    ogl/opengl4x.h
 
 OTHER_FILES += \
     ../.gitignore \

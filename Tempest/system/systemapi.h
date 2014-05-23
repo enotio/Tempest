@@ -137,8 +137,8 @@ class SystemAPI{
     virtual size_t fsizeImpl( File* file );
 
     virtual Size implScreenSize() = 0;
-    virtual bool testDisplaySettings( const DisplaySettings& ) = 0;
-    virtual bool setDisplaySettings ( const DisplaySettings& ) = 0;
+    virtual bool testDisplaySettings( Window* w, const DisplaySettings& ) = 0;
+    virtual bool setDisplaySettings ( Window* w, const DisplaySettings& ) = 0;
 
     virtual std::string       loadTextImpl( const char* file    );
     virtual std::string       loadTextImpl( const char16_t* file );

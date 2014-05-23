@@ -51,8 +51,8 @@ class Device {
     void clearZ( float z );
     void clearStencil( unsigned stencil );
 
-    bool testDisplaySettings( const DisplaySettings& );
-    bool setDisplaySettings ( const DisplaySettings& );
+    bool testDisplaySettings( Window* w, const DisplaySettings& );
+    bool setDisplaySettings ( Window* w, const DisplaySettings& );
 
     void beginPaint( Texture2d & rt );
     void beginPaint( Texture2d & rt, Texture2d &depthStencil  );
