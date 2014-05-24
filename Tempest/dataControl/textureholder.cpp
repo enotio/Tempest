@@ -17,7 +17,8 @@ struct TextureHolder::Data {
   //std::map< AbstractAPI::Texture*, std::string > textures;
 
   struct DynTexture{
-    int w, h, mip;
+    int w, h;
+    bool mip;
     TextureUsage usage;
     AbstractTexture::Format::Type format;
     AbstractAPI::Texture* owner;
@@ -273,4 +274,18 @@ Pixmap TextureHolder::pixmapOf( AbstractAPI::Texture *t ) {
       return data->pixmap_textures[i].pm;
 
   return Pixmap();
+  }
+
+void TextureHolder::onMipmapsAdded(GraphicsSubsystem::Texture *tg) {
+  for( size_t i=0; i<data->pixmap_textures.size(); ++i )
+    if( data->pixmap_textures[i].owner==tg ){
+      data->pixmap_textures[i].mip = true;
+      return;
+      }
+
+  for( size_t i=0; i<data->dynamic_textures.size(); ++i )
+    if( data->dynamic_textures[i].owner==tg ){
+      data->dynamic_textures[i].mip = 1;
+      return;
+      }
   }

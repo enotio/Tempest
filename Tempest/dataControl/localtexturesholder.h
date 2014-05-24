@@ -59,6 +59,8 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
     virtual void presentEvent();
     void deleteObject( NonFreed& obj );
     bool deleteCond( NonFreed& obj );
+
+    virtual void onMipmapsAdded( AbstractAPI::Texture* tg );
   private:
     void createObject( Tempest::AbstractAPI::Texture*& t,
                        int w, int h, bool mips,

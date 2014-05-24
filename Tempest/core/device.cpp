@@ -389,7 +389,7 @@ bool Device::testDisplaySettings( Window* w, const DisplaySettings &s ) {
   return api.testDisplaySettings( w, s);
   }
 
-bool Device::setDisplaySettings( Window* w, const DisplaySettings &s ) {
+bool Device::setDisplaySettings( const DisplaySettings &s ) {
   data->actualOptions.displaySettings = s;
   return reset( data->actualOptions );
   }
@@ -528,6 +528,22 @@ void Device::forceEndPaint() const {
     return;
 
   endPaintImpl();
+  }
+
+void Device::generateMipMaps(Texture2d &target) {
+  bool resetPaint = false;
+  if( data->isPaintMode ){
+    endPaint();
+    forceEndPaint();
+    resetPaint = true;
+    }
+
+  api.generateMipmaps( impl, target.data.value() );
+  TextureHolder& h = (TextureHolder&)target.data.manip.holder();
+  h.onMipmapsAdded( target.data.value() );
+
+  if( resetPaint )
+    beginPaintImpl();
   }
 
 void Device::setRenderState( const RenderState & r ) const {

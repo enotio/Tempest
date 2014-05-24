@@ -52,7 +52,7 @@ class Device {
     void clearStencil( unsigned stencil );
 
     bool testDisplaySettings( Window* w, const DisplaySettings& );
-    bool setDisplaySettings ( Window* w, const DisplaySettings& );
+    bool setDisplaySettings ( const DisplaySettings& );
 
     void beginPaint( Texture2d & rt );
     void beginPaint( Texture2d & rt, Texture2d &depthStencil  );
@@ -62,6 +62,8 @@ class Device {
 
     void beginPaint();
     void endPaint  ();
+
+    void generateMipMaps( Texture2d& target );
 
     void setRenderState( const RenderState & ) const;
     const RenderState& renderState() const;

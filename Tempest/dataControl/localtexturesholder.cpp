@@ -73,6 +73,20 @@ bool LocalTexturesHolder::deleteCond( LocalTexturesHolder::NonFreed&  ){
   return true;
   }
 
+void LocalTexturesHolder::onMipmapsAdded(GraphicsSubsystem::Texture *tg) {
+  TextureHolder::onMipmapsAdded(tg);
+
+  for( NonFreed& t : dynTextures )
+    if( t.data.handle==tg )
+      t.data.mip = true;
+
+  /*
+  for( NonFreed& t : nonFreed.data )
+    if( t.data.handle==tg )
+      t.data.mip = true;
+  */
+  }
+
 void LocalTexturesHolder::createObject(Tempest::AbstractAPI::Texture *&t,
                                         int w, int h, bool mips,
                                         Tempest::AbstractTexture::Format::Type f,
