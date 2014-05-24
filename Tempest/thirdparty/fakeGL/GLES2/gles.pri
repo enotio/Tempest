@@ -1,4 +1,4 @@
-!android:INCLUDEPATH += "./thirdparty/fakeGL"
+!android:INCLUDEPATH += "$$PWD/../"
 
 HEADERS += \
-    thirdparty/fakeGL/GLES2/gl2.h
+    $$PWD/gl2.h

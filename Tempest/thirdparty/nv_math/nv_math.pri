@@ -1,11 +1,11 @@
 HEADERS += \
-  thirdparty/nv_math/NvVec.h \
-  thirdparty/nv_math/nv_quat.h \
-  thirdparty/nv_math/nv_matrix.h \
-  thirdparty/nv_math/nv_math.h \
-  thirdparty/nv_math/misc.h \
+  $$PWD/NvVec.h \
+  $$PWD/nv_quat.h \
+  $$PWD/nv_matrix.h \
+  $$PWD/nv_math.h \
+  $$PWD/misc.h \
 
 SOURCES += \
-  thirdparty/nv_math/nv_quat.cpp \
-  thirdparty/nv_math/nv_matrix.cpp \
-  thirdparty/nv_math/nv_math.cpp \
+  $$PWD/nv_quat.cpp \
+  $$PWD/nv_matrix.cpp \
+  $$PWD/nv_math.cpp \

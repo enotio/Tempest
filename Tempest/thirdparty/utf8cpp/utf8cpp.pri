@@ -1,6 +1,6 @@
 
 HEADERS += \
-    thirdparty/utf8cpp/utf8.h \
-    thirdparty/utf8cpp/utf8/checked.h \
-    thirdparty/utf8cpp/utf8/core.h \
-    thirdparty/utf8cpp/utf8/unchecked.h \
+    $$PWD/utf8.h \
+    $$PWD/utf8/checked.h \
+    $$PWD/utf8/core.h \
+    $$PWD/utf8/unchecked.h \
