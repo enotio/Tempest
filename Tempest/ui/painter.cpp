@@ -104,7 +104,6 @@ void PainterDevice::drawRectTailed(int x, int y, int w, int h, int tx, int ty) {
   drawRectTailed( x,y,w,h, tx,ty,w,h );
   }
 
-
 void Painter::drawRect(const Rect &r, const Rect &t) {
   drawRect( r.x, r.y, r.w, r.h,
             t.x, t.y, t.w, t.h );

@@ -142,7 +142,64 @@ void SurfaceRender::quad( int  x, int  y, int  w, int  h,
   v[3].u = tx*invTw;
   v[3].v = (ty+th)*invTh;
 
-  for( int i=0; i<4; ++i ){
+  update(v,4);
+
+  cpuGm.push_back( v[0] );
+  cpuGm.push_back( v[1] );
+  cpuGm.push_back( v[2] );
+
+  cpuGm.push_back( v[0] );
+  cpuGm.push_back( v[2] );
+  cpuGm.push_back( v[3] );
+  updateBackBlock(false);
+  }
+
+void SurfaceRender::triangle (int x1, int y1, int u1, int v1,
+                              int x2, int y2, int u2, int v2,
+                              int x3, int y3, int u3, int v3) {
+  Vertex v[3];
+  v[0].x = x1*invW;
+  v[0].y = y1*invH;
+  v[0].u = u1*invTw;
+  v[0].v = v1*invTh;
+
+  v[1].x = x2*invW;
+  v[1].y = y2*invH;
+  v[1].u = u2*invTw;
+  v[1].v = v2*invTh;
+
+  v[2].x = x3*invW;
+  v[2].y = y3*invH;
+  v[2].u = u3*invTw;
+  v[2].v = v3*invTh;
+
+  update(v,3);
+
+  cpuGm.push_back( v[0] );
+  cpuGm.push_back( v[1] );
+  cpuGm.push_back( v[2] );
+
+  updateBackBlock(false);
+  }
+
+void SurfaceRender::line(int x, int y, int x2, int y2) {
+  Vertex v[2];
+  v[0].x = x*invW;
+  v[0].y = y*invH;
+
+  v[1].x = x2*invW;
+  v[1].y = y2*invH;
+
+  update(v,2);
+
+  cpuGm.push_back( v[0] );
+  cpuGm.push_back( v[1] );
+
+  updateBackBlock(true);
+  }
+
+void SurfaceRender::update( Vertex* v, int count ){
+  for( int i=0; i<count; ++i ){
     v[i].color[0] = state.cl.r();
     v[i].color[1] = state.cl.g();
     v[i].color[2] = state.cl.b();
@@ -153,11 +210,11 @@ void SurfaceRender::quad( int  x, int  y, int  w, int  h,
     }
 
   if( state.flip[0] )
-    for( int i=0; i<4; ++i ){
+    for( int i=0; i<count; ++i ){
       v[i].u = 1.0f-v[i].u;
       }
   if( state.flip[1] )
-    for( int i=0; i<4; ++i ){
+    for( int i=0; i<count; ++i ){
       v[i].v = 1.0f-v[i].v;
       }
 
@@ -170,7 +227,7 @@ void SurfaceRender::quad( int  x, int  y, int  w, int  h,
           dw = r.w/float(s.w),
           dh = r.h/float(s.h);
 
-    for( int i=0; i<4; ++i ){
+    for( int i=0; i<count; ++i ){
       v[i].u *= dw;
       v[i].v *= dh;
 
@@ -178,56 +235,7 @@ void SurfaceRender::quad( int  x, int  y, int  w, int  h,
       v[i].v += dy;
       }
     }
-
-  //for( int i=0; i<4; ++i )
-    //v[i].v = 1.0-v[i].v;
-
-  cpuGm.push_back( v[0] );
-  cpuGm.push_back( v[1] );
-  cpuGm.push_back( v[2] );
-
-  cpuGm.push_back( v[0] );
-  cpuGm.push_back( v[2] );
-  cpuGm.push_back( v[3] );
-  updateBackBlock(false);
   }
-
-void SurfaceRender::line(int x, int y, int x2, int y2) {
-  Vertex v[2];
-  v[0].x = x*invW;
-  v[0].y = y*invH;
-
-  v[1].x = x2*invW;
-  v[1].y = y2*invH;
-
-  for( int i=0; i<2; ++i ){
-    v[i].color[0] = state.cl.r();
-    v[i].color[1] = state.cl.g();
-    v[i].color[2] = state.cl.b();
-    v[i].color[3] = state.cl.a();
-
-    v[i].u = 0;
-    v[i].v = 0;
-
-    v[i].x -= 1;
-    v[i].y += 1;
-    }
-
-  if( state.flip[0] )
-    for( int i=0; i<2; ++i ){
-      v[i].u = 1.0f-v[i].u;
-      }
-  if( state.flip[1] )
-    for( int i=0; i<2; ++i ){
-      v[i].v = 1.0f-v[i].v;
-      }
-
-  cpuGm.push_back( v[0] );
-  cpuGm.push_back( v[1] );
-
-  updateBackBlock(true);
-  }
-
 
 void SurfaceRender::updateBackBlock( bool isLine ) {
   if( blocks.size()==0 ){
@@ -288,6 +296,12 @@ const VertexDeclaration::Declarator SurfaceRender::declImpl() {
 void SurfaceRender::PaintDev::quad( int x, int y, int w, int h,
                               int tx, int ty, int tw, int th ) {
   surf.quad(x,y,w,h, tx,ty,tw,th);
+  }
+
+void SurfaceRender::PaintDev::triangle( int x1, int y1, int u1, int v1,
+                                        int x2, int y2, int u2, int v2,
+                                        int x3, int y3, int u3, int v3) {
+  surf.triangle(x1,y1,u1,v1, x2,y2,u2,v2, x3,y3,u3,v3);
   }
 
 void SurfaceRender::PaintDev::line(int x, int y, int x2, int y2) {
