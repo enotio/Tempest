@@ -174,7 +174,6 @@ class SurfaceRender {
       float color[4];
       };
 
-    //Tempest::Device &dev;
     Tempest::VertexShaderHolder   & vsH;
     Tempest::FragmentShaderHolder & fsH;
 
@@ -191,13 +190,16 @@ class SurfaceRender {
     std::vector<Block>  blocks;
 
     std::vector<Vertex> cpuGm;
+
+    virtual ProgramObject& shaderForBlock( const Block& b ) const;
+    virtual size_t cpuVertexCurrentCount() const;
     Tempest::VertexBuffer<Vertex> vbo;
     Tempest::VertexDeclaration    vdecl;
 
-    mutable Tempest::VertexShader   vs[2];
-    mutable Tempest::FragmentShader fs[2];
+    mutable Tempest::ProgramObject  stdShaders[2];
     float invW, invH, invTw, invTh;
 
+  private:
     RState state;
 
     Tempest::RenderState rstate[4];

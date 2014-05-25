@@ -53,16 +53,16 @@ void SurfaceRender::clearVbo() {
 void SurfaceRender::loadShader() {
   {
   AbstractShadingLang::UiShaderOpt opt;
-  vs[0] = vsH.surfaceShader(opt, dpos);
-  fs[0] = fsH.surfaceShader(opt);
+  stdShaders[0].vs = vsH.surfaceShader(opt, dpos);
+  stdShaders[0].fs = fsH.surfaceShader(opt);
   }
 
   {
   AbstractShadingLang::UiShaderOpt opt;
   opt.hasTexture = false;
 
-  vs[1] = vsH.surfaceShader(opt);
-  fs[1] = fsH.surfaceShader(opt);
+  stdShaders[1].vs = vsH.surfaceShader(opt);
+  stdShaders[1].fs = fsH.surfaceShader(opt);
   }
   }
 
@@ -84,31 +84,35 @@ void SurfaceRender::buildVbo( Tempest::Widget & surf,
     }
   }
 
+ProgramObject& SurfaceRender::shaderForBlock( const Block& b ) const {
+  if( !b.curTex.pageRect().isEmpty() || b.curTex2d )
+    return stdShaders[0];
+
+  return stdShaders[1];
+  }
+
 void SurfaceRender::render(Device &dev) const {
   auto rs = dev.renderState();
 
   if( dpos ){
     float dp[2] = { -0.5f*invW, -0.5f*invH };
-    dev.setUniform( vs[0], dp, 2, "dpos" );
-    dev.setUniform( vs[1], dp, 2, "dpos" );
+    dev.setUniform( stdShaders[0].vs, dp, 2, "dpos" );
+    dev.setUniform( stdShaders[1].fs, dp, 2, "dpos" );
     }
 
-  int sh = 0;
   for( size_t i=0; i<blocks.size(); ++i ){
     const Block& b = blocks[i];
     dev.setRenderState( rstate[b.state.bm] );
-    if(!b.curTex.pageRect().isEmpty() || b.curTex2d)
-      sh = 0; else
-      sh = 1;
 
+    ProgramObject& sh = shaderForBlock(b);
     if( !b.curTex.pageRect().isEmpty() )
-      dev.setUniform( fs[0], b.curTex.pageRawData(),   "texture" );
+      dev.setUniform( sh.fs, b.curTex.pageRawData(),   "texture" );
     if( b.curTex2d )
-      dev.setUniform( fs[0], *b.curTex2d, "texture" );
+      dev.setUniform( sh.fs, *b.curTex2d, "texture" );
 
     int sz = b.isLine? 2:3;
     dev.drawPrimitive( b.isLine? AbstractAPI::Lines : AbstractAPI::Triangle,
-                       vs[sh], fs[sh],
+                       sh,
                        vdecl,
                        vbo,
                        b.begin,
@@ -276,7 +280,7 @@ void SurfaceRender::updateBackBlock( bool isLine ) {
     }
 
   Block& b  = blocks.back();
-  b.end     = cpuGm.size();
+  b.end     = cpuVertexCurrentCount();
   }
 
 const Tempest::VertexDeclaration::Declarator &SurfaceRender::decl() {
@@ -292,6 +296,11 @@ const VertexDeclaration::Declarator SurfaceRender::declImpl() {
 
   return decl;
   }
+
+size_t SurfaceRender::cpuVertexCurrentCount() const {
+  return cpuGm.size();
+  }
+
 
 void SurfaceRender::PaintDev::quad( int x, int y, int w, int h,
                               int tx, int ty, int tw, int th ) {
