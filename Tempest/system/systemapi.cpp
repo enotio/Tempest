@@ -483,8 +483,9 @@ Event::KeyType SystemAPI::translateKey(uint64_t scancode) {
   return Event::K_NoKey;
   }
 
-void SystemAPI::installImageCodec( ImageCodec *codec ) {
-  codecs.emplace_back( codec );
+void SystemAPI::installImageCodec( ImageCodec *codec,
+                                   void (*del)(ImageCodec* ) ) {
+  codecs.emplace_back( codec, del );
   }
 
 bool SystemAPI::writeBytesImpl( const char *file,

@@ -109,7 +109,14 @@ class SystemAPI{
     static Event::KeyType translateKey( uint64_t scancode );
     static uint32_t translateChar( uint64_t scancode );
 
-    void installImageCodec( ImageCodec* codec );
+    template< class Img >
+    void installImageCodec( Img* codec ){
+      auto del = []( ImageCodec* c ){
+        delete c;
+        };
+      installImageCodec(codec, del);
+      }
+
     size_t imageCodecCount() const;
     ImageCodec& imageCodec( size_t id );
 
@@ -183,8 +190,10 @@ class SystemAPI{
     KeyInf ki;
     struct GestureDeleter;
 
-    std::vector<std::unique_ptr<ImageCodec>> codecs;
+    std::vector<std::unique_ptr<ImageCodec, void (*)(ImageCodec* )>> codecs;
 
+    void installImageCodec( ImageCodec* codec,
+                            void (*del)(ImageCodec* ) );
     static void emitEventImpl( Tempest::Window *w,
                                Event& e );
   friend class AbstractAPI;

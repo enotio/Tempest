@@ -19,8 +19,6 @@ class AbstractGraphicObject;
 
 class Device;
 class AbstractCamera;
-
-class AbstractRenderPass;
 class ViewTester;
 
 template< class Item >
