@@ -420,10 +420,10 @@ std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
 #endif
       "varying vec2 tc;"
       "varying vec4 cl;"
-      "uniform sampler2D texture;"
+      "uniform sampler2D brush_texture;"
 
       "void main() {"
-        "gl_FragColor = texture2D(texture, tc)*cl;"
+        "gl_FragColor = texture2D(brush_texture, tc)*cl;"
         "}";
 
   static const std::string vs_src_nt =

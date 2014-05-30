@@ -106,9 +106,9 @@ void SurfaceRender::render(Device &dev) const {
 
     ProgramObject& sh = shaderForBlock(b);
     if( !b.curTex.pageRect().isEmpty() )
-      dev.setUniform( sh.fs, b.curTex.pageRawData(),   "texture" );
+      dev.setUniform( sh.fs, b.curTex.pageRawData(), "brush_texture" );
     if( b.curTex2d )
-      dev.setUniform( sh.fs, *b.curTex2d, "texture" );
+      dev.setUniform( sh.fs, *b.curTex2d, "brush_texture" );
 
     int sz = b.isLine? 2:3;
     dev.drawPrimitive( b.isLine? AbstractAPI::Lines : AbstractAPI::Triangle,

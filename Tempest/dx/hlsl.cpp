@@ -295,11 +295,11 @@ std::string HLSL::surfaceShader( GraphicsSubsystem::ShaderType t,
       "  float4 color: COLOR0;"
       "  };"
 
-      "sampler2DRect texture;"
+      "sampler2D brush_texture;"
 
       "FS_Output main( FS_Input fs ) {"
         "FS_Output c;"
-        "c.color = texRECTlod(texture, float4(fs.tc, 0.0, 0.0) )*fs.cl;"
+        "c.color = tex2D(brush_texture, float4(fs.tc, 0.0, 0.0) )*fs.cl;"
         "return c;"
         "}";
 

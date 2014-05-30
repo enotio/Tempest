@@ -443,10 +443,10 @@ std::string CgDx9::surfaceShader( AbstractShadingLang::ShaderType t,
 
       "FS_Output main("
         "FS_Input fs,"
-        "uniform sampler2DRect texture"
+        "uniform sampler2DRect brush_texture"
         ") {"
         "FS_Output c;"
-        "c.color = texRECTlod(texture, float4(fs.tc, 0.0, 0.0) )*fs.cl;"
+        "c.color = texRECTlod(brush_texture, float4(fs.tc, 0.0, 0.0) )*fs.cl;"
         "return c;"
         "}";
 
