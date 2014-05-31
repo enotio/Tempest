@@ -116,7 +116,7 @@ static LinuxAPI::Window* X11_CreateWindow( int w, int h,
   if( m==Tempest::Window::FullScreen )
     fullScreen(*win);
 
-  //if( m==Tempest::Window::Maximized )
+  if( m==Tempest::Window::Maximized )
     maximizeWindow(*win);
 
   minimaizeWindow(*win);
