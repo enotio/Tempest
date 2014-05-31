@@ -1301,7 +1301,7 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   dev->scrW = ww;
   dev->scrH = hh;
 
-  AbstractAPI::setDisplaySettings( opt.displaySettings );
+  AbstractAPI::setDisplaySettings( hwnd, opt.displaySettings );
 
   glXMakeCurrent( dev->dpy, dev->window, dev->glc);
   glViewport(0,0, dev->scrW, dev->scrH);

@@ -10,8 +10,8 @@ INCLUDEPATH += ../../Tempest/include
 LIBS        += -L../../lib -l"Tempest"
 
 
-INCLUDEPATH += "C:/Users/Alexander/Home/Programming/libs/assimp/include"
-LIBS += -L"C:/Users/Alexander/Home/Programming/libs/lib" -lassimp
+INCLUDEPATH += "../../../libs/assimp/include"
+LIBS += -L"../../../libs/lib" -lassimp
 
 SOURCES += main.cpp \
     mainwindow.cpp

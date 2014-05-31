@@ -3,6 +3,8 @@
 #if defined(__linux__) && !defined(__ANDROID__)
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#include <X11/Xos.h>
 #include <GL/glx.h>
 
 #undef Always // in X11/X.h
@@ -18,6 +20,7 @@
 
 #include <iostream>
 #include "core/wrappers/atomic.h"
+#include "thirdparty/utf8cpp/utf8.h"
 
 typedef Window HWND;
 
@@ -41,6 +44,48 @@ static Atom& wmDeleteMessage(){
   return w;
   }
 
+static Atom& _NET_WM_STATE(){
+  static Atom w  = XInternAtom( dpy, "_NET_WM_STATE", 0);
+  return w;
+  }
+
+static Atom& _NET_WM_STATE_MAXIMIZED_HORZ(){
+  static Atom w  = XInternAtom( dpy, "_NET_WM_STATE_MAXIMIZED_HORZ", 0);
+  return w;
+  }
+
+static Atom& _NET_WM_STATE_MAXIMIZED_VERT(){
+  static Atom w  = XInternAtom( dpy, "_NET_WM_STATE_MAXIMIZED_VERT", 0);
+  return w;
+  }
+
+static Atom& _NET_WM_STATE_FULLSCREEN(){
+  static Atom w  = XInternAtom( dpy, "_NET_WM_STATE_FULLSCREEN", 0);
+  return w;
+  }
+
+static void maximizeWindow( HWND& w ) {
+  Atom a[2];
+  a[0] = _NET_WM_STATE_MAXIMIZED_HORZ();
+  a[1] = _NET_WM_STATE_MAXIMIZED_VERT();
+
+  XChangeProperty ( dpy, w, _NET_WM_STATE(),
+    XA_ATOM, 32, PropModeReplace, (unsigned char*)a, 2);
+  }
+
+static void fullScreen( HWND& w ) {
+  Atom a[1];
+  a[0] = _NET_WM_STATE_FULLSCREEN();
+
+  XChangeProperty ( dpy, w, _NET_WM_STATE(),
+    XA_ATOM, 32, PropModeReplace, (unsigned char*)a, 1);
+  }
+
+static void minimaizeWindow( HWND& w ) {
+  XIconifyWindow(dpy, w, DefaultScreen(dpy) );
+  XFlush(dpy);
+  }
+
 static LinuxAPI::Window* X11_CreateWindow( int w, int h,
                                            Tempest::Window::ShowMode m ){
   HWND * win = new HWND;
@@ -51,6 +96,7 @@ static LinuxAPI::Window* X11_CreateWindow( int w, int h,
   Colormap cmap;
   cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
 
+  swa.override_redirect = true;
   swa.colormap   = cmap;
   swa.event_mask = PointerMotionMask | ExposureMask |
                    ButtonPressMask |ButtonReleaseMask|
@@ -66,6 +112,15 @@ static LinuxAPI::Window* X11_CreateWindow( int w, int h,
 
   XFreeColormap( dpy, cmap );
   XFree(vi);
+
+  if( m==Tempest::Window::FullScreen )
+    fullScreen(*win);
+
+  //if( m==Tempest::Window::Maximized )
+    maximizeWindow(*win);
+
+  minimaizeWindow(*win);
+
   return (LinuxAPI::Window*)win;
   }
 
@@ -86,8 +141,8 @@ LinuxAPI::LinuxAPI() {
     { XK_Return, Event::K_Return },
 
     { XK_F1,     Event::K_F1 },
-    { 0x30,      Event::K_0  },
-    { 0x41,      Event::K_A  },
+    {   48,      Event::K_0  },
+    {   97,      Event::K_A  },
 
     { 0,         Event::K_NoKey }
     };
@@ -271,6 +326,9 @@ static Tempest::KeyEvent makeKeyEvent( XKeyEvent& k,
   char txt[10];
   XLookupString(&k, txt, sizeof(txt), ksym, 0 );
 
+  char16_t txt16[10] = {};
+  utf8::unchecked::utf8to16(txt, txt+strlen(txt), txt16 );
+
   Tempest::KeyEvent::KeyType e = SystemAPI::translateKey(*ksym);
 
   if( !scut ){
@@ -309,7 +367,7 @@ void xProc( XEvent& xev, HWND &hWnd, bool &quit ) {
 
     switch( xev.type ) {
       case Expose:
-        if ( xev.xexpose.count == 0){
+        if( xev.xexpose.count == 0 ){
           render( w );
           }
         break;
