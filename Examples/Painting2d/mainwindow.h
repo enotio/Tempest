@@ -25,7 +25,7 @@ class MainWindow:public Tempest::Window {
     MainWindow( Tempest::AbstractAPI& api );
 
   protected:
-    Tempest::Device device;
+    Tempest::Device               device;
     Tempest::TextureHolder        texHolder;
     Tempest::VertexBufferHolder   vboHolder;
     Tempest::IndexBufferHolder    iboHolder;
