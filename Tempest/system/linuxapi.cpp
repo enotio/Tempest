@@ -81,9 +81,17 @@ static void fullScreen( HWND& w ) {
     XA_ATOM, 32, PropModeReplace, (unsigned char*)a, 1);
   }
 
-static void minimaizeWindow( HWND& w ) {
-  XIconifyWindow(dpy, w, DefaultScreen(dpy) );
-  XFlush(dpy);
+static void minimaizeWindow( const HWND& w ) {
+  XWMHints *wmHints;
+
+  wmHints = XAllocWMHints();
+  wmHints->initial_state = IconicState;
+  wmHints->flags         = StateHint;
+
+  XSetWMProperties( dpy, w, 0,0,
+                    0,0, 0,
+                    wmHints, 0);
+  XFree(wmHints);
   }
 
 static LinuxAPI::Window* X11_CreateWindow( int w, int h,
@@ -106,8 +114,6 @@ static LinuxAPI::Window* X11_CreateWindow( int w, int h,
                         0, vi->depth, InputOutput, vi->visual,
                         CWColormap | CWEventMask, &swa );
   XSetWMProtocols(dpy, *win, &wmDeleteMessage(), 1);
-
-  //XSelectInput(dpy, *win, );
   XStoreName(dpy, *win, "Tempest Application");
 
   XFreeColormap( dpy, cmap );
@@ -119,7 +125,8 @@ static LinuxAPI::Window* X11_CreateWindow( int w, int h,
   if( m==Tempest::Window::Maximized )
     maximizeWindow(*win);
 
-  minimaizeWindow(*win);
+  if( m==Tempest::Window::Minimized )
+    minimaizeWindow(*win);
 
   return (LinuxAPI::Window*)win;
   }
