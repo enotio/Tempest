@@ -47,8 +47,11 @@ static void* getAddr( const char* name ){
 #define WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
 
 struct Opengl4x::ImplDevice: Detail::ImplDeviceBase {
-  PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
-  PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
+  PFNGLGENVERTEXARRAYSPROC    glGenVertexArrays;
+  PFNGLBINDVERTEXARRAYPROC    glBindVertexArray;
+  PFNGLDELETEVERTEXARRAYSPROC glDeleteVertexArrays;
+
+  GLuint vao = 0;
   };
 
 Opengl4x::Opengl4x() {
@@ -69,23 +72,29 @@ AbstractAPI::Device *Opengl4x::createDevice( void *hwnd,
   dev->initExt();
   T_ASSERT_X( errCk(), "OpenGL error" );
 
-  dev->glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)getAddr("glGenVertexArrays");
-  dev->glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)getAddr("glBindVertexArray");
+  dev->glGenVertexArrays    = (PFNGLGENVERTEXARRAYSPROC)getAddr("glGenVertexArrays");
+  dev->glBindVertexArray    = (PFNGLBINDVERTEXARRAYPROC)getAddr("glBindVertexArray");
+  dev->glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)getAddr("glDeleteVertexArrays");
 
   glEnable( GL_DEPTH_TEST );
   glFrontFace( GL_CW );
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  GLuint meshVAO;
-  dev->glGenVertexArrays(1, &meshVAO);
-  dev->glBindVertexArray(meshVAO);
+  dev->glGenVertexArrays(1, &dev->vao);
+  dev->glBindVertexArray(dev->vao);
 
   reset( (AbstractAPI::Device*)dev, hwnd, opt );
   setRenderState( (AbstractAPI::Device*)dev, Tempest::RenderState() );
 
   T_ASSERT_X( errCk(), "OpenGL error" );
   return (AbstractAPI::Device*)dev;
+  }
+
+void Opengl4x::deleteDevice(GraphicsSubsystem::Device *d) const {
+  setDevice(d);
+  ((ImplDevice*)dev)->glDeleteVertexArrays(1, &dev->vbo);
+  Opengl2x::deleteDevice(d);
   }
 
 bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
