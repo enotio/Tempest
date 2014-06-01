@@ -289,6 +289,9 @@ void Device::init( const AbstractAPI &,
                    void *windowHwnd ) {
   impl   = api.createDevice( windowHwnd, opt );
 
+  if( !impl )
+    throw std::runtime_error("unable to init device");
+
   shLang = api.createShadingLang( impl );
 
   data = new Data();
@@ -329,6 +332,9 @@ void Device::init( const AbstractAPI &,
   }
 
 Device::~Device(){
+  if( impl==0 )
+    return;
+
   data->quad     = VertexBuffer<Data::QuadVertex>();
   data->quadDecl = VertexDeclaration();
 

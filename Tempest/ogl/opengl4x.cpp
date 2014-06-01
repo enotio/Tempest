@@ -19,6 +19,21 @@ using namespace Tempest;
       (HDC hDC, HGLRC hshareContext,const int *attribList);
 #endif
 
+static void* getAddr( const char* name ){
+#ifdef __WIN32
+  return (void*)wglGetProcAddress(name);
+#endif
+
+#ifdef __ANDROID__
+  return (void*)eglGetProcAddress( name );
+#endif
+
+#if defined(__linux__) && !defined(__ANDROID__)
+  return (void*)glXGetProcAddress( (const GLubyte*)name );
+#endif
+  return 0;
+  }
+
 #define WGL_CONTEXT_MAJOR_VERSION_ARB           0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB           0x2092
 #define WGL_CONTEXT_LAYER_PLANE_ARB             0x2093
@@ -32,7 +47,8 @@ using namespace Tempest;
 #define WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
 
 struct Opengl4x::ImplDevice: Detail::ImplDeviceBase {
-
+  PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
+  PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
   };
 
 Opengl4x::Opengl4x() {
@@ -53,14 +69,17 @@ AbstractAPI::Device *Opengl4x::createDevice( void *hwnd,
   dev->initExt();
   T_ASSERT_X( errCk(), "OpenGL error" );
 
+  dev->glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)getAddr("glGenVertexArrays");
+  dev->glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)getAddr("glBindVertexArray");
+
   glEnable( GL_DEPTH_TEST );
   glFrontFace( GL_CW );
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
   GLuint meshVAO;
-  //glGenVertexArrays(1, &meshVAO);
-  //glBindVertexArray(meshVAO);
+  dev->glGenVertexArrays(1, &meshVAO);
+  dev->glBindVertexArray(meshVAO);
 
   reset( (AbstractAPI::Device*)dev, hwnd, opt );
   setRenderState( (AbstractAPI::Device*)dev, Tempest::RenderState() );
@@ -77,8 +96,8 @@ bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
 #ifdef __WIN32__
   int attribs[] =
   {
-    WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-    WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+    WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+    WGL_CONTEXT_MINOR_VERSION_ARB, 1,
     WGL_CONTEXT_FLAGS_ARB,         WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
     WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
     0
@@ -116,14 +135,12 @@ bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
   wglDeleteContext(hRC);
 
   if (!wglCreateContextAttribsARB) {
-    //LOG_ERROR("wglCreateContextAttribsARB fail (%d)\n", GetLastError());
     return false;
     }
 
   hRC = wglCreateContextAttribsARB(dev->hDC, 0, attribs);
 
   if (!hRC || !wglMakeCurrent(hDC, hRC)) {
-    //LOG_ERROR("Creating render context fail (%d)\n", GetLastError());
     return false;
     }
 
