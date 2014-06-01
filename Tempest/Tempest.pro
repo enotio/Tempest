@@ -308,4 +308,5 @@ OTHER_FILES += \
     doc_title.doxy \
     ../doc/header.html \
     ../doc/footer.html \
-    ../doc/html/style.css
+    ../doc/html/style.css \
+    include/Tempest/OpenGL4x

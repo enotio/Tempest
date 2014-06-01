@@ -17,5 +17,7 @@ HEADERS += \
 
 OTHER_FILES += \
     ../bin/shader/basic.vs.glsl \
-    ../bin/shader/basic.fs.glsl
+    ../bin/shader/basic.fs.glsl \
+    ../bin/shader/basic.vs.gl4 \
+    ../bin/shader/basic.fs.gl4
 

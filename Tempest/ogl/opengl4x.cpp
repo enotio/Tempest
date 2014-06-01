@@ -2,21 +2,90 @@
 
 #ifndef __ANDROID__
 #include <GL/gl.h>
+#include "ogl/glcorearb.h"
 
 #ifdef __WIN32
 #include <windows.h>
 #include "glfn.h"
 #endif
+#include "gltypes.h"
+
+#include <Tempest/Log>
 
 using namespace Tempest;
 
-OpenGL4x::OpenGL4x() {
+#ifdef __WIN32__
+  typedef HGLRC (GLAPIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)
+      (HDC hDC, HGLRC hshareContext,const int *attribList);
+#endif
+
+#define WGL_CONTEXT_MAJOR_VERSION_ARB           0x2091
+#define WGL_CONTEXT_MINOR_VERSION_ARB           0x2092
+#define WGL_CONTEXT_LAYER_PLANE_ARB             0x2093
+#define WGL_CONTEXT_FLAGS_ARB                   0x2094
+#define WGL_CONTEXT_PROFILE_MASK_ARB            0x9126
+
+#define WGL_CONTEXT_DEBUG_BIT_ARB               0x0001
+#define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB  0x0002
+
+#define WGL_CONTEXT_CORE_PROFILE_BIT_ARB          0x00000001
+#define WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
+
+struct Opengl4x::ImplDevice: Detail::ImplDeviceBase {
+
+  };
+
+Opengl4x::Opengl4x() {
 
   }
 
-AbstractAPI::Device *OpenGL4x::createDevice( void *hwnd,
+AbstractAPI::Device *Opengl4x::createDevice( void *hwnd,
                                              const AbstractAPI::Options &opt ) const {
-#ifdef __WIN32
+  ImplDevice* dev = new ImplDevice();
+
+  if( !createContext(dev, hwnd, opt) )
+    return 0;
+
+#if defined(__linux__) && !defined(__ANDROID__)
+  dev->window = *((::Window*)hwnd);
+#endif
+
+  dev->initExt();
+  T_ASSERT_X( errCk(), "OpenGL error" );
+
+  glEnable( GL_DEPTH_TEST );
+  glFrontFace( GL_CW );
+
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+  GLuint meshVAO;
+  //glGenVertexArrays(1, &meshVAO);
+  //glBindVertexArray(meshVAO);
+
+  reset( (AbstractAPI::Device*)dev, hwnd, opt );
+  setRenderState( (AbstractAPI::Device*)dev, Tempest::RenderState() );
+
+  T_ASSERT_X( errCk(), "OpenGL error" );
+  return (AbstractAPI::Device*)dev;
+  }
+
+bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
+                              void *hwnd,
+                              const AbstractAPI::Options & ) const {
+  (void)hwnd;
+
+#ifdef __WIN32__
+  int attribs[] =
+  {
+    WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+    WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+    WGL_CONTEXT_FLAGS_ARB,         WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+    WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+    0
+  };
+
+  typedef HGLRC (GLAPIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)
+      (HDC hDC, HGLRC hshareContext,const int *attribList);
   GLuint PixelFormat;
 
   PIXELFORMATDESCRIPTOR pfd;
@@ -36,20 +105,64 @@ AbstractAPI::Device *OpenGL4x::createDevice( void *hwnd,
   HGLRC hRC = Detail::createContext( hDC );
   wglMakeCurrent( hDC, hRC );
 
-  //dev->hDC = hDC;
-  //dev->hRC = hRC;
+  PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = 0;
+  wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
+                               wglGetProcAddress("wglCreateContextAttribsARB");
 
-  //dev->wglSwapInterval = 0;
+  dev->hDC = hDC;
+  dev->hRC = hRC;
+
+  wglMakeCurrent(NULL, NULL);
+  wglDeleteContext(hRC);
+
+  if (!wglCreateContextAttribsARB) {
+    //LOG_ERROR("wglCreateContextAttribsARB fail (%d)\n", GetLastError());
+    return false;
+    }
+
+  hRC = wglCreateContextAttribsARB(dev->hDC, 0, attribs);
+
+  if (!hRC || !wglMakeCurrent(hDC, hRC)) {
+    //LOG_ERROR("Creating render context fail (%d)\n", GetLastError());
+    return false;
+    }
+
+  dev->hDC = hDC;
+  dev->hRC = hRC;
+
+  int major, minor;
+  glGetIntegerv(GL_MAJOR_VERSION, &major);
+  glGetIntegerv(GL_MINOR_VERSION, &minor);
+
+  Log() << "OpenGL render context information:";
+  Log() << "  Renderer       : " << (const char*)glGetString(GL_RENDERER);
+  Log() << "  Vendor         : " << (const char*)glGetString(GL_VENDOR);
+  Log() << "  Version        : " << (const char*)glGetString(GL_VERSION);
+  Log() << "  GLSL version   : " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+  Log() << "  OpenGL version : " << major <<"." << minor;
 
   if( !Detail::initGLProc() ) {
     return 0;
     }
+  return 1;
 #endif
 
-  return 0;
-  }
+#if defined(__linux__) && !defined(__ANDROID__)
+  dev->dpy = (Display*)LinuxAPI::display();
+  Display *dpy = dev->dpy;//FIXME
+  GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+  XVisualInfo  *vi = glXChooseVisual (dpy, 0, att);
+  dev->glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
+  XFree( vi );
 
-void OpenGL4x::deleteDevice(Opengl2x::Device *d) const {
+  glXMakeCurrent( dev->dpy, dev->window, dev->glc);
+
+  if( !Detail::initGLProc() ) {
+    return 0;
+    }
+  return 1;
+#endif
+  return 0;
   }
 
 #endif

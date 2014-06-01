@@ -68,6 +68,10 @@ namespace Detail{
   typedef void (GLAPIENTRY *PFNGLDISCARDFRAMEBUFFERPROC)(GLenum mode, GLsizei count, const GLenum* att );
 
   struct ImplDeviceBase {
+    ImplDeviceBase();
+
+    void initExt();
+
   #ifdef __ANDROID__
     EGLDisplay disp;
     EGLSurface s;

@@ -66,8 +66,8 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
 
   texture = texHolder.load("data/texture.png");
 
-  shader.vs = vsHolder.load("shader/basic.vs.glsl");
-  shader.fs = fsHolder.load("shader/basic.fs.glsl");
+  shader.vs = vsHolder.load("shader/basic.vs.gl4");
+  shader.fs = fsHolder.load("shader/basic.fs.gl4");
 
   T_ASSERT( shader.isValid() );
   }
@@ -95,6 +95,7 @@ void MainWindow::render() {
 
   device.beginPaint();
   setupShaderConstants(shader);
+
   device.drawIndexed( AbstractAPI::Triangle,
                       shader, vdecl,
                       vbo, ibo,
@@ -122,5 +123,5 @@ void MainWindow::setupShaderConstants( ProgramObject &sh ) {
   mvpMatrix.mul(view);
 
   sh.vs.setUniform("mvpMatrix", mvpMatrix);
-  sh.fs.setUniform("texture",   texture  );
+  sh.fs.setUniform("xtexture",  texture  );
   }

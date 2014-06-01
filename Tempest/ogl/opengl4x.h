@@ -5,12 +5,16 @@
 
 namespace Tempest{
 
-class OpenGL4x : public Opengl2x {
+class Opengl4x : public Opengl2x {
   public:
-    OpenGL4x();
+    Opengl4x();
 
     Device* createDevice( void * hwnd, const Options & opt ) const;
-    void    deleteDevice( Device* d )  const;
+
+  protected:
+    struct ImplDevice;
+
+    bool createContext(Detail::ImplDeviceBase *, void *hwnd, const Options &opt) const;
   };
 
 }

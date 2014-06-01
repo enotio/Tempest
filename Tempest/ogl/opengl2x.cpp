@@ -89,12 +89,6 @@ struct Tempest::Opengl2x::ImplDevice : public Detail::ImplDeviceBase {
     }
   };
 
-static const GLubyte* vstr( const GLubyte* v ){
-  if( v )
-    return v; else
-    return (GLubyte*)"";
-  }
-
 Opengl2x::Opengl2x(){
   }
 
@@ -106,7 +100,8 @@ Opengl2x::Caps Opengl2x::caps( AbstractAPI::Device* d ) const {
   return dev->caps;
   }
 
-bool Opengl2x::createContext( ImplDevice* dev, void *hwnd, const Options & ) const {
+bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
+                              void *hwnd, const Options & ) const {
   (void)hwnd;
 
 #ifdef __WIN32__
@@ -131,8 +126,6 @@ bool Opengl2x::createContext( ImplDevice* dev, void *hwnd, const Options & ) con
 
   dev->hDC = hDC;
   dev->hRC = hRC;
-
-  dev->wglSwapInterval = 0;
 
   if( !Detail::initGLProc() ) {
     return 0;
@@ -168,10 +161,6 @@ bool Opengl2x::createContext( ImplDevice* dev, void *hwnd, const Options & ) con
 
 AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) const {
   ImplDevice* dev = new ImplDevice();
-  dev->isPainting = false;
-  memset( &dev->target, 0, sizeof(dev->target) );
-  dev->lbUseed = false;
-  dev->tmpLockBuffer.reserve( 8096*32 );
 
   if( !createContext(dev, hwnd, opt) )
     return 0;
@@ -180,99 +169,17 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   dev->window = *((::Window*)hwnd);
 #endif
 
-  const char * ext = (const char*)vstr(glGetString(GL_EXTENSIONS));
-  T_ASSERT_X(ext, "opengl context not created");
-
-  dev->hasS3tcTextures =
-      (strstr(ext, "GL_OES_texture_compression_S3TC")!=0) ||
-      (strstr(ext, "GL_EXT_texture_compression_s3tc")!=0);
-  dev->hasETC1Textures = (strstr(ext, "GL_OES_compressed_ETC1_RGB8_texture")!=0);
-  dev->hasWriteonlyRendering = (strstr(ext, "GL_QCOM_writeonly_rendering")!=0);
-
-  dev->hasNpotTexture = (strstr(ext, "GL_OES_texture_npot")!=0) ||
-                        (strstr(ext, "GL_ARB_texture_non_power_of_two")!=0);
-  //dev->hasNpotTexture = 0;
-
-  dev->hasHalfSupport            = (strstr(ext, "GL_OES_vertex_half_float")!=0) ||
-                                   (strstr(ext, "GL_ARB_half_float_vertex")!=0);
-
-#ifdef __ANDROID__
-  dev->hasRenderToRGBTextures    = strstr(ext, "GL_OES_rgb8_rgba8")!=0;
-#else
-  dev->hasRenderToRGBTextures     = 1;
-#endif
-
-  dev->hasQCOMTiles      = strstr(ext, "GL_QCOM_tiled_rendering")!=0;
-  dev->hasDiscardBuffers = strstr(ext, "GL_EXT_discard_framebuffer")!=0;
-
-#ifdef __WIN32
-  if( strstr(ext, "WGL_EXT_swap_control") ){
-    dev->wglSwapInterval = (PFNGLWGLSWAPINTERVALPROC)wglGetProcAddress("wglSwapIntervalEXT");
-    }
-#endif
-
-  dev->isTileRenderStarted = false;
-
-  dev->hasTileBasedRender = dev->hasQCOMTiles | dev->hasDiscardBuffers;
-
-#ifdef __ANDROID__
-  if( dev->hasQCOMTiles ){
-    dev->glStartTilingQCOM = (PFNGLSTARTTILINGQCOMPROC)eglGetProcAddress("glStartTilingQCOM");
-    dev->glEndTilingQCOM   =   (PFNGLENDTILINGQCOMPROC)eglGetProcAddress("glEndTilingQCOM");
-    }
-
-  if( dev->hasDiscardBuffers ){
-    dev->glDiscardFrameBuffer = (PFNGLDISCARDFRAMEBUFFERPROC)eglGetProcAddress("glDiscardFramebufferEXT");
-    }
-#endif
-
 #ifdef __ANDROID__
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "vendor = %s", vstr(glGetString(GL_VENDOR)) );
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "render = %s", vstr(glGetString(GL_RENDERER)) );
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "extensions = %s", ext );
 #endif
 
+  dev->initExt();
+  T_ASSERT_X( errCk(), "OpenGL error" );
+
   glEnable( GL_DEPTH_TEST );
-  //glEnable( GL_CULL_FACE );
   glFrontFace( GL_CW );
-
-  dev->renderState.setCullFaceMode( RenderState::CullMode::noCull );
-  dev->renderState.setZTest(0);
-  dev->renderState.setZWriting(1);
-  dev->renderState.setAlphaTestMode( RenderState::AlphaTestMode::Always );
-  dev->renderState.setBlend(0);
-
-  dev->clearColor = Color(0);
-  dev->clearDepth = 1;
-  dev->clearS     = 0;
-
-  memset( (char*)&dev->caps, 0, sizeof(dev->caps) );
-
-  dev->caps.hasHalf2 = dev->hasHalfSupport;
-  dev->caps.hasHalf4 = dev->hasHalfSupport;  
-  dev->caps.hasRedableDepth = (strstr(ext, "GL_OES_depth_texture")!=0) ||
-                              (strstr(ext, "GL_ARB_depth_texture")!=0);
-
-  T_ASSERT_X( errCk(), "OpenGL error" );
-  glGetIntegerv( GL_MAX_TEXTURE_SIZE,         &dev->caps.maxTextureSize );
-  T_ASSERT_X( errCk(), "OpenGL error" );
-#ifdef __ANDROID__
-  glGetIntegerv( GL_MAX_VARYING_VECTORS,      &dev->caps.maxVaryingVectors );
-  dev->caps.maxVaryingComponents = dev->caps.maxVaryingVectors*4;
-#else
-  glGetIntegerv( GL_MAX_VARYING_COMPONENTS,   &dev->caps.maxVaryingComponents );
-  dev->caps.maxVaryingVectors = dev->caps.maxVaryingComponents/4;
-#endif
-  T_ASSERT_X( errCk(), "OpenGL error" );
-
-#ifdef __ANDROID__
-  dev->caps.maxRTCount = 1;
-#else
-  glGetIntegerv( GL_MAX_COLOR_ATTACHMENTS, &dev->caps.maxRTCount );
-  if( dev->caps.maxRTCount>32 )
-    dev->caps.maxRTCount = 32;
-#endif
-  dev->caps.hasNpotTexture = dev->hasNpotTexture;
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -1959,14 +1866,14 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
   glPolygonMode( GL_BACK,  rmode[r.backPolygonRenderMode()] );
 #endif
 
-  if( dev->isWriteOnly(r) && 0 ){
+  if( ((ImplDevice*)dev)->isWriteOnly(r) && 0 ){
     glColorMask(1,1,1,1);
     glDisable( GL_BLEND );
     glDisable( GL_DEPTH_TEST );
     glDepthMask(0);
-    dev->enableWriteOnlyRender( 1 );
+    ((ImplDevice*)dev)->enableWriteOnlyRender( 1 );
     } else {
-    dev->enableWriteOnlyRender( 0 );
+    ((ImplDevice*)dev)->enableWriteOnlyRender( 0 );
 
     bool w[4], w1[4];
     r.getColorMask( w[0], w[1], w[2], w[3] );

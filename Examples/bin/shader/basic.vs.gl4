@@ -1,0 +1,13 @@
+#version 330 core
+
+uniform mat4 mvpMatrix;
+
+in vec3 Position;
+in vec2 TexCoord;
+
+out vec2 tc;
+
+void main(void) {
+  tc           = TexCoord;
+  gl_Position  = mvpMatrix * vec4(Position, 1.0);
+  }

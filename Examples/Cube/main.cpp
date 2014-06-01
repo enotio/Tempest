@@ -1,12 +1,12 @@
 #include "mainwindow.h"
 #include <Tempest/Application>
-#include <Tempest/Opengl2x>
+#include <Tempest/Opengl4x>
 
 int main() {
   using namespace Tempest;
   Application app;
 
-  Opengl2x api;
+  Opengl4x api;
   MainWindow w( api );
   w.show();
 

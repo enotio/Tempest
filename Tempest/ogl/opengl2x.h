@@ -6,6 +6,10 @@
 
 namespace Tempest{
 
+namespace Detail{
+  class ImplDeviceBase;
+  }
+
 class Opengl2x : public OpenGLBase {
   public:
     Opengl2x();
@@ -186,8 +190,9 @@ class Opengl2x : public OpenGLBase {
                                               AbstractTexture::Format::Type f ) const;
 
     struct ImplDevice;
-    mutable ImplDevice * dev;
-    virtual bool createContext( ImplDevice*, void* hwnd, const Options &opt ) const;
+    mutable Detail::ImplDeviceBase * dev = 0;
+    virtual bool createContext( Detail::ImplDeviceBase*,
+                                void* hwnd, const Options &opt ) const;
   private:
     void setupBuffers(char *vboOffsetIndex, bool on , bool enable, bool bind) const;
     void setupAttrPtr(const Tempest::VertexDeclaration::Declarator& vd,
