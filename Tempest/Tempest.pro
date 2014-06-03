@@ -51,13 +51,11 @@ ogl:{
 
   HEADERS +=\
     ogl/opengl2x.h \
-    ogl/opengl4x.h \
     ogl/glsl.h \
     ogl/gltypes.h
 
   SOURCES += \
     ogl/opengl2x.cpp \
-    ogl/opengl4x.cpp \
     ogl/glsl.cpp \
     ogl/gltypes.cpp
 
@@ -271,8 +269,7 @@ HEADERS += \
     core/graphicssubsystem.h \
     system/platform.h \
     system/linuxapi.h \
-    ogl/openglbase.h \
-    ogl/opengl4x.h
+    ogl/openglbase.h
 
 OTHER_FILES += \
     ../.gitignore \
