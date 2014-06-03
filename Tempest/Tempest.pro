@@ -51,13 +51,23 @@ ogl:{
 
   HEADERS +=\
     ogl/opengl2x.h \
+    ogl/opengl4x.h \
     ogl/glsl.h \
     ogl/gltypes.h
 
   SOURCES += \
     ogl/opengl2x.cpp \
+    ogl/opengl4x.cpp \
     ogl/glsl.cpp \
     ogl/gltypes.cpp
+
+  !android:{
+    HEADERS +=\
+      ogl/opengl4x.h
+
+    SOURCES += \
+      ogl/opengl4x.cpp
+    }
 
   TARGET = Tempest_gl
   }
@@ -178,8 +188,7 @@ SOURCES += \
     io/file.cpp \
     ogl/glfn.cpp \
     system/linuxapi.cpp \
-    ogl/openglbase.cpp \
-    ogl/opengl4x.cpp
+    ogl/openglbase.cpp
 
 HEADERS += \
     system/windowsapi.h \

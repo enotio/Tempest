@@ -65,7 +65,11 @@ using namespace Tempest::GLProc;
 //#define GL_MAX_VARYING_VECTORS                        0x8DFC
 
 #ifdef __ANDROID__
-#define GLAPIENTRY EGLAPIENTRY
+static const GLubyte* vstr( const GLubyte* v ){
+  if( v )
+    return v; else
+    return (GLubyte*)""; //avoid Android bug
+  }
 #endif
 
 using namespace Tempest;
@@ -170,9 +174,9 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
 #endif
 
 #ifdef __ANDROID__
-  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "vendor = %s", vstr(glGetString(GL_VENDOR)) );
-  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "render = %s", vstr(glGetString(GL_RENDERER)) );
-  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "extensions = %s", ext );
+  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "vendor = %s",     vstr(glGetString(GL_VENDOR))     );
+  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "render = %s",     vstr(glGetString(GL_RENDERER))   );
+  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "extensions = %s", vstr(glGetString(GL_EXTENSIONS)) );
 #endif
 
   dev->initExt();

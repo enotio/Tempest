@@ -3,9 +3,11 @@
 #include <Tempest/Application>
 #include <Tempest/DirectX9>
 #include <Tempest/Opengl2x>
+#include <Tempest/Opengl4x>
 
 enum APIType{
   OpenGL,
+  OpenGL4,
   Direct3D
   };
 
@@ -17,6 +19,11 @@ Tempest::AbstractAPI& api( APIType a ){
       static DirectX9 api;
       return api;
       }
+
+    case OpenGL4:
+      static Opengl4x api;
+      return api;
+      break;
 
     case OpenGL:
     default:{//avoid gcc 4.8 warning
@@ -30,7 +37,7 @@ int main() {
   using namespace Tempest;
   Application app;
 
-  MainWindow w( api(Direct3D) );
+  MainWindow w( api(OpenGL4) );
   w.show();
 
   return app.exec();

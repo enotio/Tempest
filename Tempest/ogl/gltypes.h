@@ -16,6 +16,10 @@
 #include <Tempest/Texture2d>
 #include <Tempest/RenderState>
 
+#ifdef __ANDROID__
+#define GLAPIENTRY EGLAPIENTRY
+#endif
+
 namespace Tempest{
 
 namespace Detail{
@@ -141,6 +145,10 @@ namespace Detail{
         }
 
       void onDeleteTexture( Bucket &b, Detail::GLTexture* t ){
+#ifndef __ANDROID__
+        using namespace GLProc;
+#endif
+
         int tgCount = b.count+1;
         for( size_t i=0, fboI = 0; i<b.targets.size();  ){
           bool ok = false;
@@ -148,7 +156,7 @@ namespace Detail{
             ok |= (b.targets[i+r]==t);
 
           if( ok ){
-            GLProc::glDeleteFramebuffers(1, &b.fbo[fboI]);
+            glDeleteFramebuffers(1, &b.fbo[fboI]);
 
             b.fbo[fboI] = b.fbo.back();
             b.fbo.pop_back();
@@ -462,8 +470,11 @@ namespace Detail{
       } dynVbo;
 
     void free( DynBuffer& buf ){
+#ifndef __ANDROID__
+        using namespace GLProc;
+#endif
       for( GLuint id:buf.freed )
-        GLProc::glDeleteBuffers(1, &id);
+        glDeleteBuffers(1, &id);
       }
     };
   }

@@ -143,7 +143,7 @@ bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
   wglMakeCurrent(NULL, NULL);
   wglDeleteContext(hRC);
 
-  if (!wglCreateContextAttribsARB) {
+  if( !wglCreateContextAttribsARB ){
     return false;
     }
 
