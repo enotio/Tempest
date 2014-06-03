@@ -142,7 +142,7 @@ GraphicsSubsystem::VertexShader*
   return (GraphicsSubsystem::VertexShader*)sh;
   }
 
-void HLSL::deleteVertexShader(GraphicsSubsystem::VertexShader *s) const {
+void HLSL::deleteShader(GraphicsSubsystem::VertexShader *s) const {
   Data::Shader<IDirect3DVertexShader9>* vs = (Data::Shader<IDirect3DVertexShader9>*)s;
 
   vs->shader->Release();
@@ -181,7 +181,7 @@ GraphicsSubsystem::FragmentShader*
   return (GraphicsSubsystem::FragmentShader*)sh;
   }
 
-void HLSL::deleteFragmentShader(GraphicsSubsystem::FragmentShader *s) const {
+void HLSL::deleteShader(GraphicsSubsystem::FragmentShader *s) const {
   Data::Shader<IDirect3DPixelShader9>* fs = (Data::Shader<IDirect3DPixelShader9>*)s;
 
   fs->shader->Release();
@@ -349,6 +349,8 @@ std::string HLSL::surfaceShader( GraphicsSubsystem::ShaderType t,
       case Fragment:
         return fs_src;
         break;
+      default:
+        break;
       }
     }
 
@@ -358,6 +360,8 @@ std::string HLSL::surfaceShader( GraphicsSubsystem::ShaderType t,
       break;
     case Fragment:
       return fs_src_nt;
+      break;
+    default:
       break;
     }
 

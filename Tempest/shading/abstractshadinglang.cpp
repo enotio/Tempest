@@ -9,31 +9,10 @@
 
 using namespace Tempest;
 
-AbstractShadingLang::VertexShader*
-  AbstractShadingLang::createVertexShader( const std::string &fname,
-                                           std::string &outputLog ) const {
-  return createVertexShaderFromSource( SystemAPI::loadText(fname), outputLog );
-  }
-
-AbstractShadingLang::VertexShader*
-  AbstractShadingLang::createVertexShader(const std::u16string &fname, std::string &outputLog) const {
-  return createVertexShaderFromSource( SystemAPI::loadText(fname), outputLog );
-  }
-
-AbstractShadingLang::FragmentShader*
-  AbstractShadingLang::createFragmentShader(const std::u16string &fname, std::string & log ) const {
-  return createFragmentShaderFromSource( SystemAPI::loadText(fname), log );
-  }
-
 std::string AbstractShadingLang::surfaceShader( ShaderType t,
                                                 const UiShaderOpt &opt) const {
   bool d = false;
   return surfaceShader(t,opt, d);
-  }
-
-AbstractShadingLang::FragmentShader*
-  AbstractShadingLang::createFragmentShader(const std::string &fname, std::string &outputLog) const {
-  return createFragmentShaderFromSource( SystemAPI::loadText(fname), outputLog );
   }
 
 AbstractShadingLang::VertexShader*
@@ -73,6 +52,18 @@ void *AbstractShadingLang::createShader(AbstractShadingLang::ShaderType t,
                                          const std::u16string &fname,
                                          std::string &outputLog) const {
   return createShaderFromSource( t, SystemAPI::loadText(fname), outputLog );
+  }
+
+GraphicsSubsystem::TessShader*
+  AbstractShadingLang::createTessShaderFromSource( const std::string &,
+                                                   std::string & ) const {
+  return 0;
+  }
+
+GraphicsSubsystem::EvalShader*
+  AbstractShadingLang::createEvalShaderFromSource( const std::string &,
+                                                   std::string & ) const {
+  return 0;
   }
 
 AbstractShadingLang::UiShaderOpt::UiShaderOpt() {

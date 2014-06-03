@@ -6,6 +6,9 @@
 
 #include <Tempest/VertexShader>
 #include <Tempest/FragmentShader>
+#include <Tempest/TessShader>
+#include <Tempest/EvalShader>
+
 #include <Tempest/ProgramObject>
 
 #include <Tempest/signal>
@@ -293,15 +296,10 @@ class Device {
                                           const std::string& src,
                                           std::string & outputLog ) const;
 
-    AbstractAPI::VertexShader*
-    createVertexShaderFromSource( const std::string& src,
-                                  std::string & log ) const;
     void deleteShader( AbstractAPI::VertexShader* s ) const;
-
-    AbstractAPI::FragmentShader*
-    createFragmentShaderFromSource( const std::string& src,
-                                    std::string & log  ) const;
     void deleteShader( AbstractAPI::FragmentShader* s ) const;
+    void deleteShader( AbstractAPI::TessShader* ) const;
+    void deleteShader( AbstractAPI::EvalShader* ) const;
 
     AbstractShadingLang * shLang;
 

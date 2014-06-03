@@ -23,11 +23,11 @@ class HLSL  : public AbstractShadingLang {
 
     VertexShader* createVertexShaderFromSource( const std::string& src,
                                                 std::string & outputLog ) const;
-    void          deleteVertexShader( VertexShader* s ) const;
+    void          deleteShader( VertexShader* s ) const;
 
     FragmentShader* createFragmentShaderFromSource( const std::string& src,
                                                     std::string & outputLog ) const;
-    void            deleteFragmentShader( FragmentShader* s ) const;
+    void            deleteShader( FragmentShader* s ) const;
 
     std::string surfaceShader( ShaderType t, const UiShaderOpt&,
                                bool& hasHalfpixOffset ) const;

@@ -37,11 +37,19 @@ namespace Tempest {
 
       VertexShader* createVertexShaderFromSource( const std::string& src,
                                                   std::string & log ) const;
-      void          deleteVertexShader( VertexShader* s ) const;
+      void          deleteShader( VertexShader* s ) const;
 
       FragmentShader* createFragmentShaderFromSource( const std::string& src,
                                                       std::string & log  ) const;
-      void            deleteFragmentShader( FragmentShader* s ) const;
+      void            deleteShader( FragmentShader* s ) const;
+
+      TessShader* createTessShaderFromSource( const std::string& src,
+                                              std::string & log  ) const;
+      void            deleteShader( TessShader* s ) const;
+
+      EvalShader* createEvalShaderFromSource( const std::string& src,
+                                              std::string & log  ) const;
+      void            deleteShader( EvalShader* s ) const;
 
       std::string surfaceShader( ShaderType t, const UiShaderOpt&,
                                  bool& hasHalfpixOffset ) const;

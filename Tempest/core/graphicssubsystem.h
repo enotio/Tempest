@@ -17,12 +17,15 @@ class GraphicsSubsystem {
 
     enum ShaderType{
       Vertex,
-      Fragment/*,
-      Geometry*/
+      Fragment,
+      Tess,
+      Eval
       };
 
     class FragmentShader;
     class VertexShader;
+    class TessShader;
+    class EvalShader;
 
     class Device;
 
@@ -49,6 +52,8 @@ class GraphicsSubsystem {
         
         fs = 0;
         vs = 0;
+        ts = 0;
+        es = 0;
         }
       
       Texture*      texture;
@@ -59,6 +64,8 @@ class GraphicsSubsystem {
   
       FragmentShader* fs;
       VertexShader*   vs;
+      TessShader*     ts;
+      EvalShader*     es;
       };
     
     virtual void event( const Event& e );

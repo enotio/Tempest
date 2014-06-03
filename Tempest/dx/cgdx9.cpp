@@ -180,7 +180,7 @@ AbstractShadingLang::VertexShader*
   return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
   }
 
-void CgDx9::deleteVertexShader( VertexShader* s ) const {
+void CgDx9::deleteShader( VertexShader* s ) const {
   //setNullDevice();
   cgD3D9UnloadProgram( CGprogram(s) );
   cgDestroyProgram( CGprogram(s) );
@@ -215,7 +215,7 @@ AbstractShadingLang::FragmentShader *
   return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
   }
 
-void CgDx9::deleteFragmentShader( FragmentShader* s ) const{
+void CgDx9::deleteShader( FragmentShader* s ) const{
   //setNullDevice();
   cgD3D9UnloadProgram( CGprogram(s) );
   cgDestroyProgram( CGprogram(s) );
@@ -498,6 +498,8 @@ std::string CgDx9::surfaceShader( AbstractShadingLang::ShaderType t,
       case Fragment:
         return fs_src;
         break;
+      default:
+        break;
       }
     }
 
@@ -507,6 +509,8 @@ std::string CgDx9::surfaceShader( AbstractShadingLang::ShaderType t,
       break;
     case Fragment:
       return fs_src_nt;
+      break;
+    default:
       break;
     }
 

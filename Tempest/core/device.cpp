@@ -842,47 +842,40 @@ void Device::deleteVertexDecl( AbstractAPI::VertexDecl* d ) const {
     }
 
   data->allockCount.dec--;
-}
+  }
 
 void *Device::createShaderFromSource( AbstractAPI::ShaderType t,
                                       const std::string &src,
                                       std::string &outputLog) const {
-  T_WARNING_X( src.size()!=0, "shader source is empty" );
-
-  switch( t ){
-    case AbstractAPI::Vertex:
-      return createVertexShaderFromSource(src, outputLog);
-    case AbstractAPI::Fragment:
-      return createFragmentShaderFromSource(src, outputLog);
-    }
-
-  return 0;
-  }
-
-AbstractAPI::VertexShader *
-  Device::createVertexShaderFromSource( const std::string &src,
-                                        std::string &log ) const {
-  return shLang->createVertexShaderFromSource(src, log);
+  return shLang->createShaderFromSource(t, src, outputLog);
   }
 
 void Device::deleteShader(AbstractAPI::VertexShader *s) const {
   GraphicsSubsystem::DeleteEvent e;
   e.vs = s;
   event(e);
-  shLang->deleteVertexShader(s);
-  }
-
-AbstractAPI::FragmentShader *
-  Device::createFragmentShaderFromSource( const std::string &src,
-                                          std::string &log) const {
-  return shLang->createFragmentShaderFromSource(src, log);
+  shLang->deleteShader(s);
   }
 
 void Device::deleteShader(AbstractAPI::FragmentShader *s) const {
   GraphicsSubsystem::DeleteEvent e;
   e.fs = s;
   event(e);
-  shLang->deleteFragmentShader(s);
+  shLang->deleteShader(s);
+  }
+
+void Device::deleteShader(AbstractAPI::TessShader *s) const {
+  GraphicsSubsystem::DeleteEvent e;
+  e.ts = s;
+  event(e);
+  shLang->deleteShader(s);
+  }
+
+void Device::deleteShader(AbstractAPI::EvalShader *s) const {
+  GraphicsSubsystem::DeleteEvent e;
+  e.es = s;
+  event(e);
+  shLang->deleteShader(s);
   }
 
 void Device::assertPaint() {

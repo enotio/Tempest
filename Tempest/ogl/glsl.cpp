@@ -7,6 +7,7 @@
 #else
 #include "glfn.h"
 #include <GL/gl.h>
+#include "glcorearb.h"
 
 using namespace Tempest::GLProc;
 #endif
@@ -121,11 +122,19 @@ struct GLSL::Data{
   struct ShProgram{
     GLuint vs;
     GLuint fs;
+#ifndef __ANDROID__
+    GLuint ts = 0;
+    GLuint es = 0;
+#endif
 
     const void *decl;
 
     bool operator < ( const ShProgram& sh ) const {
+#ifndef __ANDROID__
+      return std::tie(vs, fs, ts, es, decl) < std::tie(sh.vs, sh.fs, sh.ts, sh.es, sh.decl);
+#else
       return std::tie(vs, fs, decl) < std::tie(sh.vs, sh.fs, sh.decl);
+#endif
       }
 
     GLuint linked;
@@ -338,7 +347,7 @@ AbstractShadingLang::VertexShader*
   return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
   }
 
-void GLSL::deleteVertexShader( VertexShader* s ) const {
+void GLSL::deleteShader( VertexShader* s ) const {
   //setNullDevice();
   GLuint* prog = (GLuint*)(s);
 
@@ -374,7 +383,7 @@ AbstractShadingLang::FragmentShader *
   return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
   }
 
-void GLSL::deleteFragmentShader( FragmentShader* s ) const{
+void GLSL::deleteShader( FragmentShader *s ) const{
   GLuint* prog = (GLuint*)(s);
 
   if( glIsShader(*prog) )
@@ -393,6 +402,84 @@ void GLSL::deleteFragmentShader( FragmentShader* s ) const{
 
   data->prog.resize(nsz);
   delete prog;
+  }
+
+GraphicsSubsystem::TessShader *GLSL::createTessShaderFromSource( const std::string &src,
+                                                                 std::string &log ) const {
+  if( src.size()==0 )
+    return 0;
+
+  GLuint *prog = new GLuint(0);
+  *prog = data->loadShader( GL_TESS_CONTROL_SHADER, src.data(), log );
+
+  if( !*prog ){
+    delete prog;
+    return 0;
+    }
+
+  return reinterpret_cast<AbstractShadingLang::TessShader*>(prog);
+  }
+
+void GLSL::deleteShader( TessShader *s ) const{
+#ifndef __ANDROID__
+  GLuint* prog = (GLuint*)(s);
+
+  if( glIsShader(*prog) )
+    glDeleteShader( *prog );
+
+  size_t nsz = 0;
+  for( size_t i=0; i<data->prog.size(); ++i ){
+    data->prog[nsz] = data->prog[i];
+    if( data->prog[i].ts == *prog ){
+      if( glIsProgram(data->prog[i].linked) )
+        glDeleteProgram( data->prog[i].linked );
+      } else {
+      ++nsz;
+      }
+    }
+
+  data->prog.resize(nsz);
+  delete prog;
+#endif
+  }
+
+GraphicsSubsystem::EvalShader *GLSL::createEvalShaderFromSource( const std::string &src,
+                                                                 std::string &log ) const {
+  if( src.size()==0 )
+    return 0;
+
+  GLuint *prog = new GLuint(0);
+  *prog = data->loadShader( GL_TESS_EVALUATION_SHADER, src.data(), log );
+
+  if( !*prog ){
+    delete prog;
+    return 0;
+    }
+
+  return reinterpret_cast<AbstractShadingLang::EvalShader*>(prog);
+  }
+
+void GLSL::deleteShader( EvalShader *s ) const{
+#ifndef __ANDROID__
+  GLuint* prog = (GLuint*)(s);
+
+  if( glIsShader(*prog) )
+    glDeleteShader( *prog );
+
+  size_t nsz = 0;
+  for( size_t i=0; i<data->prog.size(); ++i ){
+    data->prog[nsz] = data->prog[i];
+    if( data->prog[i].es == *prog ){
+      if( glIsProgram(data->prog[i].linked) )
+        glDeleteProgram( data->prog[i].linked );
+      } else {
+      ++nsz;
+      }
+    }
+
+  data->prog.resize(nsz);
+  delete prog;
+#endif
   }
 
 std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
@@ -456,6 +543,10 @@ std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
       case Fragment:
         return fs_src;
         break;
+
+      default:
+        return "";
+        break;
       }
     }
 
@@ -465,6 +556,9 @@ std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
       break;
     case Fragment:
       return fs_src_nt;
+      break;
+    default:
+      return "";
       break;
     }
 

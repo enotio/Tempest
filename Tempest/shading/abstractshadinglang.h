@@ -59,47 +59,42 @@ class AbstractShadingLang : public GraphicsSubsystem {
           return createVertexShaderFromSource(src, outputLog);
         case Fragment:
           return createFragmentShaderFromSource(src, outputLog);
+        case Tess:
+          return createTessShaderFromSource(src, outputLog);
+        case Eval:
+          return createEvalShaderFromSource(src, outputLog);
         }
 
       return 0;
       }
 
     virtual VertexShader*
-                 createVertexShader( const std::string& fname,
-                                     std::string & outputLog ) const;
-    virtual VertexShader*
-                 createVertexShader( const std::u16string& fname,
-                                     std::string & outputLog ) const;
-    virtual VertexShader*
                  createVertexShaderFromSource( const std::string& src,
                                                std::string & outputLog ) const = 0;
 
     virtual FragmentShader*
-                 createFragmentShader( const std::string& fname,
-                                       std::string & outputLog ) const;
-    virtual FragmentShader*
-                 createFragmentShader( const std::u16string& fname,
-                                       std::string &log ) const;
-    virtual FragmentShader*
                  createFragmentShaderFromSource( const std::string& src,
                                                  std::string & outputLog ) const = 0;
 
-    void deleteShader( VertexShader* s ) const {
-      deleteVertexShader(s);
-      }
+    virtual TessShader*
+                 createTessShaderFromSource( const std::string& src,
+                                                 std::string & outputLog ) const;
 
-    void deleteShader( FragmentShader* s ) const {
-      deleteFragmentShader(s);
-      }
-    virtual void deleteVertexShader( VertexShader* s ) const = 0;
-    virtual void deleteFragmentShader( FragmentShader* s ) const = 0;
+    virtual EvalShader*
+                 createEvalShaderFromSource( const std::string& src,
+                                             std::string & outputLog ) const;
+
+    virtual void deleteShader( VertexShader*   s ) const = 0;
+    virtual void deleteShader( FragmentShader* s ) const = 0;
+    virtual void deleteShader( TessShader*       ) const{}
+    virtual void deleteShader( EvalShader*       ) const{}
 
     virtual bool link( const Tempest::VertexShader   &/*vs*/,
                        const Tempest::FragmentShader &/*fs*/,
                        const AbstractAPI::VertexDecl */*decl*/,
                        std::string& /*log*/ ) const {
       return true;
-    }
+      }
 
     struct UiShaderOpt{
       UiShaderOpt();

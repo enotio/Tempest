@@ -186,7 +186,9 @@ SOURCES += \
     io/file.cpp \
     ogl/glfn.cpp \
     system/linuxapi.cpp \
-    ogl/openglbase.cpp
+    ogl/openglbase.cpp \
+    shading/tessshader.cpp \
+    shading/evalshader.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -269,7 +271,11 @@ HEADERS += \
     core/graphicssubsystem.h \
     system/platform.h \
     system/linuxapi.h \
-    ogl/openglbase.h
+    ogl/openglbase.h \
+    shading/tessshader.h \
+    dataControl/tessshaderholder.h \
+    shading/evalshader.h \
+    dataControl/evalshaderholder.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -309,10 +315,13 @@ OTHER_FILES += \
     include/Tempest/File \
     include/Tempest/GraphicsSubsystem \
     include/Tempest/HLSL \
+    include/Tempest/TessShader \
     ../README.md \
     Doxyfile \
     doc_title.doxy \
     ../doc/header.html \
     ../doc/footer.html \
     ../doc/html/style.css \
-    include/Tempest/OpenGL4x
+    include/Tempest/OpenGL4x \
+    include/Tempest/EvalShaderHolder \
+    include/Tempest/EvalShader

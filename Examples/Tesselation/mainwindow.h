@@ -10,6 +10,9 @@
 #include <Tempest/VertexBuffer>
 #include <Tempest/IndexBuffer>
 
+#include <Tempest/TessShaderHolder>
+#include <Tempest/EvalShaderHolder>
+
 #include <cstdint>
 
 class MainWindow : public Tempest::Window {
@@ -44,6 +47,12 @@ class MainWindow : public Tempest::Window {
 
     Tempest::FragmentShaderHolder fsHolder;
     Tempest::FragmentShader       fs;
+
+    Tempest::TessShaderHolder     tsHolder;
+    Tempest::TessShader           ts;
+
+    Tempest::EvalShaderHolder     esHolder;
+    Tempest::EvalShader           es;
 
     struct Vertex {
       float    x, y, z;
