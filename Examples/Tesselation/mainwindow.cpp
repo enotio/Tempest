@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 #include <Tempest/Log>
+#include <Tempest/RenderState>
 
 MainWindow::Vertex MainWindow::quadVertices[] = {
   { -1.0f,-1.0f, 1.0f, 0.0f,0.0f, {0,0, 1}, { 1,0,0} },
@@ -94,12 +95,11 @@ void MainWindow::render() {
     return;
 
   device.beginPaint();
-  device.clear( Tempest::Color(0), 1.0 );
+  device.clear( Tempest::Color(0,0,1), 1.0 );
 
   setShaderConstants( spin.x, spin.y, texture, normal, height );
 
-  device.drawIndexed( Tempest::AbstractAPI::Triangle,
-                      vs, fs, vdecl,
+  device.drawIndexed( vs, fs, ts, es, vdecl,
                       vbo, ibo,
                       0, 0,
                       ibo.size()/3 );
@@ -115,27 +115,28 @@ void MainWindow::resizeEvent(Tempest::SizeEvent &) {
 
 void MainWindow::setShaderConstants( float spinX, float spinY,
                                      const Texture2d &tex,
-                                     const Texture2d &normal,
+                                     const Texture2d &/*normal*/,
                                      const Texture2d &height  ) {
-  Matrix4x4 mWorld, mView;
+  Matrix4x4 mvpMatrix, projective, view;
 
-  mWorld.identity();
-  mWorld.translate( 0, 0, 4 );
-  mWorld.rotate( spinX, 0,1,0 );
-  mWorld.rotate( spinY, 1,0,0 );
-  mWorld.scale(0.75);
+  projective.perspective( 45.0, (float)w()/h(), 0.1, 100.0 );
 
-  mView.mul( mWorld );
+  view.translate(0,0,4);
+  view.rotate(spinY, 1, 0, 0);
+  view.rotate(spinX, 0, 1, 0);
+  //view.scale(zoom);
 
-  Matrix4x4 mvp = mProj;
-  mvp.mul( mView  );
+  mvpMatrix = projective;
+  mvpMatrix.mul(view);
 
-  vs.setUniform( "modelView", mView );
-  vs.setUniform( "mvpMatrix", mvp   );
+  vs.setUniform( "modelView", view );
 
-  fs.setUniform( "lightDir",  0,0,-1 );
+  es.setUniform( "mvpMatrix", mvpMatrix   );
+  es.setUniform( "heightMap", height );
+
+  //fs.setUniform( "lightDir",  0,0,-1 );
+  //fs.setUniform( "bump",      normal );
   fs.setUniform( "diffuse",   tex    );
-  fs.setUniform( "bump",      normal );
   fs.setUniform( "heightMap", height );
   }
 

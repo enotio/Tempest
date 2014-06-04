@@ -55,6 +55,7 @@ class AbstractAPI: public GraphicsSubsystem {
       Triangle      = 4,
       TriangleStrip = 5,
       TriangleFan   = 6,
+      //Patches       = 7,
 
       lastPrimitiveType
       };

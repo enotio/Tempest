@@ -16,9 +16,6 @@ class HLSL  : public AbstractShadingLang {
     void bind( const Tempest::VertexShader& ) const;
     void bind( const Tempest::FragmentShader& ) const;
 
-    void unBind( const Tempest::VertexShader& ) const;
-    void unBind( const Tempest::FragmentShader& ) const;
-
     void* context() const;
 
     VertexShader* createVertexShaderFromSource( const std::string& src,

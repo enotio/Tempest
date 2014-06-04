@@ -188,7 +188,8 @@ SOURCES += \
     system/linuxapi.cpp \
     ogl/openglbase.cpp \
     shading/tessshader.cpp \
-    shading/evalshader.cpp
+    shading/evalshader.cpp \
+    core/devicesm5.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -275,7 +276,8 @@ HEADERS += \
     shading/tessshader.h \
     dataControl/tessshaderholder.h \
     shading/evalshader.h \
-    dataControl/evalshaderholder.h
+    dataControl/evalshaderholder.h \
+    core/devicesm5.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -324,4 +326,5 @@ OTHER_FILES += \
     ../doc/html/style.css \
     include/Tempest/OpenGL4x \
     include/Tempest/EvalShaderHolder \
-    include/Tempest/EvalShader
+    include/Tempest/EvalShader \
+    include/Tempest/DeviceSM5

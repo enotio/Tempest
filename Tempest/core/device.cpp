@@ -864,20 +864,6 @@ void Device::deleteShader(AbstractAPI::FragmentShader *s) const {
   shLang->deleteShader(s);
   }
 
-void Device::deleteShader(AbstractAPI::TessShader *s) const {
-  GraphicsSubsystem::DeleteEvent e;
-  e.ts = s;
-  event(e);
-  shLang->deleteShader(s);
-  }
-
-void Device::deleteShader(AbstractAPI::EvalShader *s) const {
-  GraphicsSubsystem::DeleteEvent e;
-  e.es = s;
-  event(e);
-  shLang->deleteShader(s);
-  }
-
 void Device::assertPaint() {
   T_ASSERT_X( data->isPaintMode, "Device::beginPaint not called" );
   }
@@ -894,14 +880,6 @@ void Device::bind( const Tempest::VertexShader &s ){
 
 void Device::bind( const Tempest::FragmentShader &s ){
   shadingLang().bind(s);
-  }
-
-void Device::unBind( const Tempest::VertexShader &s ){
-  shadingLang().unBind(s);
-  }
-
-void Device::unBind( const Tempest::FragmentShader &s ){
-  shadingLang().unBind(s);
   }
 
 void Device::bind( const Tempest::VertexDeclaration & d ){

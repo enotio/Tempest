@@ -7,13 +7,17 @@
 
 namespace Tempest{
 
-class VertexShader;
+class DeviceSM5;
 class Device;
 
 template< class Shader, class APIDescriptor, AbstractAPI::ShaderType type >
 class ShaderHolder : public AbstractHolderWithLoad< Shader, APIDescriptor > {
   public:
     typedef AbstractHolderWithLoad< Shader, APIDescriptor  > BaseType;
+
+    ShaderHolder( DeviceSM5 &d ):BaseType( d ) {
+      data = new Data();
+      }
 
     ShaderHolder( Device &d ):BaseType( d ) {
       data = new Data();

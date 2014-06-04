@@ -10,8 +10,11 @@
 
 namespace Tempest{
 
+class Shader;
 class VertexShader;
 class FragmentShader;
+class TessShader;
+class EvalShader;
 
 class Matrix4x4;
 class Texture2d;
@@ -35,9 +38,8 @@ class AbstractShadingLang : public GraphicsSubsystem {
 
     virtual void bind( const Tempest::VertexShader& ) const = 0;
     virtual void bind( const Tempest::FragmentShader& ) const = 0;
-
-    virtual void unBind( const Tempest::VertexShader& ) const = 0;
-    virtual void unBind( const Tempest::FragmentShader& ) const = 0;
+    virtual void bind( const Tempest::TessShader&     ) const;
+    virtual void bind( const Tempest::EvalShader&     ) const;
 
     virtual void setVertexDecl( const Tempest::AbstractAPI::VertexDecl*  ) const{}
 
@@ -108,11 +110,13 @@ class AbstractShadingLang : public GraphicsSubsystem {
   protected:
     static VertexShader*   get( const Tempest::VertexShader   & s );
     static FragmentShader* get( const Tempest::FragmentShader & s );
+    static TessShader*     get( const Tempest::TessShader     & s );
+    static EvalShader*     get( const Tempest::EvalShader     & s );
+
     static AbstractAPI::Texture* get( const Tempest::Texture2d & s );
     static AbstractAPI::Texture* get( const Tempest::Texture3d & s );
 
-    static const ShaderInput &inputOf( const Tempest::VertexShader   & s );
-    static const ShaderInput &inputOf( const Tempest::FragmentShader & s );
+    static const ShaderInput &inputOf( const Tempest::Shader & s );
 
   };
 

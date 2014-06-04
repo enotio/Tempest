@@ -62,6 +62,8 @@ using namespace Tempest::GLProc;
 #define GL_DEPTH_EXT                                  0x1801
 #define GL_STENCIL_EXT                                0x1802
 #endif
+
+#define GL_PATCHES 0x0000000e
 //#define GL_MAX_VARYING_VECTORS                        0x8DFC
 
 #ifdef __ANDROID__
@@ -1719,6 +1721,7 @@ void Opengl2x::draw( AbstractAPI::Device *de,
     }
 
   static const GLenum type[] = {
+    GL_PATCHES,
     GL_POINTS,         // = 1,
     GL_LINES,          // = 2,
     GL_LINE_STRIP,    // = 3,
@@ -1728,7 +1731,7 @@ void Opengl2x::draw( AbstractAPI::Device *de,
     };
 
   int vpCount = vertexCount(t, pCount);
-  glDrawArrays( type[ t-1 ], firstVertex, vpCount );
+  glDrawArrays( type[ t ], firstVertex, vpCount );
   //setupBuffers(0, false, false);
   T_ASSERT_X( errCk(), "OpenGL error" );
   }
@@ -1763,6 +1766,7 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
   T_ASSERT_X( errCk(), "OpenGL error" );
 
   static const GLenum type[] = {
+    GL_PATCHES,
     GL_POINTS,        // = 1,
     GL_LINES,         // = 2,
     GL_LINE_STRIP,    // = 3,
@@ -1772,7 +1776,7 @@ void Opengl2x::drawIndexed( AbstractAPI::Device *de,
     };
 
   int vpCount = vertexCount(t, pCount);
-  glDrawElements( type[ t-1 ],
+  glDrawElements( type[ t ],
                   vpCount,
                   GL_UNSIGNED_SHORT,
                   ((void*)(iboOffsetIndex*sizeof(uint16_t))) );

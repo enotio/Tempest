@@ -5,14 +5,13 @@ in vec2 TexCoord;
 in vec3 Normal;
 in vec3 BiNormal;
 
-out vec4 pos;
-out vec3 n;
-out vec3 bn;
-out vec3 tn;
+out VertexVS
+{
+  vec2 texcoord;
+  vec3 normal;
+} vertvs;
 
-out vec2 tc;
-
-uniform mat4 mvpMatrix, modelView;
+uniform mat4 modelView;
 
 vec3 normal( in vec3 n ){
   vec4 tmp = modelView*vec4(n,0.0);
@@ -20,13 +19,8 @@ vec3 normal( in vec3 n ){
   }
 
 void main() {
-  n  =  normal(Normal);
-  bn =  normal(BiNormal);
-  tn = -normalize(cross( bn, n ));
+  vertvs.normal   = Normal;
+  vertvs.texcoord = TexCoord;
 
-  tc = TexCoord;
-
-  vec4 tmp = mvpMatrix*vec4( Position, 1.0 );
-  gl_Position = tmp;
-  pos         = tmp;
+  gl_Position = vec4(Position, 1.0);
   }

@@ -8,12 +8,12 @@
 namespace Tempest{
 
 class EvalShader;
-class Device;
+class DeviceSM5;
 
 struct EvalShaderHolder: ShaderHolder< EvalShader,
                                        AbstractAPI::EvalShader,
                                        AbstractAPI::Eval > {
-  EvalShaderHolder( Device& d ):ShaderHolder<
+  EvalShaderHolder( DeviceSM5& d ):ShaderHolder<
                                        EvalShader,
                                        AbstractAPI::EvalShader,
                                        AbstractAPI::Eval >(d){}

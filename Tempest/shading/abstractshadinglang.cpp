@@ -2,6 +2,8 @@
 
 #include <Tempest/VertexShader>
 #include <Tempest/FragmentShader>
+#include <Tempest/TessShader>
+#include <Tempest/EvalShader>
 
 #include <Tempest/Texture2d>
 #include <Tempest/SystemAPI>
@@ -25,6 +27,15 @@ AbstractShadingLang::FragmentShader*
   return s.data.const_value();
   }
 
+AbstractShadingLang::TessShader *AbstractShadingLang::get(const Tempest::TessShader &s) {
+  return s.data.const_value();
+  }
+
+AbstractShadingLang::EvalShader *AbstractShadingLang::get(const Tempest::EvalShader &s) {
+  return s.data.const_value();
+  }
+
+
 AbstractAPI::Texture* AbstractShadingLang::get( const Tempest::Texture2d & t ){
   return t.data.const_value();
   }
@@ -33,14 +44,15 @@ AbstractAPI::Texture *AbstractShadingLang::get(const Texture3d &t) {
   return t.data.const_value();
   }
 
-const ShaderInput &AbstractShadingLang::inputOf(const Tempest::VertexShader &s) {
+const ShaderInput &AbstractShadingLang::inputOf(const Tempest::Shader &s) {
   return s.input;
   }
 
-const ShaderInput &AbstractShadingLang::inputOf(const Tempest::FragmentShader &s) {
-  return s.input;
+void AbstractShadingLang::bind(const Tempest::TessShader &) const {
   }
 
+void AbstractShadingLang::bind(const Tempest::EvalShader &) const {
+  }
 
 void *AbstractShadingLang::createShader( AbstractShadingLang::ShaderType t,
                                          const std::string &fname,

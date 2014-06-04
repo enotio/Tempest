@@ -5,11 +5,6 @@
 #include <Tempest/AbstractAPI>
 
 namespace Tempest {
-  class VertexShader;
-  class FragmentShader;
-
-  class Matrix4x4;
-
   class GLSL: public AbstractShadingLang {
     public:
       GLSL( AbstractAPI::OpenGL2xDevice *dev );
@@ -19,12 +14,12 @@ namespace Tempest {
       void endPaint()   const;
 
       void enable() const;
+      void disable() const;
 
-      void bind( const Tempest::VertexShader& ) const;
+      void bind( const Tempest::VertexShader&   ) const;
       void bind( const Tempest::FragmentShader& ) const;
-
-      void unBind( const Tempest::VertexShader& ) const;
-      void unBind( const Tempest::FragmentShader& ) const;
+      void bind( const Tempest::TessShader&     ) const;
+      void bind( const Tempest::EvalShader&     ) const;
 
       bool link( const Tempest::VertexShader   &vs,
                  const Tempest::FragmentShader &fs,

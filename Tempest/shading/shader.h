@@ -28,6 +28,7 @@ class Shader {
     std::string logv;
 
   friend class Device;
+  friend class AbstractShadingLang;
   };
 
 }

@@ -99,14 +99,6 @@ void HLSL::bind( const Tempest::FragmentShader & fs ) const {
   data->fs = &fs;
   }
 
-void HLSL::unBind(const Tempest::VertexShader &) const {
-  data->vs = 0;
-  }
-
-void HLSL::unBind(const Tempest::FragmentShader &) const {
-  data->fs = 0;
-  }
-
 void *HLSL::context() const {
   return data->dev;
   }

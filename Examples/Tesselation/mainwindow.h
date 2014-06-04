@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <Tempest/Window>
-#include <Tempest/Device>
+#include <Tempest/DeviceSM5>
 
 #include <Tempest/VertexBufferHolder>
 #include <Tempest/IndexBufferHolder>
@@ -34,7 +34,7 @@ class MainWindow : public Tempest::Window {
 
     Tempest::Point mpos, spin;
 
-    Tempest::Device device;
+    Tempest::DeviceSM5 device;
 
     Tempest::TextureHolder texHolder;
     Tempest::Texture2d     texture, normal, height;

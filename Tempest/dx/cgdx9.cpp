@@ -249,25 +249,6 @@ void CgDx9::bind( const Tempest::FragmentShader& s ) const {
   //setDevice();
   }
 
-void CgDx9::unBind( const Tempest::VertexShader& s ) const {
-  CGprogram prog = CGprogram( get(s) );
-  data->currentProgramVS = 0;
-  data->currentVS = 0;
-
-  //setDevice();
-  cgD3D9UnbindProgram( prog );
-  }
-
-void CgDx9::unBind( const Tempest::FragmentShader& s ) const {
-  CGprogram prog = CGprogram( get(s) );
-  data->currentProgramFS = 0;
-  data->currentFS = 0;
-
-  //setDevice();
-  cgD3D9UnbindProgram( prog );
-  }
-
-
 void CgDx9::setUniform( const Tempest::VertexShader &s,
                         const Matrix4x4& mIn,
                         const char *name  ) const{

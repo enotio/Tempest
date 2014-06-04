@@ -13,10 +13,12 @@
 namespace Tempest{
 
 class Device;
+class DeviceSM5;
 
 class AbstractHolderBase{
   public:
     AbstractHolderBase( Device &d );
+    AbstractHolderBase( DeviceSM5 &d );
     virtual ~AbstractHolderBase();
 
     Device &device();
@@ -37,12 +39,10 @@ class AbstractHolder : public AbstractHolderBase {
   protected:
     AbstractHolder( Device & d ):AbstractHolderBase(d){
       references.reserve(4096);
-      //freed.reserve(4096);
       }
 
-    ~AbstractHolder(){
-      //for( size_t i=0; i<freed.size(); ++i )
-        //delete freed[i];
+    AbstractHolder( DeviceSM5 & d ):AbstractHolderBase(d){
+      references.reserve(4096);
       }
 
     struct ImplManip{
@@ -155,6 +155,7 @@ template< class Data, class APIDescriptor >
 class AbstractHolderWithLoad : public AbstractHolder<Data, APIDescriptor> {
   public:
     AbstractHolderWithLoad( Device &d ):AbstractHolder<Data, APIDescriptor>(d){}
+    AbstractHolderWithLoad( DeviceSM5 &d ):AbstractHolder<Data, APIDescriptor>(d){}
 
     typedef typename AbstractHolder<Data, APIDescriptor>::ImplManip ImplManip;
 

@@ -6,11 +6,6 @@
 
 namespace Tempest {
 
-class VertexShader;
-class FragmentShader;
-
-class Matrix4x4;
-
 class CgDx9 : public AbstractShadingLang {
   public:
     CgDx9( AbstractAPI::DirectX9Device *dev );
@@ -20,9 +15,6 @@ class CgDx9 : public AbstractShadingLang {
 
     void bind( const Tempest::VertexShader& ) const;
     void bind( const Tempest::FragmentShader& ) const;
-
-    void unBind( const Tempest::VertexShader& ) const;
-    void unBind( const Tempest::FragmentShader& ) const;
 
     void* context() const;
 

@@ -8,12 +8,12 @@
 namespace Tempest{
 
 class TessShader;
-class Device;
+class DeviceSM5;
 
 struct TessShaderHolder: ShaderHolder< TessShader,
                                        AbstractAPI::TessShader,
                                        AbstractAPI::Tess > {
-  TessShaderHolder( Device& d ):ShaderHolder<
+  TessShaderHolder( DeviceSM5& d ):ShaderHolder<
                                        TessShader,
                                        AbstractAPI::TessShader,
                                        AbstractAPI::Tess >(d){}

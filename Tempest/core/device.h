@@ -6,9 +6,6 @@
 
 #include <Tempest/VertexShader>
 #include <Tempest/FragmentShader>
-#include <Tempest/TessShader>
-#include <Tempest/EvalShader>
-
 #include <Tempest/ProgramObject>
 
 #include <Tempest/signal>
@@ -38,7 +35,7 @@ class Device {
     Device( const AbstractAPI & dx,
             const Options & opt,
             void * windowHwnd );
-    ~Device();
+    virtual ~Device();
 
     AbstractAPI::Caps caps() const;
 
@@ -160,18 +157,7 @@ class Device {
 
       applyRs();
       bindShaders(vs, fs);
-      bind(decl);
-      bind( vbo.data.const_value(), sizeof(T) );
-      bind( ibo.data.const_value() );
-
-      const AbstractShadingLang& sh = shadingLang();
-      sh.setVertexDecl( (AbstractAPI::VertexDecl*)(decl.decl->impl) );
-      sh.enable();
-      drawIndexedPrimitive( t,
-                            vboOffsetIndex + vbo.m_first,
-                            iboOffsetIndex + ibo.m_first,
-                            pCount  );
-      sh.disable();
+      implDrawIndexed(t, decl, vbo, ibo, vboOffsetIndex, iboOffsetIndex, pCount);
       }
 
     template< class T >
@@ -209,26 +195,55 @@ class Device {
                                const AbstractShadingLang::UiShaderOpt& opt );
 
     void event( const GraphicsSubsystem::Event& e ) const;
-  private:
-    void bind( const Tempest::VertexShader   &s );
-    void bind( const Tempest::FragmentShader &s );
+
+  protected:
+    inline const AbstractShadingLang& shadingLang() const {
+      return *shLang;
+      }
+
+    template< class T, class I >
+    inline void implDrawIndexed( AbstractAPI::PrimitiveType t,
+                                 const Tempest::VertexDeclaration &decl,
+                                 const Tempest::VertexBuffer<T> & vbo,
+                                 const Tempest::IndexBuffer<I>  & ibo,
+                                 int vboOffsetIndex,
+                                 int iboOffsetIndex,
+                                 int pCount ){
+      bind(decl);
+      bind( vbo.data.const_value(), sizeof(T) );
+      bind( ibo.data.const_value() );
+
+      const AbstractShadingLang& sh = shadingLang();
+      sh.setVertexDecl( (AbstractAPI::VertexDecl*)(decl.decl->impl) );
+      sh.enable();
+      drawIndexedPrimitive( t,
+                            vboOffsetIndex + vbo.m_first,
+                            iboOffsetIndex + ibo.m_first,
+                            pCount  );
+      sh.disable();
+      }
+
+    virtual void deleteShader( AbstractAPI::TessShader*     ) const {}
+    virtual void deleteShader( AbstractAPI::EvalShader*     ) const {}
 
     void assertPaint();
-    void bindShaders(const Tempest::VertexShader   &vs,
-                      const Tempest::FragmentShader &fs);
-
-    void unBind( const Tempest::VertexShader   &s );
-    void unBind( const Tempest::FragmentShader &s );
+    void applyRs() const;
 
     void bind( const Tempest::VertexDeclaration & d );
     void bind( AbstractAPI::VertexBuffer* b, int vsize );
     void bind( AbstractAPI::IndexBuffer* b );
 
+    void bind( const Tempest::VertexShader   &s );
+    void bind( const Tempest::FragmentShader &s );
+
+    void bindShaders( const Tempest::VertexShader   &vs,
+                      const Tempest::FragmentShader &fs );
+  private:
     void draw( AbstractAPI::PrimitiveType t,
                int firstVertex, int pCount );
-    void drawIndexedPrimitive(AbstractAPI::PrimitiveType t,
+    void drawIndexedPrimitive( AbstractAPI::PrimitiveType t,
                                int vboOffsetIndex, int iboOffsetIndex,
-                               int pCount);
+                               int pCount );
     void addHolder( AbstractHolderBase& h );
     void delHolder( AbstractHolderBase& h );
 
@@ -288,18 +303,12 @@ class Device {
 
     void deleteVertexDecl( AbstractAPI::VertexDecl* ) const;
 
-    inline const AbstractShadingLang& shadingLang() const {
-      return *shLang;
-      }
-
     virtual void* createShaderFromSource( AbstractAPI::ShaderType t,
                                           const std::string& src,
                                           std::string & outputLog ) const;
 
     void deleteShader( AbstractAPI::VertexShader* s ) const;
-    void deleteShader( AbstractAPI::FragmentShader* s ) const;
-    void deleteShader( AbstractAPI::TessShader* ) const;
-    void deleteShader( AbstractAPI::EvalShader* ) const;
+    void deleteShader( AbstractAPI::FragmentShader* ) const;
 
     AbstractShadingLang * shLang;
 
@@ -326,7 +335,6 @@ class Device {
                void * windowHwnd );
 
     void forceEndPaint() const;
-    void applyRs() const;
 
   template< class Shader, class APIDescriptor, AbstractShadingLang::ShaderType >
   friend class ShaderHolder;

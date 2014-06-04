@@ -14,7 +14,12 @@ using namespace Tempest::GLProc;
 
 #include <Tempest/Assert>
 
+#ifdef __ANDROID__
 #include <Tempest/Device>
+#else
+#include <Tempest/DeviceSM5>
+#endif
+
 #include <Tempest/Matrix4x4>
 #include <Tempest/Texture2d>
 
@@ -53,6 +58,8 @@ struct GLSL::Data{
 
   const Tempest::VertexShader*   currentVS;
   const Tempest::FragmentShader* currentFS;
+  const Tempest::TessShader*     currentTS = 0;
+  const Tempest::EvalShader*     currentES = 0;
 
   Detail::UniformCash<GLuint> uCash;
   const AbstractAPI::VertexDecl* vdecl;
@@ -137,6 +144,14 @@ struct GLSL::Data{
 #endif
       }
 
+    bool operator == ( const ShProgram& sh ) const {
+#ifndef __ANDROID__
+      return std::tie(vs, fs, ts, es, decl) == std::tie(sh.vs, sh.fs, sh.ts, sh.es, sh.decl);
+#else
+      return std::tie(vs, fs, decl) == std::tie(sh.vs, sh.fs, sh.decl);
+#endif
+      }
+
     GLuint linked;
     };
 
@@ -149,35 +164,7 @@ struct GLSL::Data{
   char  texAttrName[14];
   int32_t notId;
 
-  GLuint link( GLuint vertexShader,
-               GLuint pixelShader,
-               const AbstractAPI::VertexDecl * vdecl,
-               std::string* log ) {
-    if( curProgram.vs   == vertexShader &&
-        curProgram.fs   == pixelShader  &&
-        curProgram.decl == vdecl ){
-      return curProgram.linked;
-      }
-
-    //NON-Cashed
-    Data::ShProgram tmp;
-    tmp.vs   = vertexShader;
-    tmp.fs   = pixelShader;
-    tmp.decl = vdecl;
-
-    auto l = std::lower_bound(prog.begin(), prog.end(), tmp);
-    if( l!=prog.end() &&
-        l->vs==tmp.vs && l->fs==tmp.fs && l->decl==tmp.decl ){
-      return (*l).linked;
-      }
-
-    //Non-Linked
-    GLuint program = glCreateProgram();
-    T_ASSERT( program );
-
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, pixelShader);
-
+  void setupVAttr( GLuint program ){
     static const char* uType[] = {
       "Position",
       "BlendWeight",   // 1
@@ -236,7 +223,53 @@ struct GLSL::Data{
         ++usrAttr;
         }
       }
+    }
 
+  GLuint link( GLuint vertexShader,
+               GLuint pixelShader,
+               GLuint tessShader,
+               GLuint evalShader,
+               const AbstractAPI::VertexDecl * vdecl,
+               std::string* log ) {
+    (void)tessShader;
+    (void)evalShader;
+
+    if( curProgram.vs   == vertexShader &&
+        curProgram.fs   == pixelShader  &&
+    #ifndef __ANDROID__
+        curProgram.ts   == tessShader   &&
+        curProgram.es   == evalShader   &&
+    #endif
+        curProgram.decl == vdecl ){
+      return curProgram.linked;
+      }
+
+    //NON-Cashed
+    Data::ShProgram tmp;
+    tmp.vs   = vertexShader;
+    tmp.fs   = pixelShader;
+#ifndef __ANDROID__
+    tmp.ts   = tessShader;
+    tmp.es   = evalShader;
+#endif
+    tmp.decl = vdecl;
+
+    auto l = std::lower_bound(prog.begin(), prog.end(), tmp);
+    if( l!=prog.end() && *l==tmp ){
+      return (*l).linked;
+      }
+
+    //Non-Linked
+    GLuint program = glCreateProgram();
+    T_ASSERT( program );
+
+    glAttachShader(program, vertexShader );
+    glAttachShader(program, pixelShader  );
+#ifndef __ANDROID__
+    glAttachShader(program, tessShader   );
+    glAttachShader(program, evalShader   );
+#endif
+    setupVAttr(program);
     glLinkProgram (program);
 
     GLint linkStatus = GL_FALSE;
@@ -255,15 +288,10 @@ struct GLSL::Data{
       program = 0;
       }
 
-    Data::ShProgram s;
-    s.vs     = vertexShader;
-    s.fs     = pixelShader;
-    s.decl   = vdecl;
-    s.linked = program;
-
+    tmp.linked = program;
     {
-    auto l = std::lower_bound(prog.begin(), prog.end(), s);
-    prog.insert(l, s);
+    auto l = std::lower_bound(prog.begin(), prog.end(), tmp);
+    prog.insert(l, tmp);
     }
     return program;
     }
@@ -406,6 +434,11 @@ void GLSL::deleteShader( FragmentShader *s ) const{
 
 GraphicsSubsystem::TessShader *GLSL::createTessShaderFromSource( const std::string &src,
                                                                  std::string &log ) const {
+#ifdef __ANDROID__
+  (void)src;
+  (void)log;
+  return 0;
+#else
   if( src.size()==0 )
     return 0;
 
@@ -418,6 +451,7 @@ GraphicsSubsystem::TessShader *GLSL::createTessShaderFromSource( const std::stri
     }
 
   return reinterpret_cast<AbstractShadingLang::TessShader*>(prog);
+#endif
   }
 
 void GLSL::deleteShader( TessShader *s ) const{
@@ -445,6 +479,11 @@ void GLSL::deleteShader( TessShader *s ) const{
 
 GraphicsSubsystem::EvalShader *GLSL::createEvalShaderFromSource( const std::string &src,
                                                                  std::string &log ) const {
+#ifdef __ANDROID__
+  (void)src;
+  (void)log;
+  return 0;
+#else
   if( src.size()==0 )
     return 0;
 
@@ -457,6 +496,7 @@ GraphicsSubsystem::EvalShader *GLSL::createEvalShaderFromSource( const std::stri
     }
 
   return reinterpret_cast<AbstractShadingLang::EvalShader*>(prog);
+#endif
   }
 
 void GLSL::deleteShader( EvalShader *s ) const{
@@ -579,21 +619,24 @@ void GLSL::bind( const Tempest::FragmentShader& s ) const {
     }
   }
 
-void GLSL::unBind( const Tempest::VertexShader& s ) const {
-  data->currentVS = 0;
-  data->uCash.reset();
-  inputOf(s).resetID();
-
-  //setDevice();
+void GLSL::bind( const Tempest::TessShader& s ) const {
+  (void)s;
+#ifndef __ANDROID__
+  if( data->currentTS != &s ){
+    data->currentTS = &s;
+    inputOf(s).resetID();
+    }
+#endif
   }
 
-void GLSL::unBind( const Tempest::FragmentShader& s ) const {
-  //CGprogram prog = CGprogram( get(s) );
-  data->currentFS = 0;
-  data->uCash.reset();
-  inputOf(s).resetID();
-
-  //setDevice();
+void GLSL::bind( const Tempest::EvalShader& s ) const {
+  (void)s;
+#ifndef __ANDROID__
+  if( data->currentES != &s ){
+    data->currentES = &s;
+    inputOf(s).resetID();
+    }
+#endif
   }
 
 bool GLSL::link( const Tempest::VertexShader &vs,
@@ -613,7 +656,7 @@ bool GLSL::link( const Tempest::VertexShader &vs,
     return 0;
     }
 
-  GLuint program = data->link(*vertexShader, *pixelShader, decl, &log);
+  GLuint program = data->link(*vertexShader, *pixelShader, 0, 0, decl, &log);
   return program!=0;
   }
 
@@ -625,21 +668,54 @@ void GLSL::enable() const {
   GLuint vertexShader = *(GLuint*)get( *data->currentVS );
   GLuint pixelShader  = *(GLuint*)get( *data->currentFS );
 
-  GLuint program = data->link(vertexShader, pixelShader, data->vdecl, 0);
+#ifndef __ANDROID__
+  GLuint tessShader = 0;
+  GLuint evalShader = 0;
+
+  if( data->currentTS )
+    tessShader = *(GLuint*)get( *data->currentTS );
+
+  if( data->currentES )
+    evalShader = *(GLuint*)get( *data->currentES );
+
+  GLuint program = data->link( vertexShader, pixelShader,
+                               tessShader,   evalShader,
+                               data->vdecl, 0 );
+#else
+  GLuint program = data->link(vertexShader, pixelShader, 0, 0, data->vdecl, 0);
+#endif
 
   T_ASSERT( program );
 
   if( program != data->curProgram.linked ){
     glUseProgram( program );
     data->curProgram.linked = program;
-    data->curProgram.vs = vertexShader;
-    data->curProgram.fs = pixelShader;
-
+    data->curProgram.vs     = vertexShader;
+    data->curProgram.fs     = pixelShader;
+#ifndef __ANDROID__
+    data->curProgram.ts     = tessShader;
+    data->curProgram.es     = evalShader;
+#endif
     data->uCash.reset();
     }
 
   setUniforms( program, inputOf( *data->currentFS ), true  );
   setUniforms( program, inputOf( *data->currentVS ), false );
+
+#ifndef __ANDROID__
+  if( data->currentTS )
+    setUniforms( program, inputOf( *data->currentTS ), true );
+
+  if( data->currentES )
+    setUniforms( program, inputOf( *data->currentES ), true );
+#endif
+  }
+
+void GLSL::disable() const {
+#ifndef __ANDROID__
+  data->currentTS = 0;
+  data->currentES = 0;
+#endif
   }
 
 void GLSL::setUniforms( unsigned int program,
