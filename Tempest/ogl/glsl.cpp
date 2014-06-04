@@ -158,13 +158,12 @@ struct GLSL::Data{
   std::vector<ShProgram> prog;
   bool hasAnisotropic;
 
-  //GLuint curProgram;
   ShProgram curProgram;
 
   char  texAttrName[14];
   int32_t notId;
 
-  void setupVAttr( GLuint program ){
+  void setupVAttr( const AbstractAPI::VertexDecl * vdecl, GLuint program ){
     static const char* uType[] = {
       "Position",
       "BlendWeight",   // 1
@@ -241,6 +240,7 @@ struct GLSL::Data{
         curProgram.es   == evalShader   &&
     #endif
         curProgram.decl == vdecl ){
+      T_ASSERT(curProgram.linked);
       return curProgram.linked;
       }
 
@@ -266,10 +266,12 @@ struct GLSL::Data{
     glAttachShader(program, vertexShader );
     glAttachShader(program, pixelShader  );
 #ifndef __ANDROID__
-    glAttachShader(program, tessShader   );
-    glAttachShader(program, evalShader   );
+    if( tessShader&& evalShader ){
+      glAttachShader(program, tessShader   );
+      glAttachShader(program, evalShader   );
+      }
 #endif
-    setupVAttr(program);
+    setupVAttr(vdecl, program);
     glLinkProgram (program);
 
     GLint linkStatus = GL_FALSE;
@@ -348,12 +350,15 @@ void Tempest::GLSL::beginPaint() const {
 void Tempest::GLSL::endPaint() const {
   glUseProgram( 0 );
 
+#ifndef __ANDROID__
+  data->currentTS = 0;
+  data->currentES = 0;
+#endif
   data->currentVS = 0;
   data->currentFS = 0;
   data->uCash.reset();
 
-  data->curProgram.linked = 0;
-  //cgGLDisableProfile( data->pixelProfile );
+  //data->curProgram.linked = 0;
   }
 
 void GLSL::setDevice() const {
@@ -695,6 +700,7 @@ void GLSL::enable() const {
 #ifndef __ANDROID__
     data->curProgram.ts     = tessShader;
     data->curProgram.es     = evalShader;
+    data->curProgram.decl   = data->vdecl;
 #endif
     data->uCash.reset();
     }
