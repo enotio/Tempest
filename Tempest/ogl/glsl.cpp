@@ -233,7 +233,8 @@ struct GLSL::Data{
     (void)tessShader;
     (void)evalShader;
 
-    if( curProgram.vs   == vertexShader &&
+    if( curProgram.linked &&
+        curProgram.vs   == vertexShader &&
         curProgram.fs   == pixelShader  &&
     #ifndef __ANDROID__
         curProgram.ts   == tessShader   &&
@@ -358,7 +359,7 @@ void Tempest::GLSL::endPaint() const {
   data->currentFS = 0;
   data->uCash.reset();
 
-  //data->curProgram.linked = 0;
+  data->curProgram.linked = 0;
   }
 
 void GLSL::setDevice() const {
@@ -817,7 +818,7 @@ void GLSL::setUniform(unsigned int s,
     }
   }
 
-void GLSL::setUniform(unsigned int sh,
+void GLSL::setUniform( unsigned int sh,
                        const Texture2d& u,
                        const char *name,
                        int slot,

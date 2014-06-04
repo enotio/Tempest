@@ -125,16 +125,7 @@ class Device {
 
       applyRs();
       bindShaders(vs, fs);
-      bind(decl);
-
-      const AbstractShadingLang& sh = shadingLang();
-      sh.setVertexDecl( (AbstractAPI::VertexDecl*)(decl.decl->impl) );
-      sh.enable();
-      bind( vbo.data.const_value(), sizeof(T) );
- 
-      draw( t, firstVertex + vbo.m_first, pCount );
-
-      sh.disable();
+      implDraw(t, decl, vbo, firstVertex, pCount);
       }
 
     template< class T, class I >
@@ -199,6 +190,24 @@ class Device {
   protected:
     inline const AbstractShadingLang& shadingLang() const {
       return *shLang;
+      }
+
+    template< class T >
+    inline void implDraw( AbstractAPI::PrimitiveType t,
+                          const Tempest::VertexDeclaration &decl,
+                          const Tempest::VertexBuffer<T> & vbo,
+                          int vboOffsetIndex,
+                          int pCount ){
+      bind(decl);
+      bind( vbo.data.const_value(), sizeof(T) );
+
+      const AbstractShadingLang& sh = shadingLang();
+      sh.setVertexDecl( (AbstractAPI::VertexDecl*)(decl.decl->impl) );
+      sh.enable();
+
+      draw( t, vboOffsetIndex + vbo.m_first, pCount );
+
+      sh.disable();
       }
 
     template< class T, class I >
