@@ -72,7 +72,7 @@ static struct Android{
   pthread_t mainThread;
 
   bool forceToResize;
-  bool isWndAviable;
+  bool isWndAvailable;
   bool isPaused;
 
   std::vector<char> internal, external;
@@ -231,15 +231,15 @@ static struct Android{
     env        = 0;
     densityDpi = 480;
 
-    graphicsState = SystemAPI::NotAviable;
-    window     = 0;
-    window_w = 0;
-    window_h = 0;
+    graphicsState = SystemAPI::NotAvailable;
+    window        = 0;
+    window_w      = 0;
+    window_h      = 0;
     wnd           = 0;
     forceToResize = 0;
 
-    isWndAviable = false;
-    isPaused     = true;
+    isWndAvailable = false;
+    isPaused       = true;
 
     mainThread = 0;
     msg.  reserve(32);
@@ -782,7 +782,7 @@ void AndroidAPI::show(Window *) {
     glViewport( 0, 0, android.window_w, android.window_h );
     if( android.wnd )
       SystemAPI::sizeEvent( android.wnd, android.window_w, android.window_h );
-    android.isWndAviable = true;
+    android.isWndAvailable = true;
     }
   }
 
@@ -794,9 +794,8 @@ void AndroidAPI::bind( Window *, Tempest::Window *wx ) {
   SystemAPI::activateEvent( android.wnd, android.window!=0);
   }
 
-AndroidAPI::GraphicsContexState AndroidAPI::isGraphicsContextAviable( Tempest::Window * ){
+AndroidAPI::GraphicsContexState AndroidAPI::isGraphicsContextAvailable( Tempest::Window * ){
   return android.graphicsState;
-  //return android.window;
   }
 
 static void render() {
@@ -906,7 +905,7 @@ bool Android::initialize() {
     }
 
   glViewport(0, 0, w, h);
-  graphicsState = SystemAPI::Aviable;
+  graphicsState = SystemAPI::Available;
 
   return true;
   }
@@ -917,7 +916,7 @@ void Android::destroy( bool killContext ) {
   if( graphicsState == SystemAPI::DestroyedByAndroid )
     return;
 
-  graphicsState = SystemAPI::NotAviable;
+  graphicsState = SystemAPI::NotAvailable;
 
   if( display != EGL_NO_DISPLAY ) {
     eglMakeCurrent( display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
@@ -1000,7 +999,7 @@ static void JNICALL nativeOnTouch( JNIEnv* , jobject ,
 static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject /*obj*/, jobject surface) {
   if( surface ) {
     android.window = ANativeWindow_fromSurface(jenv, surface);
-    android.graphicsState = SystemAPI::Aviable;
+    android.graphicsState = SystemAPI::Available;
     Log(Log::Info) << "Got window " << android.window;
 
     {

@@ -406,8 +406,8 @@ void SystemAPI::activateEvent(Tempest::Window *w, bool a) {
   w->isAppActive = a;
   }
 
-SystemAPI::GraphicsContexState SystemAPI::isGraphicsContextAviable( Tempest::Window *) {
-  return Aviable;
+SystemAPI::GraphicsContexState SystemAPI::isGraphicsContextAvailable( Tempest::Window *) {
+  return Available;
   }
 
 std::string SystemAPI::toUtf8(const std::u16string &str) {

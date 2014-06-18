@@ -50,6 +50,7 @@ using namespace Tempest;
 MainWindow::MainWindow(Tempest::AbstractAPI &api)
    :device( api, handle() ),
     volHolder(device),
+    texHolder(device),
     vboHolder(device),
     iboHolder(device),
     vsHolder (device),
@@ -75,6 +76,7 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
   T_ASSERT( shader.isValid() );
 
   loadData();
+  grad = texHolder.load("data/colors.png");
   }
 
 void MainWindow::loadData() {
@@ -176,4 +178,5 @@ void MainWindow::setupShaderConstants( ProgramObject &sh ) {
   view.inverse();
   sh.vs.setUniform("mvpMatrixInv", view);
   sh.fs.setUniform("volume",       volume  );
+  sh.fs.setUniform("grad",         grad    );
   }

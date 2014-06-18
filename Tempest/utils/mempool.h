@@ -14,7 +14,7 @@ template< class T >
 class MemPool {
   public:
     MemPool(){
-      aviable.reserve(32);
+      available.reserve(32);
       data.reserve(32);
       }
 
@@ -28,16 +28,16 @@ class MemPool {
       Detail::Guard guard(spin);
       (void)guard;
 
-      if( aviable.size() ){
-        Block *b = aviable.back();
+      if( available.size() ){
+        Block *b = available.back();
         T* tmp = b->alloc(a...);
         if( b->freedCount==0 )
-          aviable.pop_back();
+          available.pop_back();
         return tmp;
         }
 
       data.push_back( new Block() );
-      aviable.push_back( data.back() );
+      available.push_back( data.back() );
       return data.back()->alloc(a...);
       }
 
@@ -48,11 +48,11 @@ class MemPool {
       for( size_t i=data.size(); i>0; ){
         --i;
         if( data[i]->free(t) ){
-          if( aviable.size()>1 && data[i]->freedCount==256 ){
-            for( size_t r=0; r<aviable.size(); ++r )
-              if( aviable[r]==data[i] ){
-                aviable[r] = aviable.back();
-                aviable.pop_back();
+          if( available.size()>1 && data[i]->freedCount==256 ){
+            for( size_t r=0; r<available.size(); ++r )
+              if( available[r]==data[i] ){
+                available[r] = available.back();
+                available.pop_back();
 
                 delete data[i];
                 for( size_t q=i; q+1<data.size(); ++q )
@@ -64,7 +64,7 @@ class MemPool {
             }
 
           if( data[i]->freedCount==1 )
-            aviable.push_back( data[i] );
+            available.push_back( data[i] );
           return;
           }
         }
@@ -123,7 +123,7 @@ class MemPool {
         return false;
         }
       };
-    std::vector< Block* > data, aviable;
+    std::vector< Block* > data, available;
     Detail::Spin spin;
     };
 

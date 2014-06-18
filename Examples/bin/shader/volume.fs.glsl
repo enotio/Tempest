@@ -1,6 +1,7 @@
 varying vec3 eyeray_o, eyeray_d;
 
 uniform sampler3D volume;
+uniform sampler2D grad;
 
 struct Ray {
   vec3 o;   // origin
@@ -77,8 +78,8 @@ void main(void) {
     P += Pstep;
     }
 
-  //if( c.a==0.0 )
-    //discard;
+  if( c.a==0.0 )
+    discard;
 
-  gl_FragColor = c;
+  gl_FragColor = texture2D(grad, vec2(c.r*2.0, 0.0) );
   }

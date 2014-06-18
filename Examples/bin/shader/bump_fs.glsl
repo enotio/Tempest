@@ -31,7 +31,7 @@ vec3 light(){
   }
 
 void parallax(){
-  int   numsteps = 7;
+  const int numsteps = 7;
   float scale    = 0.1;
 
   vec3 viewV = normalize( position.xyz );

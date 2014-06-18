@@ -28,6 +28,7 @@ class MainWindow:public Tempest::Window {
   protected:
     Tempest::Device device;
     Tempest::VolumeHolder         volHolder;
+    Tempest::TextureHolder        texHolder;
     Tempest::VertexBufferHolder   vboHolder;
     Tempest::IndexBufferHolder    iboHolder;
 
@@ -38,6 +39,7 @@ class MainWindow:public Tempest::Window {
     Tempest::IndexBuffer<uint16_t> ibo;
     Tempest::VertexDeclaration     vdecl;
     Tempest::Texture3d             volume;
+    Tempest::Texture2d             grad;
 
     Tempest::ProgramObject         shader;
 

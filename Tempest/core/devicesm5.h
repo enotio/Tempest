@@ -33,7 +33,9 @@ class DeviceSM5 : public Device {
       if( pCount==0 ||
           !decl.isValid() ||
           !vs.isValid() ||
-          !fs.isValid() )
+          !fs.isValid() ||
+          !es.isValid() ||
+          !ts.isValid() )
         return;
 
       applyRs();

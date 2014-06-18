@@ -95,10 +95,10 @@ class SystemAPI{
 
     enum GraphicsContexState{
       DestroyedByAndroid,
-      Aviable,
-      NotAviable
+      Available,
+      NotAvailable
       };
-    virtual GraphicsContexState isGraphicsContextAviable( Tempest::Window *w );
+    virtual GraphicsContexState isGraphicsContextAvailable( Tempest::Window *w );
 
     static std::string    toUtf8 ( const std::u16string& str );
     static std::string    toUtf8 ( const char16_t* b, const char16_t* e );

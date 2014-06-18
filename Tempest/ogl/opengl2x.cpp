@@ -219,18 +219,18 @@ bool Opengl2x::setDevice( AbstractAPI::Device * d ) const {
   T_ASSERT_X( errCk(), "OpenGL error" );
 
 #ifdef __ANDROID__
-  SystemAPI::GraphicsContexState state = SystemAPI::NotAviable;
-  while( state==SystemAPI::NotAviable )
-    state = SystemAPI::instance().isGraphicsContextAviable(0);
+  SystemAPI::GraphicsContexState state = SystemAPI::NotAvailable;
+  while( state==SystemAPI::NotAvailable )
+    state = SystemAPI::instance().isGraphicsContextAvailable(0);
 
   if( state==SystemAPI::DestroyedByAndroid ){
     static bool dbgOnce = true;
     if( dbgOnce ){
-      __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "context is unaviable - android sucks");
+      __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "context is unavailable - android sucks");
       dbgOnce = false;
       }
     }
-  return state == SystemAPI::Aviable;
+  return state == SystemAPI::Available;
 #endif
 
   return 1;

@@ -817,7 +817,7 @@ AbstractAPI::VertexDecl *
     for( int i=0; i<de.size(); ++i )
       if( de[i].component==Decl::half2 ||
           de[i].component==Decl::half4 )
-        T_WARNING_X(0, "half float unaviable");
+        T_WARNING_X(0, "half float unavailable");
 
   AbstractAPI::VertexDecl * v = data->createDecl(de);
   if( !v ){

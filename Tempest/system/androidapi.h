@@ -58,7 +58,7 @@ class AndroidAPI:public SystemAPI {
     void setGeometry( Window*, int x, int y, int w, int h );
     void bind(Window*, Tempest::Window * );
 
-    GraphicsContexState isGraphicsContextAviable( Tempest::Window *w );
+    GraphicsContexState isGraphicsContextAvailable( Tempest::Window *w );
     CpuInfo cpuInfoImpl();
 
     struct  DroidFile;
