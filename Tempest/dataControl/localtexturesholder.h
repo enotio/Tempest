@@ -46,7 +46,7 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
 
     struct NonFreed{
       NonFreedData data;
-      int collectIteration;
+      unsigned collectIteration;
       void * userPtr;
       };
 

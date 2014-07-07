@@ -100,27 +100,27 @@ Point Point::operator -(const Point &p) const {
   }
 
 Point Point::operator *(double f) const {
-  return Point(x*f, y*f);
+  return Point(int(x*f), int(y*f));
   }
 
 Point Point::operator *(float f) const {
-  return Point(x*f, y*f);
+  return Point(int(x*f), int(y*f));
   }
 
 Point Point::operator *(int f) const {
-  return Point(x*f, y*f);
+  return Point(int(x*f), int(y*f));
   }
 
 Point &Point::operator *=(double f) {
-  x*= f;
-  y*= f;
+  x = int(x*f);
+  y = int(y*f);
 
   return *this;
   }
 
 Point &Point::operator *=(float f) {
-  x*= f;
-  y*= f;
+  x = int( x*f );
+  y = int( y*f );
 
   return *this;
   }
@@ -133,11 +133,11 @@ Point &Point::operator *=(int f) {
   }
 
 Point Point::operator /(double f) const {
-  return Point(x/f, y/f);
+  return Point(int(x/f), int(y/f));
   }
 
 Point Point::operator /(float f) const {
-  return Point(x/f, y/f);
+  return Point(int(x/f), int(y/f));
   }
 
 Point Point::operator /(int f) const {
@@ -145,15 +145,15 @@ Point Point::operator /(int f) const {
   }
 
 Point &Point::operator /=(double f) {
-  x/= f;
-  y/= f;
+  x = int(x/f);
+  y = int(x/f);
 
   return *this;
   }
 
 Point &Point::operator /=(float f) {
-  x/= f;
-  y/= f;
+  x = int( x / f );
+  y = int( x / f );
 
   return *this;
   }

@@ -37,18 +37,11 @@ class ViewTester {
                             float r,
                             const Frustum &frustum ) const;
 
-    virtual bool checkVisible( float x,
-                               float y,
-                               float z,
-                               float r,
-                               const Frustum &frustum ) const;
-/*
-    virtual bool isVisible( const Model::Bounds & obj,
-                            const Matrix4x4 & vp,
-                            double x, double y, double z ) const;
-*/
-  protected:
-    // virtual void setScene( const Scene & ) {}
+    virtual VisibleStatus checkVisible( float x,
+                                        float y,
+                                        float z,
+                                        float r,
+                                        const Frustum &frustum ) const;
 
   private:
     static inline bool rangeTest( double l, double x, double r ){

@@ -2,11 +2,11 @@
 
 #include <cmath>
 
-Tempest::RawModel<> Tempest::TessObject::sphere( int passCount, double R ){
+Tempest::RawModel<> Tempest::TessObject::sphere( int passCount, float R ){
   using namespace Tempest;
 
   RawModel<>::VertexList r;
-  r.reserve( 4*pow(3, passCount+1) );
+  r.reserve( size_t(4*pow(3, passCount+1)) );
 
   static const double pi = 3.141592654;
 
@@ -46,7 +46,7 @@ Tempest::RawModel<> Tempest::TessObject::sphere( int passCount, double R ){
 
   for( size_t i=0; i<r.size(); ++i ){
     DefaultVertex & v = r[i];
-    double l = sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+    float l = float(sqrt(v.x*v.x + v.y*v.y + v.z*v.z));
 
     v.x /= l;
     v.y /= l;
@@ -94,7 +94,7 @@ Tempest::RawModel<> Tempest::TessObject::sphere( int passCount, double R ){
 
     for( size_t i=0; i<r.size(); ++i ){
       DefaultVertex & v = r[i];
-      double l = sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+      float l = float(sqrt(v.x*v.x + v.y*v.y + v.z*v.z));
 
       v.x /= l;
       v.y /= l;

@@ -18,9 +18,7 @@ class RFile : public IDevice {
 
     RFile( const char* name,     Mode m = Default );
     RFile( const char16_t* name, Mode m = Default );
-    RFile( const RFile& )              = delete;
     RFile( RFile&& mov );
-    RFile& operator = ( const RFile& ) = delete;
     RFile& operator = ( RFile&& mov );
     virtual ~RFile();
 
@@ -33,6 +31,8 @@ class RFile : public IDevice {
     size_t size() const;
   private:
     SystemAPI::File* impl;
+    RFile(const RFile&) = delete;
+    RFile& operator = (const RFile&) = delete;
   };
 
 class WFile : public ODevice {
@@ -48,11 +48,9 @@ class WFile : public ODevice {
     WFile( const char* name,     Mode m = Default );
     WFile( const char16_t* name, Mode m = Default );
     WFile( WFile&& mov );
-    WFile( const WFile& )              = delete;
+    virtual ~WFile();
 
     WFile& operator = ( WFile&& );
-    WFile& operator = ( const WFile& ) = delete;
-    virtual ~WFile();
 
     size_t writeData(const char *src, size_t count);
     void flush();
@@ -60,6 +58,9 @@ class WFile : public ODevice {
     bool isOpen() const;
   private:
     SystemAPI::File* impl;
+
+    WFile& operator = (const WFile&) = delete;
+    WFile(const WFile&) = delete;
   };
 
 }

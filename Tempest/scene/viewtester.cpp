@@ -103,11 +103,11 @@ bool ViewTester::isVisible( float x,
   return checkVisible(x,y,z,r, frustum)!=NotVisible;
   }
 
-bool ViewTester::checkVisible( float x,
-                               float y,
-                               float z,
-                               float r,
-                               const Frustum &frustum) const {
+ViewTester::VisibleStatus ViewTester::checkVisible( float x,
+                                                    float y,
+                                                    float z,
+                                                    float r,
+                                                    const Frustum &frustum) const {
   bool fv = true;
   for( int p=0; p < 6; p++ ){
     float l = frustum.plane(p)[0] * x +

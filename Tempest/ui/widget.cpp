@@ -12,13 +12,11 @@ using namespace Tempest;
 
 struct Widget::DeleteGuard{
   DeleteGuard( Widget* w):w(w){
-    if( w->deleteLaterFlag!=-1 )
-      w->lockDelete();
+    w->lockDelete();
     }
 
   ~DeleteGuard(){
-    if( w->deleteLaterFlag!=-1 )
-      w->unlockDelete();
+    w->unlockDelete();
     }
 
   Widget *w;
@@ -799,7 +797,7 @@ void Widget::setFocus(bool f) {
           }
         }
 
-      if( root->chFocus ){
+      if( root && root->chFocus ){
         DeleteGuard g(root);
         (void)g;
 

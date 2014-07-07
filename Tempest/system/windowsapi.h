@@ -7,7 +7,7 @@ namespace Tempest{
 
 class Window;
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
 class WindowsAPI:public SystemAPI {
   public:
     static void setCursor( Tempest::Window& w,

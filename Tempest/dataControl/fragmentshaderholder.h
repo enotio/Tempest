@@ -10,9 +10,10 @@ namespace Tempest{
 class FragmentShader;
 class Device;
 
-struct FragmentShaderHolder: ShaderHolder< FragmentShader,
-                                           AbstractAPI::FragmentShader,
-                                           AbstractAPI::Fragment > {
+class FragmentShaderHolder:public ShaderHolder< FragmentShader,
+                                                 AbstractAPI::FragmentShader,
+                                                 AbstractAPI::Fragment > {
+  public:
   FragmentShaderHolder( Device& d ):ShaderHolder<
                                     FragmentShader,
                                     AbstractAPI::FragmentShader,

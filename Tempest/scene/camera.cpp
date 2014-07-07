@@ -56,12 +56,12 @@ double Camera::distance() const {
 
 void Camera::updateView(){
   mView.identity();
-  mView.translate( 0,0, dist );
+  mView.translate( 0,0, float(dist) );
 
-  mView.rotate( sy, 1,0,0 );
-  mView.rotate( sx, 0,0,1 );
-  mView.scale( m_zoom );
-  mView.translate( -pos[0], -pos[1], -pos[2] );
+  mView.rotate( float(sy), 1,0,0 );
+  mView.rotate( float(sx), 0,0,1 );
+  mView.scale( float(m_zoom) );
+  mView.translate( -float(pos[0]), -float(pos[1]), -float(pos[2]) );
   }
 
 Matrix4x4 Camera::projective() const {
@@ -93,7 +93,7 @@ void Camera::setPerspective( int w, int h, float use, float zmin, float zmax ) {
   if( zmin>zmax )
     std::swap(zmin, zmax);
 
-  mProj.perspective( use, double(w)/double(h), zmin, zmax );
+  mProj.perspective( use, float(double(w)/double(h)), zmin, zmax );
   }
 
 double Camera::spinX() const{

@@ -1,9 +1,9 @@
 #include "vertexdeclaration.h"
 
 #include <Tempest/Device>
+#include <algorithm>
 
 using namespace Tempest;
-
 
 VertexDeclaration::VertexDeclaration():dev(0){
   }
@@ -220,5 +220,5 @@ const Tempest::VertexDeclaration::Declarator&
   }
 
 bool VertexDeclaration::isValid() const {
-  return decl.get();
+  return decl.get()!=0;
   }

@@ -8,6 +8,7 @@
 #include <Tempest/Assert>
 #include <Tempest/File>
 #include <cstring>
+#include <algorithm>
 
 using namespace Tempest;
 

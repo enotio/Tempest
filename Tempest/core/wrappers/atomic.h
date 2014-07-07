@@ -29,8 +29,9 @@ struct GuardBase{
     s.unlock();
     }
 
-  GuardBase( const GuardBase& ) = delete;
-  GuardBase& operator = ( const GuardBase& ) = delete;
+  private:
+    GuardBase(const GuardBase&s):s(s){}
+    GuardBase& operator = (const GuardBase&){}
 
   T& s;
   };

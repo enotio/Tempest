@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <Tempest/SystemAPI>
+#include <algorithm>
 
 using namespace Tempest;
 

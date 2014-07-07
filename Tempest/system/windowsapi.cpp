@@ -1,6 +1,6 @@
 #include "windowsapi.h"
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
 #include <windows.h>
 
 #include <Tempest/Window>

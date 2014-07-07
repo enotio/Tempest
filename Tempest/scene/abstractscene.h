@@ -107,7 +107,7 @@ class AbstractScene {
     AbstractLightCollection * m_lights;
     ViewTester              * m_viewtest;
 
-    template< class M >
+    template< class M, class Usr >
     friend class Tempest::AbstractGraphicObject;
     //friend class Item;
   };

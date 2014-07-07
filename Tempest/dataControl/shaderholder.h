@@ -141,8 +141,8 @@ class ShaderHolder : public AbstractHolderWithLoad< Shader, APIDescriptor > {
       }
 
   private:
-    ShaderHolder( const ShaderHolder &h )            = delete;
-    ShaderHolder& operator = ( const ShaderHolder& ) = delete;
+    ShaderHolder( const ShaderHolder & ){}
+    ShaderHolder& operator = ( const ShaderHolder& ) {}
 
     struct Data{
       std::map< APIDescriptor*, std::string >

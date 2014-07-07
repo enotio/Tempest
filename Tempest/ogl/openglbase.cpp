@@ -1,5 +1,9 @@
 #include "openglbase.h"
 
+#include <Tempest/Platform>
+#include "gltypes.h"
+
+//#define OGL_DEBUG
 #ifdef __ANDROID__
 //GL_HALF_FLOAT -> GL_HALF_FLOAT_OES -> 0x8D61
 #define GL_HALF_FLOAT 0x8D61
@@ -10,7 +14,9 @@
 #include <GLES2/gl2.h>
 #include <android/log.h>
 #else
-#include "system/platform.h"
+#ifdef __WINDOWS__
+#include <windows.h>
+#endif
 #include "glfn.h"
 #include <GL/gl.h>
 #endif
@@ -32,7 +38,7 @@ bool OpenGLBase::errCk() const {
   bool ok = true;
 
   while( err!=GL_NO_ERROR ){
-    const char* glErrorDesc = Device::glErrorDesc(err);
+    const char* glErrorDesc = Detail::ImplDeviceBase::glErrorDesc(err);
 #ifndef __ANDROID__
     std::cout << "[OpenGL]: ";
     if( glErrorDesc )

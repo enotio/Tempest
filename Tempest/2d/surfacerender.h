@@ -90,7 +90,8 @@ class SurfaceRender {
       };
 
     struct PaintDev;
-    struct TextEngine:public Tempest::PaintTextEngine{
+    class TextEngine:public Tempest::PaintTextEngine{
+      public:
       TextEngine( PaintDev & p );
 
       void pushState();

@@ -152,8 +152,9 @@ class signal{
       };
 
     struct Impl{
-      char impl[ StaticMax< sizeof(Emit<struct Unknown, void, struct Unknown>),
-                            sizeof(EmitFunc<struct Unknown>)>::value ];
+      struct Unknown{};
+      char impl[StaticMax< sizeof( Emit<Unknown, void, Unknown, Args...> ),
+                           sizeof( EmitFunc<void,Args...>)>::value ];
       };
 
     std::vector<Impl> v;

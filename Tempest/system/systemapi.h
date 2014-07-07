@@ -9,6 +9,7 @@
 #include <Tempest/Utility>
 #include <Tempest/Event>
 #include <Tempest/ImageCodec>
+#include <Tempest/Platform>
 
 namespace Tempest{
 

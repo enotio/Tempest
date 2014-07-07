@@ -6,7 +6,7 @@
 namespace Tempest{
 
 namespace TessObject {
-  Tempest::RawModel<> sphere( int passCount, double R );
+  Tempest::RawModel<> sphere( int passCount, float R );
   }
 
 }

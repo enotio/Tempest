@@ -105,9 +105,15 @@ AbstractAPI::Device* DirectX9::createDevice(void *hwnd, const Options &opt) cons
   makePresentParams( &d3dpp, hwnd, opt );
 
   Device* dev = new Device;
+  
   HRESULT derr = D3D->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hwnd,
                                     D3DCREATE_HARDWARE_VERTEXPROCESSING,
                                     &d3dpp, &dev->dev );
+  /*
+  IDirect3DDevice9Ex* devEx = 0;
+  HRESULT derr = D3D->CreateDeviceEx( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hwnd,
+                                      D3DCREATE_FPU_PRESERVE|D3DCREATE_HARDWARE_VERTEXPROCESSING,
+                                      );*/
 
   T_ASSERT_X( !FAILED(derr), "failed to create D3D-Device");
 

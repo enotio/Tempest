@@ -1,19 +1,19 @@
-#ifndef LINUXAPI_H
-#define LINUXAPI_H
+#ifndef WINPHONEAPI_H
+#define WINPHONEAPI_H
 
 #include <Tempest/SystemAPI>
+
+int WinMain();
 
 namespace Tempest{
 
 class Window;
 
-#ifdef __LINUX__
-class LinuxAPI:public SystemAPI {
-  public:
-    static void* display();
+#ifdef __WINDOWS_PHONE__
+class WinPhoneAPI:public SystemAPI {
   protected:
-    LinuxAPI();
-    ~LinuxAPI();
+    WinPhoneAPI();
+    ~WinPhoneAPI();
 
     bool testDisplaySettings( Window* w, const DisplaySettings& );
     bool setDisplaySettings( Window* w, const DisplaySettings& );
@@ -44,13 +44,23 @@ class LinuxAPI:public SystemAPI {
     struct  WinFile;
     File*  fopenImpl ( const char* fname, const char* mode );
     File*  fopenImpl ( const char16_t* fname, const char* mode );
+    size_t readDataImpl ( File* f, char* dest, size_t count );
+    size_t writeDataImpl( File* f, const char* data, size_t count );
+    void   flushImpl    ( File* f );
+    size_t peekImpl     ( File* f, size_t skip, char* dest, size_t count );
+    size_t skipImpl     ( File* f, size_t count );
+    bool   eofImpl      ( File* f );
+    size_t fsizeImpl    ( File* f );
+    void   fcloseImpl   ( File* f );
   private:
     struct Wnd;
+    static int preMain( int( _cdecl* )() );
 
   friend class SystemAPI;
+  friend int ::WinMain();
   };
 #endif
 
 }
 
-#endif // LINUXAPI_H
+#endif // WINPHONEAPI_H

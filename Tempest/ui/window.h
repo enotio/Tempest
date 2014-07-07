@@ -12,7 +12,8 @@ namespace Tempest{
 
 class SurfaceRender;
 
-struct WindowOverlay:Widget{
+class WindowOverlay:public Widget{
+  public:
   WindowOverlay();
   ~WindowOverlay();
 

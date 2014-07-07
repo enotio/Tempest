@@ -10,9 +10,10 @@ namespace Tempest{
 class VertexShader;
 class Device;
 
-struct VertexShaderHolder: ShaderHolder< VertexShader,
-                                         AbstractAPI::VertexShader,
-                                         AbstractAPI::Vertex > {
+class VertexShaderHolder:public ShaderHolder< VertexShader,
+                                               AbstractAPI::VertexShader,
+                                               AbstractAPI::Vertex > {
+  public:
   VertexShaderHolder( Device& d ):ShaderHolder<
                                     VertexShader,
                                     AbstractAPI::VertexShader,

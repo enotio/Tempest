@@ -11,10 +11,10 @@
 
 namespace Tempest{
 
-class Color;
-class AbstractShadingLang;
-class RenderState;
-class Size;
+class  Color;
+class  AbstractShadingLang;
+class  RenderState;
+struct Size;
 
 enum TextureUsage{
   TU_Static,
@@ -25,7 +25,7 @@ enum TextureUsage{
 
 class AbstractAPI: public GraphicsSubsystem {
   public:
-    AbstractAPI() = default;
+    AbstractAPI(){}
     virtual ~AbstractAPI(){}
 
     struct Options{
@@ -173,10 +173,10 @@ class AbstractAPI: public GraphicsSubsystem {
     virtual void deleteTexture( AbstractAPI::Device *d,
                                 AbstractAPI::Texture *t) const = 0;
 
-    virtual void setTextureFlag( AbstractAPI::Device  */*d*/,
-                                 AbstractAPI::Texture */*t*/,
-                                 TextureFlag /*f*/,
-                                 bool /*v*/ ) const {}
+    virtual void setTextureFlag( AbstractAPI::Device  *,
+                                 AbstractAPI::Texture *,
+                                 TextureFlag,
+                                 bool ) const {}
 
     virtual AbstractAPI::VertexBuffer*
                 createVertexBuffer( AbstractAPI::Device *d,
@@ -259,8 +259,8 @@ class AbstractAPI: public GraphicsSubsystem {
     static int vertexCount( PrimitiveType t, int pcount );
 
   private:
-    AbstractAPI( const AbstractAPI& ) = delete;
-    AbstractAPI& operator = ( const AbstractAPI& ) = delete;
+    AbstractAPI(const AbstractAPI&) = delete;
+    AbstractAPI& operator = (const AbstractAPI&) = delete;
   };
 
 }

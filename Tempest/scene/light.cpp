@@ -6,8 +6,8 @@ using namespace Tempest;
 
 DirectionLight::DirectionLight(){
   setDirection(0,0,-1);
-  setColor    ( Color(0.7) );
-  setAblimient( Color(0.3) );
+  setColor    ( Color(0.7f) );
+  setAblimient( Color(0.3f) );
   }
 
 void DirectionLight::setDirection( double x, double y, double z ){

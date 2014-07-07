@@ -6,6 +6,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <freetype/freetype.h>
+#include <algorithm>
 
 struct Tempest::FontElement::FreeTypeLib{
   FreeTypeLib(){

@@ -17,9 +17,11 @@ namespace Tempest{
 #ifdef NDEBUG
     __android_log_assert("","","%s","");
     assert(0);
-#endif
+#endif   
 #else
+#if defined(__WIN32)
     __asm__("int $3");
+#endif
 #endif
     (void)file;
     (void)line;

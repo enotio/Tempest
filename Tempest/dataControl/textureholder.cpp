@@ -10,12 +10,11 @@
 #include <map>
 
 #include <stdexcept>
+#include <algorithm>
 
 using namespace Tempest;
 
 struct TextureHolder::Data {
-  //std::map< AbstractAPI::Texture*, std::string > textures;
-
   struct DynTexture{
     int w, h;
     bool mip;

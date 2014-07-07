@@ -23,13 +23,13 @@ class Texture3d;
 class ShaderInput;
 
 class AbstractShadingLang : public GraphicsSubsystem {
+  private:
+    AbstractShadingLang(const AbstractShadingLang&) = delete;
+    AbstractShadingLang& operator = (const AbstractShadingLang&) = delete;
   public:
-    AbstractShadingLang() = default;
-    AbstractShadingLang( const AbstractShadingLang& ) = delete;
+    AbstractShadingLang(){}
     virtual ~AbstractShadingLang(){}
-
-    AbstractShadingLang& operator = ( const AbstractShadingLang& ) = delete;
-
+    
     virtual void beginPaint() const {}
     virtual void endPaint()   const {}
 
@@ -91,10 +91,10 @@ class AbstractShadingLang : public GraphicsSubsystem {
     virtual void deleteShader( TessShader*       ) const{}
     virtual void deleteShader( EvalShader*       ) const{}
 
-    virtual bool link( const Tempest::VertexShader   &/*vs*/,
-                       const Tempest::FragmentShader &/*fs*/,
-                       const AbstractAPI::VertexDecl */*decl*/,
-                       std::string& /*log*/ ) const {
+    virtual bool link( const Tempest::VertexShader   &,
+                       const Tempest::FragmentShader &,
+                       const AbstractAPI::VertexDecl *,
+                       std::string& ) const {
       return true;
       }
 

@@ -3,6 +3,12 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
+#include <Tempest/Platform>
+
+#ifdef __WINDOWS_PHONE__
+#define main Tempest_main
+#endif
 
 namespace Tempest{
 

@@ -1,5 +1,6 @@
 #include "application.h"
 
+#include <Tempest/Platform>
 #include <Tempest/SystemAPI>
 #include <Tempest/Event>
 
@@ -7,11 +8,83 @@
 #include <Tempest/Widget>
 #include <Tempest/Assert>
 
-#ifdef __WIN32
+#include <thread>
+
+#if defined(__WINDOWS__)||defined(__WINDOWS_PHONE__)
 #include <windows.h>
 #else
 #include <unistd.h>
 #include <pthread.h>
+#endif
+
+#ifndef CLOCK_MONOTONIC
+#define CLOCK_MONOTONIC 1
+#endif
+
+#if !defined(_INC_TYPES)&&!defined(_LINUX_TIME_H)
+struct timespec {
+  long tv_sec;
+  long tv_nsec;
+  };
+
+static LARGE_INTEGER getFILETIMEoffset() {
+  SYSTEMTIME s;
+  FILETIME f;
+  LARGE_INTEGER t;
+
+  s.wYear = 1970;
+  s.wMonth = 1;
+  s.wDay = 1;
+  s.wHour = 0;
+  s.wMinute = 0;
+  s.wSecond = 0;
+  s.wMilliseconds = 0;
+  SystemTimeToFileTime( &s, &f );
+  t.QuadPart = f.dwHighDateTime;
+  t.QuadPart <<= 32;
+  t.QuadPart |= f.dwLowDateTime;
+  return (t);
+  }
+
+static int clock_gettime( int X, struct timespec *tv ) {
+  LARGE_INTEGER       t;
+  FILETIME            f;
+  double                  microseconds;
+  static LARGE_INTEGER    offset;
+  static double           frequencyToMicroseconds;
+  static int              initialized = 0;
+  static BOOL             usePerformanceCounter = 0;
+
+  if( !initialized ){
+    LARGE_INTEGER performanceFrequency;
+    initialized = 1;
+    usePerformanceCounter = QueryPerformanceFrequency( &performanceFrequency );
+    if (usePerformanceCounter) {
+      QueryPerformanceCounter( &offset );
+      frequencyToMicroseconds = (double)performanceFrequency.QuadPart / 1000000.;
+      } else {
+      offset = getFILETIMEoffset();
+      frequencyToMicroseconds = 10.;
+      }
+    }
+
+  if (usePerformanceCounter){
+    QueryPerformanceCounter( &t );
+    } else {
+    GetSystemTimeAsFileTime( &f );
+    t.QuadPart = f.dwHighDateTime;
+    t.QuadPart <<= 32;
+    t.QuadPart |= f.dwLowDateTime;
+    }
+
+  t.QuadPart  -= offset.QuadPart;
+  microseconds = (double)t.QuadPart / frequencyToMicroseconds;
+  t.QuadPart   = LONGLONG(microseconds);
+
+  tv->tv_sec  = long(t.QuadPart / 1000000);
+  tv->tv_nsec = t.QuadPart % 1000000;
+  return (0);
+  }
 #endif
 
 #include <time.h>
@@ -62,8 +135,12 @@ bool Application::processEvents( bool all ) {
   }
 
 void Application::sleep(unsigned int msec) {
-#ifdef __WIN32
-  Sleep(msec);
+#if defined(__WINDOWS__)||defined(__WINDOWS_PHONE__)
+  #ifdef _MSC_VER
+    std::this_thread::sleep_for(std::chrono::milliseconds(msec));
+  #else
+    Sleep(msec);
+  #endif
 #else
   if( msec>=1000)
     sleep(msec/1000);
@@ -75,7 +152,7 @@ void Application::sleep(unsigned int msec) {
 
 uint64_t Application::tickCount() {
   timespec now;
-#ifdef WIN32
+#if defined(__WINDOWS__)||defined(__WINDOWS_PHONE__)
   clock_gettime(CLOCK_MONOTONIC    , &now);
 #else
   clock_gettime(CLOCK_MONOTONIC_RAW, &now);

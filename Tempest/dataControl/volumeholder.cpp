@@ -10,6 +10,7 @@
 #include <map>
 
 #include <stdexcept>
+#include <algorithm>
 
 using namespace Tempest;
 
@@ -17,7 +18,8 @@ struct VolumeHolder::Data {
   //std::map< AbstractAPI::Texture*, std::string > textures;
 
   struct DynTexture{
-    int x, y, z, mip;
+    int x, y, z;
+    bool mip;
     TextureUsage usage;
     AbstractTexture::Format::Type format;
     };

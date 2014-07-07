@@ -9,7 +9,7 @@ float ModelBounds::diameter() const {
   for( int i=0; i<3; ++i )
     s += (max[i]-min[i])*(max[i]-min[i]);
 
-  return sqrt(s);
+  return float(sqrt(s));
   }
 
 float ModelBounds::radius() const {
@@ -17,7 +17,7 @@ float ModelBounds::radius() const {
   for( int i=0; i<3; ++i )
     s += (max[i]-mid[i])*(max[i]-mid[i]);
 
-  return sqrt(s);
+  return float(sqrt( s ));
   }
 
 const VertexDeclaration::Declarator &DefaultVertex::decl() {

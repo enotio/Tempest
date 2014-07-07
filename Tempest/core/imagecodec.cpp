@@ -18,6 +18,7 @@
 #include <Tempest/Log>
 #include <Tempest/File>
 #include <stdexcept>
+#include <algorithm>
 
 namespace Tempest {
 
@@ -437,9 +438,7 @@ struct S3TCCodec:ImageCodec {
         for( int y=0; y<4; ++y )
           for( int x=0; x<4; ++x ){
             px[y][x][3] = 255;
-            std::copy( p+((x + i + (y+r)*info.w)*info.bpp),
-                       p+((x + i + (y+r)*info.w)*info.bpp)+info.bpp,
-                       px[y][x] );
+            memcpy( px[y][x], p + ((x + i + (y + r)*info.w)*info.bpp), info.bpp );
             }
 
         int pos = ((i/4) + (r/4)*info.w/4)*8;
@@ -486,7 +485,7 @@ struct S3TCCodec:ImageCodec {
         for( int x=0; x<4; ++x )
           for( int y=0; y<4; ++y ){
             unsigned char * v = &px[ (i+x + (r+y)*info.w)*info.bpp ];
-            std::copy( pixels[y][x], pixels[y][x]+4, v);
+            memcpy( v, pixels[y][x], 4 );
             }
         }
 

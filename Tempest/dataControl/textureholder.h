@@ -72,8 +72,8 @@ class TextureHolder : public AbstractHolderWithLoad
 
     virtual void onMipmapsAdded( AbstractAPI::Texture* tg );
   private:
-    TextureHolder( const TextureHolder &h )  = delete;
-    void operator = ( const TextureHolder& ) = delete;
+    TextureHolder( const TextureHolder & h ):BaseType(h.device()){}
+    void operator = (const TextureHolder&){}
 
     struct Data;
     Data  *data;

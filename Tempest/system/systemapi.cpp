@@ -1,8 +1,10 @@
+//--- enable fopen
 #include "systemapi.h"
 
 #include "system/windowsapi.h"
 #include "system/androidapi.h"
 #include "system/linuxapi.h"
+#include "system/winphoneapi.h"
 
 #include <Tempest/Window>
 #include <cstring>
@@ -10,13 +12,14 @@
 #include <locale>
 #include <Tempest/Buffer>
 #include <Tempest/File>
+#include <Tempest/Platform>
 
 #include "thirdparty/utf8cpp/utf8.h"
 
 using namespace Tempest;
 
 SystemAPI &SystemAPI::instance() {
-#ifdef __WIN32__
+#ifdef __WINDOWS__
   static WindowsAPI api;
 #endif
 
@@ -24,10 +27,13 @@ SystemAPI &SystemAPI::instance() {
   static AndroidAPI api;
 #endif
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __LINUX__
   static LinuxAPI api;
 #endif
 
+#ifdef __WINDOWS_PHONE__
+  static WinPhoneAPI api;
+#endif
   return api;
   }
 
@@ -164,7 +170,7 @@ size_t SystemAPI::skipImpl(SystemAPI::File *f, size_t count) {
   }
 
 bool SystemAPI::eofImpl(SystemAPI::File *f) {
-  return feof((FILE*)f);
+  return feof((FILE*)f)!=0;
   }
 
 SystemAPI::File *SystemAPI::fopenImpl( const char16_t *fname, const char *mode ) {

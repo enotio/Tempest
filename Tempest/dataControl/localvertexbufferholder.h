@@ -70,7 +70,7 @@ class LocalBufferHolder : public Holder {
 
     struct NonFreed{
       NonFreedData data;
-      int collectIteration;
+      unsigned collectIteration;
       void * userPtr;
       };
 
@@ -151,7 +151,7 @@ class LocalBufferHolder : public Holder {
           int   cpySz = size*vsize;
           char *pVertices = this->lockBuffer( t, 0, cpySz);
 
-          std::copy( src, src+cpySz, pVertices );
+          memcpy( pVertices, src, cpySz );
           this->unlockBuffer( t );
           }
 
@@ -159,7 +159,7 @@ class LocalBufferHolder : public Holder {
         }
 
       std::vector<char> tmp( d.memSize );
-      std::copy( src, src+size*vsize, tmp.begin() );
+      memcpy( &tmp[0], src, size*vsize );
       std::fill( tmp.begin()+size*vsize, tmp.end(), 0 );
 
       Holder::createObject( t, &tmp[0], d.memSize/d.elSize, d.elSize, flg );

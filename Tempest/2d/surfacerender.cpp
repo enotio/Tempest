@@ -3,6 +3,7 @@
 #include <Tempest/Surface>
 #include <Tempest/Sprite>
 #include <Tempest/Font>
+#include <functional>
 
 using namespace Tempest;
 
@@ -257,7 +258,7 @@ void SurfaceRender::updateBackBlock( bool isLine ) {
   while( blocks.size()>1 && blocks.back().end==blocks.back().begin )
     blocks.pop_back();
 
-  T_ASSERT(blocks.size());
+  T_ASSERT(blocks.size()>0);
 
   if( blocks.back().state.bm != state.bm ||
       blocks.back().state.cl != state.cl ||

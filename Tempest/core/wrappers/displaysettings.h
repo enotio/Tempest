@@ -3,7 +3,7 @@
 
 namespace Tempest{
 
-class Size;
+struct Size;
 
 //! screen display settings
 class DisplaySettings {
