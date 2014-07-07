@@ -18,9 +18,9 @@
 #define PUTBITS( dest, data, size, startpos) dest |= ( (data) & ((1<<(size))-1) ) << ((startpos)-(size)+1)
 #define PUTBITSHIGH( dest, data, size, startpos) dest |= ( (data) & ((1<<(size))-1) ) << (((startpos)-32)-(size)+1)
 
-static const float PERCEPTUAL_WEIGHT_R_SQUARED = 0.299;
-static const float PERCEPTUAL_WEIGHT_G_SQUARED = 0.587;
-static const float PERCEPTUAL_WEIGHT_B_SQUARED = 0.114;
+static const float PERCEPTUAL_WEIGHT_R_SQUARED = 0.299f;
+static const float PERCEPTUAL_WEIGHT_G_SQUARED = 0.587f;
+static const float PERCEPTUAL_WEIGHT_B_SQUARED = 0.114f;
 
 template< class T >
 static T SQUARE( const T x ){

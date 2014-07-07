@@ -25,7 +25,6 @@ INCLUDEPATH += \
                "."
 
 win32:LIBS += -l"gdi32"
-LIBS += -l"z"
 
 #DEFINES += D3D_DEBUG_INFO
 
@@ -47,7 +46,7 @@ unix: {
 ogl:{
   win32:          LIBS += -l"opengl32"
   unix: !android: LIBS += -lX11 -lGL
-  android:        LIBS += -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics
+  android:        LIBS += -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics -lz
 
   HEADERS +=\
     ogl/opengl2x.h \
@@ -112,6 +111,7 @@ include( thirdparty/freetype/freetype.pri )
 include( thirdparty/nv_math/nv_math.pri )
 include( thirdparty/utf8cpp/utf8cpp.pri )
 include( thirdparty/ktx/ktx.pri )
+!android:include( thirdparty/zlib/zlib.pri )
 include( thirdparty/fakeGL/GLES2/gles.pri )
 
 SOURCES += \
@@ -124,10 +124,8 @@ SOURCES += \
     utils/utility.cpp \
     ui/sizepolicy.cpp \
     ui/shortcut.cpp \
-    ui/painttextengine.cpp \
     ui/painter.cpp \
     ui/layout.cpp \
-    ui/image.cpp \
     ui/event.cpp \
     application.cpp \
     core/renderstate.cpp \
@@ -164,7 +162,6 @@ SOURCES += \
     utils/color.cpp \
     shading/shaderinput.cpp \
     dataControl/resourcecontext.cpp \
-    core/wrappers/half.cpp \
     core/assert.cpp \
     shading/shader.cpp \
     2d/sprite.cpp \
@@ -177,7 +174,6 @@ SOURCES += \
     ui/gesturerecognizer.cpp \
     core/wrappers/texture3d.cpp \
     dataControl/volumeholder.cpp \
-    utils/mempool.cpp \
     shading/programobject.cpp \
     core/imagecodec.cpp \
     utils/log.cpp \
@@ -189,7 +185,8 @@ SOURCES += \
     ogl/openglbase.cpp \
     shading/tessshader.cpp \
     shading/evalshader.cpp \
-    core/devicesm5.cpp
+    core/devicesm5.cpp \
+    system/winphoneapi.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -270,14 +267,15 @@ HEADERS += \
     io/file.h \
     ogl/glfn.h \
     core/graphicssubsystem.h \
-    system/platform.h \
     system/linuxapi.h \
     ogl/openglbase.h \
     shading/tessshader.h \
     dataControl/tessshaderholder.h \
     shading/evalshader.h \
     dataControl/evalshaderholder.h \
-    core/devicesm5.h
+    core/devicesm5.h \
+    core/platform.h \
+    system/winphoneapi.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -327,4 +325,6 @@ OTHER_FILES += \
     include/Tempest/OpenGL4x \
     include/Tempest/EvalShaderHolder \
     include/Tempest/EvalShader \
-    include/Tempest/DeviceSM5
+    include/Tempest/DeviceSM5 \
+    include/Tempest/Platform \
+    include/Tempest/WindowsPhone
