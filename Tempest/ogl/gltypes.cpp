@@ -45,6 +45,7 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
   const char * ext = (const char*)glGetString(GL_EXTENSIONS);
   if( ext==0 )
     ext = "";
+  const char *renderer= (const char*)glGetString(GL_RENDERER);
 
   T_ASSERT_X(ext, "opengl context not created");
 
@@ -56,7 +57,6 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
 
   hasNpotTexture = (strstr(ext, "GL_OES_texture_npot")!=0) ||
                    (strstr(ext, "GL_ARB_texture_non_power_of_two")!=0);
-  //dev->hasNpotTexture = 0;
 
   hasHalfSupport            = (strstr(ext, "GL_OES_vertex_half_float")!=0) ||
                               (strstr(ext, "GL_ARB_half_float_vertex")!=0);
@@ -91,8 +91,9 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
 
   caps.hasHalf2 = hasHalfSupport;
   caps.hasHalf4 = hasHalfSupport;
-  caps.hasRedableDepth = (strstr(ext, "GL_OES_depth_texture")!=0) ||
-                         (strstr(ext, "GL_ARB_depth_texture")!=0);
+  caps.hasRedableDepth = ((strstr(ext, "GL_OES_depth_texture")!=0) ||
+                          (strstr(ext, "GL_ARB_depth_texture")!=0)) &&
+                         (strcmp(renderer,"PowerVR SGX 540")!=0);//PVR bug
 
   glGetIntegerv( GL_MAX_TEXTURE_SIZE,         &caps.maxTextureSize );
 #ifdef __ANDROID__

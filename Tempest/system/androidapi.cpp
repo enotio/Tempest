@@ -828,7 +828,44 @@ static void render() {
       e.wnd->render();
     }
   }
+/*
+EGLint findConfigAttrib( EGLDisplay display,
+                      EGLConfig config, EGLint attribute, EGLint defaultValue) {
+  EGLint value = defaultValue;
+  eglGetConfigAttrib(display, config, attribute, &value);
+  return value;
+  }
 
+static EGLConfig* chooseConfig( EGLDisplay display, EGLConfig* configs,
+                                int count,
+                                int r0, int g0, int b0, int a0, int d0, int s0) {
+  for( int i=0; i<count; ++i ){
+    EGLConfig config = configs[i];
+    EGLint d = findConfigAttrib( display, config,
+                                 EGL_DEPTH_SIZE, 0);
+    EGLint s = findConfigAttrib( display, config,
+                                 EGL_STENCIL_SIZE, 0);
+    
+    // We need at least mDepthSize and mStencilSize bits
+    if (d < d0 || s < s0)
+      continue;
+    
+    // We want an *exact* match for red/green/blue/alpha
+    EGLint r = findConfigAttrib( display, config,
+                                 EGL_RED_SIZE, 0);
+    EGLint g = findConfigAttrib( display, config,
+                                 EGL_GREEN_SIZE, 0);
+    EGLint b = findConfigAttrib( display, config,
+                                 EGL_BLUE_SIZE, 0);
+    EGLint a = findConfigAttrib( display, config,
+                                 EGL_ALPHA_SIZE, 0);
+    
+    if(r == r0 && g == g0 && b == b0 && a == a0)
+      return &configs[i];
+    }
+  return 0;
+  }
+*/
 bool Android::initialize() {
   Android* e = this;
 
@@ -836,8 +873,8 @@ bool Android::initialize() {
     return true;
 
   static const EGLint attribs16[] = {
-    EGL_SURFACE_TYPE,
-    EGL_WINDOW_BIT,
+    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
     EGL_BLUE_SIZE,    5,
     EGL_GREEN_SIZE,   6,
     EGL_RED_SIZE,     5,
@@ -849,8 +886,8 @@ bool Android::initialize() {
 
   /*
   static const EGLint attribs32[] = {
-    EGL_SURFACE_TYPE,
-    EGL_WINDOW_BIT,
+    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
     EGL_BLUE_SIZE,    8,
     EGL_GREEN_SIZE,   8,
     EGL_RED_SIZE,     8,
@@ -859,6 +896,15 @@ bool Android::initialize() {
     EGL_STENCIL_SIZE, 0,
     EGL_NONE
   };*/
+
+  static const EGLint attribs4[] = {
+    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+    EGL_BLUE_SIZE,    4,
+    EGL_GREEN_SIZE,   4,
+    EGL_RED_SIZE,     4,
+    EGL_NONE
+  };
 
   const EGLint* attribs = attribs16;
 
@@ -870,8 +916,16 @@ bool Android::initialize() {
 
   EGLDisplay ini_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
-  eglInitialize(ini_display, 0, 0);
-  eglChooseConfig(ini_display, attribs, &config, 1, &numConfigs);
+  if(!eglInitialize(ini_display, 0, 0))
+    Log() << "eglInitialize failed";
+  //chooseConfig(display, config);
+  if(!eglChooseConfig(ini_display, attribs, &config, 1, &numConfigs))
+    Log() << "eglChooseConfig failed"; else
+    Log() << "eglChooseConfig = " << config;
+  if(numConfigs==0){
+    eglChooseConfig(ini_display, attribs4, &config, 1, &numConfigs);
+    }
+  Log() << "numConfigs="<<numConfigs;
   eglGetConfigAttrib(ini_display, config, EGL_NATIVE_VISUAL_ID, &format);
 
   ANativeWindow_setBuffersGeometry( window, 0, 0, format);
@@ -880,11 +934,15 @@ bool Android::initialize() {
 
   if( e->context==EGL_NO_CONTEXT ){
     const EGLint attrib_list[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
-    ini_context = eglCreateContext(ini_display, config, NULL, attrib_list);
+    ini_context = eglCreateContext(ini_display, config, EGL_NO_CONTEXT, attrib_list);
+    if( ini_context==EGL_NO_CONTEXT )
+      Log(Log::Error) << "Unable to create context";
     } else {
     ini_context = e->context;
     }
 
+  Log(Log::Error) << "Surface=" << ini_surface << " Display=" << ini_display
+                  <<" Context=" << ini_context;
   if( eglMakeCurrent(ini_display, ini_surface, ini_surface, ini_context) == EGL_FALSE ){
     Log(Log::Error) << "Unable to eglMakeCurrent";
     return false;

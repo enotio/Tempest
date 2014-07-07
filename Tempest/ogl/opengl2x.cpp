@@ -14,7 +14,9 @@
 #include <GLES2/gl2.h>
 #include <android/log.h>
 #else
-#include "system/platform.h"
+#ifdef __WINDOWS__
+#include <windows.h>
+#endif
 #include "glfn.h"
 #include <GL/gl.h>
 
@@ -38,14 +40,10 @@ using namespace Tempest::GLProc;
 #include <cstring>
 #include <unordered_set>
 
-#include "../utils/mempool.h"
-
 #ifndef GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
 #define GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER 0x8CDB
 #define GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER 0x8CDC
 #endif
-
-#define OGL_DEBUG
 
 #ifdef __ANDROID__
 #include "system/androidapi.h"
@@ -95,7 +93,7 @@ struct Tempest::Opengl2x::ImplDevice : public Detail::ImplDeviceBase {
     }
   };
 
-Opengl2x::Opengl2x(){
+Opengl2x::Opengl2x():dev(0){
   }
 
 Opengl2x::~Opengl2x(){
@@ -179,6 +177,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "vendor = %s",     vstr(glGetString(GL_VENDOR))     );
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "render = %s",     vstr(glGetString(GL_RENDERER))   );
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "extensions = %s", vstr(glGetString(GL_EXTENSIONS)) );
+  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "maxTextureSize = %d", dev->caps.maxTextureSize);
 #endif
 
   dev->initExt();
@@ -628,7 +627,8 @@ void Opengl2x::startTiledRender() const {
       *p = GL_DEPTH_ATTACHMENT;  ++p;
       }
 
-    dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, p-flg, flg);
+    if(p-flg>0)
+      dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, p-flg, flg);
     errCk();
     } else
   if( dev->hasQCOMTiles ){
@@ -683,14 +683,15 @@ void Opengl2x::endTiledRender() const {
     if( dev->target.color[1]==0 &&  dev->target.color[0] ){
       GLenum flg[3] = {}, *p = flg;
 
-      if( !dev->target.color[0] || !dev->target.color[0]->isInitalized ){
+      if( dev->target.color[0] && !dev->target.color[0]->isInitalized ){
         *p = GL_COLOR_ATTACHMENT0; ++p;
         }
-      if( !dev->target.depth || !dev->target.depth->isInitalized ){
-        *p = GL_DEPTH_ATTACHMENT;  ++p;
+      if( dev->target.depth && !dev->target.depth->isInitalized ){
+        //*p = GL_DEPTH_ATTACHMENT;  ++p;
         }
 
-      dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, p-flg, flg);
+      if(p-flg>0)
+        dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, p-flg, flg);
       errCk();
       }
     //dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, 0,0);

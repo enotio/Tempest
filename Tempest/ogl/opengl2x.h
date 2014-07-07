@@ -190,7 +190,7 @@ class Opengl2x : public OpenGLBase {
                                               AbstractTexture::Format::Type f ) const;
 
     struct ImplDevice;
-    mutable Detail::ImplDeviceBase * dev = 0;
+    mutable Detail::ImplDeviceBase * dev;
     virtual bool createContext( Detail::ImplDeviceBase*,
                                 void* hwnd, const Options &opt ) const;
   private:

@@ -461,6 +461,7 @@ GraphicsSubsystem::TessShader *GLSL::createTessShaderFromSource( const std::stri
   }
 
 void GLSL::deleteShader( TessShader *s ) const{
+  (void)s;
 #ifndef __ANDROID__
   GLuint* prog = (GLuint*)(s);
 
@@ -506,6 +507,7 @@ GraphicsSubsystem::EvalShader *GLSL::createEvalShaderFromSource( const std::stri
   }
 
 void GLSL::deleteShader( EvalShader *s ) const{
+  (void)s;
 #ifndef __ANDROID__
   GLuint* prog = (GLuint*)(s);
 

@@ -1,12 +1,13 @@
 #ifndef GLFN_H
 #define GLFN_H
 
+#include <Tempest/Platform>
 #include <cstddef>
 #ifdef __ANDROID__
 #include <EGL/egl.h>
 #endif
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#if __LINUX__
 #include <GL/gl.h>
 #include <GL/glx.h>
 
@@ -14,7 +15,7 @@
 #undef PSize
 #endif
 
-#if defined(__WIN32__) || (defined(__linux__) && !defined(__ANDROID__) )
+#if defined(__WINDOWS__) || defined(__LINUX__)
 #include <GL/gl.h>
 
 #define GL_HALF_FLOAT 0x140B
@@ -87,7 +88,7 @@ typedef char             GLchar;
 namespace Tempest{
 
 namespace Detail {
-#ifdef __WIN32
+#ifdef __WINDOWS__
 typedef HGLRC GLContext;
 #endif
 
@@ -95,8 +96,12 @@ typedef HGLRC GLContext;
 typedef EGLContext GLContext;
 #endif
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __LINUX__
 typedef GLXContext GLContext;
+#endif
+
+#ifdef __WINDOWS_PHONE__
+typedef void* GLContext;
 #endif
 
   bool initGLProc();
