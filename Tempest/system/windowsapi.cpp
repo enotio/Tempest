@@ -719,21 +719,11 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           PostQuitMessage(0);
         }
         break;
+
       case WM_DESTROY: {
         PostQuitMessage(0);
         }
         break;
-/*
-      case WM_SETCURSOR:
-      // If the window is minimized, draw hCurs1.
-      // If the window is not minimized, draw the
-      // default cursor (class cursor).
-
-        if (IsIconic(hWnd)) {
-          //SetCursor(hCurs1);
-          break;
-          }
-        break;*/
 
       default: {
         return DefWindowProc( hWnd, msg, wParam, lParam );

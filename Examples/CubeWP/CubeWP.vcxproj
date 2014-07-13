@@ -58,6 +58,7 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="windows_dummy.cpp" />
   </ItemGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -128,6 +129,9 @@
     <ProjectReference Include="..\..\windowsPhone\Tempest\Tempest.vcxproj">
       <Project>{209fa851-447e-4531-9474-706c43c42e90}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MainWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

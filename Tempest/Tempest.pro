@@ -72,6 +72,7 @@ ogl:{
 directx: {
   INCLUDEPATH += "$$(DXSDK_DIR)/include"
   LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
+  LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d11"
 
   HEADERS += \
     dx/hlsl.h \
@@ -186,7 +187,8 @@ SOURCES += \
     shading/tessshader.cpp \
     shading/evalshader.cpp \
     core/devicesm5.cpp \
-    system/winphoneapi.cpp
+    system/winphoneapi.cpp \
+    dx/directx11.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -275,7 +277,8 @@ HEADERS += \
     dataControl/evalshaderholder.h \
     core/devicesm5.h \
     core/platform.h \
-    system/winphoneapi.h
+    system/winphoneapi.h \
+    dx/directx11.h
 
 OTHER_FILES += \
     ../.gitignore \

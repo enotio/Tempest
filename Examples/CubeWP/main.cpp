@@ -1,9 +1,12 @@
 #include <Tempest/Application>
+#include "mainwindow.h"
 
 using namespace Tempest;
 
 int main(int argc, const char** argv){ 
-  Tempest::Application app;
+  Application app;
+  MainWindow w;
 
+  w.show();
   return app.exec();
   }

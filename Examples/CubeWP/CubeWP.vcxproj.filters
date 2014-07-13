@@ -9,6 +9,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="windows_dummy.cpp" />
+    <ClCompile Include="MainWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Common">
@@ -40,5 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MainWindow.h" />
   </ItemGroup>
 </Project>

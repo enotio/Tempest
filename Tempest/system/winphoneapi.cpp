@@ -87,56 +87,15 @@ static void render( Tempest::Window* w ){
   }
 
 int WinPhoneAPI::nextEvent(bool &quit) {
+  WinRt::nextEvent();
+  render(window);
   return 0;
-  /*
-  MSG uMsg;
-  memset(&uMsg,0,sizeof(uMsg));
-
-  if( PeekMessage( &uMsg, NULL, 0, 0, PM_REMOVE ) ){
-    if( uMsg.message==WM_QUIT )
-      quit = 1;
-
-    TranslateMessage( &uMsg );
-    DispatchMessage ( &uMsg );
-    Sleep(0);
-    return uMsg.wParam;
-    } else {
-    for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
-      render( i->second );
-
-    return 0;
-    }
-  */
   }
 
 int WinPhoneAPI::nextEvents( bool &quit ) {
+  WinRt::nextEvents();
+  render( window );
   return 0;
-  /*
-  MSG uMsg;
-  memset(&uMsg,0,sizeof(uMsg));
-  int r = 0;
-
-  while( !quit ){
-    if( PeekMessage( &uMsg, NULL, 0, 0, PM_REMOVE ) ){
-      if( uMsg.message==WM_QUIT )
-        quit = 1;
-
-      TranslateMessage( &uMsg );
-      DispatchMessage ( &uMsg );
-
-      if( uMsg.message==WM_QUIT )
-        r = uMsg.wParam;
-      } else {
-      for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
-        render( i->second );
-
-      Sleep(1);
-      return r;
-      }
-    }
-
-  return r;
-  */
   }
 
 WinPhoneAPI::Window *WinPhoneAPI::createWindow(int w, int h) {
@@ -187,6 +146,7 @@ void WinPhoneAPI::setGeometry( Window *hw, int x, int y, int w, int h ) {
 
 void WinPhoneAPI::bind( Window *w, Tempest::Window *wx ) {
   window = wx;
+  WinRt::setMainWidget(wx);
   }
 
 WinPhoneAPI::CpuInfo WinPhoneAPI::cpuInfoImpl(){
