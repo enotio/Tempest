@@ -1,0 +1,961 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="2d">
+      <UniqueIdentifier>{850ebdd9-d5b9-402e-b57b-ff902221e49d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{41c713b9-cc38-4c80-a3a0-1d894a04ec1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\wrappers">
+      <UniqueIdentifier>{265fe511-1600-4160-b6a7-a8ce8ef2cfdd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dataControl">
+      <UniqueIdentifier>{882ad03e-9b02-4059-bdcf-d1437a16768d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dx">
+      <UniqueIdentifier>{d545b0db-480b-44cb-ad5e-ca0d25934ba3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io">
+      <UniqueIdentifier>{3733268a-aaf4-4fe6-be6b-4b988a40bef7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{617e73e8-8413-4fee-ae01-eeb752630712}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scene">
+      <UniqueIdentifier>{8ac27e11-efca-4549-a297-23781a6d53f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shading">
+      <UniqueIdentifier>{c94bd6ee-6bcb-4104-be5e-495ed8429fcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system">
+      <UniqueIdentifier>{bfcfabab-591b-454d-b36d-2b17ec0360a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{e721e3fa-be15-4ee5-bd7c-27443daffaaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{34eac096-dbb3-4189-b61e-5697ed7e9ba0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{09eba0f7-c28d-4d12-a8c8-c08ce5c94a4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\zlib">
+      <UniqueIdentifier>{dad3f35d-fa83-4746-bd8d-4301e544fb39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\ktx">
+      <UniqueIdentifier>{54dc724b-3881-4b60-aba5-cea07ece4278}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\libjpeg">
+      <UniqueIdentifier>{ce3665bb-405f-4896-b3a8-a479ad064609}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\libpng">
+      <UniqueIdentifier>{0b1a339d-e4b4-4dc5-8c2c-2cf07846dda6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\nv_math">
+      <UniqueIdentifier>{81c79a6d-9939-44e7-9529-620696272783}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\squish">
+      <UniqueIdentifier>{5b490a09-9f93-4c84-9ae0-1db4c6aee534}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\utf8cpp">
+      <UniqueIdentifier>{bc0ce652-c72d-476b-ac80-995ad195aee2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\freetype">
+      <UniqueIdentifier>{8afeef0f-5c72-42ff-858e-daf23536b9a0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Tempest\2d\font.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\2d\sprite.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\2d\spritesholder.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\2d\surface.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\2d\surfacerender.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\wrappers\atomic.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\wrappers\displaysettings.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\wrappers\indexbuffer.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\wrappers\pixmap.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\wrappers\texture2d.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\wrappers\texture3d.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\wrappers\vertexbuffer.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\wrappers\vertexdeclaration.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\abstractapi.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\assert.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\device.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\devicesm5.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\graphicssubsystem.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\imagecodec.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\core\renderstate.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\dataControl\abstractholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\dataControl\indexbufferholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\dataControl\localtexturesholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\dataControl\localvertexbufferholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\dataControl\resourcecontext.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\dataControl\textureholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\dataControl\vertexbufferholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\dataControl\volumeholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\io\buffer.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\io\file.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\io\iodevice.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\math\matrix4x4.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\scene\abstractcamera.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\scene\abstractgraphicobject.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\scene\abstractlightcollection.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\scene\abstractscene.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\scene\camera.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\scene\graphicobject.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\scene\light.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\scene\lightcollection.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\scene\model.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\scene\viewtester.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\shading\abstractshadinglang.cpp">
+      <Filter>shading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\shading\evalshader.cpp">
+      <Filter>shading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\shading\fragmentshader.cpp">
+      <Filter>shading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\shading\programobject.cpp">
+      <Filter>shading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\shading\shader.cpp">
+      <Filter>shading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\shading\shaderinput.cpp">
+      <Filter>shading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\shading\tessshader.cpp">
+      <Filter>shading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\shading\uniformcash.cpp">
+      <Filter>shading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\shading\vertexshader.cpp">
+      <Filter>shading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\system\androidapi.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\system\linuxapi.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\system\systemapi.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\system\windowsapi.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\system\winphoneapi.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\ui\event.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\ui\gesturerecognizer.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\ui\layout.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\ui\painter.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\ui\shortcut.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\ui\sizepolicy.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\ui\widget.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\ui\window.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\utils\color.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\utils\log.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\utils\tessobject.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\utils\utility.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\application.cpp" />
+    <ClCompile Include="..\..\Tempest\timer.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\autofit\autofit.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\basepic.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftapi.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftbase.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftbbox.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftbitmap.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftdbgmem.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftdebug.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftglyph.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftinit.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftpic.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftstroke.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftsynth.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftsystem.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\cff\cff.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\pshinter\pshinter.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\psnames\psnames.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\raster\raster.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\sfnt\sfnt.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\smooth\smooth.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\truetype\truetype.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\ktx\etc_dec.cpp">
+      <Filter>thirdparty\ktx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jaricom.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jcomapi.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdapimin.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdapistd.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdarith.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdatadst.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdatasrc.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdcoefct.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdcolor.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jddctmgr.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdhuff.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdinput.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdmainct.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdmarker.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdmaster.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdmerge.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdpostct.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdsample.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdtrans.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jerror.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jidctflt.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jidctfst.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jidctint.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jmemmgr.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jmemnobs.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jquant1.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jquant2.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jutils.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\png.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngerror.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngget.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngmem.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngpread.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngread.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngrio.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngrtran.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngrutil.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngset.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngtrans.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngwio.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngwrite.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngwtran.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngwutil.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\nv_math\nv_math.cpp">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\nv_math\nv_matrix.cpp">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\nv_math\nv_quat.cpp">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\alpha.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\clusterfit.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\colourblock.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\colourfit.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\colourset.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\maths.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\rangefit.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\singlecolourfit.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\squish.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\adler32.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\compress.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\crc32.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\deflate.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\gzclose.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\gzlib.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\gzread.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\gzwrite.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\infback.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\inffast.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\inflate.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\inftrees.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\trees.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\uncompr.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\zutil.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Tempest\2d\font.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\2d\sprite.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\2d\spritesholder.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\2d\surface.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\2d\surfacerender.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\wrappers\abstracttexture.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\wrappers\atomic.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\wrappers\displaysettings.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\wrappers\half.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\wrappers\indexbuffer.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\wrappers\pixmap.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\wrappers\texture2d.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\wrappers\texture3d.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\wrappers\vertexbuffer.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\wrappers\vertexdeclaration.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\abstractapi.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\assert.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\device.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\devicesm5.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\graphicssubsystem.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\imagecodec.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\platform.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\core\renderstate.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\abstractholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\evalshaderholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\fragmentshaderholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\indexbufferholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\localobjectpool.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\localtexturesholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\localvertexbufferholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\resourcecontext.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\shaderholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\tessshaderholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\textureholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\vertexbufferholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\vertexshaderholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\volumeholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\io\buffer.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\io\file.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\io\iodevice.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\math\matrix4x4.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\scene\abstractcamera.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\scene\abstractgraphicobject.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\scene\abstractlightcollection.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\scene\abstractscene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\scene\camera.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\scene\graphicobject.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\scene\light.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\scene\lightcollection.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\scene\model.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\scene\viewtester.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\shading\abstractshadinglang.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\shading\evalshader.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\shading\fragmentshader.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\shading\programobject.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\shading\shader.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\shading\shaderinput.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\shading\tessshader.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\shading\uniformcash.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\shading\vertexshader.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\system\androidapi.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\system\ddsdef.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\system\linuxapi.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\system\systemapi.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\system\windowsapi.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\system\winphoneapi.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\ui\event.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\ui\gesturerecognizer.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\ui\image.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\ui\layout.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\ui\painter.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\ui\painttextengine.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\ui\shortcut.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\ui\sizepolicy.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\ui\widget.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\ui\window.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\utils\color.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\utils\cwnptr.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\utils\log.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\utils\mempool.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\utils\tessobject.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\utils\utility.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\application.h" />
+    <ClInclude Include="..\..\Tempest\signal.h" />
+    <ClInclude Include="..\..\Tempest\timer.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\ktx\etc_dec.h">
+      <Filter>thirdparty\ktx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jconfig.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jdct.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jerror.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jinclude.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jmemsys.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jmorecfg.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jpegint.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jpeglib.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jversion.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libpng\config.h">
+      <Filter>thirdparty\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libpng\png.h">
+      <Filter>thirdparty\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libpng\pngconf.h">
+      <Filter>thirdparty\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\libpng\pngpriv.h">
+      <Filter>thirdparty\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_math\misc.h">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_math\nv_math.h">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_math\nv_matrix.h">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_math\nv_quat.h">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_math\NvVec.h">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\alpha.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\clusterfit.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\colourblock.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\colourfit.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\colourset.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\config.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\maths.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\rangefit.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\simd.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\simd_float.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\simd_sse.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\simd_ve.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\singlecolourfit.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\squish.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\utf8cpp\utf8.h">
+      <Filter>thirdparty\utf8cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\crc32.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\deflate.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\gzguts.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\inffast.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\inffixed.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\inflate.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\inftrees.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\trees.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\zconf.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\zlib.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\zutil.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_global.h">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_types.h">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\utf8cpp\utf8\core.h">
+      <Filter>thirdparty\utf8cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\utf8cpp\utf8\checked.h">
+      <Filter>thirdparty\utf8cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\thirdparty\utf8cpp\utf8\unchecked.h">
+      <Filter>thirdparty\utf8cpp</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Tempest\thirdparty\libjpeg\libjpeg.pri">
+      <Filter>thirdparty\libjpeg</Filter>
+    </None>
+    <None Include="..\..\Tempest\thirdparty\squish\singlecolourlookup.inl">
+      <Filter>thirdparty\squish</Filter>
+    </None>
+  </ItemGroup>
+</Project>

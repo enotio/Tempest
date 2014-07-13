@@ -5,7 +5,9 @@
 
 namespace Tempest{
 
-template< class InTexture = Tempest::Bind::UserTexture >
+class Sprite;
+
+template< class InTexture = Tempest::Sprite >
 class Image : public Widget {
   public:
     typedef InTexture Texture;
@@ -35,7 +37,6 @@ class Image : public Widget {
       p.unsetTexture();
 
       paintNested(pe);
-
       }
 
   };

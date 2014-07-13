@@ -55,7 +55,7 @@ WinPhoneAPI::WinPhoneAPI() {
 WinPhoneAPI::~WinPhoneAPI() {
   }
 
-int WinPhoneAPI::preMain( int(_cdecl*func_main )() ){
+int WinPhoneAPI::preMain( int(_cdecl*func_main )(int, const char**) ){
   return WinRt::startApplication( func_main );
   }
 

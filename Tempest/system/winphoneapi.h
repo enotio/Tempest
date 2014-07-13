@@ -54,7 +54,7 @@ class WinPhoneAPI:public SystemAPI {
     void   fcloseImpl   ( File* f );
   private:
     struct Wnd;
-    static int preMain( int( _cdecl* )() );
+    static int preMain( int( _cdecl* )(int,const char**) );
 
   friend class SystemAPI;
   friend int ::WinMain();

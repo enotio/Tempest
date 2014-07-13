@@ -1,0 +1,450 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Tempest\2d\font.cpp" />
+    <ClCompile Include="..\..\Tempest\2d\sprite.cpp" />
+    <ClCompile Include="..\..\Tempest\2d\spritesholder.cpp" />
+    <ClCompile Include="..\..\Tempest\2d\surface.cpp" />
+    <ClCompile Include="..\..\Tempest\2d\surfacerender.cpp" />
+    <ClCompile Include="..\..\Tempest\application.cpp" />
+    <ClCompile Include="..\..\Tempest\core\abstractapi.cpp" />
+    <ClCompile Include="..\..\Tempest\core\assert.cpp" />
+    <ClCompile Include="..\..\Tempest\core\device.cpp" />
+    <ClCompile Include="..\..\Tempest\core\devicesm5.cpp" />
+    <ClCompile Include="..\..\Tempest\core\graphicssubsystem.cpp" />
+    <ClCompile Include="..\..\Tempest\core\imagecodec.cpp" />
+    <ClCompile Include="..\..\Tempest\core\renderstate.cpp" />
+    <ClCompile Include="..\..\Tempest\core\wrappers\atomic.cpp" />
+    <ClCompile Include="..\..\Tempest\core\wrappers\displaysettings.cpp" />
+    <ClCompile Include="..\..\Tempest\core\wrappers\indexbuffer.cpp" />
+    <ClCompile Include="..\..\Tempest\core\wrappers\pixmap.cpp" />
+    <ClCompile Include="..\..\Tempest\core\wrappers\texture2d.cpp" />
+    <ClCompile Include="..\..\Tempest\core\wrappers\texture3d.cpp" />
+    <ClCompile Include="..\..\Tempest\core\wrappers\vertexbuffer.cpp" />
+    <ClCompile Include="..\..\Tempest\core\wrappers\vertexdeclaration.cpp" />
+    <ClCompile Include="..\..\Tempest\dataControl\abstractholder.cpp" />
+    <ClCompile Include="..\..\Tempest\dataControl\indexbufferholder.cpp" />
+    <ClCompile Include="..\..\Tempest\dataControl\localtexturesholder.cpp" />
+    <ClCompile Include="..\..\Tempest\dataControl\localvertexbufferholder.cpp" />
+    <ClCompile Include="..\..\Tempest\dataControl\resourcecontext.cpp" />
+    <ClCompile Include="..\..\Tempest\dataControl\textureholder.cpp" />
+    <ClCompile Include="..\..\Tempest\dataControl\vertexbufferholder.cpp" />
+    <ClCompile Include="..\..\Tempest\dataControl\volumeholder.cpp" />
+    <ClCompile Include="..\..\Tempest\io\buffer.cpp" />
+    <ClCompile Include="..\..\Tempest\io\file.cpp" />
+    <ClCompile Include="..\..\Tempest\io\iodevice.cpp" />
+    <ClCompile Include="..\..\Tempest\math\matrix4x4.cpp" />
+    <ClCompile Include="..\..\Tempest\scene\abstractcamera.cpp" />
+    <ClCompile Include="..\..\Tempest\scene\abstractgraphicobject.cpp" />
+    <ClCompile Include="..\..\Tempest\scene\abstractlightcollection.cpp" />
+    <ClCompile Include="..\..\Tempest\scene\abstractscene.cpp" />
+    <ClCompile Include="..\..\Tempest\scene\camera.cpp" />
+    <ClCompile Include="..\..\Tempest\scene\graphicobject.cpp" />
+    <ClCompile Include="..\..\Tempest\scene\light.cpp" />
+    <ClCompile Include="..\..\Tempest\scene\lightcollection.cpp" />
+    <ClCompile Include="..\..\Tempest\scene\model.cpp" />
+    <ClCompile Include="..\..\Tempest\scene\viewtester.cpp" />
+    <ClCompile Include="..\..\Tempest\shading\abstractshadinglang.cpp" />
+    <ClCompile Include="..\..\Tempest\shading\evalshader.cpp" />
+    <ClCompile Include="..\..\Tempest\shading\fragmentshader.cpp" />
+    <ClCompile Include="..\..\Tempest\shading\programobject.cpp" />
+    <ClCompile Include="..\..\Tempest\shading\shader.cpp" />
+    <ClCompile Include="..\..\Tempest\shading\shaderinput.cpp" />
+    <ClCompile Include="..\..\Tempest\shading\tessshader.cpp" />
+    <ClCompile Include="..\..\Tempest\shading\uniformcash.cpp" />
+    <ClCompile Include="..\..\Tempest\shading\vertexshader.cpp" />
+    <ClCompile Include="..\..\Tempest\system\androidapi.cpp" />
+    <ClCompile Include="..\..\Tempest\system\linuxapi.cpp" />
+    <ClCompile Include="..\..\Tempest\system\systemapi.cpp" />
+    <ClCompile Include="..\..\Tempest\system\windowsapi.cpp" />
+    <ClCompile Include="..\..\Tempest\system\winphoneapi.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\autofit\autofit.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\basepic.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftapi.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftbase.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftbbox.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftbitmap.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftdbgmem.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftdebug.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftglyph.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftinit.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftpic.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftstroke.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftsynth.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\base\ftsystem.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\cff\cff.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\pshinter\pshinter.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\psnames\psnames.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\raster\raster.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\sfnt\sfnt.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\smooth\smooth.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\freetype\src\truetype\truetype.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\ktx\etc_dec.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jaricom.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jcomapi.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdapimin.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdapistd.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdarith.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdatadst.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdatasrc.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdcoefct.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdcolor.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jddctmgr.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdhuff.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdinput.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdmainct.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdmarker.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdmaster.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdmerge.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdpostct.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdsample.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jdtrans.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jerror.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jidctflt.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jidctfst.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jidctint.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jmemmgr.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jmemnobs.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jquant1.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jquant2.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libjpeg\jutils.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\png.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngerror.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngget.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngmem.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngpread.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngread.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngrio.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngrtran.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngrutil.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngset.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngtrans.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngwio.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngwrite.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngwtran.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\libpng\pngwutil.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\nv_math\nv_math.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\nv_math\nv_matrix.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\nv_math\nv_quat.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\alpha.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\clusterfit.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\colourblock.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\colourfit.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\colourset.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\maths.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\rangefit.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\singlecolourfit.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\squish\squish.cpp" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\adler32.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\compress.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\crc32.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\deflate.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\gzclose.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\gzlib.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\gzread.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\gzwrite.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\infback.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\inffast.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\inflate.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\inftrees.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\trees.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\uncompr.c" />
+    <ClCompile Include="..\..\Tempest\thirdparty\zlib\zutil.c" />
+    <ClCompile Include="..\..\Tempest\timer.cpp" />
+    <ClCompile Include="..\..\Tempest\ui\event.cpp" />
+    <ClCompile Include="..\..\Tempest\ui\gesturerecognizer.cpp" />
+    <ClCompile Include="..\..\Tempest\ui\layout.cpp" />
+    <ClCompile Include="..\..\Tempest\ui\painter.cpp" />
+    <ClCompile Include="..\..\Tempest\ui\shortcut.cpp" />
+    <ClCompile Include="..\..\Tempest\ui\sizepolicy.cpp" />
+    <ClCompile Include="..\..\Tempest\ui\widget.cpp" />
+    <ClCompile Include="..\..\Tempest\ui\window.cpp" />
+    <ClCompile Include="..\..\Tempest\utils\color.cpp" />
+    <ClCompile Include="..\..\Tempest\utils\log.cpp" />
+    <ClCompile Include="..\..\Tempest\utils\tessobject.cpp" />
+    <ClCompile Include="..\..\Tempest\utils\utility.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Tempest\2d\font.h" />
+    <ClInclude Include="..\..\Tempest\2d\sprite.h" />
+    <ClInclude Include="..\..\Tempest\2d\spritesholder.h" />
+    <ClInclude Include="..\..\Tempest\2d\surface.h" />
+    <ClInclude Include="..\..\Tempest\2d\surfacerender.h" />
+    <ClInclude Include="..\..\Tempest\application.h" />
+    <ClInclude Include="..\..\Tempest\core\abstractapi.h" />
+    <ClInclude Include="..\..\Tempest\core\assert.h" />
+    <ClInclude Include="..\..\Tempest\core\device.h" />
+    <ClInclude Include="..\..\Tempest\core\devicesm5.h" />
+    <ClInclude Include="..\..\Tempest\core\graphicssubsystem.h" />
+    <ClInclude Include="..\..\Tempest\core\imagecodec.h" />
+    <ClInclude Include="..\..\Tempest\core\platform.h" />
+    <ClInclude Include="..\..\Tempest\core\renderstate.h" />
+    <ClInclude Include="..\..\Tempest\core\wrappers\abstracttexture.h" />
+    <ClInclude Include="..\..\Tempest\core\wrappers\atomic.h" />
+    <ClInclude Include="..\..\Tempest\core\wrappers\displaysettings.h" />
+    <ClInclude Include="..\..\Tempest\core\wrappers\half.h" />
+    <ClInclude Include="..\..\Tempest\core\wrappers\indexbuffer.h" />
+    <ClInclude Include="..\..\Tempest\core\wrappers\pixmap.h" />
+    <ClInclude Include="..\..\Tempest\core\wrappers\texture2d.h" />
+    <ClInclude Include="..\..\Tempest\core\wrappers\texture3d.h" />
+    <ClInclude Include="..\..\Tempest\core\wrappers\vertexbuffer.h" />
+    <ClInclude Include="..\..\Tempest\core\wrappers\vertexdeclaration.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\abstractholder.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\evalshaderholder.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\fragmentshaderholder.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\indexbufferholder.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\localobjectpool.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\localtexturesholder.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\localvertexbufferholder.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\resourcecontext.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\shaderholder.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\tessshaderholder.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\textureholder.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\vertexbufferholder.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\vertexshaderholder.h" />
+    <ClInclude Include="..\..\Tempest\dataControl\volumeholder.h" />
+    <ClInclude Include="..\..\Tempest\io\buffer.h" />
+    <ClInclude Include="..\..\Tempest\io\file.h" />
+    <ClInclude Include="..\..\Tempest\io\iodevice.h" />
+    <ClInclude Include="..\..\Tempest\math\matrix4x4.h" />
+    <ClInclude Include="..\..\Tempest\scene\abstractcamera.h" />
+    <ClInclude Include="..\..\Tempest\scene\abstractgraphicobject.h" />
+    <ClInclude Include="..\..\Tempest\scene\abstractlightcollection.h" />
+    <ClInclude Include="..\..\Tempest\scene\abstractscene.h" />
+    <ClInclude Include="..\..\Tempest\scene\camera.h" />
+    <ClInclude Include="..\..\Tempest\scene\graphicobject.h" />
+    <ClInclude Include="..\..\Tempest\scene\light.h" />
+    <ClInclude Include="..\..\Tempest\scene\lightcollection.h" />
+    <ClInclude Include="..\..\Tempest\scene\model.h" />
+    <ClInclude Include="..\..\Tempest\scene\viewtester.h" />
+    <ClInclude Include="..\..\Tempest\shading\abstractshadinglang.h" />
+    <ClInclude Include="..\..\Tempest\shading\evalshader.h" />
+    <ClInclude Include="..\..\Tempest\shading\fragmentshader.h" />
+    <ClInclude Include="..\..\Tempest\shading\programobject.h" />
+    <ClInclude Include="..\..\Tempest\shading\shader.h" />
+    <ClInclude Include="..\..\Tempest\shading\shaderinput.h" />
+    <ClInclude Include="..\..\Tempest\shading\tessshader.h" />
+    <ClInclude Include="..\..\Tempest\shading\uniformcash.h" />
+    <ClInclude Include="..\..\Tempest\shading\vertexshader.h" />
+    <ClInclude Include="..\..\Tempest\signal.h" />
+    <ClInclude Include="..\..\Tempest\system\androidapi.h" />
+    <ClInclude Include="..\..\Tempest\system\ddsdef.h" />
+    <ClInclude Include="..\..\Tempest\system\linuxapi.h" />
+    <ClInclude Include="..\..\Tempest\system\systemapi.h" />
+    <ClInclude Include="..\..\Tempest\system\windowsapi.h" />
+    <ClInclude Include="..\..\Tempest\system\winphoneapi.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\ktx\etc_dec.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jconfig.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jdct.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jerror.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jinclude.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jmemsys.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jmorecfg.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jpegint.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jpeglib.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libjpeg\jversion.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libpng\config.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libpng\png.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libpng\pngconf.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\libpng\pngpriv.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_global.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_math\misc.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_math\NvVec.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_math\nv_math.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_math\nv_matrix.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_math\nv_quat.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\nv_types.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\alpha.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\clusterfit.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\colourblock.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\colourfit.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\colourset.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\config.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\maths.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\rangefit.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\simd.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\simd_float.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\simd_sse.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\simd_ve.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\singlecolourfit.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\squish\squish.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\utf8cpp\utf8.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\utf8cpp\utf8\checked.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\utf8cpp\utf8\core.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\utf8cpp\utf8\unchecked.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\crc32.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\deflate.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\gzguts.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\inffast.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\inffixed.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\inflate.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\inftrees.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\trees.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\zconf.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\zlib.h" />
+    <ClInclude Include="..\..\Tempest\thirdparty\zlib\zutil.h" />
+    <ClInclude Include="..\..\Tempest\timer.h" />
+    <ClInclude Include="..\..\Tempest\ui\event.h" />
+    <ClInclude Include="..\..\Tempest\ui\gesturerecognizer.h" />
+    <ClInclude Include="..\..\Tempest\ui\image.h" />
+    <ClInclude Include="..\..\Tempest\ui\layout.h" />
+    <ClInclude Include="..\..\Tempest\ui\painter.h" />
+    <ClInclude Include="..\..\Tempest\ui\painttextengine.h" />
+    <ClInclude Include="..\..\Tempest\ui\shortcut.h" />
+    <ClInclude Include="..\..\Tempest\ui\sizepolicy.h" />
+    <ClInclude Include="..\..\Tempest\ui\widget.h" />
+    <ClInclude Include="..\..\Tempest\ui\window.h" />
+    <ClInclude Include="..\..\Tempest\utils\color.h" />
+    <ClInclude Include="..\..\Tempest\utils\cwnptr.h" />
+    <ClInclude Include="..\..\Tempest\utils\log.h" />
+    <ClInclude Include="..\..\Tempest\utils\mempool.h" />
+    <ClInclude Include="..\..\Tempest\utils\tessobject.h" />
+    <ClInclude Include="..\..\Tempest\utils\utility.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Tempest\thirdparty\libjpeg\libjpeg.pri" />
+    <None Include="..\..\Tempest\thirdparty\squish\singlecolourlookup.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\win_rt_api_binding\win_rt_api_binding.vcxproj">
+      <Project>{3f990c9a-289e-4333-a4a2-4e3fadd83c06}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{209fa851-447e-4531-9474-706c43c42e90}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>Tempest</ProjectName>
+    <RootNamespace>Tempest</RootNamespace>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationType>Windows Phone</ApplicationType>
+    <ApplicationTypeRevision>8.1</ApplicationTypeRevision>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_wp81</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120_wp81</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_wp81</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120_wp81</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IncludePath>../../Tempest;../../Tempest/include;../../Tempest/thirdparty;../../Tempest/thirdparty/fakeGL;../../Tempest/thirdparty/freetype/include;../../Tempest/thirdparty/squish;../../Tempest/thirdparty/zlib;../win_rt_api_binding;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)bin\</OutDir>
+    <LibraryPath>$(SolutionDir)bin\;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <SDLCheck>true</SDLCheck>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <PreprocessorDefinitions>FT2_BUILD_LIBRARY=1;NO_GETENV;_CRT_SECURE_NO_WARNINGS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <AdditionalDependencies>WindowsPhoneCore.lib;RuntimeObject.lib;PhoneAppModelHost.lib;DXGI.lib;D3D11.lib;win_rt_api_binding.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

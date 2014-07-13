@@ -14,10 +14,6 @@
 
 namespace Tempest{
 
-namespace Bind{
-  class UserTexture;
-  }
-
 enum Orientation{
   Horizontal,
   Vertical
