@@ -177,7 +177,6 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "vendor = %s",     vstr(glGetString(GL_VENDOR))     );
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "render = %s",     vstr(glGetString(GL_RENDERER))   );
   __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "extensions = %s", vstr(glGetString(GL_EXTENSIONS)) );
-  __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "maxTextureSize = %d", dev->caps.maxTextureSize);
 #endif
 
   dev->initExt();

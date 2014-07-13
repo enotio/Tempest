@@ -62,9 +62,11 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
                               (strstr(ext, "GL_ARB_half_float_vertex")!=0);
 
 #ifdef __ANDROID__
-  hasRenderToRGBTextures    = strstr(ext, "GL_OES_rgb8_rgba8")!=0;
+  hasRenderToRGBTexture     =  strstr(ext, "GL_OES_rgb8_rgba8")!=0;
+  hasRenderToRGBATexture    = (strstr(ext, "GL_OES_rgb8_rgba8")!=0)||(strstr(ext, "GL_ARM_rgba8")!=0);
 #else
-  hasRenderToRGBTextures     = 1;
+  hasRenderToRGBTexture      = 1;
+  hasRenderToRGBATexture     = 1;
 #endif
 
   hasQCOMTiles      = strstr(ext, "GL_QCOM_tiled_rendering")!=0;
@@ -94,6 +96,8 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
   caps.hasRedableDepth = ((strstr(ext, "GL_OES_depth_texture")!=0) ||
                           (strstr(ext, "GL_ARB_depth_texture")!=0)) &&
                          (strcmp(renderer,"PowerVR SGX 540")!=0);//PVR bug
+  caps.hasNativeRGB =hasRenderToRGBTexture;
+  caps.hasNativeRGBA=hasRenderToRGBATexture;
 
   glGetIntegerv( GL_MAX_TEXTURE_SIZE,         &caps.maxTextureSize );
 #ifdef __ANDROID__

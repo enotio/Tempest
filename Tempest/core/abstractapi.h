@@ -46,6 +46,7 @@ class AbstractAPI: public GraphicsSubsystem {
       bool has3DTexture, hasNpotTexture;
 
       bool hasRedableDepth;
+      bool hasNativeRGB, hasNativeRGBA;
       };
 
     enum PrimitiveType{

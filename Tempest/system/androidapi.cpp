@@ -162,13 +162,13 @@ static struct Android{
 
   std::unordered_map< std::string, std::unique_ptr< std::vector<char>> > asset_files;
 
-  std::vector<char>& preloadAsset( const std::string& ass ){
+  std::vector<char>* preloadAsset( const std::string& ass ){
     Guard guard(assetsPreloadedMutex);
     (void)guard;
 
     auto i = asset_files.find(ass);
     if( i!=asset_files.end() ){
-      return *i->second;
+      return i->second.get();
       }
 
     JNIEnv * env = 0;
@@ -177,17 +177,19 @@ static struct Android{
     AAssetManager* mgr = AAssetManager_fromJava(env, assets);
     AAsset* asset = AAssetManager_open(mgr, ass.c_str(), AASSET_MODE_BUFFER);
 
-    if( !asset )
+    if( !asset ){
       Log(Log::Error) << "not found: \"" << ass <<'\"';
+      return 0;
+      }
 
-    T_ASSERT( asset );
+    //T_ASSERT( asset );
 
     std::unique_ptr< std::vector<char>> vec(new std::vector<char>(AAsset_getLength(asset)));
     AAsset_read (asset, &((*vec)[0]), vec->size() );
     AAsset_close(asset);
 
     asset_files[ass] = std::move(vec);
-    return *asset_files[ass];
+    return asset_files[ass].get();
     }
 
   int pointerId( int nid ){
@@ -445,10 +447,14 @@ AndroidAPI::File *AndroidAPI::fopenImpl( const char *fname, const char *mode ) {
     } else
   if( !wr ) {
     f->h = 0;
-    std::vector<char>& vec = android.preloadAsset(fname);
-    f->size       = vec.size();
-    f->assets_ptr = &vec[0];
-    f->pos        = f->assets_ptr;
+    std::vector<char>* vec = android.preloadAsset(fname);
+    if(vec){
+      f->size       = vec->size();
+      f->assets_ptr = &(*vec)[0];
+      f->pos        = f->assets_ptr;
+      } else {
+      f->assets_ptr = 0;
+      }
     }
 
   if( !f->h && !f->assets_ptr ){

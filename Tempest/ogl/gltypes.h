@@ -385,9 +385,11 @@ namespace Detail{
       };
   #endif
 
-      if( !hasRenderToRGBTextures && renderable ){
-        if( hasAlpha(f) )
-          f = AbstractTexture::Format::RGBA5; else
+      if( renderable ){
+        if( !hasRenderToRGBATexture && hasAlpha(f) )
+          f = AbstractTexture::Format::RGBA5;
+        else
+        if( !hasRenderToRGBTexture && !hasAlpha(f) )
           f = AbstractTexture::Format::RGB5;
         }
 
@@ -452,7 +454,7 @@ namespace Detail{
     unsigned  clearS;
 
     bool hasTileBasedRender, hasQCOMTiles, hasDiscardBuffers;
-    bool hasRenderToRGBTextures, hasNpotTexture;
+    bool hasRenderToRGBTexture, hasRenderToRGBATexture, hasNpotTexture;
 
     PFNGLSTARTTILINGQCOMPROC glStartTilingQCOM;
     PFNGLENDTILINGQCOMPROC   glEndTilingQCOM;
