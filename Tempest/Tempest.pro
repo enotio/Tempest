@@ -278,7 +278,8 @@ HEADERS += \
     core/devicesm5.h \
     core/platform.h \
     system/winphoneapi.h \
-    dx/directx11.h
+    dx/directx11.h \
+    include/Tempest/DirectX11
 
 OTHER_FILES += \
     ../.gitignore \

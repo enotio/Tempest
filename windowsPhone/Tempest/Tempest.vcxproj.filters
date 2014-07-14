@@ -548,6 +548,9 @@
     <ClCompile Include="..\..\Tempest\thirdparty\zlib\zutil.c">
       <Filter>thirdparty\zlib</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Tempest\dx\directx11.cpp">
+      <Filter>dx</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Tempest\2d\font.h">
@@ -948,6 +951,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Tempest\thirdparty\utf8cpp\utf8\unchecked.h">
       <Filter>thirdparty\utf8cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dx\directx11.h">
+      <Filter>dx</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

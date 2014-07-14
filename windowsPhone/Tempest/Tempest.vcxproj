@@ -48,6 +48,7 @@
     <ClCompile Include="..\..\Tempest\dataControl\textureholder.cpp" />
     <ClCompile Include="..\..\Tempest\dataControl\vertexbufferholder.cpp" />
     <ClCompile Include="..\..\Tempest\dataControl\volumeholder.cpp" />
+    <ClCompile Include="..\..\Tempest\dx\directx11.cpp" />
     <ClCompile Include="..\..\Tempest\io\buffer.cpp" />
     <ClCompile Include="..\..\Tempest\io\file.cpp" />
     <ClCompile Include="..\..\Tempest\io\iodevice.cpp" />
@@ -221,6 +222,7 @@
     <ClInclude Include="..\..\Tempest\dataControl\vertexbufferholder.h" />
     <ClInclude Include="..\..\Tempest\dataControl\vertexshaderholder.h" />
     <ClInclude Include="..\..\Tempest\dataControl\volumeholder.h" />
+    <ClInclude Include="..\..\Tempest\dx\directx11.h" />
     <ClInclude Include="..\..\Tempest\io\buffer.h" />
     <ClInclude Include="..\..\Tempest\io\file.h" />
     <ClInclude Include="..\..\Tempest\io\iodevice.h" />

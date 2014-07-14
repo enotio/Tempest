@@ -21,10 +21,9 @@ class DirectX11 : public AbstractAPI {
 
     Device* createDevice( void * hwnd, const Options & opt ) const;
     void    deleteDevice( Device* d )  const;
-/*
+
     void clear( AbstractAPI::Device *d,
                 const Color& cl, float z, unsigned stencil ) const;
-
     void clear( AbstractAPI::Device *d,  const Color& cl ) const;
     void clear( AbstractAPI::Device *d,  const Color& cl, float z ) const;
     void clear( AbstractAPI::Device *d,  float z, unsigned stencil ) const;
@@ -60,8 +59,6 @@ class DirectX11 : public AbstractAPI {
                   const Options & opt ) const;
 
     bool isFormatSupported( AbstractAPI::Device *d, Pixmap::Format f ) const;
-    AbstractAPI::Texture* createTexture( AbstractAPI::Device *d,
-                                         const std::string& ) const;
 
     AbstractAPI::Texture* createTexture( AbstractAPI::Device *d,
                                          const Pixmap& p,
@@ -94,6 +91,11 @@ class DirectX11 : public AbstractAPI {
     AbstractAPI::VertexBuffer*
          createVertexBuffer( AbstractAPI::Device *d,
                              size_t size, size_t elSize,
+                             BufferUsage u  ) const;
+    AbstractAPI::VertexBuffer*
+         createVertexBuffer( AbstractAPI::Device *d,
+                             size_t size, size_t elSize,
+                             void* src,
                              BufferUsage u  ) const;
     void deleteVertexBuffer( AbstractAPI::Device *d,
                              AbstractAPI::VertexBuffer* ) const;
@@ -152,7 +154,6 @@ class DirectX11 : public AbstractAPI {
                       int vertexCount) const;
 
     Size windowSize( Tempest::AbstractAPI::Device * dev ) const;
-    */
   private:
     class DirectX9Impl;
     DirectX9Impl* impl;
