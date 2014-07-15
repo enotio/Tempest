@@ -1,31 +1,49 @@
-#include "hlsl.h"
+#include "HLSL11.h"
 
-#include <d3d9.h>
-#include <d3dx9.h>
+#ifndef _MSC_VER
+#define __in
+#define __out
+#define __in_opt
+#define __out_opt
+#define __in_ecount_opt(X)
+#define __out_ecount_opt(X)
+#define __in_ecount(X)
+#define __out_ecount(X)
+#define __in_bcount(X)
+#define __out_bcount(X)
+#define __in_bcount_opt(X)
+#define __out_bcount_opt(X)
+#define __in_opt
+#define __inout
+#define __inout_opt
+#define __in_ecount_part_opt(X,Y)
+#define __out_ecount_part_opt(X,Y)
+#endif
+#include <D3D11.h>
+#include <D3Dcompiler.h>
 
 #include <Tempest/Device>
 
 using namespace Tempest;
 
-struct HLSL::Data{
-  LPDIRECT3DDEVICE9   dev;
-  D3DCAPS9            caps;
+struct HLSL11::Data{
+  ID3D11Device*   dev;
 
   const Tempest::VertexShader   * vs;
   const Tempest::FragmentShader * fs;
 
-  template< class Sh >
+  template<class Sh>
   struct Shader{
-    Sh * shader;
-    LPD3DXCONSTANTTABLE uniform;
-
+    Sh* shader=0;
+    //LPD3DXCONSTANTTABLE uniform;
     ~Shader(){
-      shader->Release();
-      uniform->Release();
+      if(shader)
+        shader->Release();
       }
     };
 
   void setSampler( int i, const Tempest::Texture2d::Sampler& s ){
+    /*
     static const D3DTEXTUREADDRESS addR[] = {
       D3DTADDRESS_CLAMP,
       D3DTADDRESS_BORDER,
@@ -55,9 +73,11 @@ struct HLSL::Data{
     dev->SetSamplerState(i, D3DSAMP_MIPFILTER, filters[ s.minFilter ] );
 
     dev->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, caps.MaxAnisotropy );
+    */
     }
 
   void setSampler( int i, const Tempest::Texture3d::Sampler& s ){
+    /*
     static const D3DTEXTUREADDRESS addR[] = {
       D3DTADDRESS_CLAMP,
       D3DTADDRESS_BORDER,
@@ -83,50 +103,50 @@ struct HLSL::Data{
     dev->SetSamplerState( i, D3DSAMP_MIPFILTER, filters[ s.minFilter ] );
 
     dev->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, caps.MaxAnisotropy );
+    */
     }
   };
 
-HLSL::HLSL( AbstractAPI::DirectX9Device *dev ) {
+HLSL11::HLSL11( AbstractAPI::DirectX11Device *dev ) {
   data = new Data();
-  data->dev = (LPDIRECT3DDEVICE9)dev;
-  data->dev->GetDeviceCaps( &data->caps );
+  data->dev = (ID3D11Device*)dev;
   }
 
-HLSL::~HLSL() {
+HLSL11::~HLSL11() {
   delete data;
   }
 
-void HLSL::bind( const Tempest::VertexShader & vs ) const {
+void HLSL11::bind( const Tempest::VertexShader & vs ) const {
   data->vs = &vs;
   }
 
-void HLSL::bind( const Tempest::FragmentShader & fs ) const {
+void HLSL11::bind( const Tempest::FragmentShader & fs ) const {
   data->fs = &fs;
   }
 
-void *HLSL::context() const {
+void *HLSL11::context() const {
   return data->dev;
   }
 
 GraphicsSubsystem::VertexShader*
-  HLSL::createVertexShaderFromSource( const std::string &src,
-                                      std::string &outputLog) const {
-  LPD3DXBUFFER code = 0, errors = 0;
+  HLSL11::createVertexShaderFromSource( const std::string &src,
+                                        std::string &outputLog) const {
+  ID3DBlob* code = 0, *errors = 0;
   HRESULT result;
 
-  Data::Shader<IDirect3DVertexShader9>*
-      sh = new Data::Shader<IDirect3DVertexShader9>();
+  Data::Shader<ID3D11VertexShader>* sh = new Data::Shader<ID3D11VertexShader>();
 
-  result = D3DXCompileShader( src.data(),
-                              src.size(),
-                              NULL,            //macro's
-                              NULL,            //includes
-                              "main",       //main function
-                              "vs_3_0",        //shader profile
-                              0,               //flags
-                              &code,           //compiled operations
-                              &errors,            //errors
-                              &sh->uniform ); //constants
+  result = D3DCompile( src.data(),
+                       src.size(),
+                       NULL,            //src-name
+                       NULL,            //macro's
+                       NULL,            //includes
+                       "main",          //main function
+                       "vs_4_0",        //shader profile
+                       0,               //flags1
+                       0,               //flags2
+                       &code,           //compiled operations
+                       &errors);        //errors
   if( FAILED(result) ){
     outputLog.resize( errors->GetBufferSize() );
     memcpy( &outputLog[0], errors->GetBufferPointer(), errors->GetBufferSize() );
@@ -136,72 +156,79 @@ GraphicsSubsystem::VertexShader*
   if( errors )
     errors->Release();
 
-  data->dev->CreateVertexShader( (DWORD*)code->GetBufferPointer(),
+  data->dev->CreateVertexShader( code->GetBufferPointer(),
+                                 code->GetBufferSize(),
+                                 NULL,
                                  &sh->shader );
 
   return (GraphicsSubsystem::VertexShader*)sh;
   }
 
-void HLSL::deleteShader(GraphicsSubsystem::VertexShader *s) const {
-  Data::Shader<IDirect3DVertexShader9>* vs = (Data::Shader<IDirect3DVertexShader9>*)s;
+void HLSL11::deleteShader(GraphicsSubsystem::VertexShader *s) const {
+  Data::Shader<ID3D11VertexShader>* vs = (Data::Shader<ID3D11VertexShader>*)s;
   delete vs;
   }
 
 GraphicsSubsystem::FragmentShader*
-  HLSL::createFragmentShaderFromSource( const std::string &src,
+  HLSL11::createFragmentShaderFromSource( const std::string &src,
                                         std::string &outputLog ) const {
-  LPD3DXBUFFER code = 0, errors = 0;
+  ID3DBlob* code = 0, *errors = 0;
   HRESULT result;
 
-  Data::Shader<IDirect3DPixelShader9>*
-      sh = new Data::Shader<IDirect3DPixelShader9>();
-  result = D3DXCompileShader( src.data(),
-                              src.size(),
-                              NULL,            //macro's
-                              NULL,            //includes
-                              "main",       //main function
-                              "ps_3_0",        //shader profile
-                              0,               //flags
-                              &code,           //compiled operations
-                              &errors,            //errors
-                              &sh->uniform ); //constants
+  Data::Shader<ID3D11PixelShader>* sh = new Data::Shader<ID3D11PixelShader>();
+
+  result = D3DCompile( src.data(),
+                       src.size(),
+                       NULL,            //src-name
+                       NULL,            //macro's
+                       NULL,            //includes
+                       "main",          //main function
+                       "ps_4_0",        //shader profile
+                       0,               //flags1
+                       0,               //flags2
+                       &code,           //compiled operations
+                       &errors);        //errors
   if( FAILED(result) ){
     outputLog.resize( errors->GetBufferSize() );
     memcpy( &outputLog[0], errors->GetBufferPointer(), errors->GetBufferSize() );
     delete sh;
     return 0;
     }
+
   if( errors )
     errors->Release();
 
-  data->dev->CreatePixelShader( (DWORD*)code->GetBufferPointer(),
-                                 &sh->shader );
+  data->dev->CreatePixelShader( code->GetBufferPointer(),
+                                code->GetBufferSize(),
+                                NULL,
+                                &sh->shader );
 
   return (GraphicsSubsystem::FragmentShader*)sh;
   }
 
-void HLSL::deleteShader(GraphicsSubsystem::FragmentShader *s) const {
-  Data::Shader<IDirect3DPixelShader9>* fs = (Data::Shader<IDirect3DPixelShader9>*)s;
+void HLSL11::deleteShader(GraphicsSubsystem::FragmentShader *s) const {
+  Data::Shader<ID3D11PixelShader>* fs = (Data::Shader<ID3D11PixelShader>*)s;
   delete fs;
   }
 
-void HLSL::enable() const {
-  Data::Shader<IDirect3DVertexShader9>* vs =
-      (Data::Shader<IDirect3DVertexShader9>*)get(*data->vs);
-  Data::Shader<IDirect3DPixelShader9>*  fs =
-      (Data::Shader<IDirect3DPixelShader9>*)get(*data->fs);
-
+void HLSL11::enable() const {
+  Data::Shader<ID3D11VertexShader>* vs =
+      (Data::Shader<ID3D11VertexShader>*)get(*data->vs);
+  Data::Shader<ID3D11PixelShader>*  fs =
+      (Data::Shader<ID3D11PixelShader>*)get(*data->fs);
+/*
   setUniforms( fs->uniform, inputOf( *data->fs ), true  );
   setUniforms( vs->uniform, inputOf( *data->vs ), false );
 
-  data->dev->SetVertexShader( vs->shader );
-  data->dev->SetPixelShader ( fs->shader );
+  data->dev->VSSetShader( vs->shader, NULL, 0 );
+  data->dev->PSSetShader( fs->shader, NULL, 0 );*/
   }
 
 template< class Sh>
-void HLSL::setUniforms( Sh* prog,
+void HLSL11::setUniforms( Sh* prog,
                         const ShaderInput &in,
                         bool textures ) const {
+  /*
   if( textures ){
     int texSlot = 0;
     for( size_t i=0; i<in.tex3d.names.size(); ++i ){
@@ -249,9 +276,10 @@ void HLSL::setUniforms( Sh* prog,
 
     prog->SetMatrix( data->dev, in.mat.names[i].data(), &v );
     }
+  */
   }
 
-std::string HLSL::surfaceShader( GraphicsSubsystem::ShaderType t,
+std::string HLSL11::surfaceShader( GraphicsSubsystem::ShaderType t,
                                  const AbstractShadingLang::UiShaderOpt &opt,
                                  bool &hasHalfpixOffset ) const {
   hasHalfpixOffset = true;
@@ -286,16 +314,10 @@ std::string HLSL::surfaceShader( GraphicsSubsystem::ShaderType t,
       "  float4 cl : COLOR;"
       "  };"
 
-      "struct FS_Output {"
-      "  float4 color: COLOR0;"
-      "  };"
-
       "sampler2D brush_texture;"
 
-      "FS_Output main( FS_Input fs ) {"
-        "FS_Output c;"
-        "c.color = tex2D(brush_texture, float4(fs.tc, 0.0, 0.0) )*fs.cl;"
-        "return c;"
+      "float4 main( FS_Input fs ): SV_Target {"
+        "return fs.cl;"//tex2D(brush_texture, float4(fs.tc, 0.0, 0.0) )*fs.cl;"
         "}";
 
 
@@ -326,14 +348,8 @@ std::string HLSL::surfaceShader( GraphicsSubsystem::ShaderType t,
       "  float4 cl : COLOR;"
       "  };"
 
-      "struct FS_Output {"
-      "  float4 color: COLOR0;"
-      "  };"
-
-      "FS_Output main( FS_Input fs ) {"
-        "FS_Output c;"
-        "c.color = fs.cl;"
-        "return c;"
+      "float4 main( FS_Input fs ): SV_Target {"
+        "return fs.cl;"
         "}";
 
   if( opt.hasTexture ){

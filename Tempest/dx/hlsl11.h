@@ -1,15 +1,15 @@
-#ifndef HLSL_H
-#define HLSL_H
+#ifndef HLSL11_H
+#define HLSL11_H
 
 #include <Tempest/AbstractShadingLang>
 #include <Tempest/AbstractAPI>
 
 namespace Tempest {
 
-class HLSL : public AbstractShadingLang {
+class HLSL11 : public AbstractShadingLang {
   public:
-    HLSL( AbstractAPI::DirectX9Device *dev );
-    ~HLSL();
+    HLSL11( AbstractAPI::DirectX11Device *dev );
+    ~HLSL11();
 
     void enable() const;
 
@@ -44,4 +44,4 @@ class HLSL : public AbstractShadingLang {
 
 }
 
-#endif // HLSL_H
+#endif // HLSL11_H

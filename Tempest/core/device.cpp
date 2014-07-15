@@ -678,10 +678,16 @@ AbstractAPI::Texture *Device::recreateTexture( const Pixmap &p,
                                                AbstractAPI::Texture *t
                                                ) {
   forceEndPaint();
-  return data->createTexture( api,
-                              &AbstractAPI::recreateTexture,
-                              *this,
-                              impl, p, mips, compress, t );
+  if( t )
+    data->allockCount.tex--;
+  AbstractAPI::Texture* nt = data->createTexture(
+                               api,
+                               &AbstractAPI::recreateTexture,
+                               *this,
+                               impl, p, mips, compress, t );
+  if( nt )
+    data->allockCount.tex++;
+  return nt;
   }
 
 AbstractAPI::Texture* Device::createTexture( int w, int h,
@@ -708,14 +714,16 @@ AbstractAPI::Texture *Device::createTexture3d( int x, int y, int z,
   }
 
 void Device::deleteTexture( AbstractAPI::Texture* & t ){
-  forceEndPaint();
+  if(t){
+    forceEndPaint();
 
-  GraphicsSubsystem::DeleteEvent e;
-  e.texture = t;
-  event(e);
+    GraphicsSubsystem::DeleteEvent e;
+    e.texture = t;
+    event(e);
 
-  data->allockCount.tex--;
-  api.deleteTexture( impl, t );
+    data->allockCount.tex--;
+    api.deleteTexture( impl, t );
+    }
   }
 
 void Device::setTextureFlag(AbstractAPI::Texture *t, AbstractAPI::TextureFlag f, bool v) {
@@ -832,16 +840,18 @@ AbstractAPI::VertexDecl *
   }
 
 void Device::deleteVertexDecl( AbstractAPI::VertexDecl* d ) const {
-  forceEndPaint();
+  if(d){
+    forceEndPaint();
 
-  if( data->deleteDecl(d) ){
-    GraphicsSubsystem::DeleteEvent e;
-    e.declaration = d;
-    event(e);
-    api.deleteVertexDecl( impl, d );
+    if( data->deleteDecl(d) ){
+      GraphicsSubsystem::DeleteEvent e;
+      e.declaration = d;
+      event(e);
+      api.deleteVertexDecl( impl, d );
+      }
+
+    data->allockCount.dec--;
     }
-
-  data->allockCount.dec--;
   }
 
 void *Device::createShaderFromSource( AbstractAPI::ShaderType t,

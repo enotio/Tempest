@@ -71,8 +71,8 @@ ogl:{
 
 directx: {
   INCLUDEPATH += "$$(DXSDK_DIR)/include"
-  LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
-  LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d11"
+  LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9"  -l"d3dx9"
+  LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d11" -l"d3dx11" -l"d3dcompiler"
 
   HEADERS += \
     dx/hlsl.h \
@@ -188,7 +188,8 @@ SOURCES += \
     shading/evalshader.cpp \
     core/devicesm5.cpp \
     system/winphoneapi.cpp \
-    dx/directx11.cpp
+    dx/directx11.cpp \
+    dx/hlsl11.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -279,7 +280,8 @@ HEADERS += \
     core/platform.h \
     system/winphoneapi.h \
     dx/directx11.h \
-    include/Tempest/DirectX11
+    include/Tempest/DirectX11 \
+    dx/hlsl11.h
 
 OTHER_FILES += \
     ../.gitignore \

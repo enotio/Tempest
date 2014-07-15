@@ -206,6 +206,8 @@ void TextureHolder::recreateObject( AbstractAPI::Texture *&t,
   }
 
 void TextureHolder::deleteObject( AbstractAPI::Texture* t ){
+  if(!t)
+    return;
   if( hasCPUStorage() ){
     data->removeTex(t);
     }
@@ -215,7 +217,7 @@ void TextureHolder::deleteObject( AbstractAPI::Texture* t ){
   }
 
 void TextureHolder::reset( AbstractAPI::Texture* t ){
-  if( hasCPUStorage() ){
+  if( t && hasCPUStorage() ){
     --data->count;
     device().deleteTexture(t);
     }

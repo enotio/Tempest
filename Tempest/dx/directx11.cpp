@@ -23,6 +23,7 @@
 #endif
 
 #include <D3D11.h>
+#include "hlsl11.h"
 
 using namespace Tempest;
 
@@ -352,36 +353,69 @@ AbstractAPI::VertexBuffer *DirectX11::createVertexBuffer( AbstractAPI::Device *d
   ZeroMemory( &initData, sizeof(initData) );
   initData.pSysMem = src;
 
-  ID3D11Buffer* vertexBuffer = 0;
-  HRESULT hr = dev->device->CreateBuffer( &bd, &initData, &vertexBuffer );
+  ID3D11Buffer* buffer = 0;
+  HRESULT hr = dev->device->CreateBuffer( &bd, &initData, &buffer );
 
   if( FAILED( hr ) )
     return 0;
 
-  return (AbstractAPI::VertexBuffer*)vertexBuffer;
+  return (AbstractAPI::VertexBuffer*)buffer;
   }
 
 void DirectX11::deleteVertexBuffer( AbstractAPI::Device *,
                                     AbstractAPI::VertexBuffer *b) const {
-  ID3D11Buffer* vertexBuffer = (ID3D11Buffer*)b;
-  vertexBuffer->Release();
+  ID3D11Buffer* buffer = (ID3D11Buffer*)b;
+  buffer->Release();
   }
 
 AbstractAPI::IndexBuffer *DirectX11::createIndexBuffer( AbstractAPI::Device *d,
                                                         size_t size, size_t elSize,
                                                         AbstractAPI::BufferUsage u) const {
-
+  return createIndexBuffer(d,size,elSize,0,u);
   }
 
-void DirectX11::deleteIndexBuffer(AbstractAPI::Device *d, AbstractAPI::IndexBuffer *) const {
+AbstractAPI::IndexBuffer *DirectX11::createIndexBuffer( AbstractAPI::Device *d,
+                                                        size_t size, size_t elSize,
+                                                        void * src,
+                                                        AbstractAPI::BufferUsage u) const {
+  Device* dev = (Device*)d;
+  static const D3D11_USAGE usage[]={
+    D3D11_USAGE_STAGING,
+    D3D11_USAGE_IMMUTABLE,
+    D3D11_USAGE_DYNAMIC
+    };
 
+  D3D11_BUFFER_DESC bd;
+  ZeroMemory( &bd, sizeof(bd) );
+  bd.Usage          = usage[u];
+  bd.ByteWidth      = elSize*size;
+  bd.BindFlags      = D3D11_BIND_INDEX_BUFFER;
+  bd.CPUAccessFlags = 0;
+
+  D3D11_SUBRESOURCE_DATA initData;
+  ZeroMemory( &initData, sizeof(initData) );
+  initData.pSysMem = src;
+
+  ID3D11Buffer* buffer = 0;
+  HRESULT hr = dev->device->CreateBuffer( &bd, &initData, &buffer );
+
+  if( FAILED( hr ) )
+    return 0;
+
+  return (AbstractAPI::IndexBuffer*)buffer;
+  }
+
+void DirectX11::deleteIndexBuffer(AbstractAPI::Device*, AbstractAPI::IndexBuffer *b) const {
+  ID3D11Buffer* buffer = (ID3D11Buffer*)b;
+  buffer->Release();
   }
 
 AbstractAPI::VertexDecl* DirectX11::createVertexDecl(AbstractAPI::Device *d, const VertexDeclaration::Declarator &de) const {
-
+  return 0;
   }
 
-void DirectX11::deleteVertexDecl(AbstractAPI::Device *d, AbstractAPI::VertexDecl *) const {
+void DirectX11::deleteVertexDecl( AbstractAPI::Device *d, 
+                                  AbstractAPI::VertexDecl *decl ) const {
 
   }
 
@@ -415,8 +449,9 @@ void DirectX11::unlockBuffer(AbstractAPI::Device *d, AbstractAPI::IndexBuffer *)
 
   }
 
-AbstractShadingLang *DirectX11::createShadingLang(AbstractAPI::Device *l) const {
-  return 0;
+AbstractShadingLang *DirectX11::createShadingLang(AbstractAPI::Device *d) const {
+  Device* dev = (Device*)d;
+  return new HLSL11( (DirectX11Device*)dev->device );
   }
 
 void DirectX11::deleteShadingLang(const AbstractShadingLang *l) const {

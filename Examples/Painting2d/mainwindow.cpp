@@ -15,7 +15,7 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     fsHolder (device),
     spHolder (texHolder),
     uiRender ( vsHolder, fsHolder ) {
-  texture   = texHolder.load("data/texture.png");
+  texture = texHolder.load("data/texture.png");
   }
 
 void MainWindow::paintEvent(PaintEvent &e) {

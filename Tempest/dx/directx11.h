@@ -104,6 +104,11 @@ class DirectX11 : public AbstractAPI {
          createIndexBuffer( AbstractAPI::Device *d,
                             size_t size, size_t elSize,
                             BufferUsage u  ) const;
+    AbstractAPI::IndexBuffer*
+         createIndexBuffer( AbstractAPI::Device *d,
+                            size_t size, size_t elSize,
+                            void * src,
+                            BufferUsage u  ) const;
 
     void deleteIndexBuffer( AbstractAPI::Device *d,
                             AbstractAPI::IndexBuffer* ) const;

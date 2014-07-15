@@ -2,6 +2,7 @@
 
 #include <Tempest/Assert>
 #include <Tempest/RenderState>
+#include <Tempest/Log>
 
 static MainWindow::Vertex quadVb[] = {
   { 1,-1,-1,  1,1},
@@ -68,6 +69,12 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
 
   shader.vs = vsHolder.load("shader/basic.vs.hlsl");
   shader.fs = fsHolder.load("shader/basic.fs.hlsl");
+
+  if( !shader.vs.isValid() )
+    Log() << "vs:" << shader.vs.log();
+
+  if( !shader.fs.isValid() )
+    Log() << "fs:" << shader.fs.log();
 
   T_ASSERT( shader.isValid() );
   }

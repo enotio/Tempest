@@ -3,6 +3,7 @@
 #include <Tempest/Surface>
 #include <Tempest/Sprite>
 #include <Tempest/Font>
+#include <Tempest/Log>
 #include <functional>
 
 using namespace Tempest;
@@ -65,6 +66,13 @@ void SurfaceRender::loadShader() {
   stdShaders[1].vs = vsH.surfaceShader(opt);
   stdShaders[1].fs = fsH.surfaceShader(opt);
   }
+
+  for(int i=0; i<2; ++i ){
+    if( !stdShaders[i].vs.isValid() )
+      Log() << "std shader[" << i <<"] vs:" << stdShaders[i].vs.log();
+    if( !stdShaders[i].fs.isValid() )
+      Log() << "std shader[" << i <<"] fs:" << stdShaders[i].fs.log();
+    }
   }
 
 void SurfaceRender::buildVbo( Tempest::Widget & surf,

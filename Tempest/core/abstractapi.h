@@ -82,7 +82,8 @@ class AbstractAPI: public GraphicsSubsystem {
       SB_BufferPreserved = 0,
       SB_BufferDestroyed
       };
-    
+
+    class DirectX11Device;
     class DirectX9Device;
     class OpenGL2xDevice;
 
