@@ -159,6 +159,7 @@ class DirectX11 : public AbstractAPI {
                       int vertexCount) const;
 
     Size windowSize( Tempest::AbstractAPI::Device * dev ) const;
+    bool hasManagedStorge() const;
   private:
     class DirectX9Impl;
     DirectX9Impl* impl;

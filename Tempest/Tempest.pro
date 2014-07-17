@@ -281,7 +281,8 @@ HEADERS += \
     system/winphoneapi.h \
     dx/directx11.h \
     include/Tempest/DirectX11 \
-    dx/hlsl11.h
+    dx/hlsl11.h \
+    utils/sortedvec.h
 
 OTHER_FILES += \
     ../.gitignore \

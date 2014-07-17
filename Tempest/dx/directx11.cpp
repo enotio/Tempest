@@ -285,7 +285,7 @@ bool DirectX11::startRender( AbstractAPI::Device *d, bool isLost ) const{
 bool DirectX11::present( AbstractAPI::Device *d, SwapBehavior b ) const{
   Device* dev = (Device*)d;
   dev->swapChain->Present(0,0);
-  return true;
+  return false;
   }
 
 bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
@@ -410,13 +410,16 @@ void DirectX11::deleteIndexBuffer(AbstractAPI::Device*, AbstractAPI::IndexBuffer
   buffer->Release();
   }
 
-AbstractAPI::VertexDecl* DirectX11::createVertexDecl(AbstractAPI::Device *d, const VertexDeclaration::Declarator &de) const {
-  return 0;
+AbstractAPI::VertexDecl*
+  DirectX11::createVertexDecl( AbstractAPI::Device *,
+                               const VertexDeclaration::Declarator &de ) const {
+  return (AbstractAPI::VertexDecl*)(new VertexDeclaration::Declarator(de));
   }
 
-void DirectX11::deleteVertexDecl( AbstractAPI::Device *d, 
+void DirectX11::deleteVertexDecl( AbstractAPI::Device *,
                                   AbstractAPI::VertexDecl *decl ) const {
-
+  VertexDeclaration::Declarator *d = (VertexDeclaration::Declarator*)decl;
+  delete d;
   }
 
 void DirectX11::setVertexDeclaration(AbstractAPI::Device *d, AbstractAPI::VertexDecl *) const {
@@ -451,7 +454,7 @@ void DirectX11::unlockBuffer(AbstractAPI::Device *d, AbstractAPI::IndexBuffer *)
 
 AbstractShadingLang *DirectX11::createShadingLang(AbstractAPI::Device *d) const {
   Device* dev = (Device*)d;
-  return new HLSL11( (DirectX11Device*)dev->device );
+  return new HLSL11( (DirectX11Device*)dev->device, dev->immediateContext );
   }
 
 void DirectX11::deleteShadingLang(const AbstractShadingLang *l) const {
@@ -470,4 +473,9 @@ void DirectX11::drawIndexed( AbstractAPI::Device *d, AbstractAPI::PrimitiveType 
 
 Size DirectX11::windowSize(GraphicsSubsystem::Device *dev) const {
   return Size(0,0);
+  }
+
+
+bool DirectX11::hasManagedStorge() const {
+  return true;
   }

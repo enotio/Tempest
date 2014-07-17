@@ -8,6 +8,7 @@
 #include "glfn.h"
 #include <GL/gl.h>
 #include "glcorearb.h"
+#include "utils/sortedvec.h"
 
 using namespace Tempest::GLProc;
 #endif
@@ -155,7 +156,8 @@ struct GLSL::Data{
     GLuint linked;
     };
 
-  std::vector<ShProgram> prog;
+  //std::vector<ShProgram> prog;
+  SortedVec<ShProgram> prog;
   bool hasAnisotropic;
 
   ShProgram curProgram;
@@ -255,7 +257,7 @@ struct GLSL::Data{
 #endif
     tmp.decl = vdecl;
 
-    auto l = std::lower_bound(prog.begin(), prog.end(), tmp);
+    auto l = prog.find(tmp);
     if( l!=prog.end() && *l==tmp ){
       return (*l).linked;
       }
@@ -292,10 +294,7 @@ struct GLSL::Data{
       }
 
     tmp.linked = program;
-    {
-    auto l = std::lower_bound(prog.begin(), prog.end(), tmp);
-    prog.insert(l, tmp);
-    }
+    prog.insert(tmp);
     return program;
     }
 
@@ -400,7 +399,7 @@ void GLSL::deleteShader( VertexShader* s ) const {
       }
     }
 
-  data->prog.resize(nsz);
+  data->prog.data.resize(nsz);
   delete prog;
   }
 
@@ -434,7 +433,7 @@ void GLSL::deleteShader( FragmentShader *s ) const{
       }
     }
 
-  data->prog.resize(nsz);
+  data->prog.data.resize(nsz);
   delete prog;
   }
 
@@ -479,7 +478,7 @@ void GLSL::deleteShader( TessShader *s ) const{
       }
     }
 
-  data->prog.resize(nsz);
+  data->prog.data.resize(nsz);
   delete prog;
 #endif
   }
@@ -525,7 +524,7 @@ void GLSL::deleteShader( EvalShader *s ) const{
       }
     }
 
-  data->prog.resize(nsz);
+  data->prog.data.resize(nsz);
   delete prog;
 #endif
   }
@@ -894,7 +893,7 @@ void GLSL::event(const GraphicsSubsystem::DeleteEvent &e) {
       }
     }
 
-  data->prog.resize( nsz );
+  data->prog.data.resize( nsz );
   }
 
 template< class Sampler >

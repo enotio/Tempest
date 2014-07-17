@@ -8,7 +8,7 @@ namespace Tempest {
 
 class HLSL11 : public AbstractShadingLang {
   public:
-    HLSL11( AbstractAPI::DirectX11Device *dev );
+    HLSL11( AbstractAPI::DirectX11Device *dev, void* context );
     ~HLSL11();
 
     void enable() const;
@@ -17,6 +17,7 @@ class HLSL11 : public AbstractShadingLang {
     void bind( const Tempest::FragmentShader& ) const;
 
     void* context() const;
+    void setVertexDecl( const Tempest::AbstractAPI::VertexDecl*  ) const;
 
     VertexShader* createVertexShaderFromSource( const std::string& src,
                                                 std::string & outputLog ) const;
@@ -39,6 +40,7 @@ class HLSL11 : public AbstractShadingLang {
     void setUniforms( Sh* prog,
                       const ShaderInput & input,
                       bool textures ) const;
+    void event(const DeleteEvent &e);
 
   };
 

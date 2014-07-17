@@ -751,14 +751,16 @@ AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el,
   }
 
 void Device::deleteVertexBuffer( AbstractAPI::VertexBuffer* vbo ){
-  forceEndPaint();
+  if(vbo){
+    forceEndPaint();
 
-  GraphicsSubsystem::DeleteEvent e;
-  e.vertex = vbo;
-  event(e);
+    GraphicsSubsystem::DeleteEvent e;
+    e.vertex = vbo;
+    event(e);
 
-  data->allockCount.vbo--;
-  api.deleteVertexBuffer( impl, vbo );
+    data->allockCount.vbo--;
+    api.deleteVertexBuffer( impl, vbo );
+    }
   }
 
 AbstractAPI::IndexBuffer* Device::createIndexBuffer( size_t size,
@@ -785,14 +787,16 @@ AbstractAPI::IndexBuffer *Device::createIndexBuffer( size_t size,
   }
 
 void Device::deleteIndexBuffer( AbstractAPI::IndexBuffer* b ){
-  forceEndPaint();
+  if(b){
+    forceEndPaint();
 
-  GraphicsSubsystem::DeleteEvent e;
-  e.index = b;
-  event(e);
+    GraphicsSubsystem::DeleteEvent e;
+    e.index = b;
+    event(e);
 
-  data->allockCount.ibo--;
-  api.deleteIndexBuffer( impl, b);
+    data->allockCount.ibo--;
+    api.deleteIndexBuffer( impl, b);
+    }
   }
 
 void* Device::lockBuffer( AbstractAPI::VertexBuffer * vbo,
