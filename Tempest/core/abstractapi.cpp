@@ -76,23 +76,30 @@ AbstractAPI::IndexBuffer *AbstractAPI::createIndexBuffer( AbstractAPI::Device *d
   return t;
   }
 
-int AbstractAPI::vertexCount(AbstractAPI::PrimitiveType t, int pCount) {
-  if( t==AbstractAPI::TriangleStrip ||
-      t==AbstractAPI::TriangleFan ||
-      t==AbstractAPI::LinesStrip  )
-    return pCount+2;
+int AbstractAPI::vertexCount(AbstractAPI::PrimitiveType t, const int pCount) {
+  switch (t) {
+    case AbstractAPI::Triangle:
+      return pCount*3;
 
-  if( t==AbstractAPI::Lines )
-    return pCount*2;
+    case AbstractAPI::TriangleStrip:
+    case AbstractAPI::TriangleFan:
+    case AbstractAPI::LinesStrip:
+      return pCount+2;
 
-  if( t==Points )
-    return pCount;
+    case AbstractAPI::Lines:
+      return pCount*2;
 
-  return pCount*3;
+    case AbstractAPI::Points:
+      return pCount;
+
+    default:
+      return pCount*3;
+      break;
+    }
   }
 
 
-size_t AbstractAPI::primitiveCount(size_t vert, AbstractAPI::PrimitiveType t) {
+size_t AbstractAPI::primitiveCount(const size_t vert, AbstractAPI::PrimitiveType t) {
   if( t==AbstractAPI::TriangleStrip ||
       t==AbstractAPI::TriangleFan ||
       t==AbstractAPI::LinesStrip  )

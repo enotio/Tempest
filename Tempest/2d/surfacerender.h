@@ -70,8 +70,6 @@ class SurfaceRender {
       if( flushVbo ){
         vbo = Tempest::VertexBuffer<Vertex>();
         vbo = vbHolder.load( cpuGm, AbstractAPI::BF_NoReadback );
-        if( !vdecl.isValid() )
-          vdecl = Tempest::VertexDeclaration( vbHolder.device(), decl() );
         }
 
       sp.flush();

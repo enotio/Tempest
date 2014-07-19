@@ -67,11 +67,15 @@ void SurfaceRender::loadShader() {
   stdShaders[1].fs = fsH.surfaceShader(opt);
   }
 
+  vdecl = Tempest::VertexDeclaration( vsH.device(), decl() );
+
+  std::string linkLog;
   for(int i=0; i<2; ++i ){
     if( !stdShaders[i].vs.isValid() )
       Log() << "std shader[" << i <<"] vs:" << stdShaders[i].vs.log();
     if( !stdShaders[i].fs.isValid() )
       Log() << "std shader[" << i <<"] fs:" << stdShaders[i].fs.log();
+    vsH.device().link(stdShaders[i].vs,stdShaders[i].fs,vdecl,linkLog);
     }
   }
 

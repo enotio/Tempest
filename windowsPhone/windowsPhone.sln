@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CubeWP", "..\Examples\CubeW
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tempest", "Tempest\Tempest.vcxproj", "{209FA851-447E-4531-9474-706C43C42E90}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Painting2d", "..\Examples\Painting2d\Painting2d.vcxproj", "{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -53,6 +55,24 @@ Global
 		{209FA851-447E-4531-9474-706C43C42E90}.Release|Win32.ActiveCfg = Release|Win32
 		{209FA851-447E-4531-9474-706C43C42E90}.Release|Win32.Build.0 = Release|Win32
 		{209FA851-447E-4531-9474-706C43C42E90}.Release|x64.ActiveCfg = Release|Win32
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Debug|ARM.ActiveCfg = Debug|ARM
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Debug|ARM.Build.0 = Debug|ARM
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Debug|ARM.Deploy.0 = Debug|ARM
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Debug|Win32.Build.0 = Debug|Win32
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Debug|Win32.Deploy.0 = Debug|Win32
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Debug|x64.ActiveCfg = Debug|x64
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Debug|x64.Build.0 = Debug|x64
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Debug|x64.Deploy.0 = Debug|x64
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Release|ARM.ActiveCfg = Release|ARM
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Release|ARM.Build.0 = Release|ARM
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Release|ARM.Deploy.0 = Release|ARM
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Release|Win32.ActiveCfg = Release|Win32
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Release|Win32.Build.0 = Release|Win32
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Release|Win32.Deploy.0 = Release|Win32
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Release|x64.ActiveCfg = Release|x64
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Release|x64.Build.0 = Release|x64
+		{B3772A43-79C4-4C4D-A8DD-8DA742C23A47}.Release|x64.Deploy.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -61,7 +61,7 @@ class AbstractAPI: public GraphicsSubsystem {
       lastPrimitiveType
       };
 
-    static size_t primitiveCount( size_t vert, PrimitiveType t );
+    static size_t primitiveCount(const size_t vert, PrimitiveType t );
 
     enum TextureFlag {
       TF_Inialized
@@ -258,7 +258,7 @@ class AbstractAPI: public GraphicsSubsystem {
 
 
   protected:
-    static int vertexCount( PrimitiveType t, int pcount );
+    static int vertexCount(PrimitiveType t, const int pcount );
 
   private:
     AbstractAPI(const AbstractAPI&) = delete;

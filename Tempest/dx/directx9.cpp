@@ -374,6 +374,12 @@ bool DirectX9::reset( AbstractAPI::Device *d, void* hwnd,
   D3DPRESENT_PARAMETERS d3dpp;
   makePresentParams( &d3dpp, hwnd, opt );
 
+  Device* dx = (Device*)d;
+  RECT rectWindow;
+  GetClientRect( HWND(hwnd), &rectWindow);
+  dx->scrW = rectWindow.right  - rectWindow.left;
+  dx->scrH = rectWindow.bottom - rectWindow.top;
+
   //return 1;
 
   HRESULT hr = dev->Reset( &d3dpp );

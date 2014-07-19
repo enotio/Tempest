@@ -99,6 +99,10 @@ class Device {
                const Tempest::FragmentShader &fs,
                const Tempest::VertexDeclaration &decl,
                std::string& log ) {
+      if(!decl.decl){
+        log="Null declaration";
+        return false;
+        }
       const AbstractShadingLang& sh = shadingLang();
       return sh.link(vs, fs, (AbstractAPI::VertexDecl*)(decl.decl->impl), log);
       }

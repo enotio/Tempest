@@ -95,7 +95,7 @@ class DirectX11 : public AbstractAPI {
     AbstractAPI::VertexBuffer*
          createVertexBuffer( AbstractAPI::Device *d,
                              size_t size, size_t elSize,
-                             void* src,
+                             const void* src,
                              BufferUsage u  ) const;
     void deleteVertexBuffer( AbstractAPI::Device *d,
                              AbstractAPI::VertexBuffer* ) const;
@@ -107,7 +107,7 @@ class DirectX11 : public AbstractAPI {
     AbstractAPI::IndexBuffer*
          createIndexBuffer( AbstractAPI::Device *d,
                             size_t size, size_t elSize,
-                            void * src,
+                            const void * src,
                             BufferUsage u  ) const;
 
     void deleteIndexBuffer( AbstractAPI::Device *d,

@@ -33,10 +33,23 @@ struct HLSL11::Data{
   ID3D11Device*        dev;
   ID3D11DeviceContext* immediateContext;
 
+  template<class Sh>
+  struct Shader{
+    Sh* shader=0;
+    ID3DBlob* blob = 0;
+
+    ~Shader(){
+      if(shader)
+        shader->Release();
+      if(blob)
+        blob->Release();
+      }
+    };
+
   struct Program {
-    const Tempest::VertexShader   * vs = 0;
-    const Tempest::FragmentShader * fs = 0;
-    const VertexDeclaration::Declarator *decl = 0;
+    const Data::Shader<ID3D11VertexShader>* vs   = 0;
+    const Data::Shader<ID3D11PixelShader>*  fs   = 0;
+    const VertexDeclaration::Declarator*    decl = 0;
 
     ID3D11InputLayout* dxDecl = 0;
 
@@ -52,22 +65,10 @@ struct HLSL11::Data{
   Program prog;
   SortedVec<Program> sh;
 
-  template<class Sh>
-  struct Shader{
-    Sh* shader=0;
-    ID3DBlob* blob = 0;
-    //LPD3DXCONSTANTTABLE uniform;
-    ~Shader(){
-      if(shader)
-        shader->Release();
-      if(blob)
-        blob->Release();
-      }
-    };
-
   ID3D11InputLayout* createDecl( const VertexDeclaration::Declarator &de,
                                  ID3DBlob* vsBlob ){
     static const DXGI_FORMAT ct[] = {
+      DXGI_FORMAT_UNKNOWN,
       DXGI_FORMAT_R32_FLOAT,
       DXGI_FORMAT_R32G32_FLOAT,
       DXGI_FORMAT_R32G32B32_FLOAT,
@@ -83,20 +84,20 @@ struct HLSL11::Data{
       };
 
     static const char* usage[] = {
-      "Position",
-      "BlendWeight",   // 1
-      "BlendIndices",  // 2
-      "Normal",        // 3
-      "PSize",         // 4
-      "TexCoord",      // 5
-      "Tangent",       // 6
-      "BiNormal",      // 7
-      "TessFactor",    // 8
-      "PositionT",     // 9
-      "Color",         // 10
-      "Fog",           // 11
-      "Depth",         // 12
-      "Sample",        // 13
+      "POSITION",
+      "BLENDWEIGHT",   // 1
+      "BLENDINDICES",  // 2
+      "NORMAL",        // 3
+      "PSIZE",         // 4
+      "TEXCOORD",      // 5
+      "TANGENT",       // 6
+      "BINORMAL",      // 7
+      "TESSFACTOR",    // 8
+      "POSITIONT",     // 9
+      "COLOR",         // 10
+      "FOG",           // 11
+      "DEPTH",         // 12
+      "SAMPLE",        // 13
       ""
       };
     /*
@@ -108,16 +109,16 @@ struct HLSL11::Data{
 
     std::vector<D3D11_INPUT_ELEMENT_DESC> decl;
     for( int i=0; i<de.size(); ++i ){
+      const VertexDeclaration::Declarator::Element& ex = de[i];
       D3D11_INPUT_ELEMENT_DESC e;
-      e.SemanticName         = usage[de[i].usage];
-      e.SemanticIndex        = de[i].index;
-      e.Format               = ct[de[i].component];
+      e.SemanticName         = usage[ex.usage];
+      e.SemanticIndex        = ex.index;
+      e.Format               = ct[ex.component];
       e.InputSlot            = 0;
-      e.AlignedByteOffset    = 4*de[i].component;
+      e.AlignedByteOffset    = 4*ex.component;
       e.InputSlotClass       = D3D11_INPUT_PER_VERTEX_DATA;
       e.InstanceDataStepRate = 0;
 
-      //TODO: align
       if( de[i].component==Decl::color )
         e.AlignedByteOffset = 4;
 
@@ -140,7 +141,6 @@ struct HLSL11::Data{
       for( size_t i=decl.size()-1; i>=1; --i ){
         decl[i].AlignedByteOffset = decl[i-1].AlignedByteOffset;
         }
-
       decl[0].AlignedByteOffset = 0;
       }
 
@@ -151,10 +151,7 @@ struct HLSL11::Data{
                    vsBlob->GetBufferPointer(),
                    vsBlob->GetBufferSize(),
                    &ret);
-    if( FAILED(hr) ){
-      T_ASSERT(0);
-      }
-
+    T_ASSERT(SUCCEEDED(hr));
     return ret;
     }
 
@@ -234,11 +231,11 @@ HLSL11::~HLSL11() {
   }
 
 void HLSL11::bind( const Tempest::VertexShader & vs ) const {
-  data->prog.vs = &vs;
+  data->prog.vs = (Data::Shader<ID3D11VertexShader>*)get(vs);
   }
 
 void HLSL11::bind( const Tempest::FragmentShader & fs ) const {
-  data->prog.fs = &fs;
+  data->prog.fs = (Data::Shader<ID3D11PixelShader>*)get(fs);
   }
 
 void *HLSL11::context() const {
@@ -269,8 +266,11 @@ GraphicsSubsystem::VertexShader*
                        &sh->blob,       //compiled operations
                        &errors);        //errors
   if( FAILED(result) ){
-    outputLog.resize( errors->GetBufferSize() );
-    memcpy( &outputLog[0], errors->GetBufferPointer(), errors->GetBufferSize() );
+    if(errors){
+      outputLog.resize( errors->GetBufferSize() );
+      memcpy( &outputLog[0], errors->GetBufferPointer(), errors->GetBufferSize() );
+      errors->Release();
+      }
     delete sh;
     return 0;
     }
@@ -287,11 +287,13 @@ GraphicsSubsystem::VertexShader*
 
 void HLSL11::deleteShader(GraphicsSubsystem::VertexShader *s) const {
   Data::Shader<ID3D11VertexShader>* vs = (Data::Shader<ID3D11VertexShader>*)s;
+  if(data->prog.vs==vs)
+    data->prog.vs=0;
 
   size_t nsz = 0;
   for( size_t i=0; i<data->sh.size(); ++i){
     data[nsz]=data[i];
-    if(s==(GraphicsSubsystem::VertexShader*)get(*data->sh[i].vs)){
+    if(s==(GraphicsSubsystem::VertexShader*)data->sh[i].vs){
       data->sh[i].dxDecl->Release();
       } else {
       ++nsz;
@@ -322,8 +324,11 @@ GraphicsSubsystem::FragmentShader*
                        &sh->blob,       //compiled operations
                        &errors);        //errors
   if( FAILED(result) ){
-    outputLog.resize( errors->GetBufferSize() );
-    memcpy( &outputLog[0], errors->GetBufferPointer(), errors->GetBufferSize() );
+    if(errors){
+      outputLog.resize( errors->GetBufferSize() );
+      memcpy( &outputLog[0], errors->GetBufferPointer(), errors->GetBufferSize() );
+      errors->Release();
+      }
     delete sh;
     return 0;
     }
@@ -341,11 +346,13 @@ GraphicsSubsystem::FragmentShader*
 
 void HLSL11::deleteShader(GraphicsSubsystem::FragmentShader *s) const {
   Data::Shader<ID3D11PixelShader>* fs = (Data::Shader<ID3D11PixelShader>*)s;
+  if(data->prog.fs==fs)
+    data->prog.fs=0;
 
   size_t nsz = 0;
   for( size_t i=0; i<data->sh.size(); ++i){
     data[nsz]=data[i];
-    if(s==(GraphicsSubsystem::FragmentShader*)get(*data->sh[i].fs)){
+    if(s==(GraphicsSubsystem::FragmentShader*)data->sh[i].fs){
       data->sh[i].dxDecl->Release();
       } else {
       ++nsz;
@@ -358,9 +365,9 @@ void HLSL11::deleteShader(GraphicsSubsystem::FragmentShader *s) const {
 
 void HLSL11::enable() const {
   Data::Shader<ID3D11VertexShader>* vs =
-      (Data::Shader<ID3D11VertexShader>*)get(*data->prog.vs);
+      (Data::Shader<ID3D11VertexShader>*)data->prog.vs;
   Data::Shader<ID3D11PixelShader>*  fs =
-      (Data::Shader<ID3D11PixelShader>*)get(*data->prog.fs);
+      (Data::Shader<ID3D11PixelShader>*)data->prog.fs;
 
   auto l = data->sh.find(data->prog);
   if( l!=data->sh.end() ){
@@ -442,64 +449,58 @@ std::string HLSL11::surfaceShader( GraphicsSubsystem::ShaderType t,
   static const std::string vs_src =
       "struct VS_Input {"
       "  float2 Position:  POSITION;"
-      "  float2 TexCoord:  TEXCOORD0;"
+      "  float2 TexCoord:  TEXCOORD;"
       "  float4 TexCoord1: TEXCOORD1;"
       "  };"
 
       "struct FS_Input {"
-      "  float4 pos: POSITION;"
+      "  float4 pos: SV_POSITION;"
       "  float2 tc : TEXCOORD0;"
       "  float4 cl : COLOR;"
       "  };"
-
-      "uniform float2 dpos;"
 
       "FS_Input main( VS_Input vs ){"
         "FS_Input fs;"
         "fs.tc  = float2( vs.TexCoord.x, 1.0-vs.TexCoord.y );"
         "fs.cl  = vs.TexCoord1;"
-        "fs.pos = float4(vs.Position+dpos, 0.0, 1.0);"
+        "fs.pos = float4(vs.Position, 0.0, 1.0);"
         "return fs;"
         "}";
 
   static const std::string fs_src =
       "struct FS_Input {"
-      "  float4 pos: POSITION;"
+      "  float4 pos: SV_POSITION;"
       "  float2 tc : TEXCOORD0;"
       "  float4 cl : COLOR;"
       "  };"
 
-      "sampler2D brush_texture;"
-
       "float4 main( FS_Input fs ): SV_Target {"
-        "return fs.cl;"//tex2D(brush_texture, float4(fs.tc, 0.0, 0.0) )*fs.cl;"
+        "return float4(1.0,1.0,1.0,1.0);"//tex2D(brush_texture, float4(fs.tc, 0.0, 0.0) )*fs.cl;"
         "}";
 
 
   static const std::string vs_src_nt =
       "struct VS_Input {"
       "  float2 Position:  POSITION;"
-      "  float2 TexCoord:  TEXCOORD0;"
+      "  float2 TexCoord:  TEXCOORD;"
       "  float4 TexCoord1: TEXCOORD1;"
       "  };"
 
       "struct FS_Input {"
-      "  float4 pos: POSITION;"
+      "  float4 pos: SV_POSITION;"
       "  float4 cl : COLOR;"
       "  };"
-
-      "uniform float2 dpos;"
 
       "FS_Input main( VS_Input vs ) {"
         "FS_Input fs;"
         "fs.cl  = vs.TexCoord1;"
-        "fs.pos = float4(vs.Position+dpos, 0.0, 1.0);"
+        "fs.pos = float4(vs.Position, 0.0, 1.0);"
         "return fs;"
         "}";
 
   static const std::string fs_src_nt =
       "struct FS_Input {"
-      "  float4 pos: POSITION;"
+      "  float4 pos: SV_POSITION;"
       "  float4 cl : COLOR;"
       "  };"
 

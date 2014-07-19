@@ -39,6 +39,8 @@ struct DirectX11::Device{
   ID3D11DepthStencilView* renderDepthStencilView = NULL;
   ID3D11DepthStencilState* dsState               = NULL;
 
+  int scrW, scrH;
+
   ~Device(){
     if( immediateContext )
       immediateContext->ClearState();
@@ -88,11 +90,14 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
 
   RECT rc;
   GetClientRect( hwnd, &rc );
-  UINT width = rc.right - rc.left;
+  UINT width  = rc.right  - rc.left;
   UINT height = rc.bottom - rc.top;
 
+  dev->scrW = width;
+  dev->scrH = height;
+
   UINT createDeviceFlags = 0;
-#ifdef _DEBUG
+#ifndef NDEBUG
   createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
@@ -123,13 +128,13 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
   sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
   sd.BufferDesc.RefreshRate.Numerator = 60;
   sd.BufferDesc.RefreshRate.Denominator = 1;
-  sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+  sd.BufferUsage  = DXGI_USAGE_RENDER_TARGET_OUTPUT;
   sd.OutputWindow = hwnd;
-  sd.SampleDesc.Count = 1;
+  sd.SampleDesc.Count   = 1;
   sd.SampleDesc.Quality = 0;
   sd.Windowed = TRUE;
 
-  for( UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++ ) {
+  for( UINT driverTypeIndex = 0; driverTypeIndex<numDriverTypes; driverTypeIndex++ ) {
     dev->driverType = driverTypes[driverTypeIndex];
     hr = D3D11CreateDeviceAndSwapChain( NULL, dev->driverType,
                                         NULL, createDeviceFlags,
@@ -156,46 +161,7 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
   if( FAILED( hr ) )
     return 0;
 
-  D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
-  descDSV.Format        = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
-  descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-  descDSV.Texture2D.MipSlice = 0;
-/*
-  // Create the depth stencil view
-  hr = pd3dDevice->CreateDepthStencilView( pDepthStencil, // Depth stencil texture
-                                           &descDSV, // Depth stencil desc
-                                           &dev->renderDepthStencilView );  // [out] Depth stencil view
-  if( FAILED( hr ) )
-    return 0;
-
   dev->immediateContext->OMSetRenderTargets( 1, &dev->renderTargetView, NULL );
-  */
-  /*
-  D3D11_DEPTH_STENCIL_DESC dsDesc;
-  // Depth test parameters
-  dsDesc.DepthEnable    = true;
-  dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-  dsDesc.DepthFunc      = D3D11_COMPARISON_LESS;
-
-  // Stencil test parameters
-  dsDesc.StencilEnable = true;
-  dsDesc.StencilReadMask = 0xFF;
-  dsDesc.StencilWriteMask = 0xFF;
-
-  // Stencil operations if pixel is front-facing
-  dsDesc.FrontFace.StencilFailOp      = D3D11_STENCIL_OP_KEEP;
-  dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-  dsDesc.FrontFace.StencilPassOp      = D3D11_STENCIL_OP_KEEP;
-  dsDesc.FrontFace.StencilFunc        = D3D11_COMPARISON_ALWAYS;
-
-  // Stencil operations if pixel is back-facing
-  dsDesc.BackFace.StencilFailOp      = D3D11_STENCIL_OP_KEEP;
-  dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-  dsDesc.BackFace.StencilPassOp      = D3D11_STENCIL_OP_KEEP;
-  dsDesc.BackFace.StencilFunc        = D3D11_COMPARISON_ALWAYS;
-
-  // Create depth stencil state
-  dev->immediateContext->CreateDepthStencilState(&dsDesc, &dev->dsState);*/
 
   // Setup the viewport
   D3D11_VIEWPORT vp;
@@ -227,6 +193,9 @@ void DirectX11::clear(AbstractAPI::Device *d, const Color &cl) const {
   }
 
 void DirectX11::clear(AbstractAPI::Device *d, const Color &cl, float z) const {
+  Device* dev = (Device*)d;
+
+  dev->immediateContext->ClearRenderTargetView( dev->renderTargetView, cl.data() );
   //TODO
   }
 
@@ -290,7 +259,11 @@ bool DirectX11::present( AbstractAPI::Device *d, SwapBehavior b ) const{
 
 bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
                        const Options & opt ) const{
-  //TODO
+  Device* dx = (Device*)d;
+  RECT rectWindow;
+  GetClientRect( HWND(hwnd), &rectWindow);
+  dx->scrW = rectWindow.right  - rectWindow.left;
+  dx->scrH = rectWindow.bottom - rectWindow.top;
   }
 
 bool DirectX11::isFormatSupported( AbstractAPI::Device *d, Pixmap::Format f ) const {
@@ -331,9 +304,10 @@ AbstractAPI::VertexBuffer *DirectX11::createVertexBuffer( AbstractAPI::Device *d
   return createVertexBuffer(d,size,elSize,0,u);
   }
 
-AbstractAPI::VertexBuffer *DirectX11::createVertexBuffer( AbstractAPI::Device *d,
-                                                          size_t size, size_t elSize,
-                                                          void* src,
+AbstractAPI::VertexBuffer *DirectX11::createVertexBuffer(AbstractAPI::Device *d,
+                                                          size_t size,
+                                                          size_t elSize,
+                                                          const void *src,
                                                           AbstractAPI::BufferUsage u) const {
   Device* dev = (Device*)d;
   static const D3D11_USAGE usage[]={
@@ -376,7 +350,7 @@ AbstractAPI::IndexBuffer *DirectX11::createIndexBuffer( AbstractAPI::Device *d,
 
 AbstractAPI::IndexBuffer *DirectX11::createIndexBuffer( AbstractAPI::Device *d,
                                                         size_t size, size_t elSize,
-                                                        void * src,
+                                                        const void * src,
                                                         AbstractAPI::BufferUsage u) const {
   Device* dev = (Device*)d;
   static const D3D11_USAGE usage[]={
@@ -422,21 +396,31 @@ void DirectX11::deleteVertexDecl( AbstractAPI::Device *,
   delete d;
   }
 
-void DirectX11::setVertexDeclaration(AbstractAPI::Device *d, AbstractAPI::VertexDecl *) const {
-
+void DirectX11::setVertexDeclaration(AbstractAPI::Device *,
+                                     AbstractAPI::VertexDecl *) const {
+  //NOP
   }
 
-void DirectX11::bindVertexBuffer(AbstractAPI::Device *d, AbstractAPI::VertexBuffer *, int vsize) const {
+void DirectX11::bindVertexBuffer( AbstractAPI::Device *d,
+                                  AbstractAPI::VertexBuffer *v, int vsize) const {
 
+  Device* dev = (Device*)d;
+  ID3D11Buffer* b = (ID3D11Buffer*)v;
+  UINT stride=vsize, offset=0;
+  dev->immediateContext->IASetVertexBuffers( 0, 1, &b, &stride, &offset );
   }
 
-void DirectX11::bindIndexBuffer(AbstractAPI::Device *d, AbstractAPI::IndexBuffer *) const {
-
+void DirectX11::bindIndexBuffer( AbstractAPI::Device *d,
+                                 AbstractAPI::IndexBuffer *v ) const {
+  Device* dev = (Device*)d;
+  ID3D11Buffer* b = (ID3D11Buffer*)v;
+  dev->immediateContext->IASetIndexBuffer(b, DXGI_FORMAT_R16_UINT, 0 );
   }
 
-void *DirectX11::lockBuffer( AbstractAPI::Device *d, AbstractAPI::VertexBuffer *,
+void *DirectX11::lockBuffer( AbstractAPI::Device *d,
+                             AbstractAPI::VertexBuffer *b,
                              unsigned offset, unsigned size) const {
-
+  T_WARNING_X(0,"lockBuffer");
   }
 
 void DirectX11::unlockBuffer(AbstractAPI::Device *d, AbstractAPI::VertexBuffer *) const {
@@ -463,16 +447,42 @@ void DirectX11::deleteShadingLang(const AbstractShadingLang *l) const {
 
 void DirectX11::draw( AbstractAPI::Device *d, AbstractAPI::PrimitiveType t,
                       int firstVertex, int pCount) const {
+  static const D3D_PRIMITIVE_TOPOLOGY topology[]={
+    D3D_PRIMITIVE_TOPOLOGY_UNDEFINED,
+    D3D11_PRIMITIVE_TOPOLOGY_POINTLIST,
+    D3D11_PRIMITIVE_TOPOLOGY_LINELIST,
+    D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP,
+    D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+    D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
+    D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP//deprecated
+    };
 
+  int vpCount = vertexCount(t, pCount);
+  Device* dev = (Device*)d;
+  dev->immediateContext->IASetPrimitiveTopology( topology[t] );
+  dev->immediateContext->Draw(vpCount,firstVertex);
   }
 
 void DirectX11::drawIndexed( AbstractAPI::Device *d, AbstractAPI::PrimitiveType t,
                              int vboOffsetIndex, int iboOffsetIndex, int vertexCount) const {
+  static const D3D_PRIMITIVE_TOPOLOGY topology[]={
+    D3D_PRIMITIVE_TOPOLOGY_UNDEFINED,
+    D3D11_PRIMITIVE_TOPOLOGY_POINTLIST,
+    D3D11_PRIMITIVE_TOPOLOGY_LINELIST,
+    D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP,
+    D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+    D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
+    D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP//deprecated
+    };
 
+  Device* dev = (Device*)d;
+  dev->immediateContext->IASetPrimitiveTopology( topology[t] );
+  dev->immediateContext->DrawIndexed( vertexCount, iboOffsetIndex, vboOffsetIndex );
   }
 
-Size DirectX11::windowSize(GraphicsSubsystem::Device *dev) const {
-  return Size(0,0);
+Size DirectX11::windowSize(GraphicsSubsystem::Device *d) const {
+  Device* dev = (Device*)d;
+  return Size(dev->scrW, dev->scrH);
   }
 
 
