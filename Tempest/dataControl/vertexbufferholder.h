@@ -70,8 +70,8 @@ class VertexBufferHolder : public AbstractHolder
     void  unlockBuffer(AbstractAPI::VertexBuffer* t );
 
   private:
-    VertexBufferHolder( const VertexBufferHolder &h );
-    void operator = ( const VertexBufferHolder& ){}
+    VertexBufferHolder( const VertexBufferHolder &h ) = delete;
+    VertexBufferHolder& operator = ( const VertexBufferHolder& ) = delete;
 
     template< class I, class Vertex >
     void get( const VertexBuffer<Vertex> & vbo,

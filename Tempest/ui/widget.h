@@ -147,8 +147,8 @@ class Widget {
     virtual void paintNested( Tempest::PaintEvent & p );
 
   private:
-    Widget( const Widget& ){}
-    Widget& operator = ( const Widget& ) { return *this; }
+    Widget( const Widget& ) = delete;
+    Widget& operator = ( const Widget& ) = delete;
 
     void rootMouseDownEvent ( Tempest::MouseEvent & e );
     void rootMouseUpEvent   ( Tempest::MouseEvent & e );

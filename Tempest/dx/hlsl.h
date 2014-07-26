@@ -12,22 +12,19 @@ class HLSL : public AbstractShadingLang {
     ~HLSL();
 
     void enable() const;
+    void endPaint() const;
 
-    void bind( const Tempest::VertexShader& ) const;
-    void bind( const Tempest::FragmentShader& ) const;
+    void bind( const Tempest::ShaderProgram&  ) const;
 
     void* context() const;
 
-    VertexShader* createVertexShaderFromSource( const std::string& src,
-                                                std::string & outputLog ) const;
-    void          deleteShader( VertexShader* s ) const;
-
-    FragmentShader* createFragmentShaderFromSource( const std::string& src,
-                                                    std::string & outputLog ) const;
-    void            deleteShader( FragmentShader* s ) const;
-
     std::string surfaceShader( ShaderType t, const UiShaderOpt&,
                                bool& hasHalfpixOffset ) const;
+    Source surfaceShader( const AbstractShadingLang::UiShaderOpt &opt,
+                          bool &hasHalfPixelOffset ) const;
+    ProgramObject* createShaderFromSource( const Source& src,
+                                           std::string & outputLog ) const;
+    void           deleteShader( ProgramObject* s ) const;
   private:
     struct Data;
     Data *data;
@@ -37,7 +34,7 @@ class HLSL : public AbstractShadingLang {
 
     template< class Sh>
     void setUniforms( Sh* prog,
-                      const ShaderInput & input,
+                      const UBO & input,
                       bool textures ) const;
 
   };

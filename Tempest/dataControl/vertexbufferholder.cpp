@@ -32,11 +32,6 @@ VertexBufferHolder::~VertexBufferHolder(){
   delete data;
   }
 
-VertexBufferHolder::VertexBufferHolder( const VertexBufferHolder& h)
-  :BaseType( h.device() ) {
-  data = new Data();
-  }
-
 void VertexBufferHolder::createObject( AbstractAPI::VertexBuffer*& t,
                                        const char * src,
                                        int size, int vsize,

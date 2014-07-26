@@ -2,16 +2,13 @@
 #define MAINWINDOW_H
 
 #include <Tempest/Window>
-#include <Tempest/DeviceSM5>
+#include <Tempest/Device>
 
 #include <Tempest/VertexBufferHolder>
 #include <Tempest/IndexBufferHolder>
 
 #include <Tempest/VertexBuffer>
 #include <Tempest/IndexBuffer>
-
-#include <Tempest/TessShaderHolder>
-#include <Tempest/EvalShaderHolder>
 
 #include <cstdint>
 
@@ -34,7 +31,7 @@ class MainWindow : public Tempest::Window {
 
     Tempest::Point mpos, spin;
 
-    Tempest::DeviceSM5 device;
+    Tempest::Device device;
 
     Tempest::TextureHolder texHolder;
     Tempest::Texture2d     texture, normal, height;
@@ -42,17 +39,8 @@ class MainWindow : public Tempest::Window {
     Tempest::VertexBufferHolder   vboHolder;
     Tempest::IndexBufferHolder    iboHolder;
 
-    Tempest::VertexShaderHolder vsHolder;
-    Tempest::VertexShader       vs;
-
-    Tempest::FragmentShaderHolder fsHolder;
-    Tempest::FragmentShader       fs;
-
-    Tempest::TessShaderHolder     tsHolder;
-    Tempest::TessShader           ts;
-
-    Tempest::EvalShaderHolder     esHolder;
-    Tempest::EvalShader           es;
+    Tempest::ShaderProgramHolder  shHolder;
+    Tempest::ShaderProgram        shader;
 
     struct Vertex {
       float    x, y, z;
@@ -66,6 +54,14 @@ class MainWindow : public Tempest::Window {
 
     Tempest::VertexDeclaration    vdecl;
     Tempest::Matrix4x4 mProj;
+
+    struct UBO{
+      Tempest::Matrix4x4 modelView;
+      Tempest::Matrix4x4 mvpMatrix;
+      Tempest::Texture2d diffuse;
+      Tempest::Texture2d heightMap;
+      } ubo;
+    Tempest::UniformDeclaration udecl;
 
     static Tempest::Device::Options options();
 

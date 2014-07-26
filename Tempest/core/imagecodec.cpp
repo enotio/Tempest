@@ -460,7 +460,6 @@ struct S3TCCodec:ImageCodec {
     size_t sz = info.w*info.h, s = sz;
     if( info.format==Pixmap::Format_DXT1 ){
       compressType = squish::kDxt1;
-      sz /= 2;
       s *= 4;
       } else {
       if( info.format==Pixmap::Format_DXT5 )

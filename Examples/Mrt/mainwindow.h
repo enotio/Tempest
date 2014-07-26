@@ -8,16 +8,12 @@
 #include <Tempest/VertexBufferHolder>
 #include <Tempest/IndexBufferHolder>
 #include <Tempest/LocalVertexBufferHolder>
-#include <Tempest/VertexShaderHolder>
-#include <Tempest/FragmentShaderHolder>
 #include <Tempest/LocalTexturesHolder>
 
 #include <Tempest/VertexBuffer>
 #include <Tempest/IndexBuffer>
 #include <Tempest/Texture2d>
-#include <Tempest/VertexShader>
-#include <Tempest/FragmentShader>
-#include <Tempest/ProgramObject>
+#include <Tempest/ShaderProgram>
 
 #include <Tempest/SurfaceRender>
 #include <Tempest/SpritesHolder>
@@ -41,16 +37,19 @@ class MainWindow:public Tempest::Window {
     Tempest::LocalVertexBufferHolder lvboHolder;
     Tempest::LocalIndexBufferHolder  liboHolder;
 
-    Tempest::VertexShaderHolder   vsHolder;
-    Tempest::FragmentShaderHolder fsHolder;
-
     Tempest::VertexBuffer<Vertex>  vbo;
     Tempest::IndexBuffer<uint16_t> ibo;
     Tempest::VertexDeclaration     vdecl;
     Tempest::Texture2d             texture;
     Tempest::Texture2d             renderTarget[2];
 
-    Tempest::ProgramObject         shader;
+    Tempest::ShaderProgramHolder   shHolder;
+    Tempest::ShaderProgram         shader;
+    Tempest::UniformDeclaration udecl;
+    struct UBO{
+      Tempest::Matrix4x4 mvpMatrix;
+      Tempest::Texture2d texture;
+      } ubo;
 
     Tempest::SpritesHolder         spHolder;
     Tempest::SurfaceRender         uiRender;
@@ -68,7 +67,7 @@ class MainWindow:public Tempest::Window {
     void render();
     void resizeEvent( Tempest::SizeEvent& e );
 
-    void setupShaderConstants(Tempest::ProgramObject & sh , const Tempest::Size &rtSize);
+    void setupShaderConstants(Tempest::ShaderProgram & sh , const Tempest::Size &rtSize);
   };
 
 #endif // MAINWINDOW_H

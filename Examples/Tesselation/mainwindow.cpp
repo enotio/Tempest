@@ -51,11 +51,13 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     texHolder( device ),
     vboHolder( device ),
     iboHolder( device ),
-    vsHolder ( device ),
-    fsHolder ( device ),
-    tsHolder ( device ),
-    esHolder ( device ) {
+    shHolder ( device ) {
   mProj.perspective( 45, w()/double(h()), 0.1, 100.0 );
+
+  udecl.add("modelMatrix",Decl::Matrix4x4)
+       .add("mvpMatrix",  Decl::Matrix4x4)
+       .add("diffuse",    Decl::Texture2d)
+       .add("heightMap",  Decl::Texture2d);
 
   vbo     = vboHolder.load( quadVertices, 24  );
   ibo     = iboHolder.load( quadIndexes,  6*6 );
@@ -64,10 +66,11 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
   normal  = texHolder.load("data/rocks_norm.png");
   height  = texHolder.load("data/rock_h.png");
 
-  vs = vsHolder.load("shader/tess.vs.glsl");
-  fs = fsHolder.load("shader/tess.fs.glsl");
-  ts = tsHolder.load("shader/tess.ts.glsl");
-  es = esHolder.load("shader/tess.es.glsl");
+  shader = shHolder.load({"shader/tess.vs.glsl",
+                          "shader/tess.fs.glsl",
+                          "",
+                          "shader/tess.es.glsl",
+                          "shader/tess.ts.glsl"});
 
   VertexDeclaration::Declarator decl;
   decl.add( Decl::float3, Usage::Position )
@@ -77,17 +80,8 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
 
   vdecl = VertexDeclaration( device, decl );
 
-  if( !vs.isValid() )
-    Log() << vs.log();
-
-  if( !fs.isValid() )
-    Log() << fs.log();
-
-  if( !ts.isValid() )
-    Log() << ts.log();
-
-  if( !es.isValid() )
-    Log() << es.log();
+  if( !shader.isValid() )
+    Log() << shader.log();
   }
 
 void MainWindow::render() {
@@ -99,7 +93,9 @@ void MainWindow::render() {
 
   setShaderConstants( spin.x, spin.y, texture, normal, height );
 
-  device.drawIndexed( vs, fs, ts, es, vdecl,
+  shader.setUniform(ubo,udecl,0);
+  device.drawIndexed( AbstractAPI::PrimitiveType(0),
+                      shader, vdecl,
                       vbo, ibo,
                       0, 0,
                       ibo.size()/3 );
@@ -124,20 +120,14 @@ void MainWindow::setShaderConstants( float spinX, float spinY,
   view.translate(0,0,4);
   view.rotate(spinY, 1, 0, 0);
   view.rotate(spinX, 0, 1, 0);
-  //view.scale(zoom);
 
   mvpMatrix = projective;
   mvpMatrix.mul(view);
 
-  vs.setUniform( "modelView", view );
-
-  es.setUniform( "mvpMatrix", mvpMatrix   );
-  es.setUniform( "heightMap", height );
-
-  //fs.setUniform( "lightDir",  0,0,-1 );
-  //fs.setUniform( "bump",      normal );
-  fs.setUniform( "diffuse",   tex    );
-  fs.setUniform( "heightMap", height );
+  ubo.modelView = view;
+  ubo.mvpMatrix = mvpMatrix;
+  ubo.heightMap = height;
+  ubo.diffuse   = tex;
   }
 
 void MainWindow::mouseDownEvent(MouseEvent &e){

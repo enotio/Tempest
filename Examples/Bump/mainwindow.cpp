@@ -48,9 +48,14 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     texHolder( device ),
     vboHolder( device ),
     iboHolder( device ),
-    vsHolder ( device ),
-    fsHolder ( device ){
+    shHolder ( device ){
   mProj.perspective( 45, w()/double(h()), 0.1, 100.0 );
+  udecl.add("modelView",Decl::Matrix4x4)
+       .add("mvpMatrix",Decl::Matrix4x4)
+       .add("lightDir", Decl::float3)
+       .add("texture",  Decl::Texture2d)
+       .add("bump",     Decl::Texture2d)
+       .add("heightMap",Decl::Texture2d);
 
   vbo     = vboHolder.load( quadVertices, 24  );
   ibo     = iboHolder.load( quadIndexes,  6*6 );
@@ -59,8 +64,9 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
   normal  = texHolder.load("data/rocks_norm.png");
   height  = texHolder.load("data/rock_h.png");
 
-  vs = vsHolder.load("shader/bump_vs.glsl");
-  fs = fsHolder.load("shader/bump_fs.glsl" );
+  shader = shHolder.load({"shader/bump_vs.glsl",
+                          "shader/bump_fs.glsl",
+                          "","",""});
 
   VertexDeclaration::Declarator decl;
   decl.add( Decl::float3, Usage::Position )
@@ -80,8 +86,9 @@ void MainWindow::render() {
 
   setShaderConstants( spin.x, spin.y, texture, normal, height );
 
+  shader.setUniform(ubo,udecl,0);
   device.drawIndexed( Tempest::AbstractAPI::Triangle,
-                      vs, fs, vdecl,
+                      shader, vdecl,
                       vbo, ibo,
                       0, 0,
                       ibo.size()/3 );
@@ -112,13 +119,11 @@ void MainWindow::setShaderConstants( float spinX, float spinY,
   Matrix4x4 mvp = mProj;
   mvp.mul( mView  );
 
-  vs.setUniform( "modelView", mView );
-  vs.setUniform( "mvpMatrix", mvp   );
-
-  fs.setUniform( "lightDir",  0,0,-1 );
-  fs.setUniform( "texture",   tex    );
-  fs.setUniform( "bump",      normal );
-  fs.setUniform( "heightMap", height );
+  ubo.modelView = mView;
+  ubo.mvpMatrix = mvp;
+  ubo.texture   = tex;
+  ubo.bump      = normal;
+  ubo.heightMap = height;
   }
 
 void MainWindow::mouseDownEvent(MouseEvent &e){

@@ -50,8 +50,8 @@ class VolumeHolder : public AbstractHolder
 
     virtual bool hasCPUStorage();
   private:
-    VolumeHolder(const VolumeHolder &h):BaseType(h.device()){}
-    void operator = (const VolumeHolder&){}
+    VolumeHolder(const VolumeHolder &h) = delete;
+    void operator = (const VolumeHolder&) = delete;
 
     struct Data;
     Data  *data;

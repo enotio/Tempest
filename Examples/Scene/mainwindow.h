@@ -7,15 +7,11 @@
 #include <Tempest/TextureHolder>
 #include <Tempest/VertexBufferHolder>
 #include <Tempest/IndexBufferHolder>
-#include <Tempest/VertexShaderHolder>
-#include <Tempest/FragmentShaderHolder>
 
 #include <Tempest/VertexBuffer>
 #include <Tempest/IndexBuffer>
 #include <Tempest/Texture2d>
-#include <Tempest/VertexShader>
-#include <Tempest/FragmentShader>
-#include <Tempest/ProgramObject>
+#include <Tempest/ShaderProgram>
 
 #include <Tempest/AbstractScene>
 #include <Tempest/AbstractGraphicObject>
@@ -39,14 +35,12 @@ class MainWindow:public Tempest::Window {
       };
   protected:
     Tempest::Device device;
-    Tempest::TextureHolder        texHolder;
-    Tempest::VertexBufferHolder   vboHolder;
-    Tempest::IndexBufferHolder    iboHolder;
+    Tempest::TextureHolder       texHolder;
+    Tempest::VertexBufferHolder  vboHolder;
+    Tempest::IndexBufferHolder   iboHolder;
 
-    Tempest::VertexShaderHolder   vsHolder;
-    Tempest::FragmentShaderHolder fsHolder;
-
-    Tempest::ProgramObject         shader;
+    Tempest::ShaderProgramHolder shHolder;
+    Tempest::ShaderProgram       shader;
 
     Tempest::Point mpos;
 
@@ -58,7 +52,13 @@ class MainWindow:public Tempest::Window {
     void resizeEvent( Tempest::SizeEvent& e );
 
     void setupShaderConstants(const SceneObject &obj,
-                               Tempest::ProgramObject & sh );
+                               Tempest::ShaderProgram & sh );
+
+    struct UBO{
+      Tempest::Matrix4x4 mvpMatrix;
+      Tempest::Texture2d texture;
+      } ubo;
+    Tempest::UniformDeclaration udecl;
 
     std::vector<SceneObject> objects;
     Scene           scene;

@@ -44,7 +44,7 @@ int main() {
   using namespace Tempest;
   Application app;
 
-  MainWindow w( api(Direct3D11) );
+  MainWindow w( api(Direct3D) );
   w.show();
 
   return app.exec();

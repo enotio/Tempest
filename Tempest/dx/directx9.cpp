@@ -838,7 +838,8 @@ void DirectX9::unlockBuffer( AbstractAPI::Device *,
   size_t byteSize = ibo->pbuf.size()*sizeof(ibo->pbuf[0]);
 
   T_ASSERT( ibo->index->Lock( 0, 0, &pIBO, 0 )==D3D_OK );
-  memcpy(pIBO, &ibo->pbuf[0], byteSize );
+  if(pIBO)
+    memcpy(pIBO, &ibo->pbuf[0], byteSize );
   ibo->index->Unlock();
 
   ibo->min.clear();

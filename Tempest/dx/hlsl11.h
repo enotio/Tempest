@@ -13,19 +13,8 @@ class HLSL11 : public AbstractShadingLang {
 
     void enable() const;
 
-    void bind( const Tempest::VertexShader& ) const;
-    void bind( const Tempest::FragmentShader& ) const;
-
     void* context() const;
     void setVertexDecl( const Tempest::AbstractAPI::VertexDecl*  ) const;
-
-    VertexShader* createVertexShaderFromSource( const std::string& src,
-                                                std::string & outputLog ) const;
-    void          deleteShader( VertexShader* s ) const;
-
-    FragmentShader* createFragmentShaderFromSource( const std::string& src,
-                                                    std::string & outputLog ) const;
-    void            deleteShader( FragmentShader* s ) const;
 
     std::string surfaceShader( ShaderType t, const UiShaderOpt&,
                                bool& hasHalfpixOffset ) const;
@@ -35,13 +24,7 @@ class HLSL11 : public AbstractShadingLang {
 
     void setDevice() const;
     static void setNullDevice();
-
-    template< class Sh>
-    void setUniforms( Sh* prog,
-                      const ShaderInput & input,
-                      bool textures ) const;
     void event(const DeleteEvent &e);
-
   };
 
 }

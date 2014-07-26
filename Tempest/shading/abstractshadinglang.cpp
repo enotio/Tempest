@@ -1,40 +1,18 @@
 #include "abstractshadinglang.h"
 
-#include <Tempest/VertexShader>
-#include <Tempest/FragmentShader>
-#include <Tempest/TessShader>
-#include <Tempest/EvalShader>
+#include <Tempest/ShaderProgram>
 
-#include <Tempest/Texture2d>
 #include <Tempest/SystemAPI>
 #include <Tempest/Device>
+#include <Tempest/Matrix4x4>
+#include <Tempest/Texture2d>
+#include <Tempest/Texture3d>
 
 using namespace Tempest;
 
-std::string AbstractShadingLang::surfaceShader( ShaderType t,
-                                                const UiShaderOpt &opt) const {
-  bool d = false;
-  return surfaceShader(t,opt, d);
-  }
-
-AbstractShadingLang::VertexShader*
-    AbstractShadingLang::get( const Tempest::VertexShader& s ){
+GraphicsSubsystem::ProgramObject *AbstractShadingLang::get(const Tempest::ShaderProgram &s) {
   return s.data.const_value();
   }
-
-AbstractShadingLang::FragmentShader*
-    AbstractShadingLang::get( const Tempest::FragmentShader& s ){
-  return s.data.const_value();
-  }
-
-AbstractShadingLang::TessShader *AbstractShadingLang::get(const Tempest::TessShader &s) {
-  return s.data.const_value();
-  }
-
-AbstractShadingLang::EvalShader *AbstractShadingLang::get(const Tempest::EvalShader &s) {
-  return s.data.const_value();
-  }
-
 
 AbstractAPI::Texture* AbstractShadingLang::get( const Tempest::Texture2d & t ){
   return t.data.const_value();
@@ -44,38 +22,75 @@ AbstractAPI::Texture *AbstractShadingLang::get(const Texture3d &t) {
   return t.data.const_value();
   }
 
-const ShaderInput &AbstractShadingLang::inputOf(const Tempest::Shader &s) {
-  return s.input;
+const std::shared_ptr<std::vector<AbstractShadingLang::UBO>>&
+  AbstractShadingLang::inputOf(const Tempest::ShaderProgram &s) {
+  return s.ubo;
   }
 
-void AbstractShadingLang::bind(const Tempest::TessShader &) const {
-  }
+void AbstractShadingLang::assignUniformBuffer( UBO& ux,
+                                               const char *ubo,
+                                               const UniformDeclaration &u ) {
+  size_t bufsz=0;
+  for( int type:u.type ){
+    if( type<Decl::count )
+      bufsz += Decl::elementSize(Decl::ComponentType(type));
+    else if( type==Decl::Texture2d )
+      bufsz += sizeof(void*) + sizeof(Texture2d::Sampler);
+    else if( type==Decl::Texture3d )
+      bufsz += sizeof(void*) + sizeof(Texture3d::Sampler);
+    else if( type==Decl::Matrix4x4 )
+      bufsz += sizeof(Tempest::Matrix4x4);
+    }
+  ux.id.resize(u.type.size());
+  ux.names = u.name;
+  ux.desc  = u.type;
+  ux.data .resize(bufsz);
+  ux.fields.resize(ux.desc.size());
 
-void AbstractShadingLang::bind(const Tempest::EvalShader &) const {
-  }
+  bufsz = 0;
+  int i=0;
+  char *data = &ux.data[0];
+  for( int type:ux.desc ){
+    size_t vsz;
 
-void *AbstractShadingLang::createShader( AbstractShadingLang::ShaderType t,
-                                         const std::string &fname,
-                                         std::string &outputLog ) const {
-  return createShaderFromSource( t, SystemAPI::loadText(fname), outputLog );
-  }
+    const char* addr = ubo+bufsz;    
+    ux.fields[i] = data;
+    ++i;
 
-void *AbstractShadingLang::createShader(AbstractShadingLang::ShaderType t,
-                                         const std::u16string &fname,
-                                         std::string &outputLog) const {
-  return createShaderFromSource( t, SystemAPI::loadText(fname), outputLog );
-  }
+    if( type<Decl::count ){
+      vsz = Decl::elementSize(Decl::ComponentType(type));
+      memcpy(data, addr, vsz);
+      } else {
+      void* t=0;
+      vsz = 0;//sizeof(t);
+      switch (type) {
+        case Decl::Texture2d:
+          t = (void*)get(*(Texture2d*)addr);
+          (*(void**)data) = t;
+          data  += sizeof(void*);
+          bufsz += sizeof(Texture2d);
+          *(Texture2d::Sampler*)data = ((Texture2d*)addr)->sampler();
+          data  += sizeof(Texture2d::Sampler);
+          break;
+        case Decl::Texture3d:
+          t = (void*)get(*(Texture3d*)addr);
+          (*(void**)data) = t;
+          data  += sizeof(void*);
+          bufsz += sizeof(Texture3d);
+          *(Texture3d::Sampler*)data = ((Texture3d*)addr)->sampler();
+          data  += sizeof(Texture2d::Sampler);
+          break;
+        case Decl::Matrix4x4:
+          *(Tempest::Matrix4x4*)data = *(Tempest::Matrix4x4*)addr;
+          data  += sizeof(Matrix4x4);
+          bufsz += sizeof(Matrix4x4);
+          break;
+        }
+      }
 
-GraphicsSubsystem::TessShader*
-  AbstractShadingLang::createTessShaderFromSource( const std::string &,
-                                                   std::string & ) const {
-  return 0;
-  }
-
-GraphicsSubsystem::EvalShader*
-  AbstractShadingLang::createEvalShaderFromSource( const std::string &,
-                                                   std::string & ) const {
-  return 0;
+    bufsz += vsz;
+    data  += vsz;
+    }
   }
 
 AbstractShadingLang::UiShaderOpt::UiShaderOpt() {

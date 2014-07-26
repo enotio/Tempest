@@ -438,7 +438,7 @@ void DirectX11::unlockBuffer(AbstractAPI::Device *d, AbstractAPI::IndexBuffer *)
 
 AbstractShadingLang *DirectX11::createShadingLang(AbstractAPI::Device *d) const {
   Device* dev = (Device*)d;
-  return new HLSL11( (DirectX11Device*)dev->device, dev->immediateContext );
+  return 0;//new HLSL11( (DirectX11Device*)dev->device, dev->immediateContext );
   }
 
 void DirectX11::deleteShadingLang(const AbstractShadingLang *l) const {

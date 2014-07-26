@@ -7,13 +7,13 @@
 #include <Tempest/VertexDeclaration>
 #include <Tempest/RenderState>
 #include <Tempest/Sprite>
+#include <Tempest/UniformDeclaration>
 
 #include <vector>
 
 namespace Tempest{
 
-class VertexShaderHolder;
-class FragmentShaderHolder;
+class ShaderProgramHolder;
 
 class VertexBufferHolder;
 class IndexBufferHolder;
@@ -25,8 +25,7 @@ class Font;
 
 class SurfaceRender {
   public:
-    SurfaceRender( Tempest::VertexShaderHolder   & vs,
-                   Tempest::FragmentShaderHolder & fs );
+    SurfaceRender( Tempest::ShaderProgramHolder& sh );
 
     void clearVbo();
 
@@ -173,8 +172,7 @@ class SurfaceRender {
       float color[4];
       };
 
-    Tempest::VertexShaderHolder   & vsH;
-    Tempest::FragmentShaderHolder & fsH;
+    Tempest::ShaderProgramHolder& shH;
 
     struct Block{
       size_t begin, end;
@@ -190,12 +188,12 @@ class SurfaceRender {
 
     std::vector<Vertex> cpuGm;
 
-    virtual ProgramObject& shaderForBlock( const Block& b ) const;
+    virtual ShaderProgram& shaderForBlock( const Block& b ) const;
     virtual size_t cpuVertexCurrentCount() const;
     Tempest::VertexBuffer<Vertex> vbo;
     Tempest::VertexDeclaration    vdecl;
 
-    mutable Tempest::ProgramObject  stdShaders[2];
+    mutable Tempest::ShaderProgram  stdShaders[2];
     float invW, invH, invTw, invTh;
 
   private:
@@ -208,6 +206,18 @@ class SurfaceRender {
     void updateBackBlock(bool isLine);
 
     void update( Vertex* v, int count );
+
+    struct UDpos{
+      float     dpos[2];
+      };
+
+    struct UBO {
+      Texture2d brush;
+      };
+    UniformDeclaration udecl, dposDecl;
+
+    mutable UDpos udpos;
+    mutable UBO   uniforms;
   };
 
 }

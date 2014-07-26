@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 #include <Tempest/Log>
+#include <Tempest/RenderState>
 #include <assimp/Importer.hpp>
 
 aiLogStream stream;
@@ -23,8 +24,7 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     ltexHolder( device ),
     vboHolder ( device ),
     iboHolder ( device ),
-    vsHolder  ( device ),
-    fsHolder  ( device ){
+    shHolder  ( device ){
   spin.y = -40;
   zoom   = 0.01;
 
@@ -135,12 +135,35 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
                 "refractions",
                 "emissionv 1.0"
               });
+  umaterial.add("shadowMatrix",Decl::Matrix4x4)
+           .add("modelView",   Decl::Matrix4x4)
+           .add("mvpMatrix",   Decl::Matrix4x4)
+           .add("projMatrix",  Decl::Matrix4x4)
+           .add("diffuse",     Decl::Texture2d)
+           .add("screen",      Decl::Texture2d)
+           .add("matColor",    Decl::float4   );
+
+  ulighting.add("lightDir",  Decl::float3)
+           .add("shadow",    Decl::Texture2d)
+           .add("invMvp",    Decl::Matrix4x4)
+           .add("rsmColor",  Decl::Texture2d)
+           .add("rsmNormal", Decl::Texture2d);
 
   loadShader( gauss,   "shader/post/gaus" );
+  ugauss.add("image",Decl::Texture2d)
+        .add("dir",  Decl::float2   );
   loadShader( bright,  "shader/post/bright" );
+  ubright.add("image",Decl::Texture2d);
+
   loadShader( combine, "shader/post/combine" );
+  ucombine.add("image", Decl::Texture2d)
+          .add("bloom0",Decl::Texture2d)
+          .add("bloom1",Decl::Texture2d)
+          .add("bloom2",Decl::Texture2d)
+          .add("bloom3",Decl::Texture2d);
 
   loadShader( blt, "shader/blt" );
+  ublt.add("texture", Decl::Texture2d);
 
   updateCamera();
   }
@@ -149,27 +172,23 @@ MainWindow::~MainWindow() {
   aiDetachAllLogStreams();
   }
 
-void MainWindow::loadShader( ProgramObject &shader,
+void MainWindow::loadShader( ShaderProgram &shader,
                              const std::string & file ) {
-  shader.vs = vsHolder.load( file+".vs.glsl" );
-  shader.fs = fsHolder.load( file+".fs.glsl" );
-
-  if( !shader.isValid() ){
-    Log() << shader.vs.log();
-    Log() << shader.fs.log();
-    }
+  shader = shHolder.load({file+".vs.glsl",
+                          file+".fs.glsl",
+                          "","",""});
+  if( !shader.isValid() )
+    Log() << shader.log();
   }
 
-void MainWindow::loadShader( ProgramObject &shader,
+void MainWindow::loadShader( ShaderProgram &shader,
                              const std::string &file,
                              const std::initializer_list<const char *> &def ) {
-  shader.vs = vsHolder.loadFromSource( shaderSource(file+".vs.glsl", def ));
-  shader.fs = fsHolder.loadFromSource( shaderSource(file+".fs.glsl", def ));
-
-  if( !shader.isValid() ){
-    Log() << shader.vs.log();
-    Log() << shader.fs.log();
-    }
+  shader = shHolder.compile({shaderSource(file+".vs.glsl", def ),
+                             shaderSource(file+".fs.glsl", def ),
+                             "","",""});
+  if( !shader.isValid() )
+    Log() << shader.log();
   }
 
 std::string MainWindow::shaderSource(const std::string &f, const std::initializer_list<const char *> &def) {
@@ -315,12 +334,12 @@ Texture2d MainWindow::mkBuffer( int w, int h ){
   return r;
   }
 
-void MainWindow::renderShadow( ProgramObject& shadow,
+void MainWindow::renderShadow( ShaderProgram& shadow,
                                Texture2d& sh,
                                Texture2d& depth,
                                bool inv,
                                int smSz ) {
-  setShadowConstants( shadow );
+  uboMaterial.shadowMatrix = shadowMatrix();
 
   //const int smSz = 1024;
   depth = ltexHolder.create(smSz, smSz, Texture2d::Format::Depth24 );
@@ -334,6 +353,7 @@ void MainWindow::renderShadow( ProgramObject& shadow,
   if( inv )
     st.setCullFaceMode( RenderState::CullMode::front );
 
+  shadow.setUniform(uboMaterial,umaterial,0);
   device.setRenderState(st);
 
   device.beginPaint( sh, depth);
@@ -352,7 +372,7 @@ void MainWindow::renderShadow( ProgramObject& shadow,
 void MainWindow::renderShadow( Texture2d* sh, int cnt,
                                Texture2d& depth,
                                int smSz ) {
-  setShadowConstants( shadow );
+  uboMaterial.shadowMatrix = shadowMatrix();
 
   //const int smSz = 1024;
   depth = ltexHolder.create(smSz, smSz, Texture2d::Format::Depth24 );
@@ -367,6 +387,7 @@ void MainWindow::renderShadow( Texture2d* sh, int cnt,
   RenderState st;
   device.setRenderState(st);
 
+  gbuf.setUniform(uboMaterial,umaterial,0);
   device.beginPaint( sh, cnt, depth);
   device.clear( Color(0.0), 1.0 );
   for( size_t i=0; i<objects.size(); ++i ){
@@ -379,6 +400,7 @@ void MainWindow::renderShadow( Texture2d* sh, int cnt,
       }
     }
 
+  gemission.setUniform(uboMaterial,umaterial,0);
   for( size_t i=0; i<objects.size(); ++i ){
     SceneObject& obj = objects[i];
 
@@ -407,8 +429,8 @@ void MainWindow::render() {
   if( 0 ){
     device.beginPaint();
     device.clear( Color(0.0), 1.0 );
-    blt.fs.setUniform("texture", sh.rsm[0]);
-    blt.fs.setUniform("texture", sh.sm );
+    uboBlt.texture = sh.rsm[0];
+    blt.setUniform(uboBlt,ublt,0);
     device.drawFullScreenQuad( blt );
     device.endPaint();
     }
@@ -418,11 +440,13 @@ void MainWindow::render() {
 
 Texture2d MainWindow::distorsion( const Texture2d& scene,
                                   Texture2d& depth,
-                                  ProgramObject & refract ){
-  Texture2d rt2   = mkBuffer( scene.size());
+                                  ShaderProgram & refract ){
+  Texture2d rt2 = mkBuffer(scene.size());
+
   device.beginPaint(rt2, depth);
-  blt.    fs.setUniform("texture", scene);
-  refract.fs.setUniform("screen",  scene);
+  uboBlt.texture = scene;
+  blt.setUniform(uboBlt,ublt,0);
+  uboMaterial.screen = scene;
 
   device.setRenderState( RenderState::PostProcess );
   device.drawFullScreenQuad( blt );
@@ -440,10 +464,11 @@ Texture2d MainWindow::distorsion( const Texture2d& scene,
 
   device.endPaint();
 
-  Texture2d rt3 = mkBuffer( scene.size());
+  Texture2d rt3 = mkBuffer(scene.size());
   device.beginPaint(rt3, depth);
-  blt.    fs.setUniform("texture", rt2);
-  refract.fs.setUniform("screen",  rt2);
+  uboBlt.texture = scene;
+  blt.setUniform(uboBlt,ublt,0);
+  uboMaterial.screen = rt2;
 
   device.setRenderState( RenderState::PostProcess );
   device.drawFullScreenQuad( blt );
@@ -520,14 +545,17 @@ void MainWindow::mainPasss( const Shadow & sm ){
   combinePass( rt3, bright );
 
   return;
-  blt.fs.setUniform("texture", rt);
+  //result without post-process
+  uboBlt.texture = rt;
+  blt.setUniform(uboBlt,ublt,0);
   device.beginPaint();
   device.drawFullScreenQuad( blt );
   device.endPaint();
   }
 
 Texture2d MainWindow::brightPass( const Texture2d &tex ) {
-  bright.fs.setUniform("image", tex);
+  uboBright.image = tex;
+  bright.setUniform(uboBright,ubright,0);
 
   Texture2d rt    = ltexHolder.create( tex.size(), tex.format() ),
             depth = ltexHolder.create( tex.size(), Texture2d::Format::Depth24 );
@@ -544,7 +572,8 @@ Texture2d MainWindow::brightPass( const Texture2d &tex ) {
   }
 
 Texture2d MainWindow::resizeTex(const Texture2d &tex, const Size &nsz) {
-  bright.fs.setUniform("image", tex);
+  uboBright.image = tex;
+  bright.setUniform(uboBright,ubright,0);
 
   Texture2d rt    = ltexHolder.create( nsz, tex.format() ),
             depth = ltexHolder.create( nsz, Texture2d::Format::Depth24 );
@@ -562,11 +591,9 @@ Texture2d MainWindow::resizeTex(const Texture2d &tex, const Size &nsz) {
 
 void MainWindow::combinePass( const Texture2d &tex,
                               const Texture2d *bloom ) {
-  combine.fs.setUniform("image", tex);
-  combine.fs.setUniform("bloom0", bloom[0]);
-  combine.fs.setUniform("bloom1", bloom[1]);
-  combine.fs.setUniform("bloom2", bloom[2]);
-  combine.fs.setUniform("bloom3", bloom[3]);
+  uboCombine.image = tex;
+  std::copy(bloom,bloom+4,uboCombine.bloom);
+  combine.setUniform(uboCombine,ucombine,0);
 
   device.beginPaint();
   device.setRenderState( RenderState::PostProcess );
@@ -575,9 +602,10 @@ void MainWindow::combinePass( const Texture2d &tex,
   }
 
 Texture2d MainWindow::blur( const Texture2d &tex ) {
-  float dir[2] = { 1.0f/tex.width(), 0.0f };
-  gauss.fs.setUniform("image", tex);
-  gauss.fs.setUniform("dir",   dir, 2);
+  uboGauss.image  = tex;
+  uboGauss.dir[0] = 1.0f/tex.width();
+  uboGauss.dir[1] = 0;
+  gauss.setUniform(uboGauss,ugauss,0);
 
   Texture2d rt    = ltexHolder.create( tex.size(), tex.format() ),
             depth = ltexHolder.create( tex.size(), Texture2d::Format::Depth24 );
@@ -591,9 +619,10 @@ Texture2d MainWindow::blur( const Texture2d &tex ) {
   sm.vClamp = sm.uClamp;
   rt.setSampler(sm);
 
-  float dir2[2] = { 0.0f, 1.0f/tex.height() };
-  gauss.fs.setUniform("image", rt  );
-  gauss.fs.setUniform("dir",   dir2, 2);
+  uboGauss.image  = rt;
+  uboGauss.dir[0] = 0;
+  uboGauss.dir[1] = 1.0f/rt.height();
+  gauss.setUniform(uboGauss,ugauss,0);
 
   Texture2d out = ltexHolder.create( tex.size(), tex.format() );
   device.beginPaint(out, depth);
@@ -608,32 +637,27 @@ Texture2d MainWindow::blur( const Texture2d &tex ) {
   }
 
 void MainWindow::setupLigting( Scene &scene,
-                               ProgramObject &shader,
+                               ShaderProgram &shader,
                                const Shadow & sm,
                                bool sh ) {
-  float ld[3];
-
   if( sh ){
     const Matrix4x4 m = shadowMatrix();
-    getLightDir( ld, m );
+    getLightDir( uboLighting.lightDir, m );
     } else {
     const Matrix4x4 m = scene.camera().view();
-    getLightDir( ld, m );
+    getLightDir( uboLighting.lightDir, m );
     }
-  Matrix4x4 inv = shadowMatrix();//scene.camera().viewProjective();
-  inv.inverse();
-
-  shader.fs.setUniform("lightDir", ld, 3);
-  shader.fs.setUniform("shadow", sm.sm );
-  shader.fs.setUniform("invMvp", inv   );
-
-  shader.fs.setUniform("rsmColor",  sm.rsm[0] );
-  shader.fs.setUniform("rsmNormal", sm.rsm[2] );
+  uboLighting.shadow = sm.sm;
+  uboLighting.invMvp = shadowMatrix();
+  uboLighting.invMvp.inverse();
+  uboLighting.rsmColor  = sm.rsm[0];
+  uboLighting.rsmNormal = sm.rsm[1];
+  shader.setUniform(uboLighting,ulighting,1);
   }
 
 void MainWindow::setShaderConstants( SceneObject& obj,
-                                     ProgramObject& shader ) {
-  setShadowConstants( shader );
+                                     ShaderProgram& shader ) {
+  uboMaterial.shadowMatrix = shadowMatrix();
 
   Matrix4x4 view = scene.camera().view();
   view.mul( obj.transform()  );
@@ -641,13 +665,12 @@ void MainWindow::setShaderConstants( SceneObject& obj,
   Matrix4x4 mvp = scene.camera().projective();
   mvp.mul( view );
 
-  shader.vs.setUniform( "modelView", view );
-  shader.vs.setUniform( "mvpMatrix", mvp  );
-
-  shader.fs.setUniform( "diffuse",    obj.material().diffuse );
-  shader.fs.setUniform( "projMatrix", scene.camera().projective()  );
-
-  shader.fs.setUniform( "matColor", obj.material().color.data(), 4 );
+  uboMaterial.modelView  = view;
+  uboMaterial.mvpMatrix  = mvp;
+  uboMaterial.projMatrix = mvp;
+  uboMaterial.diffuse    = obj.material().diffuse;
+  uboMaterial.matColor   = obj.material().color;
+  shader.setUniform(uboMaterial,umaterial,0);
   }
 
 void MainWindow::getLightDir(float d[], const Matrix4x4& m ) {
@@ -694,10 +717,6 @@ Matrix4x4 MainWindow::shadowMatrix(){
   proj.mul( m );
 
   return proj;
-  }
-
-void MainWindow::setShadowConstants(ProgramObject &shader) {
-  shader.vs.setUniform( "shadowMatrix", shadowMatrix() );
   }
 
 void MainWindow::resizeEvent(Tempest::SizeEvent &) {

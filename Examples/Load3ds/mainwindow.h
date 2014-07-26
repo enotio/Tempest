@@ -12,7 +12,7 @@
 
 #include <Tempest/LocalTexturesHolder>
 
-#include <Tempest/ProgramObject>
+#include <Tempest/ShaderProgram>
 
 #include <cstdint>
 
@@ -52,27 +52,26 @@ class MainWindow : public Tempest::Window {
     struct Shadow{
       Tempest::Texture2d sm, rsm[3], depth;
       };
-    void loadShader( Tempest::ProgramObject & prog, const std::string &file);
-    void loadShader( Tempest::ProgramObject & prog,
+    void loadShader( Tempest::ShaderProgram & prog, const std::string &file);
+    void loadShader( Tempest::ShaderProgram & prog,
                      const std::string &file,
                      const std::initializer_list<const char*>& def );
 
     Tempest::Texture2d mkBuffer( Tempest::Size sz );
     Tempest::Texture2d mkBuffer( int w, int h );
 
-    void setShadowConstants(Tempest::ProgramObject &shader);
-    void setShaderConstants(SceneObject &obj, Tempest::ProgramObject &shader);
+    void setShaderConstants(SceneObject &obj, Tempest::ShaderProgram &shader);
     void getLightDir(float d[] , const Tempest::Matrix4x4 &m);
 
     void mainPasss(const Shadow &sm);
     Tempest::Texture2d distorsion( const Tempest::Texture2d& scene,
                                    Tempest::Texture2d &depth,
-                                   Tempest::ProgramObject &shader );
+                                   Tempest::ShaderProgram &shader );
     Tempest::Texture2d blur( const Tempest::Texture2d & in );
     Tempest::Texture2d brightPass( const Tempest::Texture2d &tex );
     Tempest::Texture2d resizeTex( const Tempest::Texture2d &tex,
                                   const Tempest::Size & nsz );
-    void renderShadow( Tempest::ProgramObject &shader,
+    void renderShadow( Tempest::ShaderProgram &shader,
                        Tempest::Texture2d &sh,
                        Tempest::Texture2d &depth,
                        bool inv, int smSz);
@@ -105,15 +104,56 @@ class MainWindow : public Tempest::Window {
     Tempest::LocalTexturesHolder ltexHolder;
     Tempest::Texture2d           texture;
 
-    Tempest::VertexBufferHolder   vboHolder;
-    Tempest::IndexBufferHolder    iboHolder;
+    Tempest::VertexBufferHolder  vboHolder;
+    Tempest::IndexBufferHolder   iboHolder;
 
-    Tempest::VertexShaderHolder   vsHolder;
-    Tempest::FragmentShaderHolder fsHolder;
+    Tempest::ShaderProgramHolder shHolder;
 
-    Tempest::ProgramObject shadow, shadow_refract;
-    Tempest::ProgramObject shader, gbuf, mono, refract, emission, gemission;
-    Tempest::ProgramObject blt, gauss, bright, combine;
+    Tempest::ShaderProgram shadow, shadow_refract;
+    Tempest::ShaderProgram shader, gbuf, mono, refract, emission, gemission;
+    Tempest::ShaderProgram blt, gauss, bright, combine;
+
+    struct UboBlt{
+      Tempest::Texture2d texture;
+      } uboBlt;
+    Tempest::UniformDeclaration ublt;
+
+    struct UboGauss{
+      Tempest::Texture2d image;
+      float              dir[2] = {0,0};
+      } uboGauss;
+    Tempest::UniformDeclaration ugauss;
+
+    struct UboBright{
+      Tempest::Texture2d image;
+      } uboBright;
+    Tempest::UniformDeclaration ubright;
+
+    struct UboCombine{
+      Tempest::Texture2d image;
+      Tempest::Texture2d bloom[4];
+      } uboCombine;
+    Tempest::UniformDeclaration ucombine;
+
+    struct UboLighting{
+      float lightDir[3];
+      Tempest::Texture2d shadow;
+      Tempest::Matrix4x4 invMvp;
+      Tempest::Texture2d rsmColor;
+      Tempest::Texture2d rsmNormal;
+      } uboLighting;
+    Tempest::UniformDeclaration ulighting;
+
+    struct UboMaterial{
+      Tempest::Matrix4x4 shadowMatrix;
+      Tempest::Matrix4x4 modelView;
+      Tempest::Matrix4x4 mvpMatrix;
+      Tempest::Matrix4x4 projMatrix;
+      Tempest::Texture2d diffuse;
+      Tempest::Texture2d screen;
+      Tempest::Color     matColor;
+      } uboMaterial;
+    Tempest::UniformDeclaration umaterial;
 
     struct Vertex {
       float    x, y, z;
@@ -127,7 +167,7 @@ class MainWindow : public Tempest::Window {
     Scene scene;
     std::vector<SceneObject> objects;
     void setupLigting(Scene &scene,
-                       Tempest::ProgramObject &shader,
+                       Tempest::ShaderProgram &shader,
                        const Shadow &sm,
                        bool sh = false );
     void updateCamera();

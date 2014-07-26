@@ -136,6 +136,7 @@ Tempest::Pixmap::Pixmap(const std::u16string &p) {
 Pixmap::Pixmap(int iw, int ih, bool alpha) {
   info.w = iw;
   info.h = ih;
+  info.mipLevels=1;
 
   if( alpha ){
     info.bpp    = 4;

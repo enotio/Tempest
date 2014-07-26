@@ -7,15 +7,12 @@
 #include <Tempest/TextureHolder>
 #include <Tempest/VertexBufferHolder>
 #include <Tempest/IndexBufferHolder>
-#include <Tempest/VertexShaderHolder>
-#include <Tempest/FragmentShaderHolder>
 
 #include <Tempest/VertexBuffer>
 #include <Tempest/IndexBuffer>
 #include <Tempest/Texture2d>
-#include <Tempest/VertexShader>
-#include <Tempest/FragmentShader>
-#include <Tempest/ProgramObject>
+#include <Tempest/ShaderProgramHolder>
+#include <Tempest/ShaderProgram>
 
 #include <Tempest/SurfaceRender>
 #include <Tempest/SpritesHolder>
@@ -30,8 +27,7 @@ class MainWindow:public Tempest::Window {
     Tempest::VertexBufferHolder   vboHolder;
     Tempest::IndexBufferHolder    iboHolder;
 
-    Tempest::VertexShaderHolder   vsHolder;
-    Tempest::FragmentShaderHolder fsHolder;
+    Tempest::ShaderProgramHolder  shHolder;
 
     Tempest::Texture2d             texture;
 

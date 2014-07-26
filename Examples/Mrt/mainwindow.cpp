@@ -55,12 +55,13 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     iboHolder (device),
     lvboHolder(device),
     liboHolder(device),
-    vsHolder  (device),
-    fsHolder  (device),
+    shHolder  (device),
     spHolder  (texHolder),
-    uiRender  ( vsHolder, fsHolder )
+    uiRender  (shHolder)
     {
   zoom = 1;
+  udecl.add("mvpMatrix",Decl::Matrix4x4)
+       .add("texture",  Decl::Texture2d);
 
   vbo = vboHolder.load(quadVb, sizeof(quadVb)/sizeof(quadVb[0]));
   ibo = iboHolder.load(quadId, sizeof(quadId)/sizeof(quadId[0]));
@@ -75,8 +76,9 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
   renderTarget[0] = texHolder.create(512, 512, Texture2d::Format::RGBA);
   renderTarget[1] = texHolder.create(512, 512, Texture2d::Format::RGBA);
 
-  shader.vs = vsHolder.load("shader/mrt.vs.glsl");
-  shader.fs = fsHolder.load("shader/mrt.fs.glsl");
+  shader = shHolder.load({"shader/mrt.vs.glsl",
+                          "shader/mrt.fs.glsl",
+                          "","",""});
 
   T_ASSERT( shader.isValid() );  
   }
@@ -147,7 +149,7 @@ void MainWindow::resizeEvent( SizeEvent & ) {
   device.reset();
   }
 
-void MainWindow::setupShaderConstants( ProgramObject &sh,
+void MainWindow::setupShaderConstants( ShaderProgram &sh,
                                        const Size& rtSize ) {
   Matrix4x4 mvpMatrix, projective, view;
 
@@ -161,6 +163,7 @@ void MainWindow::setupShaderConstants( ProgramObject &sh,
   mvpMatrix = projective;
   mvpMatrix.mul(view);
 
-  sh.vs.setUniform("mvpMatrix", mvpMatrix);
-  sh.fs.setUniform("texture",   texture  );
+  ubo.mvpMatrix = mvpMatrix;
+  ubo.texture   = texture;
+  sh.setUniform(ubo,udecl,0);
   }

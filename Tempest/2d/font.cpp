@@ -74,17 +74,6 @@ Tempest::FontElement::FreeTypeLib& Tempest::FontElement::ft(){
   return lib;
   }
 
-size_t Tempest::FontElement::findFontNameTtf( const std::string &ft,
-                                              const char* ttf ) {
-  for( size_t i=0; i<fnames.size(); ++i ){
-    if( cmpS( fnames[i], ft, ttf ) )
-      return i;
-    }
-
-  fnames.push_back(ft+ttf);
-  return fnames.size()-1;
-  }
-
 size_t Tempest::FontElement::findFontName(const std::string &n) {
   for( size_t i=0; i<fnames.size(); ++i )
     if( fnames[i]==n )
@@ -125,12 +114,8 @@ Tempest::FontElement::FontElement() {
   }
 
 void Tempest::FontElement::init( const std::string& name, int sz ) {
-  //key.name     = findFontNameTtf(name, ".ttf");
   key.name = findFontName(name);
   key.size = sz;
-
-  //key.bold   = false;
-  //key.italic = false;
 
   lt = ft().letterBox[key];
   if( !lt ){
@@ -335,17 +320,6 @@ const Tempest::FontElement::Letter&
   }
 
 void Tempest::FontElement::update() {
-  /*
-  key.name = key.baseName;
-
-  if( key.bold && key.italic )
-    key.name =  findFontNameTtf( fnames[key.baseName], "bi.ttf"); else
-  if( key.bold )
-    key.name =  findFontNameTtf( fnames[key.baseName], "b.ttf"); else
-  if( key.italic )
-    key.name =  findFontNameTtf( fnames[key.baseName], "i.ttf"); else
-    key.name =  findFontNameTtf( fnames[key.baseName], ".ttf");*/
-
   lt = ft().letterBox[key];
   if( !lt ){
     lt = new Leters();

@@ -8,10 +8,11 @@
 
 using namespace Tempest;
 
-SurfaceRender::SurfaceRender( VertexShaderHolder &vs,
-                              FragmentShaderHolder &fs )
-  :vsH(vs), fsH(fs){
+SurfaceRender::SurfaceRender(ShaderProgramHolder &sh):shH(sh) {
   cpuGm.reserve(8096);
+
+  udecl.add("brush_texture", Decl::Texture2d);
+  dposDecl.add("dpos", Decl::float2);
 
   invW = 1;
   invH = 1;
@@ -55,27 +56,20 @@ void SurfaceRender::clearVbo() {
 void SurfaceRender::loadShader() {
   {
   AbstractShadingLang::UiShaderOpt opt;
-  stdShaders[0].vs = vsH.surfaceShader(opt, dpos);
-  stdShaders[0].fs = fsH.surfaceShader(opt);
+  stdShaders[0] = shH.surfaceShader(opt, dpos);
   }
 
   {
   AbstractShadingLang::UiShaderOpt opt;
   opt.hasTexture = false;
-
-  stdShaders[1].vs = vsH.surfaceShader(opt);
-  stdShaders[1].fs = fsH.surfaceShader(opt);
+  stdShaders[1] = shH.surfaceShader(opt,dpos);
   }
 
-  vdecl = Tempest::VertexDeclaration( vsH.device(), decl() );
+  vdecl = Tempest::VertexDeclaration( shH.device(), decl() );
 
-  std::string linkLog;
   for(int i=0; i<2; ++i ){
-    if( !stdShaders[i].vs.isValid() )
-      Log() << "std shader[" << i <<"] vs:" << stdShaders[i].vs.log();
-    if( !stdShaders[i].fs.isValid() )
-      Log() << "std shader[" << i <<"] fs:" << stdShaders[i].fs.log();
-    vsH.device().link(stdShaders[i].vs,stdShaders[i].fs,vdecl,linkLog);
+    if( !stdShaders[i].isValid() )
+      Log() << "std shader[" << i <<"] :" << stdShaders[i].log();
     }
   }
 
@@ -97,7 +91,7 @@ void SurfaceRender::buildVbo( Tempest::Widget & surf,
     }
   }
 
-ProgramObject& SurfaceRender::shaderForBlock( const Block& b ) const {
+ShaderProgram& SurfaceRender::shaderForBlock( const Block& b ) const {
   if( !b.curTex.pageRect().isEmpty() || b.curTex2d )
     return stdShaders[0];
 
@@ -108,20 +102,26 @@ void SurfaceRender::render(Device &dev) const {
   auto rs = dev.renderState();
 
   if( dpos ){
-    float dp[2] = { -0.5f*invW, -0.5f*invH };
-    dev.setUniform( stdShaders[0].vs, dp, 2, "dpos" );
-    dev.setUniform( stdShaders[1].fs, dp, 2, "dpos" );
+    udpos.dpos[0] = -0.5f*invW;
+    udpos.dpos[1] = -0.5f*invH;
+    }
+
+  if( dpos ){
+    stdShaders[0].setUniform(udpos,dposDecl,1);
+    stdShaders[1].setUniform(udpos,dposDecl,1);
     }
 
   for( size_t i=0; i<blocks.size(); ++i ){
     const Block& b = blocks[i];
     dev.setRenderState( rstate[b.state.bm] );
 
-    ProgramObject& sh = shaderForBlock(b);
+    ShaderProgram& sh = shaderForBlock(b);
     if( !b.curTex.pageRect().isEmpty() )
-      dev.setUniform( sh.fs, b.curTex.pageRawData(), "brush_texture" );
+      uniforms.brush = b.curTex.pageRawData(); else
     if( b.curTex2d )
-      dev.setUniform( sh.fs, *b.curTex2d, "brush_texture" );
+      uniforms.brush = *b.curTex2d;
+
+    sh.setUniform(uniforms,udecl,0);
 
     int sz = b.isLine? 2:3;
     dev.drawPrimitive( b.isLine? AbstractAPI::Lines : AbstractAPI::Triangle,

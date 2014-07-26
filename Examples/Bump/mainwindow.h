@@ -36,14 +36,11 @@ class MainWindow : public Tempest::Window {
     Tempest::TextureHolder texHolder;
     Tempest::Texture2d     texture, normal, height;
 
-    Tempest::VertexBufferHolder   vboHolder;
-    Tempest::IndexBufferHolder    iboHolder;
+    Tempest::VertexBufferHolder  vboHolder;
+    Tempest::IndexBufferHolder   iboHolder;
 
-    Tempest::VertexShaderHolder vsHolder;
-    Tempest::VertexShader       vs;
-
-    Tempest::FragmentShaderHolder fsHolder;
-    Tempest::FragmentShader       fs;
+    Tempest::ShaderProgramHolder shHolder;
+    Tempest::ShaderProgram       shader;
 
     struct Vertex {
       float    x, y, z;
@@ -54,8 +51,14 @@ class MainWindow : public Tempest::Window {
 
     Tempest::VertexBuffer<Vertex>   vbo;
     Tempest::IndexBuffer <uint16_t> ibo;
-
     Tempest::VertexDeclaration    vdecl;
+
+    Tempest::UniformDeclaration udecl;
+    struct UBO{
+      Tempest::Matrix4x4 modelView,mvpMatrix;
+      float lightDir[3] = {0,0,-1};
+      Tempest::Texture2d texture, bump, heightMap;
+      } ubo;
     Tempest::Matrix4x4 mProj;
 
     static Tempest::Device::Options options();

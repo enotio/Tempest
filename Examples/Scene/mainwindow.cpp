@@ -51,9 +51,11 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     texHolder(device),
     vboHolder(device),
     iboHolder(device),
-    vsHolder (device),
-    fsHolder (device)
+    shHolder (device)
     {
+  udecl.add("mvpMatrix",Decl::Matrix4x4)
+       .add("xtexture", Decl::Texture2d);
+
   camera.setPerspective(w(), h());
   camera.setSpinX(45);
   camera.setSpinY(180+45);
@@ -71,8 +73,9 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
       .add( Decl::float2, Usage::TexCoord );
   vdecl = VertexDeclaration(device, decl);
 
-  shader.vs = vsHolder.load("shader/basic.vs.glsl");
-  shader.fs = fsHolder.load("shader/basic.fs.glsl");
+  shader = shHolder.load({"shader/basic.vs.glsl",
+                          "shader/basic.fs.glsl",
+                          "","",""});
 
   T_ASSERT( shader.isValid() );
 
@@ -150,15 +153,13 @@ void MainWindow::resizeEvent( SizeEvent & ) {
   camera.setPerspective( w(), h() );
   }
 
-void MainWindow::setupShaderConstants( const SceneObject &obj, ProgramObject &sh ) {
-  Matrix4x4 mvpMatrix;
+void MainWindow::setupShaderConstants( const SceneObject &obj, ShaderProgram &sh ) {
+  ubo.mvpMatrix = scene.camera().projective();
+  ubo.mvpMatrix.mul( scene.camera().view() );
+  ubo.mvpMatrix.mul( obj.transform()       );
+  ubo.texture = obj.material().texture;
 
-  mvpMatrix    = scene.camera().projective();
-  mvpMatrix.mul( scene.camera().view() );
-  mvpMatrix.mul( obj.transform()       );
-
-  sh.vs.setUniform("mvpMatrix", mvpMatrix);
-  sh.fs.setUniform("texture",   obj.material().texture  );
+  sh.setUniform(ubo,udecl,0);
   }
 
 void MainWindow::updateCamera() {

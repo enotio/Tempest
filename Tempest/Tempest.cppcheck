@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+    <includedir>
+        <dir name="include/"/>
+    </includedir>
+    <exclude>
+        <path name="C:/Users/Alexander/Home/Programming/Tempest/Tempest/thirdparty/"/>
+    </exclude>
+    <libraries>
+        <library>posix</library>
+        <library>windows</library>
+    </libraries>
+</project>

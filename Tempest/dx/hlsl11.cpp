@@ -24,6 +24,9 @@
 
 #include <Tempest/Device>
 #include <Tempest/VertexDeclaration>
+#include <Tempest/Matrix4x4>
+#include <Tempest/Texture2d>
+#include <Tempest/Texture3d>
 #include "utils/sortedvec.h"
 #include <tuple>
 
@@ -230,14 +233,6 @@ HLSL11::~HLSL11() {
   delete data;
   }
 
-void HLSL11::bind( const Tempest::VertexShader & vs ) const {
-  data->prog.vs = (Data::Shader<ID3D11VertexShader>*)get(vs);
-  }
-
-void HLSL11::bind( const Tempest::FragmentShader & fs ) const {
-  data->prog.fs = (Data::Shader<ID3D11PixelShader>*)get(fs);
-  }
-
 void *HLSL11::context() const {
   return data->dev;
   }
@@ -245,7 +240,7 @@ void *HLSL11::context() const {
 void Tempest::HLSL11::setVertexDecl(const AbstractAPI::VertexDecl *d) const {
   data->prog.decl = (VertexDeclaration::Declarator*)d;
   }
-
+/*
 GraphicsSubsystem::VertexShader*
   HLSL11::createVertexShaderFromSource( const std::string &src,
                                         std::string &outputLog) const {
@@ -361,7 +356,7 @@ void HLSL11::deleteShader(GraphicsSubsystem::FragmentShader *s) const {
   data->sh.data.resize(nsz);
 
   delete fs;
-  }
+  }*/
 
 void HLSL11::enable() const {
   Data::Shader<ID3D11VertexShader>* vs =
@@ -384,61 +379,6 @@ void HLSL11::enable() const {
 
   data->immediateContext->VSSetShader( vs->shader, NULL, 0 );
   data->immediateContext->PSSetShader( fs->shader, NULL, 0 );
-  }
-
-template< class Sh>
-void HLSL11::setUniforms( Sh* prog,
-                        const ShaderInput &in,
-                        bool textures ) const {
-  /*
-  if( textures ){
-    int texSlot = 0;
-    for( size_t i=0; i<in.tex3d.names.size(); ++i ){
-      prog->SetInt( data->dev, in.tex3d.names[i].data(), in.tex3d.id[i] );
-      }
-
-    for( size_t i=0; i<in.tex.names.size(); ++i ){
-      IDirect3DTexture9* t = (IDirect3DTexture9*)get(*in.tex.values[i]);
-
-      data->setSampler(texSlot, in.tex.values[i]->sampler() );
-
-      data->dev->SetTexture( texSlot, t );
-
-      prog->SetInt( data->dev, in.tex.names[i].data(), texSlot );
-      ++texSlot;
-      }
-    }
-
-  for( size_t i=0; i<in.v1.names.size(); ++i ){
-    prog->SetFloat( data->dev, in.v1.names[i].data(), in.v1.id[i] );
-    }
-
-  for( size_t i=0; i<in.v2.names.size(); ++i ){
-    ShaderInput::Vec<2> vx = in.v2.values[i];
-    D3DXVECTOR4 v = {vx.v[0], vx.v[1], 0, 0};
-    prog->SetVector( data->dev, in.v2.names[i].data(), &v );
-    }
-
-  for( size_t i=0; i<in.v3.names.size(); ++i ){
-    ShaderInput::Vec<3> vx = in.v3.values[i];
-    D3DXVECTOR4 v = {vx.v[0], vx.v[1], vx.v[2], 0};
-    prog->SetVector( data->dev, in.v3.names[i].data(), &v );
-    }
-
-  for( size_t i=0; i<in.v4.names.size(); ++i ){
-    ShaderInput::Vec<4> vx = in.v4.values[i];
-    D3DXVECTOR4 v = { vx.v[0], vx.v[1], vx.v[2], vx.v[3] };
-    prog->SetVector( data->dev, in.v4.names[i].data(), &v );
-    }
-
-  for( size_t i=0; i<in.mat.names.size(); ++i ){
-    const Matrix4x4& m = in.mat.values[i];
-    D3DXMATRIX v;
-    memcpy(&v, m.data(), 16*sizeof(float));
-
-    prog->SetMatrix( data->dev, in.mat.names[i].data(), &v );
-    }
-  */
   }
 
 std::string HLSL11::surfaceShader( GraphicsSubsystem::ShaderType t,

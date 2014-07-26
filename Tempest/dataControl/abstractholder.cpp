@@ -1,14 +1,9 @@
 #include "abstractholder.h"
-
-#include <Tempest/DeviceSM5>
+#include <Tempest/Device>
 
 using namespace Tempest;
 
 AbstractHolderBase::AbstractHolderBase( Device &d ):m_device(d){
-  device().addHolder( *this );
-  }
-
-AbstractHolderBase::AbstractHolderBase(DeviceSM5 &d):m_device(d) {
   device().addHolder( *this );
   }
 

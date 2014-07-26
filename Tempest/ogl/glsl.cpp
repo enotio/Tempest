@@ -14,15 +14,10 @@ using namespace Tempest::GLProc;
 #endif
 
 #include <Tempest/Assert>
-
-#ifdef __ANDROID__
 #include <Tempest/Device>
-#else
-#include <Tempest/DeviceSM5>
-#endif
-
 #include <Tempest/Matrix4x4>
 #include <Tempest/Texture2d>
+#include <Tempest/Texture3d>
 
 #include "shading/uniformcash.h"
 #include <Tempest/SystemAPI>
@@ -44,23 +39,6 @@ using namespace Tempest;
 struct GLSL::Data{
   AbstractAPI::OpenGL2xDevice * context;
   float maxAnisotropy;
-
-  static void dbgOut( GLuint /*context*/ ){
-
-    }
-
-  void dbg(){
-    //dbg(false, context);
-    }
-
-  static void dbg( bool /*ok*/, GLuint /*context*/ ){
-
-    }
-
-  const Tempest::VertexShader*   currentVS;
-  const Tempest::FragmentShader* currentFS;
-  const Tempest::TessShader*     currentTS = 0;
-  const Tempest::EvalShader*     currentES = 0;
 
   Detail::UniformCash<GLuint> uCash;
   const AbstractAPI::VertexDecl* vdecl;
@@ -131,10 +109,29 @@ struct GLSL::Data{
     GLuint vs;
     GLuint fs;
 #ifndef __ANDROID__
+    GLuint gs = 0;
     GLuint ts = 0;
     GLuint es = 0;
 #endif
 
+    ~ShProgram(){
+      if(vs)
+        glDeleteShader(vs);
+      if(fs)
+        glDeleteShader(fs);
+#ifndef __ANDROID__
+      if(gs)
+        glDeleteShader(gs);
+      if(ts)
+        glDeleteShader(ts);
+      if(es)
+        glDeleteShader(es);
+#endif
+      if(linked)
+        glDeleteProgram(linked);
+      }
+
+    AbstractShadingLang::UBO ubo;
     const void *decl;
 
     bool operator < ( const ShProgram& sh ) const {
@@ -153,14 +150,15 @@ struct GLSL::Data{
 #endif
       }
 
-    GLuint linked;
+    GLuint linked = 0;
     };
 
-  //std::vector<ShProgram> prog;
   SortedVec<ShProgram> prog;
   bool hasAnisotropic;
 
-  ShProgram curProgram;
+  Data::ShProgram* curProgram;
+  GLuint           bindedProg;
+  std::shared_ptr<std::vector<AbstractShadingLang::UBO>> curUbo;
 
   char  texAttrName[14];
   int32_t notId;
@@ -235,6 +233,7 @@ struct GLSL::Data{
     (void)tessShader;
     (void)evalShader;
 
+    /*
     if( curProgram.linked &&
         curProgram.vs   == vertexShader &&
         curProgram.fs   == pixelShader  &&
@@ -260,7 +259,7 @@ struct GLSL::Data{
     auto l = prog.find(tmp);
     if( l!=prog.end() && *l==tmp ){
       return (*l).linked;
-      }
+      }*/
 
     //Non-Linked
     GLuint program = glCreateProgram();
@@ -269,8 +268,10 @@ struct GLSL::Data{
     glAttachShader(program, vertexShader );
     glAttachShader(program, pixelShader  );
 #ifndef __ANDROID__
-    if( tessShader&& evalShader ){
+    if( evalShader ){
       glAttachShader(program, tessShader   );
+      }
+    if( tessShader ){
       glAttachShader(program, evalShader   );
       }
 #endif
@@ -293,11 +294,25 @@ struct GLSL::Data{
       program = 0;
       }
 
-    tmp.linked = program;
-    prog.insert(tmp);
+    //tmp.linked = program;
+    //prog.insert(tmp);
     return program;
     }
 
+  void makeCurrent(Data::ShProgram* prog){
+    if( !prog )
+      return;
+
+    Data::ShProgram& p = *prog;
+    if( p.linked==0 ){
+      p.linked = link( p.vs, p.fs, p.ts, p.es, vdecl, 0 );
+      T_ASSERT( p.linked );
+      }
+    if( !curProgram || bindedProg!=p.linked ){
+      glUseProgram(p.linked);
+      bindedProg = p.linked;
+      }
+    }
   };
 
 void* GLSL::context() const{
@@ -321,9 +336,6 @@ GLSL::GLSL(AbstractAPI::OpenGL2xDevice * dev) {
   data->context = dev;
   data->notId   = -1;
 
-  data->currentVS = 0;
-  data->currentFS = 0;
-
   const char * ext = (const char*)vstr(glGetString(GL_EXTENSIONS));
 
   data->hasAnisotropic =
@@ -333,10 +345,8 @@ GLSL::GLSL(AbstractAPI::OpenGL2xDevice * dev) {
   if( data->hasAnisotropic )
     glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &data->maxAnisotropy );
 //#endif
-
-  data->curProgram.fs = 0;
-  data->curProgram.vs = 0;
-  data->curProgram.linked = 0;
+  data->curProgram = 0;
+  data->bindedProg = 0;
   }
 
 GLSL::~GLSL(){
@@ -344,189 +354,82 @@ GLSL::~GLSL(){
   }
 
 void Tempest::GLSL::beginPaint() const {
-
   }
 
 void Tempest::GLSL::endPaint() const {
   glUseProgram( 0 );
 
-#ifndef __ANDROID__
-  data->currentTS = 0;
-  data->currentES = 0;
-#endif
-  data->currentVS = 0;
-  data->currentFS = 0;
   data->uCash.reset();
-
-  data->curProgram.linked = 0;
+  data->curProgram = 0;
+  data->bindedProg = 0;
   }
 
 void GLSL::setDevice() const {
   }
 
-AbstractShadingLang::VertexShader*
-  GLSL::createVertexShaderFromSource(const std::string &src, std::string &log) const {
-  if( src.size()==0 )
-    return 0;
-
-  GLuint *prog = new GLuint(0);
-  *prog = data->loadShader( GL_VERTEX_SHADER, src.data(), log );
-
-  if( !*prog ){
-    delete prog;
+AbstractShadingLang::ProgramObject*
+  GLSL::createShaderFromSource( const Source &src,
+                                std::string &outputLog) const {
+  if( src.vs.size()==0 &&
+      src.fs.size()==0 ){
+    outputLog = "no fragment or vertex shader code to compile";
     return 0;
     }
 
-  return reinterpret_cast<AbstractShadingLang::VertexShader*>(prog);
+  Data::ShProgram* sh = new Data::ShProgram();
+  outputLog.clear();
+  std::string log;
+
+  sh->vs = data->loadShader( GL_VERTEX_SHADER,   src.vs.data(), log );
+  outputLog += log;
+  sh->fs = data->loadShader( GL_FRAGMENT_SHADER, src.fs.data(), log );
+  outputLog += log;
+
+  bool valid = (sh->vs!=0) && (sh->fs!=0);
+  if(src.ts.size()){
+    sh->ts = data->loadShader( GL_TESS_CONTROL_SHADER, src.ts.data(), log );
+    valid &= (sh->ts!=0);
+    outputLog += log;
+    }
+
+  if(src.es.size()){
+    sh->es = data->loadShader( GL_TESS_EVALUATION_SHADER, src.es.data(), log );
+    valid &= (sh->es!=0);
+    outputLog += log;
+    }
+
+  if(!valid){
+    delete sh;
+    return 0;
+    }
+
+  return (AbstractShadingLang::ProgramObject*)sh;
   }
 
-void GLSL::deleteShader( VertexShader* s ) const {
-  //setNullDevice();
-  GLuint* prog = (GLuint*)(s);
-
-  if( glIsShader(*prog) )
-    glDeleteShader( *prog );
-
-  size_t nsz = 0;
-  for( size_t i=0; i<data->prog.size(); ++i ){
-    data->prog[nsz] = data->prog[i];
-
-    if( data->prog[i].vs == *prog ){
-      if( glIsProgram(data->prog[i].linked) )
-        glDeleteProgram( data->prog[i].linked );
-      } else {
-      ++nsz;
-      }
-    }
-
-  data->prog.data.resize(nsz);
+void GLSL::deleteShader(GraphicsSubsystem::ProgramObject *p) const {
+  Data::ShProgram* prog = (Data::ShProgram*)p;
   delete prog;
+  if(data->curProgram==prog){
+    data->curProgram = 0;
+    data->curUbo.reset();
+    data->bindedProg = 0;
+    }
   }
 
-AbstractShadingLang::FragmentShader *
-  GLSL::createFragmentShaderFromSource(const std::string &src, std::string &log) const {
-  GLuint *prog = new GLuint(0);
-  *prog = data->loadShader( GL_FRAGMENT_SHADER, src.data(), log );
-
-  if( !*prog ){
-    delete prog;
-    return 0;
-    }
-
-  return reinterpret_cast<AbstractShadingLang::FragmentShader*>(prog);
+AbstractShadingLang::Source
+  GLSL::surfaceShader( const AbstractShadingLang::UiShaderOpt &opt,
+                       bool &hasHalfPixelOffset ) const {
+  AbstractShadingLang::Source src;
+  src.vs = surfaceShader(Vertex,  opt,hasHalfPixelOffset);
+  src.fs = surfaceShader(Fragment,opt,hasHalfPixelOffset);
+  return src;
   }
 
-void GLSL::deleteShader( FragmentShader *s ) const{
-  GLuint* prog = (GLuint*)(s);
-
-  if( glIsShader(*prog) )
-    glDeleteShader( *prog );
-
-  size_t nsz = 0;
-  for( size_t i=0; i<data->prog.size(); ++i ){
-    data->prog[nsz] = data->prog[i];
-    if( data->prog[i].fs == *prog ){
-      if( glIsProgram(data->prog[i].linked) )
-        glDeleteProgram( data->prog[i].linked );
-      } else {
-      ++nsz;
-      }
-    }
-
-  data->prog.data.resize(nsz);
-  delete prog;
-  }
-
-GraphicsSubsystem::TessShader *GLSL::createTessShaderFromSource( const std::string &src,
-                                                                 std::string &log ) const {
-#ifdef __ANDROID__
-  (void)src;
-  (void)log;
-  return 0;
-#else
-  if( src.size()==0 )
-    return 0;
-
-  GLuint *prog = new GLuint(0);
-  *prog = data->loadShader( GL_TESS_CONTROL_SHADER, src.data(), log );
-
-  if( !*prog ){
-    delete prog;
-    return 0;
-    }
-
-  return reinterpret_cast<AbstractShadingLang::TessShader*>(prog);
-#endif
-  }
-
-void GLSL::deleteShader( TessShader *s ) const{
-  (void)s;
-#ifndef __ANDROID__
-  GLuint* prog = (GLuint*)(s);
-
-  if( glIsShader(*prog) )
-    glDeleteShader( *prog );
-
-  size_t nsz = 0;
-  for( size_t i=0; i<data->prog.size(); ++i ){
-    data->prog[nsz] = data->prog[i];
-    if( data->prog[i].ts == *prog ){
-      if( glIsProgram(data->prog[i].linked) )
-        glDeleteProgram( data->prog[i].linked );
-      } else {
-      ++nsz;
-      }
-    }
-
-  data->prog.data.resize(nsz);
-  delete prog;
-#endif
-  }
-
-GraphicsSubsystem::EvalShader *GLSL::createEvalShaderFromSource( const std::string &src,
-                                                                 std::string &log ) const {
-#ifdef __ANDROID__
-  (void)src;
-  (void)log;
-  return 0;
-#else
-  if( src.size()==0 )
-    return 0;
-
-  GLuint *prog = new GLuint(0);
-  *prog = data->loadShader( GL_TESS_EVALUATION_SHADER, src.data(), log );
-
-  if( !*prog ){
-    delete prog;
-    return 0;
-    }
-
-  return reinterpret_cast<AbstractShadingLang::EvalShader*>(prog);
-#endif
-  }
-
-void GLSL::deleteShader( EvalShader *s ) const{
-  (void)s;
-#ifndef __ANDROID__
-  GLuint* prog = (GLuint*)(s);
-
-  if( glIsShader(*prog) )
-    glDeleteShader( *prog );
-
-  size_t nsz = 0;
-  for( size_t i=0; i<data->prog.size(); ++i ){
-    data->prog[nsz] = data->prog[i];
-    if( data->prog[i].es == *prog ){
-      if( glIsProgram(data->prog[i].linked) )
-        glDeleteProgram( data->prog[i].linked );
-      } else {
-      ++nsz;
-      }
-    }
-
-  data->prog.data.resize(nsz);
-  delete prog;
-#endif
+void GLSL::setUniform( Tempest::ShaderProgram &prog,
+                       const char *ubo,
+                       const UniformDeclaration &u ) const {
+  Data::ShProgram& p = *((Data::ShProgram*)get(prog));
+  AbstractShadingLang::assignUniformBuffer(p.ubo,ubo,u);
   }
 
 std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
@@ -612,59 +515,9 @@ std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
   return fs_src;
   }
 
-void GLSL::bind( const Tempest::VertexShader& s ) const {
-  if( data->currentVS != &s ){
-    data->currentVS = &s;
-    inputOf(s).resetID();
-    }
-  }
-
-void GLSL::bind( const Tempest::FragmentShader& s ) const {
-  if( data->currentFS != &s ){
-    data->currentFS = &s;
-    inputOf(s).resetID();
-    }
-  }
-
-void GLSL::bind( const Tempest::TessShader& s ) const {
-  (void)s;
-#ifndef __ANDROID__
-  if( data->currentTS != &s ){
-    data->currentTS = &s;
-    inputOf(s).resetID();
-    }
-#endif
-  }
-
-void GLSL::bind( const Tempest::EvalShader& s ) const {
-  (void)s;
-#ifndef __ANDROID__
-  if( data->currentES != &s ){
-    data->currentES = &s;
-    inputOf(s).resetID();
-    }
-#endif
-  }
-
-bool GLSL::link( const Tempest::VertexShader &vs,
-                 const Tempest::FragmentShader &fs,
-                 const AbstractAPI::VertexDecl *decl,
-                 std::string &log ) const {
-  GLuint* vertexShader = (GLuint*)get( vs );
-  GLuint* pixelShader  = (GLuint*)get( fs );
-
-  if( vertexShader==0 ){
-    log = "Vertex shader not created";
-    return 0;
-    }
-
-  if( pixelShader==0 ){
-    log = "Fragment shader not created";
-    return 0;
-    }
-
-  GLuint program = data->link(*vertexShader, *pixelShader, 0, 0, decl, &log);
-  return program!=0;
+void GLSL::bind(const Tempest::ShaderProgram &p) const {
+  data->curProgram = (Data::ShProgram*)get(p);
+  data->curUbo     = inputOf(p);
   }
 
 void GLSL::setVertexDecl(const AbstractAPI::VertexDecl *v ) const {
@@ -672,204 +525,65 @@ void GLSL::setVertexDecl(const AbstractAPI::VertexDecl *v ) const {
   }
 
 void GLSL::enable() const {
-  GLuint vertexShader = *(GLuint*)get( *data->currentVS );
-  GLuint pixelShader  = *(GLuint*)get( *data->currentFS );
+  data->makeCurrent( data->curProgram );
+  auto ubo = *data->curUbo;
 
-#ifndef __ANDROID__
-  GLuint tessShader = 0;
-  GLuint evalShader = 0;
-
-  if( data->currentTS )
-    tessShader = *(GLuint*)get( *data->currentTS );
-
-  if( data->currentES )
-    evalShader = *(GLuint*)get( *data->currentES );
-
-  GLuint program = data->link( vertexShader, pixelShader,
-                               tessShader,   evalShader,
-                               data->vdecl, 0 );
-#else
-  GLuint program = data->link(vertexShader, pixelShader, 0, 0, data->vdecl, 0);
-#endif
-
-  T_ASSERT( program );
-
-  if( program != data->curProgram.linked ){
-    glUseProgram( program );
-    data->curProgram.linked = program;
-    data->curProgram.vs     = vertexShader;
-    data->curProgram.fs     = pixelShader;
-#ifndef __ANDROID__
-    data->curProgram.ts     = tessShader;
-    data->curProgram.es     = evalShader;
-    data->curProgram.decl   = data->vdecl;
-#endif
-    data->uCash.reset();
+  int slot=0;
+  for( const UBO u:ubo ){
+    if(!u.updated){
+      setUniforms( data->bindedProg, u, slot );
+      u.updated = true;
+      }
     }
-
-  setUniforms( program, inputOf( *data->currentFS ), true  );
-  setUniforms( program, inputOf( *data->currentVS ), false );
-
-#ifndef __ANDROID__
-  if( data->currentTS )
-    setUniforms( program, inputOf( *data->currentTS ), true );
-
-  if( data->currentES )
-    setUniforms( program, inputOf( *data->currentES ), true );
-#endif
   }
 
 void GLSL::disable() const {
-#ifndef __ANDROID__
-  data->currentTS = 0;
-  data->currentES = 0;
-#endif
   }
 
-void GLSL::setUniforms( unsigned int program,
-                        const ShaderInput &in,
-                        bool textures ) const {
-  if( textures ){
-    int texSlot = 0;
-    for( size_t i=0; i<in.tex3d.names.size(); ++i ){
-      setUniform( program,
-                  *in.tex3d.values[i],
-                  in.tex3d.names[i].data(), texSlot,
-                  in.tex3d.id[i] );
-      ++texSlot;
-      }
+void GLSL::setUniforms( unsigned int prog,
+                        const UBO &in,
+                        int& slot ) const {
+  const char*  name   = in.names.data();
+  void* const* fields = &in.fields[0];
 
-    for( size_t i=0; i<in.tex.names.size(); ++i ){
-      setUniform( program,
-                  *in.tex.values[i],
-                  in.tex.names[i].data(), texSlot,
-                  in.tex.id[i] );
-      ++texSlot;
-      }
-    }
+  for( int t: in.desc ){
+    GLint prm = data->location( prog, name );
+    char* v = (char*)fields[0];
+    ++fields;
 
-  for( size_t i=0; i<in.mat.names.size(); ++i ){
-    setUniform( program,
-                in.mat.values[i],
-                in.mat.names[i].data(),
-                in.mat.id[i] );
-    }
-
-  setUniforms( program, in.v1, 1 );
-  setUniforms( program, in.v2, 2 );
-  setUniforms( program, in.v3, 3 );
-  setUniforms( program, in.v4, 4 );
-  }
-
-template< class T >
-void GLSL::setUniforms( unsigned int s, const T & vN, int c ) const{
-  for( size_t i=0; i<vN.names.size(); ++i ){
-    setUniform( s, vN.values[i].v, c, vN.names[i].data(), vN.id[i] );
-    }
-  }
-
-void GLSL::setUniform(unsigned int s,
-                       const Matrix4x4& m,
-                       const char *name,
-                       int32_t &id  ) const{
-  GLint prm = -1;
-  if( id==data->notId ){
-    GLuint    prog = s;
-    prm = data->location( prog, name );
-    if( prm==-1 )
-      return;
-    id  = prm;
-    } else {
-    prm = id;
-    }
-
-  if( !data->uCash.fetch(prm, m) ){
-    float r[16] = {};
-    std::copy( m.data(), m.data()+16, r );
-    glUniformMatrix4fv( prm, 1, false, r );
-    //glUniform4fv( prm, 4, r );
-    }
-  }
-
-void GLSL::setUniform(unsigned int s,
-                       const float v[],
-                       int l,
-                       const char *name,
-                       int32_t &id ) const{
-  GLint prm = -1;
-  if( id==data->notId ){
-    GLuint    prog = s;
-    prm = data->location( prog, name );
-    if( prm==-1 )
-      return;
-    id  = prm;
-    } else {
-    prm = id;
-    }
-
-  if( !data->uCash.fetch(prm, v, l) ){
-    //Data::dbg(prm, data->context);
-
-    switch(l){
-      case 1: glUniform1fv( prm, 1, v ); break;
-      case 2: glUniform2fv( prm, 1, v ); break;
-      case 3: glUniform3fv( prm, 1, v ); break;
-      case 4: glUniform4fv( prm, 1, v ); break;
-      }
-    }
-  }
-
-void GLSL::setUniform( unsigned int sh,
-                       const Texture2d& u,
-                       const char *name,
-                       int slot,
-                       int32_t &id ) const{
-  GLint prm = -1;
-  if( id==data->notId ){
-    GLuint    prog = sh;
-    prm = data->location( prog, name );
-    if( prm==-1 )
-      return;
-    id  = prm;
-    } else {
-    prm = id;
-    }
-
-  if( !data->uCash.fetch(prm, u.handle()) ){
-    Detail::GLTexture* tx = (Detail::GLTexture*)get(u);
-
-    if( tx && tx->id ){
-      data->setupSampler( GL_TEXTURE_2D, prm, slot, tx, u.sampler() );
-      }
-    }
-  }
-
-void GLSL::setUniform(unsigned int sh,
-                       const Texture3d &u,
-                       const char *name,
-                       int slot,
-                       int32_t &id ) const {
-  GLint prm = -1;
-  if( id==data->notId ){
-    GLuint    prog = sh;
-    prm = data->location( prog, name );
-    if( prm==-1 )
-      return;
-    id  = prm;
-    } else {
-    prm = id;
-    }
-
-  if( !data->uCash.fetch(prm, u.handle()) ){
-    Detail::GLTexture* tx = (Detail::GLTexture*)get(u);
-
-    if( tx && tx->id ){
-#ifndef __ANDROID__
-      data->setupSampler( GL_TEXTURE_3D, prm, slot, tx, u.sampler() );
-#else
-      (void)slot;
-#endif
-      }
+    if(prm!=-1)
+      switch(t){
+        case Decl::float1:
+          glUniform1fv( prm, 1, (GLfloat*)v );
+          break;
+        case Decl::float2:
+          glUniform2fv( prm, 1, (GLfloat*)v );
+          break;
+        case Decl::float3:
+          glUniform3fv( prm, 1, (GLfloat*)v );
+          break;
+        case Decl::float4:
+          glUniform4fv( prm, 1, (GLfloat*)v );
+          break;
+        case Decl::Texture2d:{
+          Detail::GLTexture* t = *(Detail::GLTexture**)v;
+          v += sizeof(void*);
+          data->setupSampler(GL_TEXTURE_2D,prm,slot,t,*(Texture2d::Sampler*)v);
+          ++slot;
+          }
+          break;
+        case Decl::Texture3d:{
+          Detail::GLTexture* t = *(Detail::GLTexture**)v;
+          v += sizeof(void*);
+          data->setupSampler(GL_TEXTURE_3D,prm,slot,t,*(Texture3d::Sampler*)v);
+          ++slot;
+          }
+          break;
+        case Decl::Matrix4x4:
+          glUniformMatrix4fv( prm, 1, false, (GLfloat*)v );
+          break;
+        }
+    name += strlen(name)+1;
     }
   }
 

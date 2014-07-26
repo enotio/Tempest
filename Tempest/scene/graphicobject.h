@@ -5,7 +5,6 @@
 #include <Tempest/Matrix4x4>
 #include <Tempest/Model>
 #include <Tempest/AbstractScene>
-
 namespace Tempest{
 
 class AbstractMaterial;
@@ -219,12 +218,8 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       return radi;
       }
 
-    virtual void render( Device& dev, ProgramObject &p ) const{
-      m_model->draw(dev, p.vs, p.fs);
-      }
-
-    virtual void render( Device& dev, VertexShader& vs, FragmentShader &fs ) const{
-      m_model->draw(dev,vs,fs);
+    virtual void render( Device& dev, ShaderProgram &p ) const{
+      m_model->draw(dev, p);
       }
 
   protected:
@@ -250,7 +245,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       virtual ~IModelPtr(){}
       virtual const ModelBounds& bounds() const = 0;
       virtual void cloneTo( void* ) const = 0;
-      virtual void draw( Device &r, VertexShader& vs, FragmentShader &fs ) const = 0;
+      virtual void draw( Device &r, ShaderProgram &sh ) const = 0;
 
       virtual size_t vboHandle() const = 0;
       virtual size_t iboHandle() const = 0;
@@ -267,17 +262,17 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
         new(p) ModelPtr(model);
         }
 
-      void draw( Device &dev, VertexShader& vs, FragmentShader &fs ) const {
+      void draw( Device &dev, ShaderProgram &sh ) const {
         if( model.indexes().size() )
           dev.drawIndexed( model.primitiveType(),
-                           vs, fs,
+                           sh,
                            model.declaration(),
                            model.vertexes(), model.indexes(),
                            0, 0,
                            model.primitiveCount() );
           else
           dev.drawPrimitive( model.primitiveType(),
-                             vs, fs,
+                             sh,
                              model.declaration(),
                              model.vertexes(),
                              0,

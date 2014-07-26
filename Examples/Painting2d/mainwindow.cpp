@@ -11,10 +11,9 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     texHolder(device),
     vboHolder(device),
     iboHolder(device),
-    vsHolder (device),
-    fsHolder (device),
+    shHolder (device),
     spHolder (texHolder),
-    uiRender ( vsHolder, fsHolder ) {
+    uiRender (shHolder) {
   texture = texHolder.load("data/texture.png");
   }
 

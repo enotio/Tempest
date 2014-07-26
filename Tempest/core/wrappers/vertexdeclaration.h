@@ -30,6 +30,15 @@ enum ComponentType{
   count
   };
 
+enum UniformType{
+  Texture2d = count+1,
+  Texture3d,
+  Matrix4x4
+  };
+
+size_t elementSize( const ComponentType t );
+size_t elementSize( const UniformType   t );
+
 }
 
 namespace Usage{

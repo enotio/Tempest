@@ -155,16 +155,11 @@ SOURCES += \
     scene/abstractlightcollection.cpp \
     scene/abstractgraphicobject.cpp \
     scene/abstractcamera.cpp \
-    shading/vertexshader.cpp \
-    shading/uniformcash.cpp \
-    shading/fragmentshader.cpp \
     shading/abstractshadinglang.cpp \
     utils/tessobject.cpp \
     utils/color.cpp \
-    shading/shaderinput.cpp \
     dataControl/resourcecontext.cpp \
     core/assert.cpp \
-    shading/shader.cpp \
     2d/sprite.cpp \
     2d/spritesholder.cpp \
     timer.cpp \
@@ -175,7 +170,6 @@ SOURCES += \
     ui/gesturerecognizer.cpp \
     core/wrappers/texture3d.cpp \
     dataControl/volumeholder.cpp \
-    shading/programobject.cpp \
     core/imagecodec.cpp \
     utils/log.cpp \
     io/iodevice.cpp \
@@ -184,12 +178,11 @@ SOURCES += \
     ogl/glfn.cpp \
     system/linuxapi.cpp \
     ogl/openglbase.cpp \
-    shading/tessshader.cpp \
-    shading/evalshader.cpp \
-    core/devicesm5.cpp \
     system/winphoneapi.cpp \
     dx/directx11.cpp \
-    dx/hlsl11.cpp
+    dx/hlsl11.cpp \
+    dataControl/shaderprogramholder.cpp \
+    shading/shaderprogram.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -218,7 +211,6 @@ HEADERS += \
     core/wrappers/indexbuffer.h \
     core/wrappers/atomic.h \
     core/wrappers/abstracttexture.h \
-    dataControl/vertexshaderholder.h \
     dataControl/vertexbufferholder.h \
     dataControl/textureholder.h \
     dataControl/localvertexbufferholder.h \
@@ -237,19 +229,15 @@ HEADERS += \
     scene/abstractlightcollection.h \
     scene/abstractgraphicobject.h \
     scene/abstractcamera.h \
-    shading/vertexshader.h \
     shading/uniformcash.h \
     shading/fragmentshader.h \
     shading/abstractshadinglang.h \
     utils/tessobject.h \
     utils/cwnptr.h \
     utils/color.h \
-    shading/shaderinput.h \
     dataControl/resourcecontext.h \
     core/wrappers/half.h \
     core/assert.h \
-    shading/shader.h \
-    dataControl/shaderholder.h \
     2d/sprite.h \
     2d/spritesholder.h \
     timer.h \
@@ -262,7 +250,6 @@ HEADERS += \
     core/wrappers/texture3d.h \
     dataControl/volumeholder.h \
     utils/mempool.h \
-    shading/programobject.h \
     core/imagecodec.h \
     utils/log.h \
     io/iodevice.h \
@@ -276,18 +263,21 @@ HEADERS += \
     dataControl/tessshaderholder.h \
     shading/evalshader.h \
     dataControl/evalshaderholder.h \
-    core/devicesm5.h \
     core/platform.h \
     system/winphoneapi.h \
     dx/directx11.h \
-    include/Tempest/DirectX11 \
     dx/hlsl11.h \
-    utils/sortedvec.h
+    utils/sortedvec.h \
+    dataControl/shaderprogramholder.h \
+    core/wrappers/uniformdeclaration.h \
+    shading/shaderprogram.h
 
 OTHER_FILES += \
     ../.gitignore \
     Android.mk \
     android/jni/Android.mk \
+    include/Tempest/DirectX11 \
+    include/Tempest/ShaderProgramHolder \
     include/Tempest/Windows \
     include/Tempest/IODevice \
     include/Tempest/Font \
@@ -322,7 +312,6 @@ OTHER_FILES += \
     include/Tempest/File \
     include/Tempest/GraphicsSubsystem \
     include/Tempest/HLSL \
-    include/Tempest/TessShader \
     ../README.md \
     Doxyfile \
     doc_title.doxy \
@@ -330,8 +319,6 @@ OTHER_FILES += \
     ../doc/footer.html \
     ../doc/html/style.css \
     include/Tempest/OpenGL4x \
-    include/Tempest/EvalShaderHolder \
-    include/Tempest/EvalShader \
-    include/Tempest/DeviceSM5 \
     include/Tempest/Platform \
-    include/Tempest/WindowsPhone
+    include/Tempest/WindowsPhone \
+    include/Tempest/UniformDeclaration

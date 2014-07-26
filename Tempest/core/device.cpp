@@ -6,6 +6,7 @@
 #include <Tempest/VertexBufferHolder>
 #include <Tempest/VertexBuffer>
 #include <Tempest/Assert>
+#include <Tempest/UniformDeclaration>
 
 #include <Tempest/GraphicsSubsystem>
 
@@ -623,13 +624,8 @@ bool Device::hasManagedStorge() const {
   return api.hasManagedStorge();
   }
 
-void Device::drawFullScreenQuad(const ProgramObject &p) {
-  drawFullScreenQuad( p.vs, p.fs );
-  }
-
-void Device::drawFullScreenQuad( const VertexShader   &vs,
-                                 const FragmentShader &fs ) {
-  drawPrimitive( AbstractAPI::Triangle, vs, fs,
+void Device::drawFullScreenQuad(const ShaderProgram &p) {
+  drawPrimitive( AbstractAPI::Triangle, p,
                  data->quadDecl, data->quad,
                  0, 2 );
   }
@@ -642,15 +638,9 @@ Size Device::viewPortSize() const {
   return data->viewPortSize;
   }
 
-std::string Device::surfaceShader( AbstractShadingLang::ShaderType t,
-                                   const AbstractShadingLang::UiShaderOpt &opt,
-                                   bool &hasHalfpixOffset) {
-  return shadingLang().surfaceShader(t, opt, hasHalfpixOffset);
-  }
-
-std::string Device::surfaceShader( AbstractShadingLang::ShaderType t,
-                                   const AbstractShadingLang::UiShaderOpt &opt ) {
-  return shadingLang().surfaceShader(t, opt);
+ShaderProgram::Source Device::surfaceShader(const AbstractShadingLang::UiShaderOpt &opt,
+                                            bool &hasHalfPixelOffset) {
+  return shadingLang().surfaceShader(opt,hasHalfPixelOffset);
   }
 
 void Device::event(const GraphicsSubsystem::Event &e) const {
@@ -858,22 +848,15 @@ void Device::deleteVertexDecl( AbstractAPI::VertexDecl* d ) const {
     }
   }
 
-void *Device::createShaderFromSource( AbstractAPI::ShaderType t,
-                                      const std::string &src,
-                                      std::string &outputLog) const {
-  return shLang->createShaderFromSource(t, src, outputLog);
+AbstractAPI::ProgramObject*
+  Device::createShaderFromSource( const Tempest::ShaderProgram::Source &src,
+                                  std::string &outputLog ) const {
+  return shLang->createShaderFromSource(src, outputLog);
   }
 
-void Device::deleteShader(AbstractAPI::VertexShader *s) const {
+void Device::deleteShader(GraphicsSubsystem::ProgramObject *s) const {
   GraphicsSubsystem::DeleteEvent e;
-  e.vs = s;
-  event(e);
-  shLang->deleteShader(s);
-  }
-
-void Device::deleteShader(AbstractAPI::FragmentShader *s) const {
-  GraphicsSubsystem::DeleteEvent e;
-  e.fs = s;
+  e.sh = s;
   event(e);
   shLang->deleteShader(s);
   }
@@ -882,17 +865,7 @@ void Device::assertPaint() {
   T_ASSERT_X( data->isPaintMode, "Device::beginPaint not called" );
   }
 
-void Device::bindShaders( const VertexShader &vs,
-                          const FragmentShader &fs ) {
-  bind(vs);
-  bind(fs);
-  }
-
-void Device::bind( const Tempest::VertexShader &s ){
-  shadingLang().bind(s);
-  }
-
-void Device::bind( const Tempest::FragmentShader &s ){
+void Device::bind(const ShaderProgram &s) {
   shadingLang().bind(s);
   }
 

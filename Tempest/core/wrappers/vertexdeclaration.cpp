@@ -222,3 +222,19 @@ const Tempest::VertexDeclaration::Declarator&
 bool VertexDeclaration::isValid() const {
   return decl.get()!=0;
   }
+
+
+size_t Tempest::Decl::elementSize(const Decl::ComponentType t) {
+  static const size_t sizes[] = {
+    0,  4*1, 4*2, 4*3, 4*4,  4, 2*2, 2*4, 2*2, 2*4
+    };
+  return sizes[t];
+  }
+
+size_t Decl::elementSize(const Decl::UniformType t ) {
+  static const size_t sizes[] = {
+    sizeof(Texture2d),
+    sizeof(Texture3d)
+    };
+  return sizes[t-Decl::Texture2d];
+  }

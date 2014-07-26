@@ -71,8 +71,6 @@ class FontElement{
 
     static std::vector< std::string > fnames;
     size_t findFontName( const std::string& n );
-    size_t findFontNameTtf( const std::string& n,
-                            const char* ttf  );
 
     static bool cmpS( const std::string &tg, const std::string& s, const char* ss);
     const Letter& fetchLeter(char16_t ch, SpritesHolder &sp) const;

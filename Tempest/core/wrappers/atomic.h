@@ -30,8 +30,8 @@ struct GuardBase{
     }
 
   private:
-    GuardBase(const GuardBase&s):s(s){}
-    GuardBase& operator = (const GuardBase&){}
+    GuardBase(const GuardBase&s) = delete;
+    GuardBase& operator = (const GuardBase&) = delete;
 
   T& s;
   };

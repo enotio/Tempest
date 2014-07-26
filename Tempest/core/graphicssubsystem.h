@@ -15,17 +15,14 @@ class GraphicsSubsystem {
     class VertexBuffer;
     class VertexDecl;
 
-    enum ShaderType{
+    enum ShaderType {
       Vertex,
       Fragment,
       Tess,
       Eval
       };
 
-    class FragmentShader;
-    class VertexShader;
-    class TessShader;
-    class EvalShader;
+    class ProgramObject;
 
     class Device;
 
@@ -50,22 +47,15 @@ class GraphicsSubsystem {
         vertex      = 0;
         declaration = 0;
         
-        fs = 0;
-        vs = 0;
-        ts = 0;
-        es = 0;
+        sh = 0;
         }
       
       Texture*      texture;
   
-      IndexBuffer*  index;
-      VertexBuffer* vertex;
-      VertexDecl*   declaration;
-  
-      FragmentShader* fs;
-      VertexShader*   vs;
-      TessShader*     ts;
-      EvalShader*     es;
+      IndexBuffer*   index;
+      VertexBuffer*  vertex;
+      VertexDecl*    declaration;
+      ProgramObject* sh;
       };
     
     virtual void event( const Event& e );
