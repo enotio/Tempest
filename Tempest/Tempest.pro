@@ -76,11 +76,15 @@ directx: {
 
   HEADERS += \
     dx/hlsl.h \
-    dx/directx9.h
+    dx/directx9.h \
+    dx/directx11.h \
+    dx/hlsl11.h
 
   SOURCES += \
     dx/hlsl.cpp \
-    dx/directx9.cpp
+    dx/hlsl11.cpp \
+    dx/directx9.cpp \
+    dx/directx11.cpp
 
   use_cg:{
     !isEmpty($$(CG_INC_PATH)):INCLUDEPATH += "$$(CG_INC_PATH)"
@@ -179,8 +183,6 @@ SOURCES += \
     system/linuxapi.cpp \
     ogl/openglbase.cpp \
     system/winphoneapi.cpp \
-    dx/directx11.cpp \
-    dx/hlsl11.cpp \
     dataControl/shaderprogramholder.cpp \
     shading/shaderprogram.cpp
 
@@ -265,8 +267,6 @@ HEADERS += \
     dataControl/evalshaderholder.h \
     core/platform.h \
     system/winphoneapi.h \
-    dx/directx11.h \
-    dx/hlsl11.h \
     utils/sortedvec.h \
     dataControl/shaderprogramholder.h \
     core/wrappers/uniformdeclaration.h \

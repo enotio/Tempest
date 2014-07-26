@@ -8,8 +8,6 @@
 #include "glfn.h"
 #include <GL/gl.h>
 #include "glcorearb.h"
-#include "utils/sortedvec.h"
-
 using namespace Tempest::GLProc;
 #endif
 
@@ -22,6 +20,7 @@ using namespace Tempest::GLProc;
 #include "shading/uniformcash.h"
 #include <Tempest/SystemAPI>
 #include "gltypes.h"
+#include "utils/sortedvec.h"
 
 #include <iostream>
 
@@ -32,6 +31,18 @@ using namespace Tempest::GLProc;
 #ifdef __ANDROID__
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
+#endif
+
+#ifndef GL_TESS_CONTROL_SHADER
+#define GL_TESS_CONTROL_SHADER 0x00008e88
+#endif
+
+#ifndef GL_TESS_EVALUATION_SHADER
+#define GL_TESS_EVALUATION_SHADER 0x00008e87
+#endif
+
+#ifndef GL_TEXTURE_3D
+#define GL_TEXTURE_3D 0x806F
 #endif
 
 using namespace Tempest;
@@ -108,11 +119,9 @@ struct GLSL::Data{
   struct ShProgram{
     GLuint vs;
     GLuint fs;
-#ifndef __ANDROID__
     GLuint gs = 0;
     GLuint ts = 0;
     GLuint es = 0;
-#endif
 
     ~ShProgram(){
       if(vs)

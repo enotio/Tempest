@@ -2,7 +2,7 @@
 
 using namespace Tempest;
 
-SizePolicy::SizePolicy():typeH(Preferred), typeV(Preferred), maxSize(maxWidgetSize()) {
+SizePolicy::SizePolicy():maxSize(maxWidgetSize()), typeH(Preferred), typeV(Preferred) {
   }
 
 Size SizePolicy::maxWidgetSize() {
