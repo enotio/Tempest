@@ -6,15 +6,10 @@
 #include <Tempest/TextureHolder>
 #include <Tempest/VertexBufferHolder>
 #include <Tempest/IndexBufferHolder>
-#include <Tempest/VertexShaderHolder>
-#include <Tempest/FragmentShaderHolder>
 
 #include <Tempest/VertexBuffer>
 #include <Tempest/IndexBuffer>
 #include <Tempest/Texture2d>
-#include <Tempest/VertexShader>
-#include <Tempest/FragmentShader>
-#include <Tempest/ProgramObject>
 
 namespace Ui {
 class RenderWidget;
@@ -37,15 +32,19 @@ class RenderWidget : public QTempestWidget {
     Tempest::VertexBufferHolder   vboHolder;
     Tempest::IndexBufferHolder    iboHolder;
 
-    Tempest::VertexShaderHolder   vsHolder;
-    Tempest::FragmentShaderHolder fsHolder;
+    Tempest::ShaderProgramHolder  shHolder;
 
     Tempest::VertexBuffer<Vertex>  vbo;
     Tempest::IndexBuffer<uint16_t> ibo;
     Tempest::VertexDeclaration     vdecl;
     Tempest::Texture2d             texture;
 
-    Tempest::ProgramObject         shader;
+    Tempest::ShaderProgram         shader;
+    struct UBO{
+      Tempest::Matrix4x4 mvpMatrix;
+      Tempest::Texture2d texture;
+      } ubo;
+    Tempest::UniformDeclaration udecl;
 
     QPoint rotate, mpos;
     float  zoom;
@@ -56,7 +55,7 @@ class RenderWidget : public QTempestWidget {
     void wheelEvent( QWheelEvent* );
 
     void paint3d();
-    void setupShaderConstants( Tempest::ProgramObject & sh );
+    void setupShaderConstants( Tempest::ShaderProgram & sh );
   };
 
 #endif // RENDERWIDGET_H

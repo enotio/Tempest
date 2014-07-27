@@ -97,9 +97,8 @@ QTempestWidget::Impl::Impl(Device &device)
   : texHolder(device),
     vboHolder(device),
     iboHolder(device),
-    vsHolder (device),
-    fsHolder (device),
+    shHolder (device),
     spHolder (texHolder),
-    uiRender ( vsHolder, fsHolder ) {
+    uiRender (shHolder) {
 
   }

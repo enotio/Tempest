@@ -9,14 +9,9 @@
 #include <Tempest/TextureHolder>
 #include <Tempest/VertexBufferHolder>
 #include <Tempest/IndexBufferHolder>
-#include <Tempest/VertexShaderHolder>
-#include <Tempest/FragmentShaderHolder>
 
 #include <Tempest/VertexBuffer>
 #include <Tempest/IndexBuffer>
-#include <Tempest/VertexShader>
-#include <Tempest/FragmentShader>
-#include <Tempest/ProgramObject>
 
 #include <Tempest/SurfaceRender>
 #include <Tempest/SpritesHolder>
@@ -48,8 +43,7 @@ class QTempestWidget :public QTempestWidgetBase {
       Tempest::VertexBufferHolder   vboHolder;
       Tempest::IndexBufferHolder    iboHolder;
 
-      Tempest::VertexShaderHolder   vsHolder;
-      Tempest::FragmentShaderHolder fsHolder;
+      Tempest::ShaderProgramHolder  shHolder;
 
       Tempest::SpritesHolder         spHolder;
       Tempest::SurfaceRender         uiRender;

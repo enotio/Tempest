@@ -52,8 +52,7 @@ RenderWidget::RenderWidget( Tempest::AbstractAPI & api, QWidget *parent ) :
   texHolder(device),
   vboHolder(device),
   iboHolder(device),
-  vsHolder (device),
-  fsHolder (device)
+  shHolder (device)
 {
   ui->setupUi(this);
 
@@ -67,11 +66,12 @@ RenderWidget::RenderWidget( Tempest::AbstractAPI & api, QWidget *parent ) :
       .add( Decl::float2, Usage::TexCoord );
   vdecl = VertexDeclaration(device, decl);
 
+  udecl.add("mvpMatrix",Decl::Matrix4x4)
+       .add("texture",  Decl::Texture2d);
 
   texture = texHolder.load("data/texture.png");
 
-  shader.vs = vsHolder.load("shader/basic.vs.glsl");
-  shader.fs = fsHolder.load("shader/basic.fs.glsl");
+  shader = shHolder.load({"shader/basic.vs.glsl","shader/basic.fs.glsl","","",""});
 
   T_ASSERT( shader.isValid() );
   }
@@ -115,7 +115,7 @@ void RenderWidget::paint3d() {
   device.endPaint();
   }
 
-void RenderWidget::setupShaderConstants( ProgramObject &sh ) {
+void RenderWidget::setupShaderConstants( ShaderProgram &sh ) {
   Matrix4x4 mvpMatrix, projective, view;
 
   projective.perspective( 45.0, (float)width()/height(), 0.1, 100.0 );
@@ -128,6 +128,7 @@ void RenderWidget::setupShaderConstants( ProgramObject &sh ) {
   mvpMatrix = projective;
   mvpMatrix.mul(view);
 
-  sh.vs.setUniform("mvpMatrix", mvpMatrix);
-  sh.fs.setUniform("texture",   texture  );
+  ubo.mvpMatrix = mvpMatrix;
+  ubo.texture   = texture;
+  sh.setUniform(ubo,udecl,0);
   }
