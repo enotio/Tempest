@@ -14,7 +14,14 @@ class HLSL11 : public AbstractShadingLang {
     void enable() const;
 
     void* context() const;
+    void bind( const Tempest::ShaderProgram&  ) const;
     void setVertexDecl( const Tempest::AbstractAPI::VertexDecl*  ) const;
+
+    ProgramObject* createShaderFromSource( const Source &src,
+                                           std::string &outputLog) const;
+    void           deleteShader(ProgramObject* ) const;
+    Source         surfaceShader( const UiShaderOpt &opt,
+                                  bool &hasHalfPixelOffset ) const;
 
     std::string surfaceShader( ShaderType t, const UiShaderOpt&,
                                bool& hasHalfpixOffset ) const;

@@ -270,17 +270,46 @@ bool DirectX11::isFormatSupported( AbstractAPI::Device *d, Pixmap::Format f ) co
   return true;
   }
 
-AbstractAPI::Texture *DirectX11::createTexture(AbstractAPI::Device *d, const Pixmap &p, bool mips, bool compress) const {
+AbstractAPI::Texture *DirectX11::createTexture( AbstractAPI::Device *d,
+                                                const Pixmap &p, bool mips,
+                                                bool compress ) const {
   return 0;
   }
 
-AbstractAPI::Texture *DirectX11::recreateTexture( AbstractAPI::Device *d, const Pixmap &p, bool mips, bool compress,
+AbstractAPI::Texture *DirectX11::recreateTexture( AbstractAPI::Device *d,
+                                                  const Pixmap &p,
+                                                  bool mips,
+                                                  bool compress,
                                                   AbstractAPI::Texture *t) const {
   return 0;
   }
 
-AbstractAPI::Texture *DirectX11::createTexture( AbstractAPI::Device *d, int w, int h, bool mips,
-                                                AbstractTexture::Format::Type f, TextureUsage usage ) const {
+AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
+                                                int w, int h, bool mips,
+                                                AbstractTexture::Format::Type f,
+                                                TextureUsage usage ) const {
+  static const D3D11_USAGE u[] = {
+    D3D11_USAGE_IMMUTABLE,
+    D3D11_USAGE_DEFAULT,
+    D3D11_USAGE_DYNAMIC,
+    D3D11_USAGE_DYNAMIC//D3D11_USAGE_STAGING
+    };
+
+  Device* dev = (Device*)d;
+  D3D11_TEXTURE2D_DESC desc;
+  desc.Width            = w;
+  desc.Height           = h;
+  desc.MipLevels        = 1;//desc.ArraySize = 1;
+  desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
+  desc.SampleDesc.Count = 1;
+  desc.Usage            = u[usage];
+  desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
+  desc.CPUAccessFlags   = D3D11_CPU_ACCESS_WRITE;
+  desc.MiscFlags        = 0;
+
+  ID3D11Texture2D *tex = 0;
+  if( SUCCEEDED(dev->device->CreateTexture2D( &desc, NULL, &tex )) )
+    return (AbstractAPI::Texture*)tex;
   return 0;
   }
 
@@ -438,7 +467,7 @@ void DirectX11::unlockBuffer(AbstractAPI::Device *d, AbstractAPI::IndexBuffer *)
 
 AbstractShadingLang *DirectX11::createShadingLang(AbstractAPI::Device *d) const {
   Device* dev = (Device*)d;
-  return 0;//new HLSL11( (DirectX11Device*)dev->device, dev->immediateContext );
+  return new HLSL11( (DirectX11Device*)dev->device, dev->immediateContext );
   }
 
 void DirectX11::deleteShadingLang(const AbstractShadingLang *l) const {

@@ -63,9 +63,10 @@ struct HLSL::Data{
                                 &errors,        //errors
                                 &uniform );     //constants
     if( FAILED(result) ){
-      outputLog.insert( outputLog.end(),
-                        (char*)errors->GetBufferPointer(),
-                        (char*)errors->GetBufferPointer()+errors->GetBufferSize() );
+      if( errors )
+        outputLog.insert( outputLog.end(),
+                          (char*)errors->GetBufferPointer(),
+                          (char*)errors->GetBufferPointer()+errors->GetBufferSize() );
       return 0;
       }
     if( errors )

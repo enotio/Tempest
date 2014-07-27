@@ -26,9 +26,6 @@ namespace Tempest {
       void           deleteShader(ProgramObject* ) const;
       Source         surfaceShader( const UiShaderOpt &opt,
                                     bool &hasHalfPixelOffset ) const;
-      void setUniform( Tempest::ShaderProgram& p,
-                       const char *ubo,
-                       const UniformDeclaration& u ) const;
 
       std::string surfaceShader( ShaderType t, const UiShaderOpt&,
                                  bool& hasHalfpixOffset ) const;

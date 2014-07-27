@@ -36,23 +36,79 @@ struct HLSL11::Data{
   ID3D11Device*        dev;
   ID3D11DeviceContext* immediateContext;
 
-  template<class Sh>
   struct Shader{
-    Sh* shader=0;
-    ID3DBlob* blob = 0;
+    ID3D11VertexShader* vs     = 0;
+    ID3D11PixelShader*  fs     = 0;
+    ID3DBlob*           blobVs = 0;
 
     ~Shader(){
-      if(shader)
-        shader->Release();
-      if(blob)
-        blob->Release();
+      if(vs)
+        vs->Release();
+      if(blobVs)
+        blobVs->Release();
+      if(fs)
+        fs->Release();
       }
     };
 
+  HRESULT createShader(ID3DBlob* code, ID3D11VertexShader*& sh ){
+    return dev->CreateVertexShader( code->GetBufferPointer(),
+                                    code->GetBufferSize(),
+                                    NULL,
+                                    &sh );
+    }
+
+  HRESULT createShader(ID3DBlob* code, ID3D11PixelShader*& sh ){
+    return dev->CreatePixelShader( code->GetBufferPointer(),
+                                   code->GetBufferSize(),
+                                   NULL,
+                                   &sh );
+    }
+
+  template<class Shader>
+  bool createShaderFromSource( const std::string &src,
+                               std::string &outputLog,
+                               Shader& shader,
+                               ID3DBlob*& code,
+                               const char* model ) {
+
+    ID3DBlob* errors = 0;
+    HRESULT result;
+
+    result = D3DCompile( src.data(),
+                         src.size(),
+                         NULL,            //src-name
+                         NULL,            //macro's
+                         NULL,            //includes
+                         "main",          //main function
+                         model,           //shader profile
+                         0,               //flags1
+                         0,               //flags2
+                         &code,           //compiled operations
+                         &errors);        //errors
+    if( FAILED(result) ){
+      if(errors){
+        outputLog.insert( outputLog.end(),
+                          (char*)errors->GetBufferPointer(),
+                          (char*)errors->GetBufferPointer()+errors->GetBufferSize() );
+        errors->Release();
+        }
+      return 0;
+      }
+
+    if( errors )
+      errors->Release();
+
+    result = createShader( code, shader );
+
+    return SUCCEEDED(result);
+    }
+
   struct Program {
-    const Data::Shader<ID3D11VertexShader>* vs   = 0;
-    const Data::Shader<ID3D11PixelShader>*  fs   = 0;
-    const VertexDeclaration::Declarator*    decl = 0;
+    ID3DBlob*                      codeVs = 0;
+    ID3D11VertexShader*            vs     = 0;
+    ID3D11PixelShader*             fs     = 0;
+    VertexDeclaration::Declarator* decl   = 0;
 
     ID3D11InputLayout* dxDecl = 0;
 
@@ -237,138 +293,77 @@ void *HLSL11::context() const {
   return data->dev;
   }
 
+void Tempest::HLSL11::bind( const ShaderProgram &px ) const {
+  Data::Shader* p = (Data::Shader*)get(px);
+  data->prog.vs     = p->vs;
+  data->prog.fs     = p->fs;
+  data->prog.codeVs = p->blobVs;
+  data->prog.dxDecl = 0;
+  }
+
 void Tempest::HLSL11::setVertexDecl(const AbstractAPI::VertexDecl *d) const {
   data->prog.decl = (VertexDeclaration::Declarator*)d;
   }
-/*
-GraphicsSubsystem::VertexShader*
-  HLSL11::createVertexShaderFromSource( const std::string &src,
-                                        std::string &outputLog) const {
-  ID3DBlob *errors = 0;
-  HRESULT result;
 
-  Data::Shader<ID3D11VertexShader>* sh = new Data::Shader<ID3D11VertexShader>();
-
-  result = D3DCompile( src.data(),
-                       src.size(),
-                       NULL,            //src-name
-                       NULL,            //macro's
-                       NULL,            //includes
-                       "main",          //main function
-                       "vs_4_0",        //shader profile
-                       0,               //flags1
-                       0,               //flags2
-                       &sh->blob,       //compiled operations
-                       &errors);        //errors
-  if( FAILED(result) ){
-    if(errors){
-      outputLog.resize( errors->GetBufferSize() );
-      memcpy( &outputLog[0], errors->GetBufferPointer(), errors->GetBufferSize() );
-      errors->Release();
-      }
-    delete sh;
-    return 0;
-    }
-  if( errors )
-    errors->Release();
-
-  data->dev->CreateVertexShader( sh->blob->GetBufferPointer(),
-                                 sh->blob->GetBufferSize(),
-                                 NULL,
-                                 &sh->shader );
-
-  return (GraphicsSubsystem::VertexShader*)sh;
+AbstractShadingLang::Source
+  Tempest::HLSL11::surfaceShader( const AbstractShadingLang::UiShaderOpt &opt,
+                                  bool &hasHalfPixelOffset ) const {
+  AbstractShadingLang::Source src;
+  src.vs = surfaceShader(Vertex,  opt,hasHalfPixelOffset);
+  src.fs = surfaceShader(Fragment,opt,hasHalfPixelOffset);
+  return src;
   }
 
-void HLSL11::deleteShader(GraphicsSubsystem::VertexShader *s) const {
-  Data::Shader<ID3D11VertexShader>* vs = (Data::Shader<ID3D11VertexShader>*)s;
-  if(data->prog.vs==vs)
-    data->prog.vs=0;
+GraphicsSubsystem::ProgramObject*
+  Tempest::HLSL11::createShaderFromSource( const AbstractShadingLang::Source &src,
+                                           std::string &outputLog ) const {
+  if( src.vs.size()==0 &&
+      src.fs.size()==0 ){
+    outputLog = "no fragment or vertex shader code to compile";
+    return 0;
+    }
 
+  Data::Shader* prog = new Data::Shader();
+  ID3DBlob* compiledFs = 0;
+  outputLog.clear();
+  bool sucsess =
+    data->createShaderFromSource(src.vs,outputLog,prog->vs,prog->blobVs,"vs_4_0") &&
+    data->createShaderFromSource(src.fs,outputLog,prog->fs,compiledFs,  "ps_4_0");
+
+  if(compiledFs)
+    compiledFs->Release();
+
+  if( !sucsess ){
+    delete prog;
+    prog=0;
+    }
+
+  return (GraphicsSubsystem::ProgramObject*)prog;
+  }
+
+void Tempest::HLSL11::deleteShader(GraphicsSubsystem::ProgramObject * p) const {
+  Data::Shader* prog = (Data::Shader*)p;
   size_t nsz = 0;
   for( size_t i=0; i<data->sh.size(); ++i){
     data[nsz]=data[i];
-    if(s==(GraphicsSubsystem::VertexShader*)data->sh[i].vs){
+    if( prog->vs==data->sh[i].vs &&
+        prog->fs==data->sh[i].fs ){
       data->sh[i].dxDecl->Release();
       } else {
       ++nsz;
       }
     }
   data->sh.data.resize(nsz);
-
-  delete vs;
+  delete prog;
   }
-
-GraphicsSubsystem::FragmentShader*
-  HLSL11::createFragmentShaderFromSource( const std::string &src,
-                                        std::string &outputLog ) const {
-  ID3DBlob* errors = 0;
-  HRESULT result;
-
-  Data::Shader<ID3D11PixelShader>* sh = new Data::Shader<ID3D11PixelShader>();
-
-  result = D3DCompile( src.data(),
-                       src.size(),
-                       NULL,            //src-name
-                       NULL,            //macro's
-                       NULL,            //includes
-                       "main",          //main function
-                       "ps_4_0",        //shader profile
-                       0,               //flags1
-                       0,               //flags2
-                       &sh->blob,       //compiled operations
-                       &errors);        //errors
-  if( FAILED(result) ){
-    if(errors){
-      outputLog.resize( errors->GetBufferSize() );
-      memcpy( &outputLog[0], errors->GetBufferPointer(), errors->GetBufferSize() );
-      errors->Release();
-      }
-    delete sh;
-    return 0;
-    }
-
-  if( errors )
-    errors->Release();
-
-  data->dev->CreatePixelShader( sh->blob->GetBufferPointer(),
-                                sh->blob->GetBufferSize(),
-                                NULL,
-                                &sh->shader );
-
-  return (GraphicsSubsystem::FragmentShader*)sh;
-  }
-
-void HLSL11::deleteShader(GraphicsSubsystem::FragmentShader *s) const {
-  Data::Shader<ID3D11PixelShader>* fs = (Data::Shader<ID3D11PixelShader>*)s;
-  if(data->prog.fs==fs)
-    data->prog.fs=0;
-
-  size_t nsz = 0;
-  for( size_t i=0; i<data->sh.size(); ++i){
-    data[nsz]=data[i];
-    if(s==(GraphicsSubsystem::FragmentShader*)data->sh[i].fs){
-      data->sh[i].dxDecl->Release();
-      } else {
-      ++nsz;
-      }
-    }
-  data->sh.data.resize(nsz);
-
-  delete fs;
-  }*/
 
 void HLSL11::enable() const {
-  Data::Shader<ID3D11VertexShader>* vs =
-      (Data::Shader<ID3D11VertexShader>*)data->prog.vs;
-  Data::Shader<ID3D11PixelShader>*  fs =
-      (Data::Shader<ID3D11PixelShader>*)data->prog.fs;
-
   auto l = data->sh.find(data->prog);
+
   if( l!=data->sh.end() ){
     data->immediateContext->IASetInputLayout(l->dxDecl);
     } else {
-    data->prog.dxDecl = data->createDecl(*data->prog.decl, vs->blob);
+    data->prog.dxDecl = data->createDecl(*data->prog.decl, data->prog.codeVs);
     data->sh.insert(data->prog);
     data->immediateContext->IASetInputLayout(data->prog.dxDecl);
     }
@@ -377,8 +372,8 @@ void HLSL11::enable() const {
   setUniforms( vs->uniform, inputOf( *data->vs ), false );
   */
 
-  data->immediateContext->VSSetShader( vs->shader, NULL, 0 );
-  data->immediateContext->PSSetShader( fs->shader, NULL, 0 );
+  data->immediateContext->VSSetShader( data->prog.vs, NULL, 0 );
+  data->immediateContext->PSSetShader( data->prog.fs, NULL, 0 );
   }
 
 std::string HLSL11::surfaceShader( GraphicsSubsystem::ShaderType t,

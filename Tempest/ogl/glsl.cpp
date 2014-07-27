@@ -52,7 +52,6 @@ struct GLSL::Data{
   float maxAnisotropy;
 
   Detail::UniformCash<GLuint> uCash;
-  const AbstractAPI::VertexDecl* vdecl;
 
   std::string readFile( const char* f ){
     return std::move( SystemAPI::loadText(f).data() );
@@ -136,37 +135,33 @@ struct GLSL::Data{
       if(es)
         glDeleteShader(es);
 #endif
-      if(linked)
-        glDeleteProgram(linked);
       }
 
     AbstractShadingLang::UBO ubo;
-    const void *decl;
-
-    bool operator < ( const ShProgram& sh ) const {
-#ifndef __ANDROID__
-      return std::tie(vs, fs, ts, es, decl) < std::tie(sh.vs, sh.fs, sh.ts, sh.es, sh.decl);
-#else
-      return std::tie(vs, fs, decl) < std::tie(sh.vs, sh.fs, sh.decl);
-#endif
-      }
-
-    bool operator == ( const ShProgram& sh ) const {
-#ifndef __ANDROID__
-      return std::tie(vs, fs, ts, es, decl) == std::tie(sh.vs, sh.fs, sh.ts, sh.es, sh.decl);
-#else
-      return std::tie(vs, fs, decl) == std::tie(sh.vs, sh.fs, sh.decl);
-#endif
-      }
-
-    GLuint linked = 0;
+    //const void *vdecl;
+    //GLuint linked = 0;
     };
 
-  SortedVec<ShProgram> prog;
+  struct LinkedProg {
+    ShProgram* shader = 0;
+    GLuint linked     = 0;
+    const AbstractAPI::VertexDecl* vdecl;
+
+    bool operator < ( const LinkedProg& sh ) const {
+      return std::tie(shader, vdecl) < std::tie(sh.shader, sh.vdecl);
+      }
+
+    bool operator == ( const LinkedProg& sh ) const {
+      return std::tie(shader, vdecl) == std::tie(sh.shader, sh.vdecl);
+      }
+    };
+
+  SortedVec<LinkedProg> prog;
   bool hasAnisotropic;
 
-  Data::ShProgram* curProgram;
-  GLuint           bindedProg;
+  ShProgram*  curProgram;
+  LinkedProg  curLinked;
+  GLuint      bindedProg;
   std::shared_ptr<std::vector<AbstractShadingLang::UBO>> curUbo;
 
   char  texAttrName[14];
@@ -233,57 +228,40 @@ struct GLSL::Data{
       }
     }
 
-  GLuint link( GLuint vertexShader,
-               GLuint pixelShader,
-               GLuint tessShader,
-               GLuint evalShader,
+  GLuint link( Data::ShProgram& p,
                const AbstractAPI::VertexDecl * vdecl,
                std::string* log ) {
-    (void)tessShader;
-    (void)evalShader;
-
-    /*
-    if( curProgram.linked &&
-        curProgram.vs   == vertexShader &&
-        curProgram.fs   == pixelShader  &&
-    #ifndef __ANDROID__
-        curProgram.ts   == tessShader   &&
-        curProgram.es   == evalShader   &&
-    #endif
-        curProgram.decl == vdecl ){
-      T_ASSERT(curProgram.linked);
-      return curProgram.linked;
+    if( curLinked.linked &&
+        curLinked.shader == &p &&
+        curLinked.vdecl  == vdecl ){
+      return curLinked.linked;
       }
 
     //NON-Cashed
-    Data::ShProgram tmp;
-    tmp.vs   = vertexShader;
-    tmp.fs   = pixelShader;
-#ifndef __ANDROID__
-    tmp.ts   = tessShader;
-    tmp.es   = evalShader;
-#endif
-    tmp.decl = vdecl;
+    Data::LinkedProg tmp;
+    tmp.shader = &p;
+    tmp.vdecl  = vdecl;
 
     auto l = prog.find(tmp);
     if( l!=prog.end() && *l==tmp ){
       return (*l).linked;
-      }*/
+      }
 
     //Non-Linked
     GLuint program = glCreateProgram();
     T_ASSERT( program );
 
-    glAttachShader(program, vertexShader );
-    glAttachShader(program, pixelShader  );
+    glAttachShader(program, p.vs );
+    glAttachShader(program, p.fs  );
 #ifndef __ANDROID__
-    if( evalShader ){
-      glAttachShader(program, tessShader   );
+    if( p.ts ){
+      glAttachShader(program, p.ts   );
       }
-    if( tessShader ){
-      glAttachShader(program, evalShader   );
+    if( p.es ){
+      glAttachShader(program, p.es   );
       }
 #endif
+
     setupVAttr(vdecl, program);
     glLinkProgram (program);
 
@@ -303,8 +281,8 @@ struct GLSL::Data{
       program = 0;
       }
 
-    //tmp.linked = program;
-    //prog.insert(tmp);
+    tmp.linked = program;
+    prog.insert(tmp);
     return program;
     }
 
@@ -312,14 +290,14 @@ struct GLSL::Data{
     if( !prog )
       return;
 
-    Data::ShProgram& p = *prog;
-    if( p.linked==0 ){
-      p.linked = link( p.vs, p.fs, p.ts, p.es, vdecl, 0 );
-      T_ASSERT( p.linked );
+    if(!curLinked.linked){
+      curLinked.linked = link( *prog, curLinked.vdecl, 0 );
+      T_ASSERT( curLinked.linked );
       }
-    if( !curProgram || bindedProg!=p.linked ){
-      glUseProgram(p.linked);
-      bindedProg = p.linked;
+
+    if( bindedProg!=curLinked.linked ){
+      glUseProgram(curLinked.linked);
+      bindedProg = curLinked.linked;
       }
     }
   };
@@ -417,7 +395,22 @@ AbstractShadingLang::ProgramObject*
 
 void GLSL::deleteShader(GraphicsSubsystem::ProgramObject *p) const {
   Data::ShProgram* prog = (Data::ShProgram*)p;
+
+  size_t nsz = 0;
+  for( size_t i=0; i<data->prog.size(); ++i ){
+    data->prog[nsz] = data->prog[i];
+
+    if( data->prog[i].shader == prog ){
+      if( glIsProgram(data->prog[i].linked) )
+        glDeleteProgram( data->prog[i].linked );
+      } else {
+      ++nsz;
+      }
+    }
+
+  data->prog.data.resize( nsz );
   delete prog;
+
   if(data->curProgram==prog){
     data->curProgram = 0;
     data->curUbo.reset();
@@ -432,13 +425,6 @@ AbstractShadingLang::Source
   src.vs = surfaceShader(Vertex,  opt,hasHalfPixelOffset);
   src.fs = surfaceShader(Fragment,opt,hasHalfPixelOffset);
   return src;
-  }
-
-void GLSL::setUniform( Tempest::ShaderProgram &prog,
-                       const char *ubo,
-                       const UniformDeclaration &u ) const {
-  Data::ShProgram& p = *((Data::ShProgram*)get(prog));
-  AbstractShadingLang::assignUniformBuffer(p.ubo,ubo,u);
   }
 
 std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
@@ -525,12 +511,18 @@ std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
   }
 
 void GLSL::bind(const Tempest::ShaderProgram &p) const {
-  data->curProgram = (Data::ShProgram*)get(p);
-  data->curUbo     = inputOf(p);
+  if( data->curProgram != (Data::ShProgram*)get(p) ){
+    data->curProgram = (Data::ShProgram*)get(p);
+    data->curLinked.linked = 0;
+    }
+  data->curUbo = inputOf(p);
   }
 
 void GLSL::setVertexDecl(const AbstractAPI::VertexDecl *v ) const {
-  data->vdecl = v;
+  if(data->curLinked.vdecl!=v){
+    data->curLinked.vdecl  = v;
+    data->curLinked.linked = 0;
+    }
   }
 
 void GLSL::enable() const {
@@ -608,7 +600,7 @@ void GLSL::event(const GraphicsSubsystem::DeleteEvent &e) {
   for( size_t i=0; i<data->prog.size(); ++i ){
     data->prog[nsz] = data->prog[i];
 
-    if( data->prog[i].decl == e.declaration ){
+    if( data->prog[i].vdecl == e.declaration ){
       if( glIsProgram(data->prog[i].linked) )
         glDeleteProgram( data->prog[i].linked );
       } else {

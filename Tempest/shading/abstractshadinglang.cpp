@@ -27,19 +27,43 @@ const std::shared_ptr<std::vector<AbstractShadingLang::UBO>>&
   return s.ubo;
   }
 
+template< class T >
+static inline void align(void*& ptr){
+  uintptr_t i = uintptr_t(ptr);
+  ptr = ((i+alignof(T)-1)/alignof(T))*alignof(T);
+  }
+
+template< class T >
+static inline void align(size_t& ptr){
+  ptr = ((ptr+alignof(T)-1)/alignof(T))*alignof(T);
+  }
+
+template< class T, class X >
+static inline void inc(X& ptr, int count=1){
+  ptr = (X)(((uintptr_t(ptr)+alignof(T)-1)/alignof(T))*alignof(T));
+  ptr += sizeof(T)*count;
+  }
+
 void AbstractShadingLang::assignUniformBuffer( UBO& ux,
                                                const char *ubo,
                                                const UniformDeclaration &u ) {
   size_t bufsz=0;
   for( int type:u.type ){
-    if( type<Decl::count )
+    if( type<Decl::count ){
+      align<float>(bufsz);
       bufsz += Decl::elementSize(Decl::ComponentType(type));
-    else if( type==Decl::Texture2d )
-      bufsz += sizeof(void*) + sizeof(Texture2d::Sampler);
-    else if( type==Decl::Texture3d )
-      bufsz += sizeof(void*) + sizeof(Texture3d::Sampler);
-    else if( type==Decl::Matrix4x4 )
-      bufsz += sizeof(Tempest::Matrix4x4);
+      }
+    else if( type==Decl::Texture2d ){
+      inc<void*>(bufsz);
+      inc<Texture2d::Sampler>(bufsz);
+      }
+    else if( type==Decl::Texture3d ){
+      inc<void*>(bufsz);
+      inc<Texture3d::Sampler>(bufsz);
+      }
+    else if( type==Decl::Matrix4x4 ){
+      inc<Matrix4x4>(bufsz);
+      }
     }
   ux.id.resize(u.type.size());
   ux.names = u.name;
@@ -51,45 +75,43 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   int i=0;
   char *data = &ux.data[0];
   for( int type:ux.desc ){
-    size_t vsz;
-
     const char* addr = ubo+bufsz;    
     ux.fields[i] = data;
     ++i;
 
     if( type<Decl::count ){
-      vsz = Decl::elementSize(Decl::ComponentType(type));
+      size_t vsz = Decl::elementSize(Decl::ComponentType(type));
+      align<float>(bufsz);
       memcpy(data, addr, vsz);
+
+      bufsz += vsz;
+      data  += vsz;
       } else {
       void* t=0;
-      vsz = 0;//sizeof(t);
       switch (type) {
         case Decl::Texture2d:
           t = (void*)get(*(Texture2d*)addr);
           (*(void**)data) = t;
-          data  += sizeof(void*);
-          bufsz += sizeof(Texture2d);
+          inc<void*>(data);
+          inc<Texture2d>(bufsz);
           *(Texture2d::Sampler*)data = ((Texture2d*)addr)->sampler();
-          data  += sizeof(Texture2d::Sampler);
+          inc<Texture2d::Sampler>(data);
           break;
         case Decl::Texture3d:
           t = (void*)get(*(Texture3d*)addr);
           (*(void**)data) = t;
-          data  += sizeof(void*);
-          bufsz += sizeof(Texture3d);
+          inc<void*>(data);
+          inc<Texture3d>(bufsz);
           *(Texture3d::Sampler*)data = ((Texture3d*)addr)->sampler();
-          data  += sizeof(Texture2d::Sampler);
+          inc<Texture3d::Sampler>(data);
           break;
         case Decl::Matrix4x4:
           *(Tempest::Matrix4x4*)data = *(Tempest::Matrix4x4*)addr;
-          data  += sizeof(Matrix4x4);
-          bufsz += sizeof(Matrix4x4);
+          inc<Matrix4x4>(data);
+          inc<Matrix4x4>(bufsz);
           break;
         }
       }
-
-    bufsz += vsz;
-    data  += vsz;
     }
   }
 
