@@ -23,11 +23,14 @@ class HLSL11 : public AbstractShadingLang {
     Source         surfaceShader( const UiShaderOpt &opt,
                                   bool &hasHalfPixelOffset ) const;
 
-    std::string surfaceShader( ShaderType t, const UiShaderOpt&,
-                               bool& hasHalfpixOffset ) const;
+    std::string    surfaceShader( ShaderType t, const UiShaderOpt&,
+                                  bool& hasHalfpixOffset ) const;
   private:
     struct Data;
     Data *data;
+
+    void setUniforms( const UBO &in,
+                      int& slot ) const;
 
     void setDevice() const;
     static void setNullDevice();

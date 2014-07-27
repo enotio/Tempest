@@ -23,6 +23,7 @@
 #endif
 
 #include <D3D11.h>
+#include "dx11types.h"
 #include "hlsl11.h"
 
 using namespace Tempest;
@@ -266,13 +267,37 @@ bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
   dx->scrH = rectWindow.bottom - rectWindow.top;
   }
 
-bool DirectX11::isFormatSupported( AbstractAPI::Device *d, Pixmap::Format f ) const {
-  return true;
+bool DirectX11::isFormatSupported( AbstractAPI::Device *, Pixmap::Format f ) const {
+  return f==Pixmap::Format_RGB || f==Pixmap::Format_RGBA;
   }
 
 AbstractAPI::Texture *DirectX11::createTexture( AbstractAPI::Device *d,
-                                                const Pixmap &p, bool mips,
-                                                bool compress ) const {
+                                                const Pixmap &p,
+                                                bool mips,
+                                                bool /*compress*/ ) const {
+  Device* dev = (Device*)d;
+  D3D11_TEXTURE2D_DESC desc;
+  ZeroMemory(&desc, sizeof(desc));
+  desc.ArraySize        = 1;
+  desc.Width            = p.width();
+  desc.Height           = p.height();
+  desc.MipLevels        = 1;//desc.ArraySize = 1;
+  desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
+  desc.SampleDesc.Count = 1;
+  desc.Usage            = D3D11_USAGE_IMMUTABLE;
+  desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
+  desc.CPUAccessFlags   = 0;
+  desc.MiscFlags        = 0;
+
+  D3D11_SUBRESOURCE_DATA pix;
+  ZeroMemory(&pix, sizeof(pix));
+  pix.pSysMem          = p.const_data();
+  pix.SysMemPitch      = p.width()*(p.hasAlpha() ? 4:3);
+  //pix.SysMemSlicePitch = p.width()*p.height()*4;
+
+  DX11Texture* tex = new DX11Texture;
+  if( SUCCEEDED(dev->device->CreateTexture2D( &desc, &pix, &tex->texture )) )
+    return (AbstractAPI::Texture*)tex;
   return 0;
   }
 
@@ -281,7 +306,8 @@ AbstractAPI::Texture *DirectX11::recreateTexture( AbstractAPI::Device *d,
                                                   bool mips,
                                                   bool compress,
                                                   AbstractAPI::Texture *t) const {
-  return 0;
+  deleteTexture(d,t);
+  return createTexture(d,p,mips,compress);
   }
 
 AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
@@ -297,6 +323,7 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
 
   Device* dev = (Device*)d;
   D3D11_TEXTURE2D_DESC desc;
+  desc.ArraySize        = 1;
   desc.Width            = w;
   desc.Height           = h;
   desc.MipLevels        = 1;//desc.ArraySize = 1;
@@ -307,8 +334,8 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
   desc.CPUAccessFlags   = D3D11_CPU_ACCESS_WRITE;
   desc.MiscFlags        = 0;
 
-  ID3D11Texture2D *tex = 0;
-  if( SUCCEEDED(dev->device->CreateTexture2D( &desc, NULL, &tex )) )
+  DX11Texture* tex = new DX11Texture;
+  if( SUCCEEDED(dev->device->CreateTexture2D( &desc, NULL, &tex->texture )) )
     return (AbstractAPI::Texture*)tex;
   return 0;
   }
@@ -323,8 +350,12 @@ void DirectX11::generateMipmaps(AbstractAPI::Device *d, AbstractAPI::Texture *t)
 
   }
 
-void DirectX11::deleteTexture(AbstractAPI::Device *d, AbstractAPI::Texture *t) const {
-
+void DirectX11::deleteTexture(AbstractAPI::Device *, AbstractAPI::Texture *t) const {
+  DX11Texture* tex = (DX11Texture*)t;
+  if( tex->texture )
+    tex->texture->Release();
+  if( tex->view )
+    tex->view->Release();
   }
 
 AbstractAPI::VertexBuffer *DirectX11::createVertexBuffer( AbstractAPI::Device *d,

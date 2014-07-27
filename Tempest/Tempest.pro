@@ -184,7 +184,8 @@ SOURCES += \
     ogl/openglbase.cpp \
     system/winphoneapi.cpp \
     dataControl/shaderprogramholder.cpp \
-    shading/shaderprogram.cpp
+    shading/shaderprogram.cpp \
+    dx/dx11types.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -270,7 +271,8 @@ HEADERS += \
     utils/sortedvec.h \
     dataControl/shaderprogramholder.h \
     core/wrappers/uniformdeclaration.h \
-    shading/shaderprogram.h
+    shading/shaderprogram.h \
+    dx/dx11types.h
 
 OTHER_FILES += \
     ../.gitignore \

@@ -19,6 +19,8 @@
 #define __in_ecount_part_opt(X,Y)
 #define __out_ecount_part_opt(X,Y)
 #endif
+
+#include "dx11types.h"
 #include <D3D11.h>
 #include <D3Dcompiler.h>
 
@@ -122,6 +124,7 @@ struct HLSL11::Data{
       }
     };
   Program prog;
+  std::shared_ptr<std::vector<AbstractShadingLang::UBO>> curUbo;
   SortedVec<Program> sh;
 
   ID3D11InputLayout* createDecl( const VertexDeclaration::Declarator &de,
@@ -299,6 +302,8 @@ void Tempest::HLSL11::bind( const ShaderProgram &px ) const {
   data->prog.fs     = p->fs;
   data->prog.codeVs = p->blobVs;
   data->prog.dxDecl = 0;
+
+  data->curUbo = inputOf(px);
   }
 
 void Tempest::HLSL11::setVertexDecl(const AbstractAPI::VertexDecl *d) const {
@@ -367,13 +372,59 @@ void HLSL11::enable() const {
     data->sh.insert(data->prog);
     data->immediateContext->IASetInputLayout(data->prog.dxDecl);
     }
-/*
-  setUniforms( fs->uniform, inputOf( *data->fs ), true  );
-  setUniforms( vs->uniform, inputOf( *data->vs ), false );
-  */
 
   data->immediateContext->VSSetShader( data->prog.vs, NULL, 0 );
   data->immediateContext->PSSetShader( data->prog.fs, NULL, 0 );
+
+  auto ubo = *data->curUbo;
+
+  int slot=0;
+  for( const UBO u:ubo ){
+    if(!u.updated){
+      setUniforms( u, slot );
+      u.updated = true;
+      }
+    }
+  }
+
+void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &in,
+                                   int &slot ) const {
+  const char*  name   = in.names.data();
+  void* const* fields = &in.fields[0];
+
+  for( int t: in.desc ){
+    //GLint prm = data->location( prog, name );
+    char* v = (char*)fields[0];
+    ++fields;
+
+    switch(t){
+      case Decl::float1:
+        break;
+      case Decl::float2:
+        break;
+      case Decl::float3:
+        break;
+      case Decl::float4:
+        break;
+      case Decl::Texture2d:{
+        DX11Texture* t = *(DX11Texture**)v;
+        if(!t->view)
+          data->dev->CreateShaderResourceView(t->texture, NULL, &t->view);
+        data->immediateContext->PSSetShaderResources(slot,1,&t->view);
+        v += sizeof(void*);
+        //data->setupSampler(GL_TEXTURE_2D,prm,slot,t,*(Texture2d::Sampler*)v);
+        ++slot;
+        }
+        break;
+      case Decl::Texture3d:{
+        ++slot;
+        }
+        break;
+      case Decl::Matrix4x4:
+        break;
+      }
+    name += strlen(name)+1;
+    }
   }
 
 std::string HLSL11::surfaceShader( GraphicsSubsystem::ShaderType t,
@@ -409,8 +460,16 @@ std::string HLSL11::surfaceShader( GraphicsSubsystem::ShaderType t,
       "  float4 cl : COLOR;"
       "  };"
 
+      "Texture2D brush_texture : register(t0);"
+      "SamplerState samp"
+        "{"
+        "Filter = MIN_MAG_MIP_LINEAR;"
+        "AddressU = Wrap;"
+        "AddressV = Wrap;"
+        "};"
+
       "float4 main( FS_Input fs ): SV_Target {"
-        "return float4(1.0,1.0,1.0,1.0);"//tex2D(brush_texture, float4(fs.tc, 0.0, 0.0) )*fs.cl;"
+        "return brush_texture.Sample( samp, float4(fs.tc, 0.0, 0.0) )*fs.cl;"
         "}";
 
 
