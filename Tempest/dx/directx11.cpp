@@ -1,6 +1,7 @@
 #include "directx11.h"
 
 #include "shading/abstractshadinglang.h"
+#include <Tempest/RenderState>
 
 #ifndef _MSC_VER
 #define __in
@@ -60,6 +61,19 @@ struct DirectX11::Device{
 
   static ID3D11Device* dev(void* d){
     return ((Device*)d)->device;
+    }
+
+  std::vector<char> texFlipped;
+  void* flipTexture(int w, int h, int bpp, const unsigned char * pix){
+    if( texFlipped.size()<size_t(w*h*bpp) )
+      texFlipped.resize(w*h*bpp);
+
+    for( int r=0; r<h; ++r ){
+      //memcpy( &texFlipped[r*w*bpp], pix+r*w*bpp, w*bpp );
+      memcpy( &texFlipped[r*w*bpp], pix+w*(w-r-1)*bpp, w*bpp );
+      }
+
+    return &texFlipped[0];
     }
   };
 
@@ -174,6 +188,7 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
   vp.TopLeftY = 0;
   dev->immediateContext->RSSetViewports( 1, &vp );
 
+  dev->caps.maxTextureSize = 8048;
   return (AbstractAPI::Device*)dev.release();
   }
 
@@ -217,10 +232,6 @@ void DirectX11::beginPaint(AbstractAPI::Device *d) const {
   }
 
 void DirectX11::endPaint(AbstractAPI::Device *d) const {
-  //TODO
-  }
-
-void DirectX11::setRenderState(AbstractAPI::Device *d, const RenderState &) const {
   //TODO
   }
 
@@ -291,8 +302,9 @@ AbstractAPI::Texture *DirectX11::createTexture( AbstractAPI::Device *d,
 
   D3D11_SUBRESOURCE_DATA pix;
   ZeroMemory(&pix, sizeof(pix));
-  pix.pSysMem          = p.const_data();
-  pix.SysMemPitch      = p.width()*(p.hasAlpha() ? 4:3);
+  const int bpp   = p.hasAlpha() ? 4:3;
+  pix.pSysMem     = dev->flipTexture(p.width(), p.height(), bpp, p.const_data());
+  pix.SysMemPitch = p.width()*bpp;
   //pix.SysMemSlicePitch = p.width()*p.height()*4;
 
   DX11Texture* tex = new DX11Texture;
@@ -548,4 +560,46 @@ Size DirectX11::windowSize(GraphicsSubsystem::Device *d) const {
 
 bool DirectX11::hasManagedStorge() const {
   return true;
+  }
+
+void DirectX11::setRenderState( AbstractAPI::Device *d,
+                                const RenderState &rs ) const {
+  static const D3D11_BLEND blend[] = {
+    D3D11_BLEND_ZERO,           //zero,                 //GL_ZERO,
+    D3D11_BLEND_ONE,            //one,                  //GL_ONE,
+    D3D11_BLEND_SRC_COLOR,      //src_color,            //GL_SRC_COLOR,
+    D3D11_BLEND_INV_SRC_COLOR,  //GL_ONE_MINUS_SRC_COLOR,
+    D3D11_BLEND_SRC_ALPHA,      //GL_SRC_ALPHA,
+    D3D11_BLEND_INV_SRC_ALPHA,  //GL_ONE_MINUS_SRC_ALPHA,
+    D3D11_BLEND_DEST_ALPHA,     //GL_DST_ALPHA,
+    D3D11_BLEND_INV_DEST_ALPHA, //GL_ONE_MINUS_DST_ALPHA,
+    D3D11_BLEND_DEST_COLOR,     //GL_DST_COLOR,
+    D3D11_BLEND_INV_DEST_COLOR, //GL_ONE_MINUS_DST_COLOR,
+    D3D11_BLEND_SRC_ALPHA_SAT,  //GL_SRC_ALPHA_SATURATE,
+    D3D11_BLEND_ZERO
+    };
+
+  Device* dev = (Device*)d;
+  ID3D11BlendState* state = 0;
+
+  D3D11_BLEND_DESC BlendState;
+  ZeroMemory(&BlendState, sizeof(D3D11_BLEND_DESC));
+  BlendState.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+  BlendState.RenderTarget[0].BlendEnable    = rs.isBlend();
+  BlendState.RenderTarget[0].BlendOp        = D3D11_BLEND_OP_ADD;
+  BlendState.RenderTarget[0].BlendOpAlpha   = D3D11_BLEND_OP_ADD;
+
+  BlendState.RenderTarget[0].SrcBlend       = blend[rs.getBlendSFactor()];
+  BlendState.RenderTarget[0].SrcBlendAlpha  = blend[rs.getBlendSFactor()];
+  BlendState.RenderTarget[0].DestBlend      = blend[rs.getBlendDFactor()];
+  BlendState.RenderTarget[0].DestBlendAlpha = blend[rs.getBlendDFactor()];
+
+  for( int i=1; i<8; ++i )
+    BlendState.RenderTarget[i] = BlendState.RenderTarget[0];
+
+  dev->device->CreateBlendState(&BlendState, &state);
+  dev->immediateContext->OMSetBlendState(state, 0, 0xffffffff);
+  if(state)
+    state->Release();
+  //TODO
   }

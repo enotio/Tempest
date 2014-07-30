@@ -189,12 +189,12 @@ void HLSL::setUniforms( Sh* prog,
                         bool textures ) const {
   int slot=0;
 
-  const char*  name   = in.names.data();
-  void* const* fields = &in.fields[0];
+  const char*  name      = in.names.data();
+  intptr_t const* fields = &in.fields[0];
 
   for( int t: in.desc ){
     D3DXHANDLE prm = prog->GetConstantByName(NULL,name);
-    char* v = (char*)fields[0];
+    const char* v = &in.data[0] + fields[0];
     ++fields;
 
     float *vec = (float*)v;

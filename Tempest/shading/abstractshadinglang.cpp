@@ -76,7 +76,7 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   char *data = &ux.data[0];
   for( int type:ux.desc ){
     const char* addr = ubo+bufsz;    
-    ux.fields[i] = data;
+    ux.fields[i] = (data-&ux.data[0]);
     ++i;
 
     if( type<Decl::count ){

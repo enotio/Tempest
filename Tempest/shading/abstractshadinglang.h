@@ -56,12 +56,13 @@ class AbstractShadingLang : public GraphicsSubsystem {
     virtual Source surfaceShader( const AbstractShadingLang::UiShaderOpt &opt,
                                   bool &hasHalfPixelOffset ) const = 0;
     struct UBO {
-      std::vector<char>  data;
-      std::vector<char>  names;
-      std::vector<int>   desc;
-      std::vector<void*> fields;
+      std::vector<char>     data;
+      std::vector<char>     names;
+      std::vector<int>      desc;
+      std::vector<intptr_t> fields;
 
       std::vector<uintptr_t> id;
+
       mutable bool           updated=false;
       };
     static void assignUniformBuffer( UBO &ux,

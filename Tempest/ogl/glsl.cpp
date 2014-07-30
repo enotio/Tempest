@@ -544,12 +544,12 @@ void GLSL::disable() const {
 void GLSL::setUniforms( unsigned int prog,
                         const UBO &in,
                         int& slot ) const {
-  const char*  name   = in.names.data();
-  void* const* fields = &in.fields[0];
+  const char*  name      = in.names.data();
+  intptr_t const* fields = &in.fields[0];
 
   for( int t: in.desc ){
     GLint prm = data->location( prog, name );
-    char* v = (char*)fields[0];
+    const char* v = &in.data[0] + fields[0];
     ++fields;
 
     if(prm!=-1)
