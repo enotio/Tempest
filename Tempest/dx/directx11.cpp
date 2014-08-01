@@ -259,8 +259,8 @@ void DirectX11::retDSSurfaceTaget(AbstractAPI::Device *d, AbstractAPI::StdDSSurf
   //TODO
   }
 
-bool DirectX11::startRender( AbstractAPI::Device *d, bool isLost ) const{
-  //TODO
+bool DirectX11::startRender( AbstractAPI::Device *, bool /*isLost*/ ) const{
+  return true;
   }
 
 bool DirectX11::present( AbstractAPI::Device *d, SwapBehavior b ) const{
@@ -276,6 +276,41 @@ bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
   GetClientRect( HWND(hwnd), &rectWindow);
   dx->scrW = rectWindow.right  - rectWindow.left;
   dx->scrH = rectWindow.bottom - rectWindow.top;
+
+  if(dx->swapChain){
+    dx->immediateContext->OMSetRenderTargets(0, 0, 0);
+
+    // Release all outstanding references to the swap chain's buffers.
+    dx->renderTargetView->Release();
+
+    HRESULT hr;
+    // Preserve the existing buffer count and format.
+    // Automatically choose the width and height to match the client rect for HWNDs.
+    dx->swapChain->ResizeBuffers(0,0,0,DXGI_FORMAT_UNKNOWN,0);
+
+    // Perform error handling here!
+
+    // Get buffer and create a render-target-view.
+    ID3D11Texture2D* pBuffer;
+    hr = dx->swapChain->GetBuffer(0,ID3D11Texture2D_uuid,(void**)&pBuffer );
+    // Perform error handling here!
+
+    hr = dx->device->CreateRenderTargetView(pBuffer,NULL,&dx->renderTargetView);
+    // Perform error handling here!
+    pBuffer->Release();
+
+    dx->immediateContext->OMSetRenderTargets(1, &dx->renderTargetView, NULL );
+
+    // Set up the viewport.
+    D3D11_VIEWPORT vp;
+    vp.Width    = dx->scrW;
+    vp.Height   = dx->scrH;
+    vp.MinDepth = 0.0f;
+    vp.MaxDepth = 1.0f;
+    vp.TopLeftX = 0;
+    vp.TopLeftY = 0;
+    dx->immediateContext->RSSetViewports( 1, &vp );
+    }
   }
 
 bool DirectX11::isFormatSupported( AbstractAPI::Device *, Pixmap::Format f ) const {
@@ -308,8 +343,12 @@ AbstractAPI::Texture *DirectX11::createTexture( AbstractAPI::Device *d,
   //pix.SysMemSlicePitch = p.width()*p.height()*4;
 
   DX11Texture* tex = new DX11Texture;
-  if( SUCCEEDED(dev->device->CreateTexture2D( &desc, &pix, &tex->texture )) )
+  if( SUCCEEDED(dev->device->CreateTexture2D( &desc, &pix, &tex->texture )) ){
+    dev->device->CreateShaderResourceView(tex->texture, NULL, &tex->view);
+    if(mips)
+      dev->immediateContext->GenerateMips(tex->view);
     return (AbstractAPI::Texture*)tex;
+    }
   return 0;
   }
 
@@ -347,8 +386,12 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
   desc.MiscFlags        = 0;
 
   DX11Texture* tex = new DX11Texture;
-  if( SUCCEEDED(dev->device->CreateTexture2D( &desc, NULL, &tex->texture )) )
+  if( SUCCEEDED(dev->device->CreateTexture2D( &desc, NULL, &tex->texture )) ){
+    dev->device->CreateShaderResourceView(tex->texture, NULL, &tex->view);
+    if(mips)
+      dev->immediateContext->GenerateMips(tex->view);
     return (AbstractAPI::Texture*)tex;
+    }
   return 0;
   }
 

@@ -189,8 +189,11 @@ void HLSL::setUniforms( Sh* prog,
                         bool textures ) const {
   int slot=0;
 
-  const char*  name      = in.names.data();
+  const char*  name      = &in.names[0];
   intptr_t const* fields = &in.fields[0];
+  void* const * tex      = &in.tex[0];
+  Texture2d::Sampler const* smp2d = (Texture2d::Sampler*)&in.smp[0][0];
+  //Texture3d::Sampler const* smp3d = (Texture3d::Sampler*)&in.smp[1][0];
 
   for( int t: in.desc ){
     D3DXHANDLE prm = prog->GetConstantByName(NULL,name);
@@ -220,9 +223,9 @@ void HLSL::setUniforms( Sh* prog,
           break;
         case Decl::Texture2d:
           if(textures){
-            IDirect3DTexture9* t = *(IDirect3DTexture9**)v;
-            v += sizeof(void*);
-            data->setSampler(slot, *(Texture2d::Sampler*)v );
+            IDirect3DTexture9* t = *(IDirect3DTexture9**)tex;
+            data->setSampler(slot, *smp2d );
+            ++smp2d;
             data->dev->SetTexture( slot, t );
             prog->SetInt( data->dev, prm, slot );
             ++slot;
@@ -230,9 +233,9 @@ void HLSL::setUniforms( Sh* prog,
           break;
         case Decl::Texture3d:
           if(textures){
-            //IDirect3DTexture9* t = *(IDirect3DTexture9**)v;
-            v += sizeof(void*);
-            //data->setSampler(slot, *(Texture3d::Sampler*)v );
+            //IDirect3DTexture9* t = *(IDirect3DTexture9**)tex;
+            //data->setSampler(slot, *smp3d );
+            //++smp3d;
             //data->dev->SetTexture( slot, t );
             //prog->SetInt( data->dev, prm, slot );
             ++slot;
@@ -242,6 +245,8 @@ void HLSL::setUniforms( Sh* prog,
           prog->SetMatrix( data->dev, prm, *(D3DXMATRIX**)&v );
           break;
         }
+    if(t==Decl::Texture2d || t==Decl::Texture3d)
+      ++tex;
     name += strlen(name)+1;
     }
   }

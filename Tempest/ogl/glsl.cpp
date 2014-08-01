@@ -544,8 +544,11 @@ void GLSL::disable() const {
 void GLSL::setUniforms( unsigned int prog,
                         const UBO &in,
                         int& slot ) const {
-  const char*  name      = in.names.data();
+  const char*  name      = &in.names[0];
   intptr_t const* fields = &in.fields[0];
+  void* const * tex      = &in.tex[0];
+  Texture2d::Sampler const* smp2d = (Texture2d::Sampler*)&in.smp[0][0];
+  Texture3d::Sampler const* smp3d = (Texture3d::Sampler*)&in.smp[1][0];
 
   for( int t: in.desc ){
     GLint prm = data->location( prog, name );
@@ -567,16 +570,16 @@ void GLSL::setUniforms( unsigned int prog,
           glUniform4fv( prm, 1, (GLfloat*)v );
           break;
         case Decl::Texture2d:{
-          Detail::GLTexture* t = *(Detail::GLTexture**)v;
-          v += sizeof(void*);
-          data->setupSampler(GL_TEXTURE_2D,prm,slot,t,*(Texture2d::Sampler*)v);
+          Detail::GLTexture* t = *(Detail::GLTexture**)tex;
+          data->setupSampler(GL_TEXTURE_2D,prm,slot,t,*smp2d);
+          ++smp2d;
           ++slot;
           }
           break;
         case Decl::Texture3d:{
-          Detail::GLTexture* t = *(Detail::GLTexture**)v;
-          v += sizeof(void*);
-          data->setupSampler(GL_TEXTURE_3D,prm,slot,t,*(Texture3d::Sampler*)v);
+          Detail::GLTexture* t = *(Detail::GLTexture**)tex;
+          data->setupSampler(GL_TEXTURE_3D,prm,slot,t,*smp3d);
+          ++smp3d;
           ++slot;
           }
           break;
@@ -584,6 +587,8 @@ void GLSL::setUniforms( unsigned int prog,
           glUniformMatrix4fv( prm, 1, false, (GLfloat*)v );
           break;
         }
+    if(t==Decl::Texture2d || t==Decl::Texture3d)
+      ++tex;
     name += strlen(name)+1;
     }
   }

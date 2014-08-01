@@ -391,9 +391,11 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &in,
                                    int &slot ) const {
   const char*  name      = in.names.data();
   intptr_t const* fields = &in.fields[0];
+  void* const * tex      = &in.tex[0];
+  Texture2d::Sampler const* smp2d = (Texture2d::Sampler*)&in.smp[0][0];
+  Texture3d::Sampler const* smp3d = (Texture3d::Sampler*)&in.smp[1][0];
 
   for( int t: in.desc ){
-    //GLint prm = data->location( prog, name );
     const char* v = &in.data[0] + fields[0];
     ++fields;
 
@@ -407,12 +409,10 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &in,
       case Decl::float4:
         break;
       case Decl::Texture2d:{
-        DX11Texture* t = *(DX11Texture**)v;
+        DX11Texture* t = *(DX11Texture**)tex;
         if(!t->view)
           data->dev->CreateShaderResourceView(t->texture, NULL, &t->view);
         data->immediateContext->PSSetShaderResources(slot,1,&t->view);
-        v += sizeof(void*);
-        //data->setupSampler(GL_TEXTURE_2D,prm,slot,t,*(Texture2d::Sampler*)v);
         ++slot;
         }
         break;
@@ -423,6 +423,8 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &in,
       case Decl::Matrix4x4:
         break;
       }
+    if(t==Decl::Texture2d || t==Decl::Texture3d)
+      ++tex;
     name += strlen(name)+1;
     }
   }

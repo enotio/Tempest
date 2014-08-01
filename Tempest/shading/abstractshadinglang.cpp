@@ -47,19 +47,19 @@ static inline void inc(X& ptr, int count=1){
 void AbstractShadingLang::assignUniformBuffer( UBO& ux,
                                                const char *ubo,
                                                const UniformDeclaration &u ) {
-  size_t bufsz=0;
+  size_t bufsz=0, sampSz[2]={0,0}, tex[2] = {0,0};
   for( int type:u.type ){
     if( type<Decl::count ){
       align<float>(bufsz);
       bufsz += Decl::elementSize(Decl::ComponentType(type));
       }
     else if( type==Decl::Texture2d ){
-      inc<void*>(bufsz);
-      inc<Texture2d::Sampler>(bufsz);
+      sampSz[0]+=sizeof(Texture2d::Sampler);
+      ++tex[0];
       }
     else if( type==Decl::Texture3d ){
-      inc<void*>(bufsz);
-      inc<Texture3d::Sampler>(bufsz);
+      sampSz[1]+=sizeof(Texture3d::Sampler);
+      ++tex[1];
       }
     else if( type==Decl::Matrix4x4 ){
       inc<Matrix4x4>(bufsz);
@@ -68,12 +68,19 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   ux.id.resize(u.type.size());
   ux.names = u.name;
   ux.desc  = u.type;
-  ux.data .resize(bufsz);
+  ux.data  .resize(bufsz);
+  ux.smp[0].resize(sampSz[0]);
+  ux.smp[1].resize(sampSz[1]);
   ux.fields.resize(ux.desc.size());
+  ux.tex.resize(tex[0]+tex[1]);
 
   bufsz = 0;
+  void** tx = &ux.tex[0];
   int i=0;
   char *data = &ux.data[0];
+  Texture2d::Sampler* smp2d = (Texture2d::Sampler*)&ux.smp[0][0];
+  Texture3d::Sampler* smp3d = (Texture3d::Sampler*)&ux.smp[1][0];
+
   for( int type:ux.desc ){
     const char* addr = ubo+bufsz;    
     ux.fields[i] = (data-&ux.data[0]);
@@ -91,19 +98,19 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
       switch (type) {
         case Decl::Texture2d:
           t = (void*)get(*(Texture2d*)addr);
-          (*(void**)data) = t;
-          inc<void*>(data);
+          *tx = t;
+          ++tx;
+          *smp2d = ((Texture2d*)addr)->sampler();
+          ++smp2d;
           inc<Texture2d>(bufsz);
-          *(Texture2d::Sampler*)data = ((Texture2d*)addr)->sampler();
-          inc<Texture2d::Sampler>(data);
           break;
         case Decl::Texture3d:
           t = (void*)get(*(Texture3d*)addr);
-          (*(void**)data) = t;
-          inc<void*>(data);
+          *tx = t;
+          ++tx;
+          *smp3d = ((Texture3d*)addr)->sampler();
+          ++smp3d;
           inc<Texture3d>(bufsz);
-          *(Texture3d::Sampler*)data = ((Texture3d*)addr)->sampler();
-          inc<Texture3d::Sampler>(data);
           break;
         case Decl::Matrix4x4:
           *(Tempest::Matrix4x4*)data = *(Tempest::Matrix4x4*)addr;
