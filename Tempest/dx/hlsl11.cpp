@@ -43,6 +43,8 @@ struct HLSL11::Data{
     ID3D11PixelShader*  fs     = 0;
     ID3DBlob*           blobVs = 0;
 
+    std::shared_ptr<std::vector<ID3D11Buffer*>> ubo;
+
     ~Shader(){
       if(vs)
         vs->Release();
@@ -50,8 +52,28 @@ struct HLSL11::Data{
         blobVs->Release();
       if(fs)
         fs->Release();
+
+      for( ID3D11Buffer* u:*ubo )
+        if(u)
+          u->Release();
       }
     };
+
+  ID3D11Buffer* createUBO( UINT size ){
+    D3D11_BUFFER_DESC desc;
+    ZeroMemory(&desc,sizeof(desc));
+
+    desc.Usage     = D3D11_USAGE_DEFAULT;
+    desc.ByteWidth = size;
+    desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    desc.CPUAccessFlags = 0;
+
+    ID3D11Buffer* ret = 0;
+    HRESULT hr = dev->CreateBuffer( &desc, NULL, &ret );
+    if( FAILED( hr ) )
+        return 0;
+    return ret;
+    }
 
   HRESULT createShader(ID3DBlob* code, ID3D11VertexShader*& sh ){
     return dev->CreateVertexShader( code->GetBufferPointer(),
@@ -124,6 +146,7 @@ struct HLSL11::Data{
       }
     };
   Program prog;
+  std::shared_ptr<std::vector<ID3D11Buffer*>>            curUboD;
   std::shared_ptr<std::vector<AbstractShadingLang::UBO>> curUbo;
   SortedVec<Program> sh;
 
@@ -303,7 +326,8 @@ void Tempest::HLSL11::bind( const ShaderProgram &px ) const {
   data->prog.codeVs = p->blobVs;
   data->prog.dxDecl = 0;
 
-  data->curUbo = inputOf(px);
+  data->curUboD = p->ubo;
+  data->curUbo  = inputOf(px);
   }
 
 void Tempest::HLSL11::setVertexDecl(const AbstractAPI::VertexDecl *d) const {
@@ -343,6 +367,7 @@ GraphicsSubsystem::ProgramObject*
     prog=0;
     }
 
+  prog->ubo.reset( new std::vector<ID3D11Buffer*>() );
   return (GraphicsSubsystem::ProgramObject*)prog;
   }
 
@@ -379,11 +404,23 @@ void HLSL11::enable() const {
   auto ubo = *data->curUbo;
 
   int slot=0;
+  int bufNum = 0;
+  if(data->curUboD->size() < ubo.size() )
+    data->curUboD->resize(ubo.size());
+
+  ID3D11Buffer** curD = &(*data->curUboD)[0];
   for( const UBO u:ubo ){
     if(!u.updated){
       setUniforms( u, slot );
       u.updated = true;
+      if(!curD[bufNum])
+        curD[bufNum] = data->createUBO(u.data.size());
+
+      data->immediateContext->UpdateSubresource( curD[bufNum], 0, 0, &u.data[0], 0, 0 );
+      data->immediateContext->VSSetConstantBuffers( bufNum, 1, &curD[bufNum] );
+      data->immediateContext->PSSetConstantBuffers( bufNum, 1, &curD[bufNum] );
       }
+    ++bufNum;
     }
   }
 
@@ -396,7 +433,7 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &in,
   Texture3d::Sampler const* smp3d = (Texture3d::Sampler*)&in.smp[1][0];
 
   for( int t: in.desc ){
-    const char* v = &in.data[0] + fields[0];
+    //const char* v = &in.data[0] + fields[0];
     ++fields;
 
     switch(t){
@@ -410,9 +447,11 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &in,
         break;
       case Decl::Texture2d:{
         DX11Texture* t = *(DX11Texture**)tex;
-        if(!t->view)
-          data->dev->CreateShaderResourceView(t->texture, NULL, &t->view);
-        data->immediateContext->PSSetShaderResources(slot,1,&t->view);
+        if(t){
+          if(!t->view)
+            data->dev->CreateShaderResourceView(t->texture, NULL, &t->view);
+          data->immediateContext->PSSetShaderResources(slot,1,&t->view);
+          }
         ++slot;
         }
         break;
@@ -423,8 +462,14 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &in,
       case Decl::Matrix4x4:
         break;
       }
-    if(t==Decl::Texture2d || t==Decl::Texture3d)
+    if(t==Decl::Texture2d){
       ++tex;
+      ++smp2d;
+      } else
+    if(t==Decl::Texture3d){
+      ++tex;
+      ++smp3d;
+      }
     name += strlen(name)+1;
     }
   }

@@ -572,14 +572,12 @@ void GLSL::setUniforms( unsigned int prog,
         case Decl::Texture2d:{
           Detail::GLTexture* t = *(Detail::GLTexture**)tex;
           data->setupSampler(GL_TEXTURE_2D,prm,slot,t,*smp2d);
-          ++smp2d;
           ++slot;
           }
           break;
         case Decl::Texture3d:{
           Detail::GLTexture* t = *(Detail::GLTexture**)tex;
           data->setupSampler(GL_TEXTURE_3D,prm,slot,t,*smp3d);
-          ++smp3d;
           ++slot;
           }
           break;
@@ -587,8 +585,14 @@ void GLSL::setUniforms( unsigned int prog,
           glUniformMatrix4fv( prm, 1, false, (GLfloat*)v );
           break;
         }
-    if(t==Decl::Texture2d || t==Decl::Texture3d)
+    if(t==Decl::Texture2d){
       ++tex;
+      ++smp2d;
+      } else
+    if(t==Decl::Texture3d){
+      ++tex;
+      ++smp3d;
+      }
     name += strlen(name)+1;
     }
   }

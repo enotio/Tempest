@@ -17,5 +17,7 @@ HEADERS += \
 
 OTHER_FILES += \
     ../bin/shader/basic.vs.hlsl \
-    ../bin/shader/basic.fs.hlsl
+    ../bin/shader/basic.fs.hlsl \
+    ../bin/shader/basic11.fs.hlsl \
+    ../bin/shader/basic11.vs.hlsl
 

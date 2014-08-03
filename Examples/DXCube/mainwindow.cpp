@@ -68,8 +68,8 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
 
   texture = texHolder.load("data/texture.png");
 
-  shader = shHolder.load({"shader/basic.vs.hlsl",
-                          "shader/basic.fs.hlsl",
+  shader = shHolder.load({"shader/basic11.vs.hlsl",
+                          "shader/basic11.fs.hlsl",
                           "","",""});
 
   if( !shader.isValid() )

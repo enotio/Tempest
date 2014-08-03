@@ -156,7 +156,7 @@ class DirectX11 : public AbstractAPI {
                       AbstractAPI::PrimitiveType t,
                       int vboOffsetIndex,
                       int iboOffsetIndex,
-                      int vertexCount) const;
+                      int pCount) const;
 
     Size windowSize( Tempest::AbstractAPI::Device * dev ) const;
     bool hasManagedStorge() const;

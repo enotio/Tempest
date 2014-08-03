@@ -225,7 +225,6 @@ void HLSL::setUniforms( Sh* prog,
           if(textures){
             IDirect3DTexture9* t = *(IDirect3DTexture9**)tex;
             data->setSampler(slot, *smp2d );
-            ++smp2d;
             data->dev->SetTexture( slot, t );
             prog->SetInt( data->dev, prm, slot );
             ++slot;
@@ -235,7 +234,6 @@ void HLSL::setUniforms( Sh* prog,
           if(textures){
             //IDirect3DTexture9* t = *(IDirect3DTexture9**)tex;
             //data->setSampler(slot, *smp3d );
-            //++smp3d;
             //data->dev->SetTexture( slot, t );
             //prog->SetInt( data->dev, prm, slot );
             ++slot;
@@ -245,8 +243,14 @@ void HLSL::setUniforms( Sh* prog,
           prog->SetMatrix( data->dev, prm, *(D3DXMATRIX**)&v );
           break;
         }
-    if(t==Decl::Texture2d || t==Decl::Texture3d)
+    if(t==Decl::Texture2d){
       ++tex;
+      ++smp2d;
+      } else
+    if(t==Decl::Texture3d){
+      ++tex;
+      //++smp3d;
+      }
     name += strlen(name)+1;
     }
   }

@@ -51,6 +51,7 @@ struct DirectX11::Device{
       renderTargetView->Release();
     if( swapChain )
       swapChain->Release();
+
     if( immediateContext )
       immediateContext->Release();
     if( device )
@@ -263,14 +264,14 @@ bool DirectX11::startRender( AbstractAPI::Device *, bool /*isLost*/ ) const{
   return true;
   }
 
-bool DirectX11::present( AbstractAPI::Device *d, SwapBehavior b ) const{
+bool DirectX11::present( AbstractAPI::Device *d, SwapBehavior /*b*/ ) const{
   Device* dev = (Device*)d;
   dev->swapChain->Present(0,0);
   return false;
   }
 
 bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
-                       const Options & opt ) const{
+                       const Options & /*opt*/ ) const{
   Device* dx = (Device*)d;
   RECT rectWindow;
   GetClientRect( HWND(hwnd), &rectWindow);
@@ -283,25 +284,25 @@ bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
     // Release all outstanding references to the swap chain's buffers.
     dx->renderTargetView->Release();
 
-    HRESULT hr;
+    HRESULT hr=0;
     // Preserve the existing buffer count and format.
     // Automatically choose the width and height to match the client rect for HWNDs.
-    dx->swapChain->ResizeBuffers(0,0,0,DXGI_FORMAT_UNKNOWN,0);
+    hr = dx->swapChain->ResizeBuffers(0,0,0,DXGI_FORMAT_UNKNOWN,0);
+    if(FAILED(hr))
+      return false;
 
-    // Perform error handling here!
-
-    // Get buffer and create a render-target-view.
     ID3D11Texture2D* pBuffer;
     hr = dx->swapChain->GetBuffer(0,ID3D11Texture2D_uuid,(void**)&pBuffer );
-    // Perform error handling here!
+    if(FAILED(hr))
+      return false;
 
     hr = dx->device->CreateRenderTargetView(pBuffer,NULL,&dx->renderTargetView);
-    // Perform error handling here!
+    if(FAILED(hr))
+      return false;
     pBuffer->Release();
 
     dx->immediateContext->OMSetRenderTargets(1, &dx->renderTargetView, NULL );
 
-    // Set up the viewport.
     D3D11_VIEWPORT vp;
     vp.Width    = dx->scrW;
     vp.Height   = dx->scrH;
@@ -311,6 +312,8 @@ bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
     vp.TopLeftY = 0;
     dx->immediateContext->RSSetViewports( 1, &vp );
     }
+
+  return true;
   }
 
 bool DirectX11::isFormatSupported( AbstractAPI::Device *, Pixmap::Format f ) const {
@@ -330,10 +333,10 @@ AbstractAPI::Texture *DirectX11::createTexture( AbstractAPI::Device *d,
   desc.MipLevels        = 1;//desc.ArraySize = 1;
   desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
   desc.SampleDesc.Count = 1;
-  desc.Usage            = D3D11_USAGE_IMMUTABLE;
-  desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
+  desc.Usage            = D3D11_USAGE_DEFAULT;//D3D11_USAGE_IMMUTABLE;
+  desc.BindFlags        = D3D11_BIND_RENDER_TARGET|D3D11_BIND_SHADER_RESOURCE;
   desc.CPUAccessFlags   = 0;
-  desc.MiscFlags        = 0;
+  desc.MiscFlags        = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
   D3D11_SUBRESOURCE_DATA pix;
   ZeroMemory(&pix, sizeof(pix));
@@ -381,9 +384,9 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
   desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
   desc.SampleDesc.Count = 1;
   desc.Usage            = u[usage];
-  desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
+  desc.BindFlags        = D3D11_BIND_RENDER_TARGET|D3D11_BIND_SHADER_RESOURCE;
   desc.CPUAccessFlags   = D3D11_CPU_ACCESS_WRITE;
-  desc.MiscFlags        = 0;
+  desc.MiscFlags        = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
   DX11Texture* tex = new DX11Texture;
   if( SUCCEEDED(dev->device->CreateTexture2D( &desc, NULL, &tex->texture )) ){
@@ -513,8 +516,7 @@ void DirectX11::deleteVertexDecl( AbstractAPI::Device *,
 
 void DirectX11::setVertexDeclaration(AbstractAPI::Device *,
                                      AbstractAPI::VertexDecl *) const {
-  //NOP
-  }
+  }//NOP
 
 void DirectX11::bindVertexBuffer( AbstractAPI::Device *d,
                                   AbstractAPI::VertexBuffer *v, int vsize) const {
@@ -536,15 +538,18 @@ void *DirectX11::lockBuffer( AbstractAPI::Device *d,
                              AbstractAPI::VertexBuffer *b,
                              unsigned offset, unsigned size) const {
   T_WARNING_X(0,"lockBuffer");
+  return 0;
   }
 
 void DirectX11::unlockBuffer(AbstractAPI::Device *d, AbstractAPI::VertexBuffer *) const {
 
   }
 
-void *DirectX11::lockBuffer(AbstractAPI::Device *d, AbstractAPI::IndexBuffer *,
+void *DirectX11::lockBuffer(AbstractAPI::Device *d,
+                            AbstractAPI::IndexBuffer *,
                             unsigned offset, unsigned size) const {
-
+  T_WARNING_X(0,"lockBuffer");
+  return 0;
   }
 
 void DirectX11::unlockBuffer(AbstractAPI::Device *d, AbstractAPI::IndexBuffer *) const {
@@ -572,14 +577,14 @@ void DirectX11::draw( AbstractAPI::Device *d, AbstractAPI::PrimitiveType t,
     D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP//deprecated
     };
 
-  int vpCount = vertexCount(t, pCount);
+  const int vpCount = vertexCount(t, pCount);
   Device* dev = (Device*)d;
   dev->immediateContext->IASetPrimitiveTopology( topology[t] );
-  dev->immediateContext->Draw(vpCount,firstVertex);
+  dev->immediateContext->Draw( vpCount, firstVertex );
   }
 
 void DirectX11::drawIndexed( AbstractAPI::Device *d, AbstractAPI::PrimitiveType t,
-                             int vboOffsetIndex, int iboOffsetIndex, int vertexCount) const {
+                             int vboOffsetIndex, int iboOffsetIndex, int pCount) const {
   static const D3D_PRIMITIVE_TOPOLOGY topology[]={
     D3D_PRIMITIVE_TOPOLOGY_UNDEFINED,
     D3D11_PRIMITIVE_TOPOLOGY_POINTLIST,
@@ -590,9 +595,10 @@ void DirectX11::drawIndexed( AbstractAPI::Device *d, AbstractAPI::PrimitiveType 
     D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP//deprecated
     };
 
+  const int vpCount = vertexCount(t, pCount);
   Device* dev = (Device*)d;
   dev->immediateContext->IASetPrimitiveTopology( topology[t] );
-  dev->immediateContext->DrawIndexed( vertexCount, iboOffsetIndex, vboOffsetIndex );
+  dev->immediateContext->DrawIndexed( vpCount, iboOffsetIndex, vboOffsetIndex );
   }
 
 Size DirectX11::windowSize(GraphicsSubsystem::Device *d) const {
