@@ -8,7 +8,7 @@ struct VS_OUTPUT {
   };
 
 VS_OUTPUT main( float3 pos      : POSITION,
-                float2 texCoord : TEXCOORD0 ) {
+                float2 texCoord : TEXCOORD ) {
   VS_OUTPUT output;
   output.pos      = mul( mvpMatrix,float4(pos,1.0) );
   output.texCoord = float2(texCoord.x,1.0-texCoord.y);

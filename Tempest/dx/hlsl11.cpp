@@ -60,6 +60,8 @@ struct HLSL11::Data{
     };
 
   ID3D11Buffer* createUBO( UINT size ){
+    if(size==0)
+      return 0;
     D3D11_BUFFER_DESC desc;
     ZeroMemory(&desc,sizeof(desc));
 
@@ -71,7 +73,7 @@ struct HLSL11::Data{
     ID3D11Buffer* ret = 0;
     HRESULT hr = dev->CreateBuffer( &desc, NULL, &ret );
     if( FAILED( hr ) )
-        return 0;
+      return 0;
     return ret;
     }
 
@@ -416,9 +418,11 @@ void HLSL11::enable() const {
       if(!curD[bufNum])
         curD[bufNum] = data->createUBO(u.data.size());
 
-      data->immediateContext->UpdateSubresource( curD[bufNum], 0, 0, &u.data[0], 0, 0 );
-      data->immediateContext->VSSetConstantBuffers( bufNum, 1, &curD[bufNum] );
-      data->immediateContext->PSSetConstantBuffers( bufNum, 1, &curD[bufNum] );
+      if(curD[bufNum]){
+        data->immediateContext->UpdateSubresource( curD[bufNum], 0, 0, &u.data[0], 0, 0 );
+        data->immediateContext->VSSetConstantBuffers( bufNum, 1, &curD[bufNum] );
+        data->immediateContext->PSSetConstantBuffers( bufNum, 1, &curD[bufNum] );
+        }
       }
     ++bufNum;
     }
@@ -477,7 +481,7 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &in,
 std::string HLSL11::surfaceShader( GraphicsSubsystem::ShaderType t,
                                  const AbstractShadingLang::UiShaderOpt &opt,
                                  bool &hasHalfpixOffset ) const {
-  hasHalfpixOffset = true;
+  hasHalfpixOffset = false;
 
   static const std::string vs_src =
       "struct VS_Input {"

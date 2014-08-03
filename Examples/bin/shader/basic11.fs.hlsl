@@ -10,7 +10,6 @@ SamplerState samp {
   AddressV = Wrap;
   };
 
-
 float4 main( VS_OUTPUT input ) : SV_Target {
   return xtexture.Sample(samp,input.texCoord);
   }
