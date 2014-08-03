@@ -219,7 +219,6 @@ HEADERS += \
     dataControl/localvertexbufferholder.h \
     dataControl/localtexturesholder.h \
     dataControl/indexbufferholder.h \
-    dataControl/fragmentshaderholder.h \
     dataControl/abstractholder.h \
     math/matrix4x4.h \
     scene/viewtester.h \
@@ -263,9 +262,7 @@ HEADERS += \
     system/linuxapi.h \
     ogl/openglbase.h \
     shading/tessshader.h \
-    dataControl/tessshaderholder.h \
     shading/evalshader.h \
-    dataControl/evalshaderholder.h \
     core/platform.h \
     system/winphoneapi.h \
     utils/sortedvec.h \

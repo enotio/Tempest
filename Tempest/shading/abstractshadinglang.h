@@ -12,7 +12,6 @@
 namespace Tempest{
 
 class ShaderProgram;
-class UniformBuffer;
 
 class Matrix4x4;
 class Texture2d;

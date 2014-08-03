@@ -10,7 +10,7 @@ ShaderProgram::ShaderProgram():data( ShaderProgramHolder::ImplManip(0) ){
 
 ShaderProgram::ShaderProgram(const ShaderProgram &p)
   :data(p.data), logv(p.logv) {
-  *ubo = *p.ubo;
+  ubo.reset( new std::vector<AbstractShadingLang::UBO>(*p.ubo) );
   }
 
 ShaderProgram &ShaderProgram::operator =(const ShaderProgram & p) {
