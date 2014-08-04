@@ -146,7 +146,8 @@ void IndexBufferHolder::unlockBuffer(AbstractAPI::IndexBuffer *t) {
   Data::LDData & ld = *data->ibos[t];
 
   char *v = (char*)device().lockBuffer( t, ld.lockBegin, ld.lockSize );
-  memcpy( v, (&ld.data[0])+ld.lockBegin, ld.lockSize );
+  if(v)
+    memcpy( v, (&ld.data[0])+ld.lockBegin, ld.lockSize );
   device().unlockBuffer(t);
   }
 

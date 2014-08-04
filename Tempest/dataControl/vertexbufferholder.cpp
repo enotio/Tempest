@@ -131,8 +131,6 @@ char *VertexBufferHolder::lockBuffer( AbstractAPI::VertexBuffer *t,
   ld.lockBegin = b;
   ld.lockSize  = sz;
 
-  //std::cout <<"l " << t <<" " << b <<" " << sz <<" " << ld.data.size() << std::endl;
-
   return &ld.data[0];//(char*)device().lockBuffer( t, b, sz);
   }
 
@@ -147,12 +145,12 @@ char *VertexBufferHolder::bufferData(AbstractAPI::VertexBuffer *t) {
 void VertexBufferHolder::unlockBuffer(AbstractAPI::VertexBuffer *t) {
   if( t==0 )
     return;
-  //std::cout <<"u " << t << std::endl;
 
   Data::LDData & ld = *data->vbos[t];
 
   char *v = (char*)device().lockBuffer( t, ld.lockBegin, ld.lockSize );
-  memcpy( v, &ld.data[ld.lockBegin], ld.lockSize );
+  if(v)
+    memcpy( v, &ld.data[ld.lockBegin], ld.lockSize );
   device().unlockBuffer(t);
   }
 
