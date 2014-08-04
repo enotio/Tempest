@@ -31,12 +31,39 @@
 #include <Tempest/Texture3d>
 #include "utils/sortedvec.h"
 #include <tuple>
+#include <unordered_map>
 
 using namespace Tempest;
+
+struct SmpHash{
+  size_t operator()(const Texture2d::Sampler& s) const {
+    return (size_t(s.uClamp)*2u+size_t(s.minFilter))*8u + size_t(s.anisotropic?1:0);
+    }
+
+  size_t operator()(const Texture3d::Sampler& s) const {
+    return (size_t(s.uClamp)*2u+size_t(s.minFilter))*8u;
+    }
+  };
+
+struct SmpCmp{
+  bool operator()(const Texture2d::Sampler& s1,
+                    const Texture2d::Sampler& s2) const {
+    return s1.magFilter==s2.magFilter &&
+           s1.minFilter==s2.minFilter &&
+           s1.mipFilter==s2.mipFilter &&
+           s1.uClamp==s2.uClamp &&
+           s1.vClamp==s2.vClamp;
+    }
+  };
 
 struct HLSL11::Data{
   ID3D11Device*        dev;
   ID3D11DeviceContext* immediateContext;
+
+  ~Data(){
+    for( auto i:samplers2d )
+      i.second->Release();
+    }
 
   struct Shader{
     ID3D11VertexShader* vs     = 0;
@@ -53,9 +80,10 @@ struct HLSL11::Data{
       if(fs)
         fs->Release();
 
-      for( ID3D11Buffer* u:*ubo )
-        if(u)
-          u->Release();
+      if(ubo)
+        for( ID3D11Buffer* u:*ubo )
+          if(u)
+            u->Release();
       }
     };
 
@@ -74,6 +102,53 @@ struct HLSL11::Data{
     HRESULT hr = dev->CreateBuffer( &desc, NULL, &ret );
     if( FAILED( hr ) )
       return 0;
+    return ret;
+    }
+
+  std::unordered_map<Texture2d::Sampler,ID3D11SamplerState*,SmpHash,SmpCmp> samplers2d;
+  ID3D11SamplerState* createSampler( const Texture2d::Sampler& s ){
+    auto scashe = samplers2d.find(s);
+    if(scashe!=samplers2d.end())
+      return scashe->second;
+
+    D3D11_SAMPLER_DESC sampDesc;
+    ZeroMemory( &sampDesc, sizeof(sampDesc) );
+    sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+
+    static const D3D11_TEXTURE_ADDRESS_MODE addR[] = {
+      D3D11_TEXTURE_ADDRESS_CLAMP,
+      D3D11_TEXTURE_ADDRESS_BORDER,
+      D3D11_TEXTURE_ADDRESS_MIRROR, //??
+      D3D11_TEXTURE_ADDRESS_MIRROR,
+      D3D11_TEXTURE_ADDRESS_WRAP,
+
+      D3D11_TEXTURE_ADDRESS_WRAP
+      };
+
+    uint32_t filter=0;
+    if( s.mipFilter==Texture2d::FilterType::Linear )
+      filter |= D3D11_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+    if( s.magFilter==Texture2d::FilterType::Linear )
+      filter |= D3D11_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
+    if( s.minFilter==Texture2d::FilterType::Linear )
+      filter |= D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+
+    if(s.anisotropic)
+      filter=D3D11_FILTER_ANISOTROPIC;
+
+    sampDesc.Filter   = D3D11_FILTER(filter);
+    sampDesc.AddressU = addR[ s.uClamp ];
+    sampDesc.AddressV = addR[ s.vClamp ];
+    sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    sampDesc.MinLOD   = 0;
+    sampDesc.MaxLOD   = D3D11_FLOAT32_MAX;
+
+    ID3D11SamplerState* ret = 0;
+    HRESULT hr = dev->CreateSamplerState( &sampDesc, &ret );
+    if( FAILED(hr) )
+      return 0;
+
+    samplers2d[s] = ret;
     return ret;
     }
 
@@ -243,67 +318,13 @@ struct HLSL11::Data{
     }
 
   void setSampler( int i, const Tempest::Texture2d::Sampler& s ){
-    /*
-    static const D3DTEXTUREADDRESS addR[] = {
-      D3DTADDRESS_CLAMP,
-      D3DTADDRESS_BORDER,
-      D3DTADDRESS_MIRRORONCE, //??
-      D3DTADDRESS_MIRROR,
-      D3DTADDRESS_WRAP,
-
-      D3DTADDRESS_WRAP
-      };
-
-    static const D3DTEXTUREFILTERTYPE filters[] = {
-      D3DTEXF_POINT,
-      D3DTEXF_LINEAR,
-      D3DTEXF_POINT
-      };
-
-    dev->SetSamplerState(i, D3DSAMP_ADDRESSU, addR[ s.uClamp ] );
-    dev->SetSamplerState(i, D3DSAMP_ADDRESSV, addR[ s.vClamp ] );
-
-    if( s.anisotropic ){
-      dev->SetSamplerState( i, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC );
-      dev->SetSamplerState( i, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC );
-      } else {
-      dev->SetSamplerState( i, D3DSAMP_MAGFILTER, filters[ s.magFilter ] );
-      dev->SetSamplerState( i, D3DSAMP_MINFILTER, filters[ s.minFilter ] );
-      }
-    dev->SetSamplerState(i, D3DSAMP_MIPFILTER, filters[ s.minFilter ] );
-
-    dev->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, caps.MaxAnisotropy );
-    */
+    ID3D11SamplerState *st = createSampler(s);
+    immediateContext->PSSetSamplers( i, 1, &st );
     }
 
   void setSampler( int i, const Tempest::Texture3d::Sampler& s ){
-    /*
-    static const D3DTEXTUREADDRESS addR[] = {
-      D3DTADDRESS_CLAMP,
-      D3DTADDRESS_BORDER,
-      D3DTADDRESS_MIRRORONCE, //??
-      D3DTADDRESS_MIRROR,
-      D3DTADDRESS_WRAP,
-
-      D3DTADDRESS_WRAP
-      };
-
-    static const D3DTEXTUREFILTERTYPE filters[] = {
-      D3DTEXF_POINT,
-      D3DTEXF_LINEAR,
-      D3DTEXF_POINT
-      };
-
-    dev->SetSamplerState(i, D3DSAMP_ADDRESSU, addR[ s.uClamp ] );
-    dev->SetSamplerState(i, D3DSAMP_ADDRESSV, addR[ s.vClamp ] );
-    dev->SetSamplerState(i, D3DSAMP_ADDRESSW, addR[ s.wClamp ] );
-
-    dev->SetSamplerState( i, D3DSAMP_MAGFILTER, filters[ s.magFilter ] );
-    dev->SetSamplerState( i, D3DSAMP_MINFILTER, filters[ s.minFilter ] );
-    dev->SetSamplerState( i, D3DSAMP_MIPFILTER, filters[ s.minFilter ] );
-
-    dev->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, caps.MaxAnisotropy );
-    */
+    (void)i;
+    (void)s;
     }
   };
 
@@ -369,7 +390,8 @@ GraphicsSubsystem::ProgramObject*
     prog=0;
     }
 
-  prog->ubo.reset( new std::vector<ID3D11Buffer*>() );
+  if(prog)
+    prog->ubo.reset( new std::vector<ID3D11Buffer*>() );
   return (GraphicsSubsystem::ProgramObject*)prog;
   }
 
@@ -455,6 +477,7 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &in,
           if(!t->view)
             data->dev->CreateShaderResourceView(t->texture, NULL, &t->view);
           data->immediateContext->PSSetShaderResources(slot,1,&t->view);
+          data->setSampler(slot,*smp2d);
           }
         ++slot;
         }

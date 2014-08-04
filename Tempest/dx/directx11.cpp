@@ -64,14 +64,23 @@ struct DirectX11::Device{
     return ((Device*)d)->device;
     }
 
-  std::vector<char> texFlipped;
-  void* flipTexture(int w, int h, int bpp, const unsigned char * pix){
-    if( texFlipped.size()<size_t(w*h*bpp) )
-      texFlipped.resize(w*h*bpp);
+  std::vector<uint8_t> texFlipped;
+  void* flipTexture(int w, int h, int bpp, const uint8_t * pix){
+    if( texFlipped.size()<size_t(w*h*4) )
+      texFlipped.resize(w*h*4);
 
-    for( int r=0; r<h; ++r ){
-      //memcpy( &texFlipped[r*w*bpp], pix+r*w*bpp, w*bpp );
-      memcpy( &texFlipped[r*w*bpp], pix+w*(w-r-1)*bpp, w*bpp );
+    unsigned char* tx = &texFlipped[0];
+    if(bpp==4){
+      for( int r=0; r<h; ++r ){
+        memcpy( &tx[r*w*bpp], pix+w*(h-r-1)*bpp, w*bpp );
+        }
+      } else {
+      for( int r=0; r<h; ++r )
+        for(int i=0; i<w; ++i){
+          const int r1 = h-r-1;
+          memcpy( &tx[(r*w+i)*4], pix+(w*r1+i)*3, 3 );
+          tx[(r*w+i)*4+3] = 255;
+          }
       }
 
     return &texFlipped[0];
@@ -332,18 +341,18 @@ AbstractAPI::Texture *DirectX11::createTexture( AbstractAPI::Device *d,
   desc.Height           = p.height();
   desc.MipLevels        = 1;//desc.ArraySize = 1;
   desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
-  desc.SampleDesc.Count = 1;
   desc.Usage            = D3D11_USAGE_DEFAULT;//D3D11_USAGE_IMMUTABLE;
   desc.BindFlags        = D3D11_BIND_RENDER_TARGET|D3D11_BIND_SHADER_RESOURCE;
   desc.CPUAccessFlags   = 0;
   desc.MiscFlags        = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+  desc.SampleDesc.Count   = 1;
+  desc.SampleDesc.Quality = 0;
 
   D3D11_SUBRESOURCE_DATA pix;
   ZeroMemory(&pix, sizeof(pix));
   const int bpp   = p.hasAlpha() ? 4:3;
   pix.pSysMem     = dev->flipTexture(p.width(), p.height(), bpp, p.const_data());
-  pix.SysMemPitch = p.width()*bpp;
-  //pix.SysMemSlicePitch = p.width()*p.height()*4;
+  pix.SysMemPitch = p.width()*4;
 
   DX11Texture* tex = new DX11Texture;
   if( SUCCEEDED(dev->device->CreateTexture2D( &desc, &pix, &tex->texture )) ){
@@ -371,8 +380,8 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
   static const D3D11_USAGE u[] = {
     D3D11_USAGE_IMMUTABLE,
     D3D11_USAGE_DEFAULT,
-    D3D11_USAGE_DYNAMIC,
-    D3D11_USAGE_DYNAMIC//D3D11_USAGE_STAGING
+    D3D11_USAGE_DEFAULT,
+    D3D11_USAGE_DEFAULT//D3D11_USAGE_STAGING
     };
 
   Device* dev = (Device*)d;
@@ -382,11 +391,12 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
   desc.Height           = h;
   desc.MipLevels        = 1;//desc.ArraySize = 1;
   desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
-  desc.SampleDesc.Count = 1;
   desc.Usage            = u[usage];
   desc.BindFlags        = D3D11_BIND_RENDER_TARGET|D3D11_BIND_SHADER_RESOURCE;
   desc.CPUAccessFlags   = D3D11_CPU_ACCESS_WRITE;
   desc.MiscFlags        = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+  desc.SampleDesc.Count   = 1;
+  desc.SampleDesc.Quality = 0;
 
   DX11Texture* tex = new DX11Texture;
   if( SUCCEEDED(dev->device->CreateTexture2D( &desc, NULL, &tex->texture )) ){
@@ -422,7 +432,7 @@ AbstractAPI::VertexBuffer *DirectX11::createVertexBuffer( AbstractAPI::Device *d
   return createVertexBuffer(d,size,elSize,0,u);
   }
 
-AbstractAPI::VertexBuffer *DirectX11::createVertexBuffer(AbstractAPI::Device *d,
+AbstractAPI::VertexBuffer *DirectX11::createVertexBuffer( AbstractAPI::Device *d,
                                                           size_t size,
                                                           size_t elSize,
                                                           const void *src,
@@ -440,6 +450,8 @@ AbstractAPI::VertexBuffer *DirectX11::createVertexBuffer(AbstractAPI::Device *d,
   bd.ByteWidth      = elSize*size;
   bd.BindFlags      = D3D11_BIND_VERTEX_BUFFER;
   bd.CPUAccessFlags = 0;
+  if(bd.Usage==D3D11_USAGE_DYNAMIC)
+    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
   D3D11_SUBRESOURCE_DATA initData;
   ZeroMemory( &initData, sizeof(initData) );
@@ -483,6 +495,8 @@ AbstractAPI::IndexBuffer *DirectX11::createIndexBuffer( AbstractAPI::Device *d,
   bd.ByteWidth      = elSize*size;
   bd.BindFlags      = D3D11_BIND_INDEX_BUFFER;
   bd.CPUAccessFlags = 0;
+  if(bd.Usage==D3D11_USAGE_DYNAMIC)
+    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
   D3D11_SUBRESOURCE_DATA initData;
   ZeroMemory( &initData, sizeof(initData) );
@@ -537,12 +551,19 @@ void DirectX11::bindIndexBuffer( AbstractAPI::Device *d,
 void *DirectX11::lockBuffer( AbstractAPI::Device *d,
                              AbstractAPI::VertexBuffer *b,
                              unsigned offset, unsigned size) const {
-  T_WARNING_X(0,"lockBuffer");
-  return 0;
+  Device* dev = (Device*)d;
+  D3D11_MAPPED_SUBRESOURCE resource;
+  HRESULT hResult = dev->immediateContext->Map( (ID3D11Buffer*)b, 0,
+                                                D3D11_MAP_WRITE_DISCARD, 0, &resource);
+  if(hResult != S_OK)
+     return 0;
+  return (char*)resource.pData + offset*size;
   }
 
-void DirectX11::unlockBuffer(AbstractAPI::Device *d, AbstractAPI::VertexBuffer *) const {
-
+void DirectX11::unlockBuffer( AbstractAPI::Device *d,
+                              AbstractAPI::VertexBuffer *b ) const {
+  Device* dev = (Device*)d;
+  dev->immediateContext->Unmap((ID3D11Buffer*)b, 0);
   }
 
 void *DirectX11::lockBuffer(AbstractAPI::Device *d,
@@ -650,5 +671,6 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
   dev->immediateContext->OMSetBlendState(state, 0, 0xffffffff);
   if(state)
     state->Release();
+
   //TODO
   }
