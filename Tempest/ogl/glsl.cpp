@@ -17,7 +17,6 @@ using namespace Tempest::GLProc;
 #include <Tempest/Texture2d>
 #include <Tempest/Texture3d>
 
-#include "shading/uniformcash.h"
 #include <Tempest/SystemAPI>
 #include "gltypes.h"
 #include "utils/sortedvec.h"
@@ -50,8 +49,6 @@ using namespace Tempest;
 struct GLSL::Data{
   AbstractAPI::OpenGL2xDevice * context;
   float maxAnisotropy;
-
-  Detail::UniformCash<GLuint> uCash;
 
   std::string readFile( const char* f ){
     return std::move( SystemAPI::loadText(f).data() );
@@ -346,7 +343,6 @@ void Tempest::GLSL::beginPaint() const {
 void Tempest::GLSL::endPaint() const {
   glUseProgram( 0 );
 
-  data->uCash.reset();
   data->curProgram = 0;
   data->bindedProg = 0;
   }

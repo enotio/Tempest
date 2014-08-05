@@ -35,12 +35,12 @@ static inline void align(void*& ptr){
 
 template< class T >
 static inline void align(size_t& ptr){
-  ptr = ((ptr+alignof(T)-1)/alignof(T))*alignof(T);
+  //ptr = ((ptr+alignof(T)-1)/alignof(T))*alignof(T);
   }
 
 template< class T, class X >
 static inline void inc(X& ptr, int count=1){
-  ptr = (X)(((uintptr_t(ptr)+alignof(T)-1)/alignof(T))*alignof(T));
+  //ptr = (X)(((uintptr_t(ptr)+alignof(T)-1)/alignof(T))*alignof(T));
   ptr += sizeof(T)*count;
   }
 

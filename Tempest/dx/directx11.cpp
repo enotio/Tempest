@@ -27,9 +27,29 @@
 #include "dx11types.h"
 #include "hlsl11.h"
 
+#include <unordered_map>
+
 using namespace Tempest;
 
 static const IID ID3D11Texture2D_uuid = {0x6f15aaf2,0xd208,0x4e89, {0x9a,0xb4,0x48,0x95,0x35,0xd3,0x4f,0x9c}};
+
+
+struct BlendDesc{
+  D3D11_BLEND d,s;
+  bool        blend;
+  };
+
+struct BlendHash {
+  size_t operator () ( const BlendDesc& a ) const {
+    return a.blend ? size_t(a.d+1) : 0;
+    }
+  };
+
+struct BlendCmp {
+  bool operator () ( const BlendDesc& a, const BlendDesc& b ) const {
+    return a.blend==b.blend && a.d==b.d && a.s==b.s;
+    }
+  };
 
 struct DirectX11::Device{
   ID3D11Device*   device                         = 0;
@@ -40,6 +60,8 @@ struct DirectX11::Device{
   ID3D11RenderTargetView* renderTargetView       = NULL;
   ID3D11DepthStencilView* renderDepthStencilView = NULL;
   ID3D11DepthStencilState* dsState               = NULL;
+
+  std::unordered_map<BlendDesc,ID3D11BlendState*,BlendHash,BlendCmp> blendSt;
 
   int scrW, scrH;
 
@@ -203,6 +225,12 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
   }
 
 void DirectX11::deleteDevice(AbstractAPI::Device *d) const {
+  Device* dev = (Device*)d;
+
+  for( auto i:dev->blendSt )
+    if(i.second)
+      i.second->Release();
+
   delete ((Device*)d);
   }
 
@@ -313,8 +341,8 @@ bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
     dx->immediateContext->OMSetRenderTargets(1, &dx->renderTargetView, NULL );
 
     D3D11_VIEWPORT vp;
-    vp.Width    = dx->scrW;
-    vp.Height   = dx->scrH;
+    vp.Width    = FLOAT(dx->scrW);
+    vp.Height   = FLOAT(dx->scrH);
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     vp.TopLeftX = 0;
@@ -393,7 +421,7 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
   desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
   desc.Usage            = u[usage];
   desc.BindFlags        = D3D11_BIND_RENDER_TARGET|D3D11_BIND_SHADER_RESOURCE;
-  desc.CPUAccessFlags   = D3D11_CPU_ACCESS_WRITE;
+  desc.CPUAccessFlags   = 0;
   desc.MiscFlags        = D3D11_RESOURCE_MISC_GENERATE_MIPS;
   desc.SampleDesc.Count   = 1;
   desc.SampleDesc.Quality = 0;
@@ -439,7 +467,7 @@ AbstractAPI::VertexBuffer *DirectX11::createVertexBuffer( AbstractAPI::Device *d
                                                           AbstractAPI::BufferUsage u) const {
   Device* dev = (Device*)d;
   static const D3D11_USAGE usage[]={
-    D3D11_USAGE_STAGING,
+    D3D11_USAGE_DYNAMIC,
     D3D11_USAGE_IMMUTABLE,
     D3D11_USAGE_DYNAMIC
     };
@@ -484,7 +512,7 @@ AbstractAPI::IndexBuffer *DirectX11::createIndexBuffer( AbstractAPI::Device *d,
                                                         AbstractAPI::BufferUsage u) const {
   Device* dev = (Device*)d;
   static const D3D11_USAGE usage[]={
-    D3D11_USAGE_STAGING,
+    D3D11_USAGE_DYNAMIC,
     D3D11_USAGE_IMMUTABLE,
     D3D11_USAGE_DYNAMIC
     };
@@ -494,7 +522,6 @@ AbstractAPI::IndexBuffer *DirectX11::createIndexBuffer( AbstractAPI::Device *d,
   bd.Usage          = usage[u];
   bd.ByteWidth      = elSize*size;
   bd.BindFlags      = D3D11_BIND_INDEX_BUFFER;
-  bd.CPUAccessFlags = 0;
   if(bd.Usage==D3D11_USAGE_DYNAMIC)
     bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
@@ -550,14 +577,22 @@ void DirectX11::bindIndexBuffer( AbstractAPI::Device *d,
 
 void *DirectX11::lockBuffer( AbstractAPI::Device *d,
                              AbstractAPI::VertexBuffer *b,
-                             unsigned offset, unsigned size) const {
+                             unsigned offset,
+                             unsigned size ) const {
   Device* dev = (Device*)d;
+  ID3D11Buffer* buf = (ID3D11Buffer*)b;
+
   D3D11_MAPPED_SUBRESOURCE resource;
+  D3D11_BUFFER_DESC desc;
+  buf->GetDesc(&desc);
+
   HRESULT hResult = dev->immediateContext->Map( (ID3D11Buffer*)b, 0,
-                                                D3D11_MAP_WRITE_DISCARD, 0, &resource);
+                                                D3D11_MAP_WRITE_DISCARD,
+                                                0, &resource);
   if(hResult != S_OK)
      return 0;
-  return (char*)resource.pData + offset*size;
+  memset(resource.pData,0,desc.ByteWidth);
+  return (char*)resource.pData + offset;
   }
 
 void DirectX11::unlockBuffer( AbstractAPI::Device *d,
@@ -567,14 +602,20 @@ void DirectX11::unlockBuffer( AbstractAPI::Device *d,
   }
 
 void *DirectX11::lockBuffer(AbstractAPI::Device *d,
-                            AbstractAPI::IndexBuffer *,
-                            unsigned offset, unsigned size) const {
-  T_WARNING_X(0,"lockBuffer");
-  return 0;
+                            AbstractAPI::IndexBuffer *b,
+                            unsigned offset, unsigned /*size*/) const {
+  Device* dev = (Device*)d;
+  D3D11_MAPPED_SUBRESOURCE resource;
+  HRESULT hResult = dev->immediateContext->Map( (ID3D11Buffer*)b, 0,
+                                                D3D11_MAP_WRITE_DISCARD, 0, &resource);
+  if(hResult != S_OK)
+     return 0;
+  return (char*)resource.pData + offset;
   }
 
-void DirectX11::unlockBuffer(AbstractAPI::Device *d, AbstractAPI::IndexBuffer *) const {
-
+void DirectX11::unlockBuffer(AbstractAPI::Device *d, AbstractAPI::IndexBuffer *b) const {
+  Device* dev = (Device*)d;
+  dev->immediateContext->Unmap((ID3D11Buffer*)b, 0);
   }
 
 AbstractShadingLang *DirectX11::createShadingLang(AbstractAPI::Device *d) const {
@@ -652,6 +693,17 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
   Device* dev = (Device*)d;
   ID3D11BlendState* state = 0;
 
+  BlendDesc bd;
+  bd.blend = rs.isBlend();
+  bd.d     = blend[rs.getBlendDFactor()];
+  bd.s     = blend[rs.getBlendSFactor()];
+
+  auto i=dev->blendSt.find(bd);
+  if(i!=dev->blendSt.end()){
+    dev->immediateContext->OMSetBlendState(i->second, 0, 0xffffffff);
+    return;
+    }
+
   D3D11_BLEND_DESC BlendState;
   ZeroMemory(&BlendState, sizeof(D3D11_BLEND_DESC));
   BlendState.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
@@ -668,9 +720,8 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
     BlendState.RenderTarget[i] = BlendState.RenderTarget[0];
 
   dev->device->CreateBlendState(&BlendState, &state);
+  dev->blendSt[bd] = state;
   dev->immediateContext->OMSetBlendState(state, 0, 0xffffffff);
-  if(state)
-    state->Release();
 
   //TODO
   }

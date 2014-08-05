@@ -535,12 +535,7 @@ std::string HLSL11::surfaceShader( GraphicsSubsystem::ShaderType t,
       "  };"
 
       "Texture2D brush_texture : register(t0);"
-      "SamplerState samp"
-        "{"
-        "Filter = MIN_MAG_MIP_LINEAR;"
-        "AddressU = Wrap;"
-        "AddressV = Wrap;"
-        "};"
+      "SamplerState samp:register(s0);"
 
       "float4 main( FS_Input fs ): SV_Target {"
         "return brush_texture.Sample( samp, float4(fs.tc, 0.0, 0.0) )*fs.cl;"

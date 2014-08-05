@@ -161,9 +161,6 @@ class DirectX11 : public AbstractAPI {
     Size windowSize( Tempest::AbstractAPI::Device * dev ) const;
     bool hasManagedStorge() const;
   private:
-    class DirectX9Impl;
-    DirectX9Impl* impl;
-
     struct Data;
     struct IBO;
     struct Device;

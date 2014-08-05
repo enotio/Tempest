@@ -1,6 +1,7 @@
 #ifndef SHADERPROGRAMHOLDER_H
 #define SHADERPROGRAMHOLDER_H
 
+#include <Tempest/Texture2d>
 #include <Tempest/AbstractHolder>
 #include <Tempest/AbstractShadingLang>
 

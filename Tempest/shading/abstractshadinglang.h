@@ -7,8 +7,6 @@
 #include <Tempest/GraphicsSubsystem>
 #include <Tempest/UniformDeclaration>
 
-#include <map>
-
 namespace Tempest{
 
 class ShaderProgram;

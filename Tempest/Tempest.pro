@@ -231,7 +231,6 @@ HEADERS += \
     scene/abstractlightcollection.h \
     scene/abstractgraphicobject.h \
     scene/abstractcamera.h \
-    shading/uniformcash.h \
     shading/fragmentshader.h \
     shading/abstractshadinglang.h \
     utils/tessobject.h \

@@ -1,6 +1,7 @@
 #ifndef LOCALTEXTURESHOLDER_H
 #define LOCALTEXTURESHOLDER_H
 
+#include <Tempest/Texture2d>
 #include <Tempest/TextureHolder>
 #include <Tempest/LocalObjectPool>
 #include <vector>

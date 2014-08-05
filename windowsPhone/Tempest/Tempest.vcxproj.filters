@@ -114,9 +114,6 @@
     <ClCompile Include="..\..\Tempest\core\device.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Tempest\core\devicesm5.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Tempest\core\graphicssubsystem.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -193,30 +190,6 @@
       <Filter>scene</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Tempest\shading\abstractshadinglang.cpp">
-      <Filter>shading</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Tempest\shading\evalshader.cpp">
-      <Filter>shading</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Tempest\shading\fragmentshader.cpp">
-      <Filter>shading</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Tempest\shading\programobject.cpp">
-      <Filter>shading</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Tempest\shading\shader.cpp">
-      <Filter>shading</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Tempest\shading\shaderinput.cpp">
-      <Filter>shading</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Tempest\shading\tessshader.cpp">
-      <Filter>shading</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Tempest\shading\uniformcash.cpp">
-      <Filter>shading</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Tempest\shading\vertexshader.cpp">
       <Filter>shading</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Tempest\system\androidapi.cpp">
@@ -551,6 +524,12 @@
     <ClCompile Include="..\..\Tempest\dx\directx11.cpp">
       <Filter>dx</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Tempest\shading\shaderprogram.cpp">
+      <Filter>shading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tempest\dataControl\shaderprogramholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Tempest\2d\font.h">
@@ -607,9 +586,6 @@
     <ClInclude Include="..\..\Tempest\core\device.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Tempest\core\devicesm5.h">
-      <Filter>core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Tempest\core\graphicssubsystem.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -623,12 +599,6 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Tempest\dataControl\abstractholder.h">
-      <Filter>dataControl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Tempest\dataControl\evalshaderholder.h">
-      <Filter>dataControl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Tempest\dataControl\fragmentshaderholder.h">
       <Filter>dataControl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Tempest\dataControl\indexbufferholder.h">
@@ -646,19 +616,10 @@
     <ClInclude Include="..\..\Tempest\dataControl\resourcecontext.h">
       <Filter>dataControl</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Tempest\dataControl\shaderholder.h">
-      <Filter>dataControl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Tempest\dataControl\tessshaderholder.h">
-      <Filter>dataControl</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Tempest\dataControl\textureholder.h">
       <Filter>dataControl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Tempest\dataControl\vertexbufferholder.h">
-      <Filter>dataControl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Tempest\dataControl\vertexshaderholder.h">
       <Filter>dataControl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Tempest\dataControl\volumeholder.h">
@@ -707,30 +668,6 @@
       <Filter>scene</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Tempest\shading\abstractshadinglang.h">
-      <Filter>shading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Tempest\shading\evalshader.h">
-      <Filter>shading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Tempest\shading\fragmentshader.h">
-      <Filter>shading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Tempest\shading\programobject.h">
-      <Filter>shading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Tempest\shading\shader.h">
-      <Filter>shading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Tempest\shading\shaderinput.h">
-      <Filter>shading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Tempest\shading\tessshader.h">
-      <Filter>shading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Tempest\shading\uniformcash.h">
-      <Filter>shading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Tempest\shading\vertexshader.h">
       <Filter>shading</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Tempest\system\androidapi.h">
@@ -954,6 +891,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Tempest\dx\directx11.h">
       <Filter>dx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\shading\shaderprogram.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dataControl\shaderprogramholder.h">
+      <Filter>dataControl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
