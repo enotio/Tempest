@@ -56,14 +56,14 @@ MainWindow::MainWindow( Tempest::AbstractAPI &api )
   {
   zoom = 1;
   udecl.add( "mvpMatrix", Decl::Matrix4x4 )
-    .add( "xtexture", Decl::Texture2d );
+       .add( "xtexture", Decl::Texture2d );
 
   vbo = vboHolder.load( quadVb, sizeof( quadVb ) / sizeof( quadVb[0] ) );
   ibo = iboHolder.load( quadId, sizeof( quadId ) / sizeof( quadId[0] ) );
 
   VertexDeclaration::Declarator decl;
   decl.add( Decl::float3, Usage::Position )
-    .add( Decl::float2, Usage::TexCoord );
+      .add( Decl::float2, Usage::TexCoord );
   vdecl = VertexDeclaration( device, decl );
 
   texture = texHolder.load( "data/texture.png" );
@@ -97,7 +97,7 @@ void MainWindow::render() {
   if (!device.startRender())
     return;
 
-  device.clear( Color( 0, 0, 1 ), 1 );
+  device.clear( Color( 1, 1, 0 ), 1 );
 
   device.beginPaint();
   setupShaderConstants( shader );

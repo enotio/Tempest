@@ -11,5 +11,5 @@ SamplerState samp {
   };
 
 float4 main( VS_OUTPUT input ) : SV_TARGET {
-  return xtexture.Sample(samp,input.texCoord);
+  return xtexture.Sample( samp, input.texCoord );
   }

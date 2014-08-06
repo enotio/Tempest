@@ -65,7 +65,7 @@ bool WinPhoneAPI::setDisplaySettings( Window* w, const DisplaySettings &s ) {
  
 Size WinPhoneAPI::implScreenSize() {
   int w=0, h=0;
-  //WinRt::getScreenSize( w, h );
+  WinRt::getScreenRect( WinRt::getMainRtWidget(), w, h );
   return Size(w,h);
   }
 
