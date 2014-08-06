@@ -113,6 +113,7 @@
     <IncludePath>../../Tempest/include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemGroup>
+    <Image Include="Assets\data\texture.png" />
     <Image Include="Assets\Logo.scale-240.png" />
     <Image Include="Assets\SmallLogo.scale-240.png" />
     <Image Include="Assets\SplashScreen.scale-240.png" />
@@ -132,6 +133,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainWindow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Assets\shader\basic11.vs.hlsl" />
+    <Text Include="Assets\shader\basic11.fs.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

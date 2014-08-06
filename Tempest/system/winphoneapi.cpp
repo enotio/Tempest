@@ -163,42 +163,17 @@ WinPhoneAPI::File *WinPhoneAPI::fopenImpl( const char *fname, const char *mode )
   }
 
 WinPhoneAPI::File *WinPhoneAPI::fopenImpl( const char16_t *fname, const char *mode ) {
-  return (SystemAPI::File*)0;
-  }
+  T_ASSERT( sizeof( wchar_t ) == sizeof( char16_t ) );
 
-size_t WinPhoneAPI::readDataImpl(SystemAPI::File *f, char *dest, size_t count) {
-  return 0;
-  }
+  wchar_t flg[4] = {};
+  for (int i = 0; i < 4 && mode[i]; ++i)
+    flg[i] = mode[i]; 
 
-size_t WinPhoneAPI::peekImpl(SystemAPI::File *f, size_t skip, char *dest, size_t count) {
-  return 0;
-  }
-
-size_t WinPhoneAPI::writeDataImpl(SystemAPI::File *f, const char *data, size_t count) {
-  return 0;
-  }
-
-void WinPhoneAPI::flushImpl(SystemAPI::File *f) {
-  //WinFile *fn = (WinFile*)f;
-  }
-
-size_t WinPhoneAPI::skipImpl(SystemAPI::File *f, size_t count) {
-  return 0;
-  }
-
-bool WinPhoneAPI::eofImpl(SystemAPI::File *f) {
-  WinFile *fn = (WinFile*)f;
-  return fn->pos==fn->size;
-  }
-
-size_t WinPhoneAPI::fsizeImpl( File *f ){
-  WinFile *fn = (WinFile*)f;
-  return fn->size;
-  }
-
-void WinPhoneAPI::fcloseImpl(SystemAPI::File *f) {
-  CloseHandle( ((WinFile*)f)->h );
-  delete ((WinFile*)f);
+  std::wstring str = WinRt::getAssetsFolder()+L"\\Assets\\"+(wchar_t*)fname;
+  FILE* f = _wfopen( str.c_str(), flg );
+  if( f )
+    return (File*)f;
+  return (File*)_wfopen( (wchar_t*)fname, flg );
   }
 
 static Event::MouseButton toButton( UINT msg ){

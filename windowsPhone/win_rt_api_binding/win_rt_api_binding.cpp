@@ -4,6 +4,8 @@
 
 #include <wrl.h>
 #include <ppltasks.h>
+#include <Windows.Phone.ApplicationModel.h>
+#include <Windows.ApplicationModel.Core.h>
 
 using namespace concurrency;
 using namespace Windows::ApplicationModel;
@@ -243,4 +245,8 @@ void WinRt::getScreenRect( void* hwnd, int& scrW, int& scrH ){
   //FIXME
   scrW = 800;
   scrH = 480;
+  }
+
+std::wstring WinRt::getAssetsFolder(){
+  return Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data();
   }

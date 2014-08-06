@@ -407,7 +407,7 @@ bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
   WinRt::getScreenRect( hwnd, dx->scrW, dx->scrH );
 #else
   RECT rc;
-  GetClientRect( hwnd, &rc );
+  GetClientRect( (HWND)hwnd, &rc );
   dx->scrW = rc.right  - rc.left;
   dx->scrH = rc.bottom - rc.top;
 #endif

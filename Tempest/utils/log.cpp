@@ -1,7 +1,13 @@
 #include "log.h"
 
+#include <Tempest/Platform>
+
 #ifdef __ANDROID__
 #include <android/log.h>
+#endif
+
+#ifdef __WINDOWS_PHONE__
+#include <windows.h>
 #endif
 
 #include <iostream>
@@ -26,6 +32,8 @@ void Log::flush() {
 
   if( m==Debug )
      __android_log_print(ANDROID_LOG_DEBUG, "", "%s", st.str().c_str());
+#elif defined(__WINDOWS_PHONE__)
+  OutputDebugStringA(st.str().c_str());
 #else
   if( m==Error )
     std::cerr << st.str() << std::endl;

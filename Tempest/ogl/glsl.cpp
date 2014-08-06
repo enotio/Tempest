@@ -538,17 +538,17 @@ void GLSL::disable() const {
   }
 
 void GLSL::setUniforms( unsigned int prog,
-                        const UBO &in,
+                        const UBO &ux,
                         int& slot ) const {
-  const char*  name      = &in.names[0];
-  intptr_t const* fields = &in.fields[0];
-  void* const * tex      = &in.tex[0];
-  Texture2d::Sampler const* smp2d = (Texture2d::Sampler*)&in.smp[0][0];
-  Texture3d::Sampler const* smp3d = (Texture3d::Sampler*)&in.smp[1][0];
+  const char*  name      = ux.names.data();
+  intptr_t const* fields = ux.fields.data();
+  void* const * tex      = ux.tex.data();
+  Texture2d::Sampler* smp2d = (Texture2d::Sampler*)ux.smp[0].data();
+  Texture3d::Sampler* smp3d = (Texture3d::Sampler*)ux.smp[1].data();
 
-  for( int t: in.desc ){
+  for( int t: ux.desc ){
     GLint prm = data->location( prog, name );
-    const char* v = &in.data[0] + fields[0];
+    const char* v = &ux.data[0] + fields[0];
     ++fields;
 
     if(prm!=-1)

@@ -5,19 +5,15 @@
       <UniqueIdentifier>1abd0431-8604-42db-9fb2-4c379915ba99</UniqueIdentifier>
       <Extensions>bmp;fbx;gif;jpg;jpeg;tga;tiff;tif;png</Extensions>
     </Filter>
+    <Filter Include="Content">
+      <UniqueIdentifier>{039fb568-5bba-4bc0-aa97-252a8a090f21}</UniqueIdentifier>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="windows_dummy.cpp" />
     <ClCompile Include="MainWindow.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="Common">
-      <UniqueIdentifier>{43755405-ae1a-4ecd-8aae-eab2c591bb1e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Content">
-      <UniqueIdentifier>{a51ad58a-2db0-40b8-b157-4064e7c808df}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Logo.scale-240.png">
@@ -38,11 +34,22 @@
     <Image Include="Assets\WideLogo.scale-240.png">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\data\texture.png">
+      <Filter>Content</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainWindow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Assets\shader\basic11.fs.hlsl">
+      <Filter>Content</Filter>
+    </Text>
+    <Text Include="Assets\shader\basic11.vs.hlsl">
+      <Filter>Content</Filter>
+    </Text>
   </ItemGroup>
 </Project>

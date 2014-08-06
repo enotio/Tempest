@@ -78,8 +78,8 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   void** tx = &ux.tex[0];
   int i=0;
   char *data = &ux.data[0];
-  Texture2d::Sampler* smp2d = (Texture2d::Sampler*)&ux.smp[0][0];
-  Texture3d::Sampler* smp3d = (Texture3d::Sampler*)&ux.smp[1][0];
+  Texture2d::Sampler* smp2d = (Texture2d::Sampler*)ux.smp[0].data();
+  Texture3d::Sampler* smp3d = (Texture3d::Sampler*)ux.smp[1].data();
 
   for( int type:ux.desc ){
     const char* addr = ubo+bufsz;    

@@ -378,9 +378,15 @@ GraphicsSubsystem::ProgramObject*
   Data::Shader* prog = new Data::Shader();
   ID3DBlob* compiledFs = 0;
   outputLog.clear();
+#ifdef __WINDOWS_PHONE__
+  bool sucsess =
+    data->createShaderFromSource(src.vs,outputLog,prog->vs,prog->blobVs,"vs_4_0_level_9_1") &&
+    data->createShaderFromSource(src.fs,outputLog,prog->fs,compiledFs,  "ps_4_0_level_9_1");
+#else
   bool sucsess =
     data->createShaderFromSource(src.vs,outputLog,prog->vs,prog->blobVs,"vs_4_0") &&
     data->createShaderFromSource(src.fs,outputLog,prog->fs,compiledFs,  "ps_4_0");
+#endif
 
   if(compiledFs)
     compiledFs->Release();
@@ -450,15 +456,15 @@ void HLSL11::enable() const {
     }
   }
 
-void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &in,
+void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &ux,
                                    int &slot ) const {
-  const char*  name      = in.names.data();
-  intptr_t const* fields = &in.fields[0];
-  void* const * tex      = &in.tex[0];
-  Texture2d::Sampler const* smp2d = (Texture2d::Sampler*)&in.smp[0][0];
-  Texture3d::Sampler const* smp3d = (Texture3d::Sampler*)&in.smp[1][0];
+  const char*  name      = ux.names.data();
+  intptr_t const* fields = ux.fields.data();
+  void* const * tex      = ux.tex.data();
+  Texture2d::Sampler const* smp2d = (Texture2d::Sampler*)ux.smp[0].data();
+  Texture3d::Sampler const* smp3d = (Texture3d::Sampler*)ux.smp[1].data();
 
-  for( int t: in.desc ){
+  for( int t: ux.desc ){
     //const char* v = &in.data[0] + fields[0];
     ++fields;
 
