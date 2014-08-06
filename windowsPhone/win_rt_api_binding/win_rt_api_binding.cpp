@@ -21,6 +21,8 @@ static WinRt::MainFunction main_func=0;
 static Tempest::Window *main_window = 0;
 static IUnknown* mainRtWindow = 0;
 
+static bool isAppClosed = false;
+
 ref class App sealed : public IFrameworkView{
   private:
     static App^ inst;
@@ -99,25 +101,11 @@ ref class App sealed : public IFrameworkView{
       OutputDebugStringA( "start application" );
       static char* args[] = { "TempestAppForWindowsPhone" };
       main_func( 1, (const char**)(args) );
-
-      while (!m_windowClosed) {
-        if (m_windowVisible){
-          CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessAllIfPresent );
-
-          //m_main->Update();
-
-          if (true)//m_main->Render())
-            {
-            //m_deviceResources->Present();
-            }
-          } else {
-          CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessOneAndAllPending );
-          }
-        }
       }
 
     virtual void Uninitialize(){
-    
+      m_windowClosed = true;
+      isAppClosed    = true;
       }
 
     protected:
@@ -173,10 +161,15 @@ ref class App sealed : public IFrameworkView{
     void OnWindowSizeChanged( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ args );
   #endif
     void OnVisibilityChanged( CoreWindow^ sender, VisibilityChangedEventArgs^ args ){
+      
       }
 
     void OnWindowClosed( CoreWindow^ sender, CoreWindowEventArgs^ args ){
-  
+      using namespace Tempest;
+      CloseEvent e;
+      SystemAPI::emitEvent( main_window, e );
+      m_windowClosed = true;
+      isAppClosed    = true;
       }
 
     // DisplayInformation event handlers.
@@ -217,12 +210,14 @@ void* WinRt::getMainRtWidget(){
   return mainRtWindow;
   }
 
-void WinRt::nextEvent(){
+bool WinRt::nextEvent(){
   CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessOneIfPresent );
+  return isAppClosed;
   }
 
-void WinRt::nextEvents(){
+bool WinRt::nextEvents(){
   CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessAllIfPresent );
+  return isAppClosed;
   }
 
 static int convertDipsToPixels( float dips, float dpi ) {

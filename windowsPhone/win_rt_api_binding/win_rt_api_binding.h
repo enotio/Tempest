@@ -6,8 +6,8 @@ namespace WinRt{
   typedef int( *MainFunction )(int, const char**);
   int startApplication( MainFunction func );
 
-  void  nextEvent();
-  void  nextEvents();
+  bool  nextEvent();
+  bool  nextEvents();
   void  setMainWidget( void* w );
   void* getMainRtWidget();
   void  getScreenRect( void* hwnd, int& scrW, int& scrH );
