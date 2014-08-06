@@ -17,10 +17,6 @@
 
 #include <win_rt_api_binding.h>
 
-static void runApplicatiion(){
-  //CoreApplication::Run( nullptr );
-  }
-
 static Tempest::Window* window = 0;
 
 using namespace Tempest;

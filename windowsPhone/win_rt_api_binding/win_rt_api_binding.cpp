@@ -17,6 +17,7 @@ using namespace Windows::Graphics::Display;
 
 static WinRt::MainFunction main_func=0;
 static Tempest::Window *main_window = 0;
+static IUnknown* mainRtWindow = 0;
 
 ref class App sealed : public IFrameworkView{
   private:
@@ -49,6 +50,8 @@ ref class App sealed : public IFrameworkView{
       }
 
     virtual void SetWindow( Windows::UI::Core::CoreWindow^ window ){
+      mainRtWindow = reinterpret_cast<IUnknown*>(window);
+
       window->VisibilityChanged +=
         ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>( this, &App::OnVisibilityChanged );
 
@@ -118,6 +121,7 @@ ref class App sealed : public IFrameworkView{
     protected:
     // Application lifecycle event handlers.
     void OnActivated( CoreApplicationView^ applicationView, IActivatedEventArgs^ args ){
+      CoreWindow::GetForCurrentThread()->Activate();
       }
 
     void OnSuspending( Platform::Object^ sender, SuspendingEventArgs^ args ){
@@ -182,8 +186,6 @@ ref class App sealed : public IFrameworkView{
       }
 
   private:
-    //std::shared_ptr<DX::DeviceResources> m_deviceResources;
-    //std::unique_ptr<CubeWPMain> m_main;
     bool m_windowClosed;
     bool m_windowVisible;
   };
@@ -209,10 +211,36 @@ void WinRt::setMainWidget( void* w ){
   main_window = (Tempest::Window*)w;
   }
 
+void* WinRt::getMainRtWidget(){
+  return mainRtWindow;
+  }
+
 void WinRt::nextEvent(){
   CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessOneIfPresent );
   }
 
 void WinRt::nextEvents(){
   CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessAllIfPresent );
+  }
+
+static int convertDipsToPixels( float dips, float dpi ) {
+  static const float dipsPerInch = 96.0f;
+  return int( dips * dpi / dipsPerInch + 0.5f ); // Round to nearest integer.
+  }
+
+void WinRt::getScreenRect( void* hwnd, int& scrW, int& scrH ){
+  if (mainRtWindow){
+    CoreWindow^ window = reinterpret_cast<CoreWindow^>(mainRtWindow);
+    Size logicalSize = Size( window->Bounds.Width, window->Bounds.Height );
+
+    DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
+    const float dpi = currentDisplayInformation->LogicalDpi;
+
+    scrW = convertDipsToPixels( logicalSize.Width,  dpi );
+    scrH = convertDipsToPixels( logicalSize.Height, dpi );
+    return;
+    }
+  //FIXME
+  scrW = 800;
+  scrH = 480;
   }

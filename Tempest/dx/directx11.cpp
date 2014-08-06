@@ -2,6 +2,12 @@
 
 #include "shading/abstractshadinglang.h"
 #include <Tempest/RenderState>
+#include <Tempest/Platform>
+
+#ifdef __WINDOWS_PHONE__
+#include <win_rt_api_binding.h>
+#include <DXGI1_2.h>
+#endif
 
 #ifndef _MSC_VER
 #define __in
@@ -33,7 +39,6 @@ using namespace Tempest;
 
 static const IID ID3D11Texture2D_uuid = {0x6f15aaf2,0xd208,0x4e89, {0x9a,0xb4,0x48,0x95,0x35,0xd3,0x4f,0x9c}};
 
-
 struct BlendDesc{
   D3D11_BLEND d,s;
   bool        blend;
@@ -51,10 +56,18 @@ struct BlendCmp {
     }
   };
 
+#ifdef __WINDOWS_PHONE__
+typedef IDXGISwapChain1       SwapChain;
+typedef DXGI_SWAP_CHAIN_DESC1 SWAP_CHAIN_DESC;
+#else
+typedef IDXGISwapChain        SwapChain;
+typedef DXGI_SWAP_CHAIN_DESC  SWAP_CHAIN_DESC;
+#endif
+
 struct DirectX11::Device{
   ID3D11Device*   device                         = 0;
   D3D_DRIVER_TYPE driverType                     = D3D_DRIVER_TYPE_NULL;
-  IDXGISwapChain* swapChain                      = NULL;
+  SwapChain*      swapChain                      = NULL;
   D3D_FEATURE_LEVEL featureLevel                 = D3D_FEATURE_LEVEL_11_0;
   ID3D11DeviceContext* immediateContext          = NULL;
   ID3D11RenderTargetView* renderTargetView       = NULL;
@@ -129,12 +142,75 @@ std::string DirectX11::renderer( AbstractAPI::Device *d ) const {
   return "";//dx->adapter.Description;
   }
 
+static HRESULT createDevice( IDXGIAdapter *pAdapter,
+                             D3D_DRIVER_TYPE driverType,
+                             HMODULE software,
+                             UINT flags,
+                             const D3D_FEATURE_LEVEL *pFeatureLevels,
+                             UINT featureLevels,
+                             const SWAP_CHAIN_DESC *swapChainDesc,
+                             SwapChain **ppSwapChain,
+                             ID3D11Device **ppDevice,
+                             D3D_FEATURE_LEVEL *pFeatureLevel,
+                             ID3D11DeviceContext **ppImmediateContext ){
+#ifdef __WINDOWS_PHONE__
+  HRESULT hr = D3D11CreateDevice(
+    pAdapter,
+    driverType,
+    0,
+    flags,
+    pFeatureLevels,
+    featureLevels,
+    D3D11_SDK_VERSION,
+    ppDevice,
+    pFeatureLevel,
+    ppImmediateContext
+    );
+
+  if( FAILED(hr) ){
+    return hr;
+    }
+
+  ID3D11Device* device = *ppDevice;
+  IDXGIDevice2 * pDXGIDevice;
+  hr = device->QueryInterface(__uuidof(IDXGIDevice2), (void **)&pDXGIDevice );
+
+  IDXGIAdapter * pDXGIAdapter;
+  hr = pDXGIDevice->GetParent(__uuidof(IDXGIAdapter), (void **)&pDXGIAdapter);
+
+  IDXGIFactory2 * pIDXGIFactory;
+  pDXGIAdapter->GetParent(__uuidof(IDXGIFactory2), (void **)&pIDXGIFactory);
+
+  IUnknown* mainWidget = (IUnknown*)WinRt::getMainRtWidget();
+  return pIDXGIFactory->CreateSwapChainForCoreWindow( device,
+                                                      mainWidget,
+                                                      swapChainDesc,
+                                                      nullptr,
+                                                      ppSwapChain
+                                                      );
+#else
+  return D3D11CreateDeviceAndSwapChain( pAdapter,
+                                        driverType,
+                                        software,
+                                        flags,
+                                        pFeatureLevels, featureLevels,
+                                        D3D11_SDK_VERSION, swapChainDesc,
+                                        ppSwapChain,
+                                        ppDevice,
+                                        pFeatureLevel,
+                                        ppImmediateContext );
+#endif
+  }
+
 AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Options &/*opt*/) const {
   std::unique_ptr<Device> dev( new Device() );
 
   HRESULT hr   = S_OK;
   HWND    hwnd = (HWND)Hwnd;
 
+#ifdef __WINDOWS_PHONE__
+  WinRt::getScreenRect(hwnd,dev->scrW,dev->scrH);
+#else
   RECT rc;
   GetClientRect( hwnd, &rc );
   UINT width  = rc.right  - rc.left;
@@ -142,6 +218,7 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
 
   dev->scrW = width;
   dev->scrH = height;
+#endif
 
   UINT createDeviceFlags = 0;
 #ifndef NDEBUG
@@ -167,30 +244,45 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
   };
   UINT numFeatureLevels = ARRAYSIZE( featureLevels );
 
-  DXGI_SWAP_CHAIN_DESC sd;
+  SWAP_CHAIN_DESC sd;
   ZeroMemory( &sd, sizeof( sd ) );
+#ifdef __WINDOWS_PHONE__
+  sd.Width  = dev->scrW; // Match the size of the window.
+  sd.Height = dev->scrH;
+  sd.Format = DXGI_FORMAT_B8G8R8A8_UNORM; // This is the most common swap chain format.
+  sd.Stereo = false;
+  sd.SampleDesc.Count   = 1; // Don't use multi-sampling.
+  sd.SampleDesc.Quality = 0;
+  sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+  sd.BufferCount = 2; // Use double-buffering to minimize latency.
+  sd.SwapEffect  = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; // All Windows Store apps must use this SwapEffect.
+  sd.Flags       = 0;
+  sd.Scaling     = DXGI_SCALING_NONE;
+  sd.AlphaMode   = DXGI_ALPHA_MODE_IGNORE;
+#else
   sd.BufferCount = 1;
-  sd.BufferDesc.Width = width;
-  sd.BufferDesc.Height = height;
+  sd.BufferDesc.Width  = dev->scrW;
+  sd.BufferDesc.Height = dev->scrH;
   sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
   sd.BufferDesc.RefreshRate.Numerator = 60;
   sd.BufferDesc.RefreshRate.Denominator = 1;
-  sd.BufferUsage  = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+  sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
   sd.OutputWindow = hwnd;
-  sd.SampleDesc.Count   = 1;
+  sd.SampleDesc.Count = 1;
   sd.SampleDesc.Quality = 0;
   sd.Windowed = TRUE;
+#endif
 
   for( UINT driverTypeIndex = 0; driverTypeIndex<numDriverTypes; driverTypeIndex++ ) {
     dev->driverType = driverTypes[driverTypeIndex];
-    hr = D3D11CreateDeviceAndSwapChain( NULL, dev->driverType,
-                                        NULL, createDeviceFlags,
-                                        featureLevels, numFeatureLevels,
-                                        D3D11_SDK_VERSION, &sd,
-                                        &dev->swapChain,
-                                        &dev->device,
-                                        &dev->featureLevel,
-                                        &dev->immediateContext );
+    hr = ::createDevice( NULL, dev->driverType,
+                         NULL, createDeviceFlags,
+                         featureLevels, numFeatureLevels,
+                         &sd,
+                         &dev->swapChain,
+                         &dev->device,
+                         &dev->featureLevel,
+                         &dev->immediateContext );
     if( SUCCEEDED( hr ) )
       break;
     }
@@ -212,8 +304,8 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
 
   // Setup the viewport
   D3D11_VIEWPORT vp;
-  vp.Width    = (FLOAT)width;
-  vp.Height   = (FLOAT)height;
+  vp.Width    = (FLOAT)dev->scrW;
+  vp.Height   = (FLOAT)dev->scrH;
   vp.MinDepth = 0.0f;
   vp.MaxDepth = 1.0f;
   vp.TopLeftX = 0;
@@ -291,6 +383,7 @@ void DirectX11::setDSSurfaceTaget(AbstractAPI::Device *d, AbstractAPI::Texture *
 
 AbstractAPI::StdDSSurface *DirectX11::getDSSurfaceTaget(AbstractAPI::Device *d) const {
   //TODO
+  return 0;
   }
 
 void DirectX11::retDSSurfaceTaget(AbstractAPI::Device *d, AbstractAPI::StdDSSurface *s) const {
@@ -303,17 +396,21 @@ bool DirectX11::startRender( AbstractAPI::Device *, bool /*isLost*/ ) const{
 
 bool DirectX11::present( AbstractAPI::Device *d, SwapBehavior /*b*/ ) const{
   Device* dev = (Device*)d;
-  dev->swapChain->Present(0,0);
+  dev->swapChain->Present(1,0);
   return false;
   }
 
 bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
                        const Options & /*opt*/ ) const{
   Device* dx = (Device*)d;
-  RECT rectWindow;
-  GetClientRect( HWND(hwnd), &rectWindow);
-  dx->scrW = rectWindow.right  - rectWindow.left;
-  dx->scrH = rectWindow.bottom - rectWindow.top;
+#ifdef __WINDOWS_PHONE__
+  WinRt::getScreenRect( hwnd, dx->scrW, dx->scrH );
+#else
+  RECT rc;
+  GetClientRect( hwnd, &rc );
+  dx->scrW = rc.right  - rc.left;
+  dx->scrH = rc.bottom - rc.top;
+#endif
 
   if(dx->swapChain){
     dx->immediateContext->OMSetRenderTargets(0, 0, 0);

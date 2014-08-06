@@ -530,6 +530,9 @@
     <ClCompile Include="..\..\Tempest\dataControl\shaderprogramholder.cpp">
       <Filter>dataControl</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Tempest\dx\hlsl11.cpp">
+      <Filter>dx</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Tempest\2d\font.h">
@@ -897,6 +900,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Tempest\dataControl\shaderprogramholder.h">
       <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tempest\dx\hlsl11.h">
+      <Filter>dx</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

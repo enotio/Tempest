@@ -90,7 +90,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Link>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(WindowsPhoneSDK_LibraryPath_arm)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DXGI.lib;D3D11.lib;Tempest.lib;win_rt_api_binding.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>DXGI.lib;D3D11.lib;d3dcompiler.lib;Tempest.lib;win_rt_api_binding.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
     </Link>
     <ClCompile>
