@@ -57,9 +57,6 @@ class AbstractSceneObject {
     virtual void onTransformChanged( const Tempest::Matrix4x4& old ) const = 0;
   private:
     bool visible;
-
-    friend class Scene;
-    friend class Render;
   };
 
 template< class Material,

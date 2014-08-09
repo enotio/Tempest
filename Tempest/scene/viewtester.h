@@ -47,8 +47,6 @@ class ViewTester {
     static inline bool rangeTest( double l, double x, double r ){
       return l<=x && x<=r;
       }
-
-  friend class Scene;
   };
 
 }
