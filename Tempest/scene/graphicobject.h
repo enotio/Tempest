@@ -18,19 +18,19 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
     GraphicObject( Scene & s ) : AbstractGraphicObject<Material, UserState>(s) {
       m_model = new ModelPtr<DefaultVertex>( Model<>() );
 
-      pos[0] = 0;
-      pos[1] = 0;
-      pos[2] = 0;
+      pos[0] = 0.f;
+      pos[1] = 0.f;
+      pos[2] = 0.f;
 
-      size[0] = 1;
-      size[1] = 1;
-      size[2] = 1;
+      size[0] = 1.f;
+      size[1] = 1.f;
+      size[2] = 1.f;
 
-      rx = 0;
-      ry = 0;
+      rx = 0.f;
+      ry = 0.f;
       rz = 0;
 
-      radi = 0;
+      radi = 0.f;
 
       needToUpdateMat = true;
 
@@ -68,7 +68,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       delete m_model;
       }
 
-    GraphicObject& operator = ( const GraphicObject & g){
+    GraphicObject& operator = ( const GraphicObject & g ){
       if( this==&g )
         return *this;
 
@@ -123,7 +123,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       return mat;
       }
 
-    virtual void setPosition( double x, double y, double z ){
+    virtual void setPosition( float x, float y, float z ){
       if( pos[0]==x &&
           pos[1]==y &&
           pos[2]==z )
@@ -137,7 +137,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       updateMat();
       }
 
-    virtual void setSize    ( double x, double y, double z ){
+    virtual void setSize    ( float x, float y, float z ){
       if( size[0]==x &&
           size[1]==y &&
           size[2]==z )
@@ -151,11 +151,11 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       updateMat();
       }
 
-    virtual void setSize    ( double s ){
+    virtual void setSize    ( float s ){
       setSize( s, s, s );
       }
 
-    virtual void setRotation( double x, double z ){
+    virtual void setRotation( float x, float z ){
       if( x==rx && z==rz )
         return;
 
@@ -166,7 +166,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       updateMat();
       }
 
-    virtual void setRotation( double x, double y, double z ){
+    virtual void setRotation( float x, float y, float z ){
       if( x==rx && y==ry && z==rz )
         return;
 
@@ -215,7 +215,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
       }
 
     virtual float radius() const {
-      return radi;
+      return float(radi);
       }
 
     virtual void render( Device& dev, ShaderProgram &p ) const{
@@ -292,7 +292,7 @@ class GraphicObject : public AbstractGraphicObject<Material, UserState> {
 
     float pos[3], size[3], rx, ry, rz;
 
-    mutable double radi;
+    mutable float     radi;
     mutable Matrix4x4 mat;
     mutable bool needToUpdateMat;
 

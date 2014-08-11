@@ -68,7 +68,7 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   ux.id.resize(u.type.size());
   ux.names = u.name;
   ux.desc  = u.type;
-  ux.data  .resize(bufsz);
+  ux.data  .resize( std::max<size_t>( (bufsz/16)*16, 32) );
   ux.smp[0].resize(sampSz[0]);
   ux.smp[1].resize(sampSz[1]);
   ux.fields.resize(ux.desc.size());

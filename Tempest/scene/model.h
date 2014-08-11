@@ -65,9 +65,9 @@ struct RawModel{
   static ModelBounds computeBoundRect( const Vertex* vertex, size_t vsize ){
     ModelBounds r;
     if( vertex==0 || vsize==0 ){
-      std::fill(r.min, r.min+3, 0);
-      std::fill(r.max, r.max+3, 0);
-      std::fill(r.mid, r.mid+3, 0);
+      memset(r.min,0,sizeof(r.min));
+      memset(r.max,0,sizeof(r.min));
+      memset(r.mid,0,sizeof(r.min));
       return r;
       }
 
@@ -85,7 +85,7 @@ struct RawModel{
       }
 
     for( int i=0; i<3; ++i )
-      r.mid[i] = 0.5*(r.min[i]+r.max[i]);
+      r.mid[i] = 0.5f*(r.min[i]+r.max[i]);
 
     return r;
     }

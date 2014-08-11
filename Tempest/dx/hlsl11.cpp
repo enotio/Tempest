@@ -134,7 +134,7 @@ struct HLSL11::Data{
       filter |= D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
 
     if(s.anisotropic)
-      filter=D3D11_FILTER_ANISOTROPIC;
+      ;//filter=D3D11_FILTER_ANISOTROPIC;
 
     sampDesc.Filter   = D3D11_FILTER(filter);
     sampDesc.AddressU = addR[ s.uClamp ];
@@ -469,17 +469,9 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &ux,
     ++fields;
 
     switch(t){
-      case Decl::float1:
-        break;
-      case Decl::float2:
-        break;
-      case Decl::float3:
-        break;
-      case Decl::float4:
-        break;
       case Decl::Texture2d:{
         DX11Texture* t = *(DX11Texture**)tex;
-        if(t){
+        if( t ){
           if(!t->view)
             data->dev->CreateShaderResourceView(t->texture, NULL, &t->view);
           data->immediateContext->PSSetShaderResources(slot,1,&t->view);
@@ -491,8 +483,6 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &ux,
       case Decl::Texture3d:{
         ++slot;
         }
-        break;
-      case Decl::Matrix4x4:
         break;
       }
     if(t==Decl::Texture2d){

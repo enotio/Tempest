@@ -65,14 +65,15 @@ typedef DXGI_SWAP_CHAIN_DESC  SWAP_CHAIN_DESC;
 #endif
 
 struct DirectX11::Device{
-  ID3D11Device*   device                         = 0;
-  D3D_DRIVER_TYPE driverType                     = D3D_DRIVER_TYPE_NULL;
-  SwapChain*      swapChain                      = NULL;
-  D3D_FEATURE_LEVEL featureLevel                 = D3D_FEATURE_LEVEL_11_0;
-  ID3D11DeviceContext* immediateContext          = NULL;
-  ID3D11RenderTargetView* renderTargetView       = NULL;
-  ID3D11DepthStencilView* renderDepthStencilView = NULL;
-  ID3D11DepthStencilState* dsState               = NULL;
+  ID3D11Device*            device           = 0;
+  D3D_DRIVER_TYPE          driverType       = D3D_DRIVER_TYPE_NULL;
+  SwapChain*               swapChain        = NULL;
+  D3D_FEATURE_LEVEL        featureLevel     = D3D_FEATURE_LEVEL_11_0;
+  ID3D11DeviceContext*     immediateContext = NULL;
+  ID3D11RenderTargetView*  renderTargetView = NULL;
+  ID3D11Texture2D*         depthStencil     = NULL;
+  ID3D11DepthStencilView*  depthStencilView = NULL;
+  ID3D11DepthStencilState* dsState          = NULL;
 
   std::unordered_map<BlendDesc,ID3D11BlendState*,BlendHash,BlendCmp> blendSt;
 
@@ -81,6 +82,11 @@ struct DirectX11::Device{
   ~Device(){
     if( immediateContext )
       immediateContext->ClearState();
+
+    if( depthStencilView )
+      depthStencilView->Release();
+    if( depthStencil )
+      depthStencil->Release();
 
     if( renderTargetView )
       renderTargetView->Release();
@@ -119,6 +125,37 @@ struct DirectX11::Device{
       }
 
     return &texFlipped[0];
+    }
+
+  HRESULT createDepthTexture( int width, int height ) {
+    D3D11_TEXTURE2D_DESC descDepth;
+    ZeroMemory( &descDepth, sizeof(descDepth) );
+    descDepth.Width  = width;
+    descDepth.Height = height;
+    descDepth.MipLevels = 1;
+    descDepth.ArraySize = 1;
+    descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    descDepth.SampleDesc.Count = 1;
+    descDepth.SampleDesc.Quality = 0;
+    descDepth.Usage = D3D11_USAGE_DEFAULT;
+    descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    descDepth.CPUAccessFlags = 0;
+    descDepth.MiscFlags = 0;
+
+    HRESULT hr = device->CreateTexture2D( &descDepth, NULL, &depthStencil );
+    if( FAILED( hr ) )
+        return hr;
+
+    // Create the depth stencil view
+    D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+    ZeroMemory( &descDSV, sizeof(descDSV) );
+    descDSV.Format = descDepth.Format;
+    descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    descDSV.Texture2D.MipSlice = 0;
+    hr = device->CreateDepthStencilView( depthStencil, &descDSV, &depthStencilView );
+    if( FAILED( hr ) )
+        return hr;
+    return S_OK;
     }
   };
 
@@ -300,7 +337,10 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
   if( FAILED( hr ) )
     return 0;
 
-  dev->immediateContext->OMSetRenderTargets( 1, &dev->renderTargetView, NULL );
+  if( FAILED(dev->createDepthTexture(dev->scrW,dev->scrH)) )
+    return 0;
+  dev->immediateContext->OMSetRenderTargets( 1, &dev->renderTargetView,
+                                                 dev->depthStencilView );
 
   // Setup the viewport
   D3D11_VIEWPORT vp;
@@ -326,35 +366,49 @@ void DirectX11::deleteDevice(AbstractAPI::Device *d) const {
   delete ((Device*)d);
   }
 
-void DirectX11::clear(AbstractAPI::Device *d, const Color &cl, float z, unsigned stencil) const {
-  //TODO
+void DirectX11::clear( AbstractAPI::Device *d, const Color &cl,
+                       float z, unsigned stencil ) const {
   Device* dev = (Device*)d;
 
   dev->immediateContext->ClearRenderTargetView( dev->renderTargetView, cl.data() );
-  //dev->immediateContext->ClearDepthStencilView( dev->depthTargetView, );
+  dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
+                                                D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
+                                                z, stencil );
   }
 
 void DirectX11::clear(AbstractAPI::Device *d, const Color &cl) const {
-  //TODO
+  Device* dev = (Device*)d;
+  dev->immediateContext->ClearRenderTargetView( dev->renderTargetView, cl.data() );
   }
 
 void DirectX11::clear(AbstractAPI::Device *d, const Color &cl, float z) const {
   Device* dev = (Device*)d;
 
   dev->immediateContext->ClearRenderTargetView( dev->renderTargetView, cl.data() );
-  //TODO
+  dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
+                                                D3D11_CLEAR_DEPTH,
+                                                z, 0 );
   }
 
 void DirectX11::clear(AbstractAPI::Device *d, float z, unsigned stencil) const {
-  //TODO
+  Device* dev = (Device*)d;
+  dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
+                                                D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
+                                                z, stencil );
   }
 
 void DirectX11::clearZ(AbstractAPI::Device *d, float z) const {
-  //TODO
+  Device* dev = (Device*)d;
+  dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
+                                                D3D11_CLEAR_DEPTH,
+                                                z, 0 );
   }
 
 void DirectX11::clearStencil(AbstractAPI::Device *d, unsigned stencil) const {
-  //TODO
+  Device* dev = (Device*)d;
+  dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
+                                                D3D11_CLEAR_STENCIL,
+                                                1.0f, stencil );
   }
 
 void DirectX11::beginPaint(AbstractAPI::Device *d) const {
@@ -417,6 +471,8 @@ bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
 
     // Release all outstanding references to the swap chain's buffers.
     dx->renderTargetView->Release();
+    dx->depthStencilView->Release();
+    dx->depthStencil->Release();
 
     HRESULT hr=0;
     // Preserve the existing buffer count and format.
@@ -435,7 +491,10 @@ bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
       return false;
     pBuffer->Release();
 
-    dx->immediateContext->OMSetRenderTargets(1, &dx->renderTargetView, NULL );
+    dx->createDepthTexture(dx->scrW,dx->scrH);
+    dx->immediateContext->OMSetRenderTargets( 1,
+                                              &dx->renderTargetView,
+                                              dx->depthStencilView );
 
     D3D11_VIEWPORT vp;
     vp.Width    = FLOAT(dx->scrW);
@@ -533,14 +592,21 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
   return 0;
   }
 
-AbstractAPI::Texture *DirectX11::createTexture3d( AbstractAPI::Device *d, int x, int y, int z, bool mips,
-                                                  AbstractTexture::Format::Type f, TextureUsage usage,
+AbstractAPI::Texture *DirectX11::createTexture3d( AbstractAPI::Device *d,
+                                                  int x, int y, int z, bool mips,
+                                                  AbstractTexture::Format::Type f,
+                                                  TextureUsage usage,
                                                   const char *data) const {
   return 0;
   }
 
 void DirectX11::generateMipmaps(AbstractAPI::Device *d, AbstractAPI::Texture *t) const {
+  Device* dev = (Device*)d;
+  DX11Texture* tex = (DX11Texture*)t;
 
+  if(tex->view==NULL)
+    dev->device->CreateShaderResourceView(tex->texture, NULL, &tex->view);
+  dev->immediateContext->GenerateMips(tex->view);
   }
 
 void DirectX11::deleteTexture(AbstractAPI::Device *, AbstractAPI::Texture *t) const {
@@ -820,5 +886,30 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
   dev->blendSt[bd] = state;
   dev->immediateContext->OMSetBlendState(state, 0, 0xffffffff);
 
+  D3D11_DEPTH_STENCIL_DESC dsDesc;
+  dsDesc.DepthEnable    = false;
+  dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+  dsDesc.DepthFunc      = D3D11_COMPARISON_LESS;
+
+  dsDesc.StencilEnable    = false;
+  dsDesc.StencilReadMask  = 0xFF;
+  dsDesc.StencilWriteMask = 0xFF;
+
+  dsDesc.FrontFace.StencilFailOp      = D3D11_STENCIL_OP_KEEP;
+  dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+  dsDesc.FrontFace.StencilPassOp      = D3D11_STENCIL_OP_KEEP;
+  dsDesc.FrontFace.StencilFunc        = D3D11_COMPARISON_ALWAYS;
+
+  dsDesc.BackFace.StencilFailOp      = D3D11_STENCIL_OP_KEEP;
+  dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+  dsDesc.BackFace.StencilPassOp      = D3D11_STENCIL_OP_KEEP;
+  dsDesc.BackFace.StencilFunc        = D3D11_COMPARISON_ALWAYS;
+
+  // Create depth stencil state
+  ID3D11DepthStencilState * dsState=0;
+  HRESULT h = dev->device->CreateDepthStencilState(&dsDesc, &dsState);
+  if( SUCCEEDED(h) )
+    dev->immediateContext->OMSetDepthStencilState(dsState,0);
+  dsState->Release();
   //TODO
   }
