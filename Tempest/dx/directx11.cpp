@@ -949,6 +949,7 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
     HRESULT h = dev->device->CreateDepthStencilState(&dsDesc, &dsState);
     T_ASSERT( SUCCEEDED(h) );
     dev->immediateContext->OMSetDepthStencilState(dsState,0);
+    dev->ztestSt[zdesc] = dsState;
     }
   //TODO
   }
