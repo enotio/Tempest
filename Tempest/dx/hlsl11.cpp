@@ -143,6 +143,8 @@ struct HLSL11::Data{
     sampDesc.MinLOD   = 0;
     sampDesc.MaxLOD   = D3D11_FLOAT32_MAX;
 
+    sampDesc.MaxAnisotropy = 1;
+
     ID3D11SamplerState* ret = 0;
     HRESULT hr = dev->CreateSamplerState( &sampDesc, &ret );
     if( FAILED(hr) )
@@ -405,7 +407,7 @@ void Tempest::HLSL11::deleteShader(GraphicsSubsystem::ProgramObject * p) const {
   Data::Shader* prog = (Data::Shader*)p;
   size_t nsz = 0;
   for( size_t i=0; i<data->sh.size(); ++i){
-    data[nsz]=data[i];
+    data->sh[nsz]=data->sh[i];
     if( prog->vs==data->sh[i].vs &&
         prog->fs==data->sh[i].fs ){
       data->sh[i].dxDecl->Release();
@@ -600,7 +602,7 @@ void Tempest::HLSL11::event(const GraphicsSubsystem::DeleteEvent &e) {
 
   size_t nsz = 0;
   for( size_t i=0; i<data->sh.size(); ++i){
-    data[nsz]=data[i];
+    data->sh[nsz]=data->sh[i];
     if(e.declaration==(VertexDecl*)data->sh[i].decl){
       data->sh[i].dxDecl->Release();
       } else {

@@ -44,15 +44,26 @@ struct BlendDesc{
   bool        blend;
   };
 
-struct BlendHash {
+struct ZDesc{
+  D3D11_COMPARISON_FUNC func;
+  bool enable, writing;
+  };
+
+struct Hash {
   size_t operator () ( const BlendDesc& a ) const {
     return a.blend ? size_t(a.d+1) : 0;
     }
+  size_t operator () ( const ZDesc& a ) const {
+    return a.enable ? size_t(a.func+1) : 0;
+    }
   };
 
-struct BlendCmp {
+struct Cmp {
   bool operator () ( const BlendDesc& a, const BlendDesc& b ) const {
     return a.blend==b.blend && a.d==b.d && a.s==b.s;
+    }
+  bool operator () ( const ZDesc& a, const ZDesc& b ) const {
+    return a.enable==b.enable && a.writing==b.writing && a.func==b.func;
     }
   };
 
@@ -75,7 +86,8 @@ struct DirectX11::Device{
   ID3D11DepthStencilView*  depthStencilView = NULL;
   ID3D11DepthStencilState* dsState          = NULL;
 
-  std::unordered_map<BlendDesc,ID3D11BlendState*,BlendHash,BlendCmp> blendSt;
+  std::unordered_map<BlendDesc,ID3D11BlendState*,Hash,Cmp> blendSt;
+  std::unordered_map<ZDesc,ID3D11DepthStencilState*,Hash,Cmp> ztestSt;
 
   int scrW, scrH;
 
@@ -297,7 +309,8 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
   sd.Scaling     = DXGI_SCALING_NONE;
   sd.AlphaMode   = DXGI_ALPHA_MODE_IGNORE;
 #else
-  sd.BufferCount = 1;
+  sd.BufferCount = 2;
+  sd.SwapEffect  = DXGI_SWAP_EFFECT_SEQUENTIAL;
   sd.BufferDesc.Width  = dev->scrW;
   sd.BufferDesc.Height = dev->scrH;
   sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -360,6 +373,10 @@ void DirectX11::deleteDevice(AbstractAPI::Device *d) const {
   Device* dev = (Device*)d;
 
   for( auto i:dev->blendSt )
+    if(i.second)
+      i.second->Release();
+
+  for( auto i:dev->ztestSt )
     if(i.second)
       i.second->Release();
 
@@ -754,7 +771,7 @@ void *DirectX11::lockBuffer( AbstractAPI::Device *d,
                                                 0, &resource);
   if(hResult != S_OK)
      return 0;
-  memset(resource.pData,0,desc.ByteWidth);
+  memset(resource.pData,0,desc.ByteWidth);//FIXME
   return (char*)resource.pData + offset;
   }
 
@@ -864,52 +881,74 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
   auto i=dev->blendSt.find(bd);
   if(i!=dev->blendSt.end()){
     dev->immediateContext->OMSetBlendState(i->second, 0, 0xffffffff);
-    return;
+    } else {
+    D3D11_BLEND_DESC BlendState;
+    ZeroMemory(&BlendState, sizeof(D3D11_BLEND_DESC));
+    BlendState.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    BlendState.RenderTarget[0].BlendEnable    = rs.isBlend();
+    BlendState.RenderTarget[0].BlendOp        = D3D11_BLEND_OP_ADD;
+    BlendState.RenderTarget[0].BlendOpAlpha   = D3D11_BLEND_OP_ADD;
+
+    BlendState.RenderTarget[0].SrcBlend       = blend[rs.getBlendSFactor()];
+    BlendState.RenderTarget[0].SrcBlendAlpha  = blend[rs.getBlendSFactor()];
+    BlendState.RenderTarget[0].DestBlend      = blend[rs.getBlendDFactor()];
+    BlendState.RenderTarget[0].DestBlendAlpha = blend[rs.getBlendDFactor()];
+
+    for( int i=1; i<8; ++i )
+      BlendState.RenderTarget[i] = BlendState.RenderTarget[0];
+
+    dev->device->CreateBlendState(&BlendState, &state);
+    dev->blendSt[bd] = state;
+    dev->immediateContext->OMSetBlendState(state, 0, 0xffffffff);
     }
 
-  D3D11_BLEND_DESC BlendState;
-  ZeroMemory(&BlendState, sizeof(D3D11_BLEND_DESC));
-  BlendState.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-  BlendState.RenderTarget[0].BlendEnable    = rs.isBlend();
-  BlendState.RenderTarget[0].BlendOp        = D3D11_BLEND_OP_ADD;
-  BlendState.RenderTarget[0].BlendOpAlpha   = D3D11_BLEND_OP_ADD;
+  static D3D11_COMPARISON_FUNC func[]={
+    D3D11_COMPARISON_NEVER,
 
-  BlendState.RenderTarget[0].SrcBlend       = blend[rs.getBlendSFactor()];
-  BlendState.RenderTarget[0].SrcBlendAlpha  = blend[rs.getBlendSFactor()];
-  BlendState.RenderTarget[0].DestBlend      = blend[rs.getBlendDFactor()];
-  BlendState.RenderTarget[0].DestBlendAlpha = blend[rs.getBlendDFactor()];
+    D3D11_COMPARISON_GREATER,
+    D3D11_COMPARISON_LESS,
 
-  for( int i=1; i<8; ++i )
-    BlendState.RenderTarget[i] = BlendState.RenderTarget[0];
+    D3D11_COMPARISON_GREATER_EQUAL,
+    D3D11_COMPARISON_LESS_EQUAL,
 
-  dev->device->CreateBlendState(&BlendState, &state);
-  dev->blendSt[bd] = state;
-  dev->immediateContext->OMSetBlendState(state, 0, 0xffffffff);
+    D3D11_COMPARISON_NOT_EQUAL,
+    D3D11_COMPARISON_EQUAL,
+    D3D11_COMPARISON_ALWAYS,
+    D3D11_COMPARISON_ALWAYS
+    };
+  ZDesc zdesc;
+  zdesc.enable  = rs.isZTest();
+  zdesc.writing = rs.isZWriting();
+  zdesc.func    = func[rs.getZTestMode()];
 
-  D3D11_DEPTH_STENCIL_DESC dsDesc;
-  dsDesc.DepthEnable    = false;
-  dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-  dsDesc.DepthFunc      = D3D11_COMPARISON_LESS;
+  auto zi=dev->ztestSt.find(zdesc);
+  if(zi!=dev->ztestSt.end()){
+    dev->immediateContext->OMSetDepthStencilState(zi->second,0);
+    } else {
+    D3D11_DEPTH_STENCIL_DESC dsDesc;
+    dsDesc.DepthEnable    = rs.isZTest();
+    dsDesc.DepthWriteMask = rs.isZWriting() ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
+    dsDesc.DepthFunc      = func[rs.getZTestMode()];
 
-  dsDesc.StencilEnable    = false;
-  dsDesc.StencilReadMask  = 0xFF;
-  dsDesc.StencilWriteMask = 0xFF;
+    dsDesc.StencilEnable    = false;
+    dsDesc.StencilReadMask  = 0xFF;
+    dsDesc.StencilWriteMask = 0xFF;
 
-  dsDesc.FrontFace.StencilFailOp      = D3D11_STENCIL_OP_KEEP;
-  dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-  dsDesc.FrontFace.StencilPassOp      = D3D11_STENCIL_OP_KEEP;
-  dsDesc.FrontFace.StencilFunc        = D3D11_COMPARISON_ALWAYS;
+    dsDesc.FrontFace.StencilFailOp      = D3D11_STENCIL_OP_KEEP;
+    dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+    dsDesc.FrontFace.StencilPassOp      = D3D11_STENCIL_OP_KEEP;
+    dsDesc.FrontFace.StencilFunc        = D3D11_COMPARISON_ALWAYS;
 
-  dsDesc.BackFace.StencilFailOp      = D3D11_STENCIL_OP_KEEP;
-  dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-  dsDesc.BackFace.StencilPassOp      = D3D11_STENCIL_OP_KEEP;
-  dsDesc.BackFace.StencilFunc        = D3D11_COMPARISON_ALWAYS;
+    dsDesc.BackFace.StencilFailOp      = D3D11_STENCIL_OP_KEEP;
+    dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+    dsDesc.BackFace.StencilPassOp      = D3D11_STENCIL_OP_KEEP;
+    dsDesc.BackFace.StencilFunc        = D3D11_COMPARISON_ALWAYS;
 
-  // Create depth stencil state
-  ID3D11DepthStencilState * dsState=0;
-  HRESULT h = dev->device->CreateDepthStencilState(&dsDesc, &dsState);
-  if( SUCCEEDED(h) )
+    // Create depth stencil state
+    ID3D11DepthStencilState * dsState=0;
+    HRESULT h = dev->device->CreateDepthStencilState(&dsDesc, &dsState);
+    T_ASSERT( SUCCEEDED(h) );
     dev->immediateContext->OMSetDepthStencilState(dsState,0);
-  dsState->Release();
+    }
   //TODO
   }
