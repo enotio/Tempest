@@ -213,7 +213,7 @@ struct HLSL11::Data{
     ID3D11PixelShader*             fs     = 0;
     VertexDeclaration::Declarator* decl   = 0;
 
-    ID3D11InputLayout* dxDecl = 0;
+    ID3D11InputLayout*             dxDecl = 0;
 
     bool operator == ( const Program& p ) const {
       return vs==p.vs &&
@@ -420,7 +420,7 @@ void Tempest::HLSL11::deleteShader(GraphicsSubsystem::ProgramObject * p) const {
   }
 
 void HLSL11::enable() const {
-  auto l = data->sh.find(data->prog);
+  SortedVec<Data::Program>::iterator l = data->sh.find(data->prog);
 
   if( l!=data->sh.end() ){
     data->immediateContext->IASetInputLayout(l->dxDecl);

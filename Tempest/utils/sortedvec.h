@@ -11,7 +11,10 @@ class SortedVec {
     typedef typename std::vector<T>::iterator iterator;
 
     iterator find(const T& t) {
-      return std::lower_bound(data.begin(), data.end(), t, less);
+      iterator i = std::lower_bound(data.begin(), data.end(), t, less);
+      if(i!=data.end() && *i==t)
+        return i;
+      return data.end();
       }
 
     void insert( const T& t ){
