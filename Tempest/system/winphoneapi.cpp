@@ -169,7 +169,7 @@ WinPhoneAPI::File *WinPhoneAPI::fopenImpl( const char16_t *fname, const char *mo
   for (int i = 0; i < 4 && mode[i]; ++i)
     flg[i] = mode[i]; 
 
-  std::wstring str = WinRt::getAssetsFolder()+L"\\Assets\\"+(wchar_t*)fname;
+  std::wstring str = WinRt::getAssetsFolder()+L"/"+(wchar_t*)fname;
   FILE* f = _wfopen( str.c_str(), flg );
   if( f )
     return (File*)f;

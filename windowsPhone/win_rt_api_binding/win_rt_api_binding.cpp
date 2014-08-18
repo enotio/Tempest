@@ -211,12 +211,21 @@ void* WinRt::getMainRtWidget(){
   }
 
 bool WinRt::nextEvent(){
-  CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessOneIfPresent );
+  try{
+    CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessOneIfPresent );
+    }
+  catch(...){
+    }
   return isAppClosed;
   }
 
 bool WinRt::nextEvents(){
-  CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessAllIfPresent );
+  try{
+    CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessAllIfPresent );
+    }
+  catch( Platform::COMException ^ e ){
+    e->ToString();
+    }
   return isAppClosed;
   }
 

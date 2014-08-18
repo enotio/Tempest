@@ -34,7 +34,7 @@
     <Image Include="Assets\WideLogo.scale-240.png">
       <Filter>Assets</Filter>
     </Image>
-    <Image Include="Assets\data\texture.png">
+    <Image Include="data\texture.png">
       <Filter>Content</Filter>
     </Image>
   </ItemGroup>
@@ -45,11 +45,11 @@
     <ClInclude Include="MainWindow.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Assets\shader\basic11.fs.hlsl">
+    <None Include="shader\basic11.fs.hlsl">
       <Filter>Content</Filter>
-    </Text>
-    <Text Include="Assets\shader\basic11.vs.hlsl">
+    </None>
+    <None Include="shader\basic11.vs.hlsl">
       <Filter>Content</Filter>
-    </Text>
+    </None>
   </ItemGroup>
 </Project>

@@ -263,11 +263,11 @@ void Tempest::FontElement::fetch( const std::string &str,
   }
 
 Tempest::Size Tempest::FontElement::textSize(const std::u16string &str ) {
-  return textSize( &str[0], &str[0]+str.size() );
+  return textSize( str.data(), str.data()+str.size() );
   }
 
 Tempest::Size Tempest::FontElement::textSize(const std::string &str ) {
-  return textSize( &str[0], &str[0]+str.size() );
+  return textSize( str.data(), str.data()+str.size() );
   }
 
 Tempest::Size Tempest::FontElement::textSize(const char16_t *str) {

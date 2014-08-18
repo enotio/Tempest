@@ -7,6 +7,7 @@
 #include <Tempest/Matrix4x4>
 #include <Tempest/Texture2d>
 #include <Tempest/Texture3d>
+#include <algorithm>
 
 using namespace Tempest;
 

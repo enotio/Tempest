@@ -543,7 +543,7 @@ std::string HLSL11::surfaceShader( GraphicsSubsystem::ShaderType t,
   static const std::string vs_src_nt =
       "struct VS_Input {"
       "  float2 Position:  POSITION;"
-      "  float2 TexCoord:  TEXCOORD;"
+      "  float2 TexCoord:  TEXCOORD0;"
       "  float4 TexCoord1: TEXCOORD1;"
       "  };"
 
