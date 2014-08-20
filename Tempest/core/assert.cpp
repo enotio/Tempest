@@ -98,7 +98,7 @@ void Tempest::Detail::te_warning_impl( bool a,
 
 #ifdef __ANDROID__
   __android_log_print( ANDROID_LOG_WARN, "Tempest", "%s", ss.str().c_str() );
-  Tempest::AndroidAPI::toast( ss.str() );
+  Tempest::AndroidAPI::toast( ss.str() ); 
 #else
   std::cerr << ss.str() << std::endl;
 #endif

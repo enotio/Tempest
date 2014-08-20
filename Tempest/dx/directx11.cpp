@@ -498,6 +498,15 @@ bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
     if(FAILED(hr))
       return false;
 
+#ifdef __WINDOWS_PHONE__
+    const int rot=WinRt::orientation();
+    switch(rot) {
+      //case DisplayOrientations::Landscape:
+        //dx->swapChain->SetRotation(DXGI_MODE_ROTATION_IDENTITY);
+        break;
+      }
+#endif
+
     ID3D11Texture2D* pBuffer;
     hr = dx->swapChain->GetBuffer(0,ID3D11Texture2D_uuid,(void**)&pBuffer );
     if(FAILED(hr))

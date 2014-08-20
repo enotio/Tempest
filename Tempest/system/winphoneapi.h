@@ -41,7 +41,6 @@ class WinPhoneAPI:public SystemAPI {
 
     CpuInfo cpuInfoImpl();
 
-    struct  WinFile;
     File*  fopenImpl ( const char* fname, const char* mode );
     File*  fopenImpl ( const char16_t* fname, const char* mode );
   private:

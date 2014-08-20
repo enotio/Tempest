@@ -21,6 +21,26 @@ static WinRt::MainFunction main_func=0;
 static Tempest::Window *main_window = 0;
 static IUnknown* mainRtWindow = 0;
 
+struct WinEvent{
+  enum Type{
+    EvNone,
+    EvClose,
+    EvPointerMoved,
+    EvPointerPressed,
+    EvPointerReleased,
+    EvResize,
+    } type;
+  int data1, data2;
+  };
+
+
+static int dpyToPixels( float dips, float dpi ) {
+  static const float dipsPerInch = 96.0f;
+  return int( dips * dpi / dipsPerInch + 0.5f ); // Round to nearest integer.
+  }
+
+static std::vector<WinEvent> events;
+
 static bool isAppClosed = false;
 
 ref class App sealed : public IFrameworkView{
@@ -31,6 +51,7 @@ ref class App sealed : public IFrameworkView{
       m_windowClosed( false ),
       m_windowVisible( true ){
       inst = this;
+      events.reserve(128);
       }
 
     static App^ instance(){
@@ -47,10 +68,6 @@ ref class App sealed : public IFrameworkView{
 
       CoreApplication::Resuming +=
         ref new EventHandler<Platform::Object^>( this, &App::OnResuming );
-
-      // At this point we have access to the device. 
-      // We can create the device-dependent resources.
-      //m_deviceResources = std::make_shared<DX::DeviceResources>();
       }
 
     virtual void SetWindow( Windows::UI::Core::CoreWindow^ window ){
@@ -74,6 +91,9 @@ ref class App sealed : public IFrameworkView{
       window->PointerMoved +=
         ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>( this, &App::OnPointerMoved );
     
+      window->SizeChanged += 
+        ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this,&App::OnWindowSizeChanged);
+  
   #if !(WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
       window->SizeChanged +=
         ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>( this, &App::OnWindowSizeChanged );
@@ -91,7 +111,6 @@ ref class App sealed : public IFrameworkView{
       pointerVisualizationSettings->IsBarrelButtonFeedbackEnabled = false;
   #endif
 
-      //m_deviceResources->SetWindow( window );
       }
     virtual void Load( Platform::String^ entryPoint ){
   
@@ -108,11 +127,22 @@ ref class App sealed : public IFrameworkView{
       isAppClosed    = true;
       }
 
+    void OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args){
+      DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
+      const float dpi = currentDisplayInformation->LogicalDpi;
+
+      int x = dpyToPixels( args->Size.Width,  dpi );
+      int y = dpyToPixels( args->Size.Height, dpi );
+      WinEvent ev = {WinEvent::EvPointerPressed, x, y};
+      events.push_back(ev);
+      }
+
     protected:
     // Application lifecycle event handlers.
     void OnActivated( CoreApplicationView^ applicationView, IActivatedEventArgs^ args ){
       CoreWindow::GetForCurrentThread()->Activate();
       }
+
 
     void OnSuspending( Platform::Object^ sender, SuspendingEventArgs^ args ){
   
@@ -122,38 +152,33 @@ ref class App sealed : public IFrameworkView{
       }
 
     void OnPointerPressed( CoreWindow^window, PointerEventArgs^ event ){
-      OutputDebugStringA( "onPointerPressed" );
-
-      using namespace Tempest;
-      MouseEvent e( int(event->CurrentPoint->Position.X),
-                    int(event->CurrentPoint->Position.Y),
-                    MouseEvent::ButtonLeft,
-                    0,
-                    0,
-                    Event::MouseDown  );
-      SystemAPI::emitEvent( main_window, e );
+      DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
+      const float dpi = currentDisplayInformation->LogicalDpi;
+      
+      int x = dpyToPixels( event->CurrentPoint->Position.X, dpi );
+      int y = dpyToPixels( event->CurrentPoint->Position.Y, dpi );
+      WinEvent ev = {WinEvent::EvPointerPressed, x, y};
+      events.push_back(ev);
       }
 
     void OnPointerReleased( CoreWindow^window, PointerEventArgs^ event ){
-      using namespace Tempest;
-      MouseEvent e( int(event->CurrentPoint->Position.X),
-                    int(event->CurrentPoint->Position.Y),
-                    MouseEvent::ButtonLeft,
-                    0,
-                    0,
-                    Event::MouseUp  );
-      SystemAPI::emitEvent( main_window, e );
+      DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
+      const float dpi = currentDisplayInformation->LogicalDpi;
+      
+      int x = dpyToPixels( event->CurrentPoint->Position.X, dpi );
+      int y = dpyToPixels( event->CurrentPoint->Position.Y, dpi );
+      WinEvent ev = {WinEvent::EvPointerReleased, x, y};
+      events.push_back(ev);
       }
 
-    void OnPointerMoved( CoreWindow^window, PointerEventArgs^ event ){
-      using namespace Tempest;
-      MouseEvent e( int(event->CurrentPoint->Position.X),
-                    int(event->CurrentPoint->Position.Y),
-                    MouseEvent::ButtonLeft,
-                    0,
-                    0,
-                    Event::MouseMove );
-      SystemAPI::emitEvent( main_window, e );
+    void OnPointerMoved( CoreWindow^ window, PointerEventArgs^ event ){
+      DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
+      const float dpi = currentDisplayInformation->LogicalDpi;
+
+      int x = dpyToPixels( event->CurrentPoint->Position.X, dpi );
+      int y = dpyToPixels( event->CurrentPoint->Position.Y, dpi );
+      WinEvent ev = {WinEvent::EvPointerMoved, x, y};
+      events.push_back(ev);
       }
 
     // Window event handlers.
@@ -166,10 +191,9 @@ ref class App sealed : public IFrameworkView{
 
     void OnWindowClosed( CoreWindow^ sender, CoreWindowEventArgs^ args ){
       using namespace Tempest;
-      CloseEvent e;
-      SystemAPI::emitEvent( main_window, e );
+      WinEvent ev = {WinEvent::EvClose,0,0};
+      events.push_back(ev);
       m_windowClosed = true;
-      isAppClosed    = true;
       }
 
     // DisplayInformation event handlers.
@@ -210,28 +234,84 @@ void* WinRt::getMainRtWidget(){
   return mainRtWindow;
   }
 
+static void processEvent( const WinEvent& e ){
+  using namespace Tempest;
+
+  if(main_window==0)
+    return;
+
+  switch (e.type)
+    {
+      case WinEvent::EvPointerPressed:{
+        MouseEvent e( e.data1,
+                      e.data2,
+                      MouseEvent::ButtonLeft,
+                      0,
+                      0,
+                      Event::MouseDown  );
+        SystemAPI::emitEvent( main_window, e );
+        }
+        break;
+      case WinEvent::EvPointerReleased:{
+        MouseEvent e( e.data1,
+                      e.data2,
+                      MouseEvent::ButtonLeft,
+                      0,
+                      0,
+                      Event::MouseUp  );
+        SystemAPI::emitEvent( main_window, e );
+        }
+        break;
+      case WinEvent::EvPointerMoved:{
+        MouseEvent e( e.data1,
+                      e.data2,
+                      MouseEvent::ButtonLeft,
+                      0,
+                      0,
+                      Event::MouseMove  );
+        SystemAPI::emitEvent( main_window, e );
+        }
+        break;
+      case WinEvent::EvResize:{
+        SizeEvent e(e.data1,e.data2);
+        SystemAPI::emitEvent( main_window, e );
+        }
+        break;
+      case WinEvent::EvClose:{
+        CloseEvent e;
+        SystemAPI::emitEvent( main_window, e );
+        isAppClosed = true;
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+int WinRt::orientation() {
+  return int(DisplayProperties::CurrentOrientation);
+  }
+
 bool WinRt::nextEvent(){
-  try{
+  if(events.size()==0)
     CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessOneIfPresent );
-    }
-  catch(...){
-    }
+  if(events.size()==0)
+    return isAppClosed;
+  WinEvent e = events[0];
+  events.erase(events.begin());
+  processEvent(e);
   return isAppClosed;
   }
 
 bool WinRt::nextEvents(){
-  try{
-    CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessAllIfPresent );
+  CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents( CoreProcessEventsOption::ProcessAllIfPresent );
+  while(events.size()>0){
+    WinEvent e = events[0];
+    events.erase(events.begin());
+    processEvent(e);
     }
-  catch( Platform::COMException ^ e ){
-    e->ToString();
-    }
+  events.clear();
   return isAppClosed;
-  }
-
-static int convertDipsToPixels( float dips, float dpi ) {
-  static const float dipsPerInch = 96.0f;
-  return int( dips * dpi / dipsPerInch + 0.5f ); // Round to nearest integer.
   }
 
 void WinRt::getScreenRect( void* hwnd, int& scrW, int& scrH ){
@@ -242,13 +322,12 @@ void WinRt::getScreenRect( void* hwnd, int& scrW, int& scrH ){
     DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
     const float dpi = currentDisplayInformation->LogicalDpi;
 
-    scrW = convertDipsToPixels( logicalSize.Width,  dpi );
-    scrH = convertDipsToPixels( logicalSize.Height, dpi );
+    scrW = dpyToPixels( logicalSize.Width,  dpi );
+    scrH = dpyToPixels( logicalSize.Height, dpi );
     return;
     }
-  //FIXME
-  scrW = 800;
-  scrH = 480;
+  scrW = 0;
+  scrH = 0;
   }
 
 std::wstring WinRt::getAssetsFolder(){

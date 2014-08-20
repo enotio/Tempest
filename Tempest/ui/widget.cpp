@@ -37,7 +37,7 @@ Widget::Widget(ResourceContext *context):
 
   deleteLaterFlag = false;
 
-#ifdef __ANDROID__
+#ifdef __MOBILE_PLATFORM__
   mouseReleseReciver.reserve(8);
 #else
   mouseReleseReciver.reserve(1);

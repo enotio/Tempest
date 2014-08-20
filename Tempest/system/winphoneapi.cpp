@@ -153,11 +153,6 @@ WinPhoneAPI::CpuInfo WinPhoneAPI::cpuInfoImpl(){
   return info;
   }
 
-struct WinPhoneAPI::WinFile{
-  HANDLE h;
-  DWORD  pos, size;
-  };
-
 WinPhoneAPI::File *WinPhoneAPI::fopenImpl( const char *fname, const char *mode ) {
   return fopenImpl( toUtf16(fname).data(), mode );
   }
@@ -165,8 +160,8 @@ WinPhoneAPI::File *WinPhoneAPI::fopenImpl( const char *fname, const char *mode )
 WinPhoneAPI::File *WinPhoneAPI::fopenImpl( const char16_t *fname, const char *mode ) {
   T_ASSERT( sizeof( wchar_t ) == sizeof( char16_t ) );
 
-  wchar_t flg[4] = {};
-  for (int i = 0; i < 4 && mode[i]; ++i)
+  wchar_t flg[5] = {};
+  for (int i = 0; i < 5 && mode[i]; ++i)
     flg[i] = mode[i]; 
 
   std::wstring str = WinRt::getAssetsFolder()+L"/"+(wchar_t*)fname;

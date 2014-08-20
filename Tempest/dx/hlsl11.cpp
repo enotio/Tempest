@@ -167,7 +167,7 @@ struct HLSL11::Data{
                                    NULL,
                                    &sh );
     }
-
+   
   template<class Shader>
   bool createShaderFromSource( const std::string &src,
                                std::string &outputLog,
@@ -238,7 +238,7 @@ struct HLSL11::Data{
       DXGI_FORMAT_R32G32B32_FLOAT,
       DXGI_FORMAT_R32G32B32A32_FLOAT,
 
-      DXGI_FORMAT_B8G8R8A8_UNORM,
+      DXGI_FORMAT_R8G8B8A8_UNORM,
 
       DXGI_FORMAT_R16G16_SINT,
       DXGI_FORMAT_R16G16B16A16_SINT,

@@ -151,17 +151,19 @@ void Application::sleep(unsigned int msec) {
   }
 
 uint64_t Application::tickCount() {
-  timespec now;
-#if defined(__WINDOWS__)||defined(__WINDOWS_PHONE__)
-  clock_gettime(CLOCK_MONOTONIC    , &now);
+#if defined(__WINDOWS_PHONE__)
+  return GetTickCount64();
+#elif defined(__WINDOWS__)
+  return GetTickCount();
 #else
+  timespec now;
   clock_gettime(CLOCK_MONOTONIC_RAW, &now);
-#endif
 
   uint64_t t = (uint8_t)now.tv_sec;
   t *= 1000;
   t += now.tv_nsec/1000000;
   return t;
+#endif
   }
 
 void Application::exit() {
