@@ -21,4 +21,9 @@
   #endif
 #endif
 
+#if defined(__WINDOWS_PHONE__) || defined(__ANDROID__)
+#undef  __MOBILE_PLATFORM__
+#define __MOBILE_PLATFORM__ 1
+#endif
+
 #endif // PLATFORM_H
