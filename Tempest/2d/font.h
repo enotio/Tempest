@@ -70,6 +70,7 @@ class FontElement{
     static FreeTypeLib& ft();
 
     static std::vector< std::string > fnames;
+    static std::vector< std::unique_ptr<char[]> > fdata;
     size_t findFontName( const std::string& n );
 
     static bool cmpS( const std::string &tg, const std::string& s, const char* ss);

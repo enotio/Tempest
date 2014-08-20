@@ -36,8 +36,8 @@ struct Tempest::FontElement::FreeTypeLib{
     if( !count && offset > stream->size )
       return 1;
 
-    IDevice*  file;
-    file = ( (IDevice*)stream->descriptor.pointer );
+    MemReader* file;
+    file = ( (MemReader*)stream->descriptor.pointer );
     return file->peek(offset, (char*)buffer, count );
     }
 
@@ -45,7 +45,7 @@ struct Tempest::FontElement::FreeTypeLib{
     return;
     }
 
-  void mkStream( FT_StreamRec& stream, IDevice& file ){
+  void mkStream( FT_StreamRec& stream, MemReader& file ){
     stream.descriptor.pointer = &file;
     stream.read  = ft_stream_io;
     stream.close = ft_stream_close;
@@ -68,6 +68,7 @@ struct Tempest::FontElement::FreeTypeLib{
   };
 
 std::vector< std::string > Tempest::FontElement::fnames;
+std::vector< std::unique_ptr<char[]> > Tempest::FontElement::fdata;
 
 Tempest::FontElement::FreeTypeLib& Tempest::FontElement::ft(){
   static FreeTypeLib lib;
@@ -80,6 +81,7 @@ size_t Tempest::FontElement::findFontName(const std::string &n) {
       return i;
 
   fnames.push_back(n);
+  fdata.resize(fnames.size());
   return fnames.size()-1;
   }
 
@@ -126,20 +128,28 @@ void Tempest::FontElement::init( const std::string& name, int sz ) {
 
 const Tempest::FontElement::Letter&
     Tempest::FontElement::fetchLeter( char16_t ch,
-                               Tempest::SpritesHolder & res  ) const {
+                                      Tempest::SpritesHolder & res  ) const {
   Leters & leters = *lt;
 
   if( Letter *l = leters.find(ch) ){
     return *l;
     }
 
-  FT_Face       face;
-  FT_Vector     pen = {0,0};
-  FT_Error err = 0;
+  FT_Face   face = 0;
+  FT_Vector pen  = {0,0};
+  FT_Error  err  = 0;
 
-  RFile file(fnames[key.name].c_str());
+  if(fdata[key.name]==nullptr){
+    RFile file(fnames[key.name].c_str());
+    size_t sz = file.size();
+    char * ch = new char[sz];
+    fdata[key.name].reset(ch);
+    if(file.readData(ch,sz)!=sz)
+      fdata[key.name].reset();
+    }
+  Tempest::MemReader reader(fdata[key.name].get(),-1);
   FT_StreamRec stream;
-  ft().mkStream(stream, file);
+  ft().mkStream(stream,reader);
 
   err = ft().New_Face( ft().library, stream, 0, &face );
   if( err )
@@ -155,16 +165,15 @@ const Tempest::FontElement::Letter&
   if( FT_Load_Char( face, ch, FT_LOAD_RENDER ) ){
     Letter &ref = leters[ch];
     ref = letter;
-    //ref.surf.data.tex = 0;
     return ref;
     }
-
+  
   FT_GlyphSlot slot = face->glyph;
-  FT_Bitmap& bmap = slot->bitmap;
+  FT_Bitmap& bmap   = slot->bitmap;
 
   letter.dpos = Tempest::Point( slot->bitmap_left,
                                 key.size - slot->bitmap_top );
-
+  
   if( bmap.width!=0 && bmap.rows!=0 ){
     Tempest::Pixmap pixmap( bmap.width, bmap.rows, true );
 
@@ -176,7 +185,7 @@ const Tempest::FontElement::Letter&
         }
 
     //pixmap.save("./l.png");
-    letter.surf      = res.load( pixmap );
+    letter.surf = res.load( pixmap );
     }
 
   letter.size      = Tempest::Size( bmap.width, bmap.rows );
@@ -205,9 +214,17 @@ Tempest::FontElement::LetterGeometry Tempest::FontElement::letterGeometry( char1
   FT_Vector     pen = {0,0};
   FT_Error err = 0;
 
-  RFile file(fnames[key.name].c_str());
+  if(fdata[key.name]==nullptr){
+    RFile file(fnames[key.name].c_str());
+    size_t sz = file.size();
+    char * ch = new char[sz];
+    fdata[key.name].reset(ch);
+    if(file.readData(ch,sz)!=sz)
+      fdata[key.name].reset();
+    }
+  Tempest::MemReader reader(fdata[key.name].get(),-1);
   FT_StreamRec stream;
-  ft().mkStream(stream, file);
+  ft().mkStream(stream, reader);
 
   err = ft().New_Face( ft().library, stream, 0, &face );
   if( err )
