@@ -30,7 +30,7 @@ struct WinEvent{
     EvPointerReleased,
     EvResize,
     } type;
-  int data1, data2;
+  int data1, data2, data3;
   };
 
 
@@ -46,6 +46,36 @@ static bool isAppClosed = false;
 ref class App sealed : public IFrameworkView{
   private:
     static App^ inst;
+
+    struct Pointer {
+      int x,y;
+      unsigned id;
+      unsigned nid;
+      };
+    std::vector<Pointer> pointers;
+
+    Pointer& pointer( unsigned id ){
+      for( size_t i=0; i<pointers.size(); ++i )
+        if(pointers[i].id==id)
+          return pointers[i];
+      pointers.push_back(Pointer{0,0,id,pointers.size()});
+      return pointers.back();
+      }
+    
+    void pointerRemove( unsigned nid ){
+      static const unsigned no_id = unsigned(-1);
+      for( size_t i=0; i<pointers.size(); ++i )
+        if(pointers[i].nid==nid){
+          pointers[i].nid = no_id;
+          for(size_t r=0; r<pointers.size(); ++r){
+            if( pointers[r].nid!=no_id )
+              return;
+            }
+          pointers.clear();
+          return;
+          }
+      }
+
   public:
     App() :
       m_windowClosed( false ),
@@ -86,7 +116,10 @@ ref class App sealed : public IFrameworkView{
       
       window->PointerPressed += 
         ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>( this, &App::OnPointerPressed );
-      window->PointerReleased +=
+      // nor need - use PointerExit
+      //window->PointerReleased +=
+        //ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>( this, &App::OnPointerReleased );
+      window->PointerExited +=
         ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>( this, &App::OnPointerReleased );
       window->PointerMoved +=
         ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>( this, &App::OnPointerMoved );
@@ -133,7 +166,7 @@ ref class App sealed : public IFrameworkView{
 
       int x = dpyToPixels( args->Size.Width,  dpi );
       int y = dpyToPixels( args->Size.Height, dpi );
-      WinEvent ev = {WinEvent::EvPointerPressed, x, y};
+      WinEvent ev = {WinEvent::EvResize, x, y};
       events.push_back(ev);
       }
 
@@ -145,7 +178,7 @@ ref class App sealed : public IFrameworkView{
 
 
     void OnSuspending( Platform::Object^ sender, SuspendingEventArgs^ args ){
-  
+      int x = 0;
       }
     void OnResuming( Platform::Object^ sender, Platform::Object^ args ){
       int x = 0;
@@ -155,9 +188,11 @@ ref class App sealed : public IFrameworkView{
       DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
       const float dpi = currentDisplayInformation->LogicalDpi;
       
-      int x = dpyToPixels( event->CurrentPoint->Position.X, dpi );
-      int y = dpyToPixels( event->CurrentPoint->Position.Y, dpi );
-      WinEvent ev = {WinEvent::EvPointerPressed, x, y};
+      Pointer& p = pointer(event->CurrentPoint->PointerId);
+      p.x = dpyToPixels( event->CurrentPoint->Position.X, dpi );
+      p.y = dpyToPixels( event->CurrentPoint->Position.Y, dpi );
+
+      WinEvent ev = {WinEvent::EvPointerPressed, p.x, p.y, p.nid };
       events.push_back(ev);
       }
 
@@ -165,9 +200,12 @@ ref class App sealed : public IFrameworkView{
       DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
       const float dpi = currentDisplayInformation->LogicalDpi;
       
-      int x = dpyToPixels( event->CurrentPoint->Position.X, dpi );
-      int y = dpyToPixels( event->CurrentPoint->Position.Y, dpi );
-      WinEvent ev = {WinEvent::EvPointerReleased, x, y};
+      Pointer& p = pointer(event->CurrentPoint->PointerId);
+      p.x = dpyToPixels( event->CurrentPoint->Position.X, dpi );
+      p.y = dpyToPixels( event->CurrentPoint->Position.Y, dpi );
+
+      WinEvent ev = {WinEvent::EvPointerReleased, p.x, p.y, p.nid };
+      pointerRemove(p.nid);
       events.push_back(ev);
       }
 
@@ -175,9 +213,11 @@ ref class App sealed : public IFrameworkView{
       DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
       const float dpi = currentDisplayInformation->LogicalDpi;
 
-      int x = dpyToPixels( event->CurrentPoint->Position.X, dpi );
-      int y = dpyToPixels( event->CurrentPoint->Position.Y, dpi );
-      WinEvent ev = {WinEvent::EvPointerMoved, x, y};
+      Pointer& p = pointer(event->CurrentPoint->PointerId);
+      p.x = dpyToPixels( event->CurrentPoint->Position.X, dpi );
+      p.y = dpyToPixels( event->CurrentPoint->Position.Y, dpi );
+
+      WinEvent ev = {WinEvent::EvPointerMoved, p.x, p.y, p.nid };
       events.push_back(ev);
       }
 
@@ -186,7 +226,7 @@ ref class App sealed : public IFrameworkView{
     void OnWindowSizeChanged( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ args );
   #endif
     void OnVisibilityChanged( CoreWindow^ sender, VisibilityChangedEventArgs^ args ){
-      
+      //send paint event
       }
 
     void OnWindowClosed( CoreWindow^ sender, CoreWindowEventArgs^ args ){
@@ -247,7 +287,7 @@ static void processEvent( const WinEvent& e ){
                       e.data2,
                       MouseEvent::ButtonLeft,
                       0,
-                      0,
+                      e.data3,
                       Event::MouseDown  );
         SystemAPI::emitEvent( main_window, e );
         }
@@ -257,7 +297,7 @@ static void processEvent( const WinEvent& e ){
                       e.data2,
                       MouseEvent::ButtonLeft,
                       0,
-                      0,
+                      e.data3,
                       Event::MouseUp  );
         SystemAPI::emitEvent( main_window, e );
         }
@@ -267,14 +307,15 @@ static void processEvent( const WinEvent& e ){
                       e.data2,
                       MouseEvent::ButtonLeft,
                       0,
-                      0,
+                      e.data3,
                       Event::MouseMove  );
         SystemAPI::emitEvent( main_window, e );
         }
         break;
       case WinEvent::EvResize:{
-        SizeEvent e(e.data1,e.data2);
-        SystemAPI::emitEvent( main_window, e );
+        //SizeEvent ex(e.data1,e.data2);
+        SystemAPI::sizeEvent( main_window, e.data1, e.data2 );
+        //SystemAPI::emitEvent( main_window, e );
         }
         break;
       case WinEvent::EvClose:{

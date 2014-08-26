@@ -622,6 +622,11 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         }
         break;
 
+      case WM_MOUSELEAVE:{
+
+        }
+        break;
+
       case WM_MOUSEMOVE: {
         MouseEvent e( LOWORD (lParam),
                       HIWORD (lParam),

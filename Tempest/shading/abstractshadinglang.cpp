@@ -52,7 +52,7 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   for( int type:u.type ){
     if( type<Decl::count ){
       align<float>(bufsz);
-      bufsz += Decl::elementSize(Decl::ComponentType(type));
+      bufsz += 4*sizeof(float);//Decl::elementSize(Decl::ComponentType(type));
       }
     else if( type==Decl::Texture2d ){
       sampSz[0]+=sizeof(Texture2d::Sampler);
@@ -93,7 +93,7 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
       memcpy(data, addr, vsz);
 
       bufsz += vsz;
-      data  += vsz;
+      data  += 4*sizeof(float);
       } else {
       void* t=0;
       switch (type) {

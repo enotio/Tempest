@@ -36,8 +36,9 @@ class DirectX11 : public AbstractAPI {
 
     void setRenderState( Device *d, const RenderState & ) const;
 
-    void setRenderTaget( AbstractAPI::Device *d,
-                         AbstractAPI::Texture     *tx, int mip,
+    void setRenderTaget( AbstractAPI::Device  *d,
+                         AbstractAPI::Texture *tx,
+                         int mip,
                          int mrtSlot ) const;
 
     void unsetRenderTagets( AbstractAPI::Device *d,

@@ -161,6 +161,22 @@ struct GLSL::Data{
   GLuint      bindedProg;
   std::shared_ptr<std::vector<AbstractShadingLang::UBO>> curUbo;
 
+  void setupId( GLuint prog ){
+    for( AbstractShadingLang::UBO& u:*curUbo )
+      setupId(prog,u);
+    }
+
+  void setupId(GLuint prog, AbstractShadingLang::UBO& ux){
+    const char*  name = ux.names.data();
+    uintptr_t*    id  = ux.id.data();
+
+    for( int i=ux.desc.size(); i>0; --i ){
+      *id = location( prog, name ); // int to uint convertion
+      name += strlen(name)+1;
+      ++id;
+      }
+    }
+
   char  texAttrName[14];
   int32_t notId;
 
@@ -295,6 +311,7 @@ struct GLSL::Data{
     if( bindedProg!=curLinked.linked ){
       glUseProgram(curLinked.linked);
       bindedProg = curLinked.linked;
+      setupId(curLinked.linked);
       }
     }
   };
@@ -511,6 +528,7 @@ void GLSL::bind(const Tempest::ShaderProgram &p) const {
     data->curProgram = (Data::ShProgram*)get(p);
     data->curLinked.linked = 0;
     }
+
   data->curUbo = inputOf(p);
   }
 
@@ -526,7 +544,7 @@ void GLSL::enable() const {
   auto ubo = *data->curUbo;
 
   int slot=0;
-  for( const UBO u:ubo ){
+  for( UBO u:ubo ){
     if(!u.updated){
       setUniforms( data->bindedProg, u, slot );
       u.updated = true;
@@ -543,42 +561,45 @@ void GLSL::setUniforms( unsigned int prog,
   const char*  name      = ux.names.data();
   intptr_t const* fields = ux.fields.data();
   void* const * tex      = ux.tex.data();
+  uintptr_t*    id       = ux.id.data();
   Texture2d::Sampler* smp2d = (Texture2d::Sampler*)ux.smp[0].data();
   Texture3d::Sampler* smp3d = (Texture3d::Sampler*)ux.smp[1].data();
 
   for( int t: ux.desc ){
-    GLint prm = data->location( prog, name );
+    //*id = data->location( prog, name ); // int to uint convertion
     const char* v = &ux.data[0] + fields[0];
     ++fields;
 
-    if(prm!=-1)
+    if(*id!=uintptr_t(-1))
       switch(t){
         case Decl::float1:
-          glUniform1fv( prm, 1, (GLfloat*)v );
+          glUniform1fv( *id, 1, (GLfloat*)v );
           break;
         case Decl::float2:
-          glUniform2fv( prm, 1, (GLfloat*)v );
+          glUniform2fv( *id, 1, (GLfloat*)v );
           break;
         case Decl::float3:
-          glUniform3fv( prm, 1, (GLfloat*)v );
+          glUniform3fv( *id, 1, (GLfloat*)v );
           break;
         case Decl::float4:
-          glUniform4fv( prm, 1, (GLfloat*)v );
+          glUniform4fv( *id, 1, (GLfloat*)v );
           break;
         case Decl::Texture2d:{
           Detail::GLTexture* t = *(Detail::GLTexture**)tex;
-          data->setupSampler(GL_TEXTURE_2D,prm,slot,t,*smp2d);
+          if(t)
+            data->setupSampler(GL_TEXTURE_2D,*id,slot,t,*smp2d);
           ++slot;
           }
           break;
         case Decl::Texture3d:{
           Detail::GLTexture* t = *(Detail::GLTexture**)tex;
-          data->setupSampler(GL_TEXTURE_3D,prm,slot,t,*smp3d);
+          if(t)
+            data->setupSampler(GL_TEXTURE_3D,*id,slot,t,*smp3d);
           ++slot;
           }
           break;
         case Decl::Matrix4x4:
-          glUniformMatrix4fv( prm, 1, false, (GLfloat*)v );
+          glUniformMatrix4fv( *id, 1, false, (GLfloat*)v );
           break;
         }
     if(t==Decl::Texture2d){
@@ -590,6 +611,7 @@ void GLSL::setUniforms( unsigned int prog,
       ++smp3d;
       }
     name += strlen(name)+1;
+    ++id;
     }
   }
 

@@ -184,8 +184,7 @@ SOURCES += \
     ogl/openglbase.cpp \
     system/winphoneapi.cpp \
     dataControl/shaderprogramholder.cpp \
-    shading/shaderprogram.cpp \
-    dx/dx11types.cpp
+    shading/shaderprogram.cpp
 
 HEADERS += \
     system/windowsapi.h \

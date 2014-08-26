@@ -60,6 +60,14 @@ struct HLSL11::Data{
   ID3D11Device*        dev;
   ID3D11DeviceContext* immediateContext;
 
+  ID3D11InputLayout* dxDecl = 0;
+  void IASetInputLayout(ID3D11InputLayout* d){
+    if(dxDecl!=d){
+      immediateContext->IASetInputLayout(d);
+      dxDecl = d;
+      }
+    }
+
   ~Data(){
     for( auto i:samplers2d )
       i.second->Release();
@@ -319,9 +327,15 @@ struct HLSL11::Data{
     return ret;
     }
 
+  std::vector<ID3D11SamplerState*> curSamplers;
   void setSampler( int i, const Tempest::Texture2d::Sampler& s ){
     ID3D11SamplerState *st = createSampler(s);
-    immediateContext->PSSetSamplers( i, 1, &st );
+    if(curSamplers.size()<=size_t(i))
+      curSamplers.resize(i+1);
+    if(curSamplers[i]!=st){
+      immediateContext->PSSetSamplers( i, 1, &st );
+      curSamplers[i] = st;
+      }
     }
 
   void setSampler( int i, const Tempest::Texture3d::Sampler& s ){
@@ -332,6 +346,7 @@ struct HLSL11::Data{
 
 HLSL11::HLSL11(AbstractAPI::DirectX11Device *dev , void *context) {
   data = new Data();
+  data->curSamplers.reserve(128);
   data->dev = (ID3D11Device*)dev;
   data->immediateContext = (ID3D11DeviceContext*)context;
   }
@@ -346,6 +361,12 @@ void *HLSL11::context() const {
 
 void Tempest::HLSL11::bind( const ShaderProgram &px ) const {
   Data::Shader* p = (Data::Shader*)get(px);
+  if( data->prog.vs!=p->vs ||
+      data->prog.fs!=p->fs ){
+    data->immediateContext->VSSetShader( p->vs, NULL, 0 );
+    data->immediateContext->PSSetShader( p->fs, NULL, 0 );
+    data->curSamplers.clear();
+    }
   data->prog.vs     = p->vs;
   data->prog.fs     = p->fs;
   data->prog.codeVs = p->blobVs;
@@ -423,15 +444,12 @@ void HLSL11::enable() const {
   SortedVec<Data::Program>::iterator l = data->sh.find(data->prog);
 
   if( l!=data->sh.end() ){
-    data->immediateContext->IASetInputLayout(l->dxDecl);
+    data->IASetInputLayout(l->dxDecl);
     } else {
     data->prog.dxDecl = data->createDecl(*data->prog.decl, data->prog.codeVs);
     data->sh.insert(data->prog);
-    data->immediateContext->IASetInputLayout(data->prog.dxDecl);
+    data->IASetInputLayout(data->prog.dxDecl);
     }
-
-  data->immediateContext->VSSetShader( data->prog.vs, NULL, 0 );
-  data->immediateContext->PSSetShader( data->prog.fs, NULL, 0 );
 
   auto ubo = *data->curUbo;
 
@@ -474,26 +492,26 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &ux,
       case Decl::Texture2d:{
         DX11Texture* t = *(DX11Texture**)tex;
         if( t ){
-          if(!t->view)
-            data->dev->CreateShaderResourceView(t->texture, NULL, &t->view);
           data->immediateContext->PSSetShaderResources(slot,1,&t->view);
           data->setSampler(slot,*smp2d);
+          } else {
+          data->immediateContext->PSSetShaderResources(slot,0,0);
           }
-        ++slot;
         }
         break;
       case Decl::Texture3d:{
-        ++slot;
         }
         break;
       }
     if(t==Decl::Texture2d){
       ++tex;
       ++smp2d;
+      ++slot;
       } else
     if(t==Decl::Texture3d){
       ++tex;
       ++smp3d;
+      ++slot;
       }
     name += strlen(name)+1;
     }
@@ -605,6 +623,8 @@ void Tempest::HLSL11::event(const GraphicsSubsystem::DeleteEvent &e) {
     data->sh[nsz]=data->sh[i];
     if(e.declaration==(VertexDecl*)data->sh[i].decl){
       data->sh[i].dxDecl->Release();
+      if( data->sh[i].dxDecl==data->dxDecl )
+        data->dxDecl = 0;
       } else {
       ++nsz;
       }

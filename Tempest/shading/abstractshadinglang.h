@@ -62,8 +62,8 @@ class AbstractShadingLang : public GraphicsSubsystem {
       std::vector<void*>    tex;
       std::vector<char*>    smp[2];
 
-      std::vector<uintptr_t> id;
-      mutable bool           updated=false;
+      mutable std::vector<uintptr_t> id;
+      mutable bool                   updated=false;
       };
     static void assignUniformBuffer( UBO &ux,
                                      const char *ubo,

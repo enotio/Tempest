@@ -25,6 +25,9 @@
 namespace Tempest{
   struct DX11Texture{
     ID3D11Texture2D*          texture = 0;
+    ID3D11RenderTargetView*   rt      = 0;
+    ID3D11DepthStencilView*   depth   = 0;
+    int                       rtMip   = -1;
     ID3D11ShaderResourceView* view    = 0;
     };
   }

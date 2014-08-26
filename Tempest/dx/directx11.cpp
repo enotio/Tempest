@@ -60,10 +60,14 @@ struct Hash {
 
 struct Cmp {
   bool operator () ( const BlendDesc& a, const BlendDesc& b ) const {
-    return a.blend==b.blend && a.d==b.d && a.s==b.s;
+    return a.blend==b.blend &&
+           a.d==b.d &&
+           a.s==b.s;
     }
   bool operator () ( const ZDesc& a, const ZDesc& b ) const {
-    return a.enable==b.enable && a.writing==b.writing && a.func==b.func;
+    return a.enable==b.enable &&
+           a.writing==b.writing &&
+           a.func==b.func;
     }
   };
 
@@ -86,10 +90,25 @@ struct DirectX11::Device{
   ID3D11DepthStencilView*  depthStencilView = NULL;
   ID3D11DepthStencilState* dsState          = NULL;
 
+  std::vector<ID3D11RenderTargetView*> rt;
+  ID3D11DepthStencilView*  rtDepth = NULL;
+  int rtW, rtH;
+
   std::unordered_map<BlendDesc,ID3D11BlendState*,Hash,Cmp> blendSt;
   std::unordered_map<ZDesc,ID3D11DepthStencilState*,Hash,Cmp> ztestSt;
 
+  ID3D11Buffer* vbo       = 0;
+  ID3D11Buffer* ibo       = 0;
+
   int scrW, scrH;
+
+  D3D_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+  void IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY t){
+    if(topology!=t){
+      topology=t;
+      immediateContext->IASetPrimitiveTopology(t);
+      }
+    }
 
   ~Device(){
     if( immediateContext )
@@ -146,7 +165,11 @@ struct DirectX11::Device{
     descDepth.Height = height;
     descDepth.MipLevels = 1;
     descDepth.ArraySize = 1;
+#ifdef __WINDOWS_PHONE__
+    descDepth.Format = DXGI_FORMAT_D16_UNORM;
+#else
     descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+#endif
     descDepth.SampleDesc.Count = 1;
     descDepth.SampleDesc.Quality = 0;
     descDepth.Usage = D3D11_USAGE_DEFAULT;
@@ -167,6 +190,37 @@ struct DirectX11::Device{
     hr = device->CreateDepthStencilView( depthStencil, &descDSV, &depthStencilView );
     if( FAILED( hr ) )
         return hr;
+    return S_OK;
+    }
+
+  HRESULT initSwapChain(){
+    HRESULT hr = 0;
+    ID3D11Texture2D* pBackBuffer = NULL;
+
+    hr = swapChain->GetBuffer( 0, ID3D11Texture2D_uuid, ( LPVOID* )&pBackBuffer );
+    if( FAILED( hr ) )
+      return 0;
+
+    hr = device->CreateRenderTargetView( pBackBuffer, NULL, &renderTargetView );
+    pBackBuffer->Release();
+    if( FAILED( hr ) )
+      return 0;
+
+    if( FAILED(createDepthTexture(scrW,scrH)) )
+      return 0;
+    immediateContext->OMSetRenderTargets( 1,
+                                          &renderTargetView,
+                                          depthStencilView );
+
+    // Setup the viewport
+    D3D11_VIEWPORT vp;
+    vp.Width    = (FLOAT)scrW;
+    vp.Height   = (FLOAT)scrH;
+    vp.MinDepth = 0.0f;
+    vp.MaxDepth = 1.0f;
+    vp.TopLeftX = 0;
+    vp.TopLeftY = 0;
+    immediateContext->RSSetViewports( 1, &vp );
     return S_OK;
     }
   };
@@ -271,7 +325,7 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
 
   UINT createDeviceFlags = 0;
 #ifndef NDEBUG
-  createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+  //createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
   D3D_DRIVER_TYPE driverTypes[] =
@@ -340,30 +394,10 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
   if( FAILED( hr ) )
     return 0;
 
-  ID3D11Texture2D* pBackBuffer = NULL;
-  hr = dev->swapChain->GetBuffer( 0, ID3D11Texture2D_uuid, ( LPVOID* )&pBackBuffer );
+  hr = dev->initSwapChain();
+
   if( FAILED( hr ) )
     return 0;
-
-  hr = dev->device->CreateRenderTargetView( pBackBuffer, NULL, &dev->renderTargetView );
-  pBackBuffer->Release();
-  if( FAILED( hr ) )
-    return 0;
-
-  if( FAILED(dev->createDepthTexture(dev->scrW,dev->scrH)) )
-    return 0;
-  dev->immediateContext->OMSetRenderTargets( 1, &dev->renderTargetView,
-                                                 dev->depthStencilView );
-
-  // Setup the viewport
-  D3D11_VIEWPORT vp;
-  vp.Width    = (FLOAT)dev->scrW;
-  vp.Height   = (FLOAT)dev->scrH;
-  vp.MinDepth = 0.0f;
-  vp.MaxDepth = 1.0f;
-  vp.TopLeftX = 0;
-  vp.TopLeftY = 0;
-  dev->immediateContext->RSSetViewports( 1, &vp );
 
   dev->caps.maxTextureSize = 8048;
   return (AbstractAPI::Device*)dev.release();
@@ -387,78 +421,195 @@ void DirectX11::clear( AbstractAPI::Device *d, const Color &cl,
                        float z, unsigned stencil ) const {
   Device* dev = (Device*)d;
 
-  dev->immediateContext->ClearRenderTargetView( dev->renderTargetView, cl.data() );
-  dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
-                                                D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
-                                                z, stencil );
+  if(dev->rt.size()){
+    for( size_t i=0; i<dev->rt.size(); ++i )
+      dev->immediateContext->ClearRenderTargetView( dev->rt[i], cl.data() );
+    dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
+                                                  D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
+                                                  z, stencil );
+    } else {
+    dev->immediateContext->ClearRenderTargetView( dev->renderTargetView, cl.data() );
+    dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
+                                                  D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
+                                                  z, stencil );
+    }
   }
 
 void DirectX11::clear(AbstractAPI::Device *d, const Color &cl) const {
   Device* dev = (Device*)d;
-  dev->immediateContext->ClearRenderTargetView( dev->renderTargetView, cl.data() );
+  if(dev->rt.size()){
+    for( size_t i=0; i<dev->rt.size(); ++i )
+      dev->immediateContext->ClearRenderTargetView( dev->rt[i], cl.data() );
+    } else {
+    dev->immediateContext->ClearRenderTargetView( dev->renderTargetView, cl.data() );
+    }
   }
 
 void DirectX11::clear(AbstractAPI::Device *d, const Color &cl, float z) const {
   Device* dev = (Device*)d;
 
-  dev->immediateContext->ClearRenderTargetView( dev->renderTargetView, cl.data() );
-  dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
-                                                D3D11_CLEAR_DEPTH,
-                                                z, 0 );
+  if(dev->rt.size()){
+    for( size_t i=0; i<dev->rt.size(); ++i )
+      dev->immediateContext->ClearRenderTargetView( dev->rt[i], cl.data() );
+    dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
+                                                  D3D11_CLEAR_DEPTH,
+                                                  z, 0 );
+    } else {
+    dev->immediateContext->ClearRenderTargetView( dev->renderTargetView, cl.data() );
+    dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
+                                                  D3D11_CLEAR_DEPTH,
+                                                  z, 0 );
+    }
   }
 
 void DirectX11::clear(AbstractAPI::Device *d, float z, unsigned stencil) const {
   Device* dev = (Device*)d;
-  dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
-                                                D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
-                                                z, stencil );
+  if(dev->rt.size()){
+    dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
+                                                  D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
+                                                  z, 0 );
+    } else {
+    dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
+                                                  D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
+                                                  z, stencil );
+    }
   }
 
 void DirectX11::clearZ(AbstractAPI::Device *d, float z) const {
   Device* dev = (Device*)d;
-  dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
-                                                D3D11_CLEAR_DEPTH,
-                                                z, 0 );
+  if(dev->rt.size()){
+    dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
+                                                  D3D11_CLEAR_DEPTH,
+                                                  z, 0 );
+    } else {
+    dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
+                                                  D3D11_CLEAR_DEPTH,
+                                                  z, 0 );
+    }
   }
 
 void DirectX11::clearStencil(AbstractAPI::Device *d, unsigned stencil) const {
   Device* dev = (Device*)d;
-  dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
-                                                D3D11_CLEAR_STENCIL,
-                                                1.0f, stencil );
+  if(dev->rt.size()){
+    dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
+                                                  D3D11_CLEAR_STENCIL,
+                                                  1.0f, stencil );
+    } else {
+    dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
+                                                  D3D11_CLEAR_STENCIL,
+                                                  1.0f, stencil );
+    }
   }
 
 void DirectX11::beginPaint(AbstractAPI::Device *d) const {
-  //TODO
+  Device* dev = (Device*)d;
+  if(dev->rt.size()>0){
+    dev->immediateContext->OMSetRenderTargets( dev->rt.size(),
+                                               dev->rt.data(),
+                                               dev->rtDepth );
+
+    // Setup the viewport
+    D3D11_VIEWPORT vp;
+    vp.Width    = (FLOAT)dev->rtW;
+    vp.Height   = (FLOAT)dev->rtH;
+    vp.MinDepth = 0.0f;
+    vp.MaxDepth = 1.0f;
+    vp.TopLeftX = 0;
+    vp.TopLeftY = 0;
+    dev->immediateContext->RSSetViewports( 1, &vp );
+    }
   }
 
 void DirectX11::endPaint(AbstractAPI::Device *d) const {
-  //TODO
+  Device* dev = (Device*)d;
+  if(dev->rt.size()>0){
+    // Setup the viewport
+    D3D11_VIEWPORT vp;
+    vp.Width    = (FLOAT)dev->scrW;
+    vp.Height   = (FLOAT)dev->scrH;
+    vp.MinDepth = 0.0f;
+    vp.MaxDepth = 1.0f;
+    vp.TopLeftX = 0;
+    vp.TopLeftY = 0;
+    dev->immediateContext->RSSetViewports( 1, &vp );
+    }
+
+  dev->vbo = 0;
+  dev->ibo = 0;
   }
 
-void DirectX11::setRenderTaget(AbstractAPI::Device *d, AbstractAPI::Texture *tx, int mip, int mrtSlot) const {
-  //TODO
+void DirectX11::setRenderTaget( AbstractAPI::Device *d,
+                                AbstractAPI::Texture *tx,
+                                int mip, int mrtSlot ) const {
+  Device*      dev = (Device*)d;
+  DX11Texture* tex = (DX11Texture*)tx;
+
+  if(dev->rt.size()<=size_t(mrtSlot))
+    dev->rt.resize(mrtSlot+1);
+
+  D3D11_TEXTURE2D_DESC textureDesc;
+  tex->texture->GetDesc(&textureDesc);
+  dev->rtW = textureDesc.Width;
+  dev->rtH = textureDesc.Height;
+
+  if(tex->rtMip!=mip){
+    D3D11_RENDER_TARGET_VIEW_DESC rtDesc;
+    ZeroMemory(&rtDesc,sizeof(rtDesc));
+    rtDesc.Texture2D.MipSlice = mip;
+    rtDesc.Format             = textureDesc.Format;
+    rtDesc.ViewDimension      = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+    tex->rtMip = mip;
+    T_ASSERT(SUCCEEDED(dev->device->CreateRenderTargetView(tex->texture,&rtDesc,&tex->rt)));
+    }
+
+  dev->rt[mrtSlot] = tex->rt;
   }
 
-void DirectX11::unsetRenderTagets(AbstractAPI::Device *d, int count) const {
-  //TODO
+void DirectX11::unsetRenderTagets(AbstractAPI::Device *d, int /*count*/) const {
+  Device* dev = (Device*)d;
+  dev->rt.clear();
+  dev->immediateContext->OMSetRenderTargets( 1, &dev->renderTargetView,
+                                                 dev->depthStencilView );
+
   }
 
-void DirectX11::setDSSurfaceTaget(AbstractAPI::Device *d, AbstractAPI::StdDSSurface *tx) const {
-  //TODO
+void DirectX11::setDSSurfaceTaget(AbstractAPI::Device *,
+                                  AbstractAPI::StdDSSurface *) const {
   }
 
-void DirectX11::setDSSurfaceTaget(AbstractAPI::Device *d, AbstractAPI::Texture *tx) const {
-  //TODO
+void DirectX11::setDSSurfaceTaget(AbstractAPI::Device * d,
+                                  AbstractAPI::Texture * tx) const {
+  Device*      dev = (Device*)d;
+  DX11Texture* tex = (DX11Texture*)tx;
+  const int    mip = 0;
+
+  if(tex->rtMip!=mip){
+    D3D11_TEXTURE2D_DESC textureDesc;
+    tex->texture->GetDesc(&textureDesc);
+
+    D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+    ZeroMemory( &descDSV, sizeof(descDSV) );
+    descDSV.Format             = textureDesc.Format;
+    descDSV.ViewDimension      = D3D11_DSV_DIMENSION_TEXTURE2D;
+    descDSV.Texture2D.MipSlice = 0;
+    HRESULT hr = dev->device->CreateDepthStencilView( tex->texture,
+                                                      &descDSV,
+                                                      &tex->depth );
+
+    tex->rtMip = mip;
+    T_ASSERT(SUCCEEDED(hr));
+    }
+
+  dev->rtDepth = tex->depth;
   }
 
-AbstractAPI::StdDSSurface *DirectX11::getDSSurfaceTaget(AbstractAPI::Device *d) const {
-  //TODO
+AbstractAPI::StdDSSurface *DirectX11::getDSSurfaceTaget(AbstractAPI::Device *) const {
   return 0;
   }
 
-void DirectX11::retDSSurfaceTaget(AbstractAPI::Device *d, AbstractAPI::StdDSSurface *s) const {
-  //TODO
+void DirectX11::retDSSurfaceTaget(AbstractAPI::Device *,
+                                  AbstractAPI::StdDSSurface *) const {
   }
 
 bool DirectX11::startRender( AbstractAPI::Device *, bool /*isLost*/ ) const{
@@ -491,45 +642,44 @@ bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
     dx->depthStencilView->Release();
     dx->depthStencil->Release();
 
-    HRESULT hr=0;
+    HRESULT hr=S_OK;
     // Preserve the existing buffer count and format.
     // Automatically choose the width and height to match the client rect for HWNDs.
-    hr = dx->swapChain->ResizeBuffers(0,0,0,DXGI_FORMAT_UNKNOWN,0);
+#if defined(__WINDOWS_PHONE__)
+    hr = dx->swapChain->ResizeBuffers(2,dx->scrW, dx->scrH,DXGI_FORMAT_UNKNOWN,0);
+#else
+    hr = dx->swapChain->ResizeBuffers(2,0,0,DXGI_FORMAT_R8G8B8A8_UNORM,0);
+#endif
     if(FAILED(hr))
       return false;
 
 #ifdef __WINDOWS_PHONE__
+    enum Orientations{
+      Landscape        = 1,
+      Portrait         = 2,
+      LandscapeFlipped = 4,
+      PortraitFlipped  = 8
+      };
     const int rot=WinRt::orientation();
     switch(rot) {
-      //case DisplayOrientations::Landscape:
-        //dx->swapChain->SetRotation(DXGI_MODE_ROTATION_IDENTITY);
+      case Portrait:
+        dx->swapChain->SetRotation(DXGI_MODE_ROTATION_IDENTITY);
+        break;
+      case Landscape:
+        dx->swapChain->SetRotation(DXGI_MODE_ROTATION_ROTATE270);
+        break;
+      case PortraitFlipped:
+        dx->swapChain->SetRotation(DXGI_MODE_ROTATION_ROTATE180);
+        break;
+      case LandscapeFlipped:
+        dx->swapChain->SetRotation(DXGI_MODE_ROTATION_ROTATE90);
         break;
       }
 #endif
 
-    ID3D11Texture2D* pBuffer;
-    hr = dx->swapChain->GetBuffer(0,ID3D11Texture2D_uuid,(void**)&pBuffer );
+    hr = dx->initSwapChain();
     if(FAILED(hr))
       return false;
-
-    hr = dx->device->CreateRenderTargetView(pBuffer,NULL,&dx->renderTargetView);
-    if(FAILED(hr))
-      return false;
-    pBuffer->Release();
-
-    dx->createDepthTexture(dx->scrW,dx->scrH);
-    dx->immediateContext->OMSetRenderTargets( 1,
-                                              &dx->renderTargetView,
-                                              dx->depthStencilView );
-
-    D3D11_VIEWPORT vp;
-    vp.Width    = FLOAT(dx->scrW);
-    vp.Height   = FLOAT(dx->scrH);
-    vp.MinDepth = 0.0f;
-    vp.MaxDepth = 1.0f;
-    vp.TopLeftX = 0;
-    vp.TopLeftY = 0;
-    dx->immediateContext->RSSetViewports( 1, &vp );
     }
 
   return true;
@@ -544,12 +694,20 @@ AbstractAPI::Texture *DirectX11::createTexture( AbstractAPI::Device *d,
                                                 bool mips,
                                                 bool /*compress*/ ) const {
   Device* dev = (Device*)d;
+
+  int cnt=1, w=p.width(), h=p.height();
+  while(w>1 && h>1){
+    w/=2;
+    h/=2;
+    cnt++;
+    }
+
   D3D11_TEXTURE2D_DESC desc;
   ZeroMemory(&desc, sizeof(desc));
   desc.ArraySize        = 1;
   desc.Width            = p.width();
   desc.Height           = p.height();
-  desc.MipLevels        = 1;//desc.ArraySize = 1;
+  desc.MipLevels        = mips ? cnt : 1;
   desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
   desc.Usage            = D3D11_USAGE_DEFAULT;//D3D11_USAGE_IMMUTABLE;
   desc.BindFlags        = D3D11_BIND_RENDER_TARGET|D3D11_BIND_SHADER_RESOURCE;
@@ -558,17 +716,27 @@ AbstractAPI::Texture *DirectX11::createTexture( AbstractAPI::Device *d,
   desc.SampleDesc.Count   = 1;
   desc.SampleDesc.Quality = 0;
 
-  D3D11_SUBRESOURCE_DATA pix;
-  ZeroMemory(&pix, sizeof(pix));
-  const int bpp   = p.hasAlpha() ? 4:3;
-  pix.pSysMem     = dev->flipTexture(p.width(), p.height(), bpp, p.const_data());
-  pix.SysMemPitch = p.width()*4;
+  std::vector<D3D11_SUBRESOURCE_DATA> pix;
+  pix.resize(desc.MipLevels);
+  const int bpp      = p.hasAlpha() ? 4:3;
+  pix[0].pSysMem     = dev->flipTexture(p.width(), p.height(), bpp, p.const_data());
+  pix[0].SysMemPitch = p.width()*4;
+  w=p.width();
+  for(size_t i=1; i<pix.size(); ++i ){
+    w/=2;
+    pix[i].pSysMem    =pix[0].pSysMem;
+    pix[i].SysMemPitch=w*4;
+    }
 
   DX11Texture* tex = new DX11Texture;
-  if( SUCCEEDED(dev->device->CreateTexture2D( &desc, &pix, &tex->texture )) ){
+  if( SUCCEEDED(dev->device->CreateTexture2D( &desc, pix.data(), &tex->texture )) ){
     dev->device->CreateShaderResourceView(tex->texture, NULL, &tex->view);
-    if(mips)
+    if(mips){
       dev->immediateContext->GenerateMips(tex->view);
+      D3D11_SHADER_RESOURCE_VIEW_DESC d;
+      tex->view->GetDesc(&d);
+      d.Texture2D.MipLevels=0;
+      }
     return (AbstractAPI::Texture*)tex;
     }
   return 0;
@@ -593,6 +761,42 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
     D3D11_USAGE_DEFAULT,
     D3D11_USAGE_DEFAULT//D3D11_USAGE_STAGING
     };
+  static const DXGI_FORMAT d3frm[] = {
+    DXGI_FORMAT_R32_FLOAT,  // Luminance,
+    DXGI_FORMAT_R8_UNORM,   // Luminance4,
+    DXGI_FORMAT_R8_UNORM,   // Luminance8,
+    DXGI_FORMAT_R16_FLOAT,  // Luminance16,
+
+    DXGI_FORMAT_R8G8B8A8_UNORM,    // RGB,
+    DXGI_FORMAT_R8G8B8A8_UNORM,    // RGB4,
+    DXGI_FORMAT_R8G8B8A8_UNORM, //DXGI_FORMAT_B5G6R5_UNORM,      // RGB5, need dx11.1
+    DXGI_FORMAT_R10G10B10A2_UINT,  // RGB10,
+    DXGI_FORMAT_R10G10B10A2_UNORM, // RGB12,
+    DXGI_FORMAT_R10G10B10A2_UNORM, // RGB16,
+
+    DXGI_FORMAT_R8G8B8A8_UNORM,     // RGBA,
+    DXGI_FORMAT_R8G8B8A8_UNORM,//DXGI_FORMAT_B5G5R5A1_UNORM,     // RGBA5, need dx11.1
+    DXGI_FORMAT_R8G8B8A8_UNORM,     // RGBA8,
+    DXGI_FORMAT_R10G10B10A2_UNORM,  // RGB10_A2,
+    DXGI_FORMAT_R10G10B10A2_UNORM,  // RGBA12,
+    DXGI_FORMAT_R16G16B16A16_UNORM, // RGBA16,
+
+    DXGI_FORMAT_UNKNOWN, // RGB_DXT1,
+    DXGI_FORMAT_UNKNOWN, // RGBA_DXT1,
+    DXGI_FORMAT_UNKNOWN, // RGBA_DXT3,
+    DXGI_FORMAT_UNKNOWN, // RGBA_DXT5,
+
+    DXGI_FORMAT_D16_UNORM, // Depth16,
+    DXGI_FORMAT_D24_UNORM_S8_UINT, // Depth24,
+    DXGI_FORMAT_D32_FLOAT, // Depth32,
+
+    DXGI_FORMAT_R16G16_FLOAT,// RG16
+
+    DXGI_FORMAT_R16_UNORM,   // RedableDepth16,
+    DXGI_FORMAT_R32_FLOAT,   // RedableDepth32,
+
+    DXGI_FORMAT_R8G8B8A8_UNORM, //Count
+    };
 
   Device* dev = (Device*)d;
   D3D11_TEXTURE2D_DESC desc;
@@ -600,19 +804,31 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
   desc.Width            = w;
   desc.Height           = h;
   desc.MipLevels        = 1;//desc.ArraySize = 1;
-  desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
+  desc.Format           = d3frm[f];//DXGI_FORMAT_R8G8B8A8_UNORM;
   desc.Usage            = u[usage];
-  desc.BindFlags        = D3D11_BIND_RENDER_TARGET|D3D11_BIND_SHADER_RESOURCE;
+  desc.BindFlags        = 0;
   desc.CPUAccessFlags   = 0;
-  desc.MiscFlags        = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+  desc.MiscFlags        = 0;
   desc.SampleDesc.Count   = 1;
   desc.SampleDesc.Quality = 0;
 
+  if( desc.Format!=DXGI_FORMAT_D16_UNORM &&
+      desc.Format!=DXGI_FORMAT_D24_UNORM_S8_UINT &&
+      desc.Format!=DXGI_FORMAT_D32_FLOAT ) {
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+    desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+    } else {
+    desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    }
+
   DX11Texture* tex = new DX11Texture;
   if( SUCCEEDED(dev->device->CreateTexture2D( &desc, NULL, &tex->texture )) ){
-    dev->device->CreateShaderResourceView(tex->texture, NULL, &tex->view);
-    if(mips)
+    if( desc.BindFlags&D3D11_BIND_SHADER_RESOURCE )
+      dev->device->CreateShaderResourceView(tex->texture, NULL, &tex->view);
+
+    if( mips && (desc.MiscFlags&D3D11_RESOURCE_MISC_GENERATE_MIPS) )
       dev->immediateContext->GenerateMips(tex->view);
+
     return (AbstractAPI::Texture*)tex;
     }
   return 0;
@@ -641,6 +857,10 @@ void DirectX11::deleteTexture(AbstractAPI::Device *, AbstractAPI::Texture *t) co
     tex->texture->Release();
   if( tex->view )
     tex->view->Release();
+  if( tex->rt )
+    tex->rt->Release();
+  if(tex->depth)
+    tex->depth->Release();
   }
 
 AbstractAPI::VertexBuffer *DirectX11::createVertexBuffer( AbstractAPI::Device *d,
@@ -749,19 +969,26 @@ void DirectX11::setVertexDeclaration(AbstractAPI::Device *,
   }//NOP
 
 void DirectX11::bindVertexBuffer( AbstractAPI::Device *d,
-                                  AbstractAPI::VertexBuffer *v, int vsize) const {
+                                  AbstractAPI::VertexBuffer *v,
+                                  int vsize ) const {
 
   Device* dev = (Device*)d;
   ID3D11Buffer* b = (ID3D11Buffer*)v;
   UINT stride=vsize, offset=0;
-  dev->immediateContext->IASetVertexBuffers( 0, 1, &b, &stride, &offset );
+  if(dev->vbo!=b){
+    dev->vbo = b;
+    dev->immediateContext->IASetVertexBuffers( 0, 1, &b, &stride, &offset );
+    }
   }
 
 void DirectX11::bindIndexBuffer( AbstractAPI::Device *d,
                                  AbstractAPI::IndexBuffer *v ) const {
   Device* dev = (Device*)d;
   ID3D11Buffer* b = (ID3D11Buffer*)v;
-  dev->immediateContext->IASetIndexBuffer(b, DXGI_FORMAT_R16_UINT, 0 );
+  if(dev->ibo!=b){
+    dev->immediateContext->IASetIndexBuffer(b, DXGI_FORMAT_R16_UINT, 0 );
+    dev->ibo = b;
+    }
   }
 
 void *DirectX11::lockBuffer( AbstractAPI::Device *d,
@@ -830,7 +1057,7 @@ void DirectX11::draw( AbstractAPI::Device *d, AbstractAPI::PrimitiveType t,
 
   const int vpCount = vertexCount(t, pCount);
   Device* dev = (Device*)d;
-  dev->immediateContext->IASetPrimitiveTopology( topology[t] );
+  dev->IASetPrimitiveTopology(topology[t]);
   dev->immediateContext->Draw( vpCount, firstVertex );
   }
 
@@ -848,7 +1075,7 @@ void DirectX11::drawIndexed( AbstractAPI::Device *d, AbstractAPI::PrimitiveType 
 
   const int vpCount = vertexCount(t, pCount);
   Device* dev = (Device*)d;
-  dev->immediateContext->IASetPrimitiveTopology( topology[t] );
+  dev->IASetPrimitiveTopology(topology[t]);
   dev->immediateContext->DrawIndexed( vpCount, iboOffsetIndex, vboOffsetIndex );
   }
 
@@ -935,9 +1162,11 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
     dev->immediateContext->OMSetDepthStencilState(zi->second,0);
     } else {
     D3D11_DEPTH_STENCIL_DESC dsDesc;
-    dsDesc.DepthEnable    = rs.isZTest();
+    dsDesc.DepthEnable    = rs.isZTest() || rs.isZWriting();
     dsDesc.DepthWriteMask = rs.isZWriting() ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
     dsDesc.DepthFunc      = func[rs.getZTestMode()];
+    if(!rs.isZTest())
+      dsDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
 
     dsDesc.StencilEnable    = false;
     dsDesc.StencilReadMask  = 0xFF;
