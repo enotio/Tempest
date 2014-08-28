@@ -69,7 +69,8 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   ux.id.resize(u.type.size());
   ux.names = u.name;
   ux.desc  = u.type;
-  ux.data  .resize( std::max<size_t>( (bufsz/16)*16, 32) );
+  if(bufsz>0)
+    ux.data  .resize( std::max<size_t>( (bufsz/16)*16, 32) );
   ux.smp[0].resize(sampSz[0]);
   ux.smp[1].resize(sampSz[1]);
   ux.fields.resize(ux.desc.size());
@@ -78,13 +79,13 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   bufsz = 0;
   void** tx = &ux.tex[0];
   int i=0;
-  char *data = &ux.data[0];
+  char *data = ux.data.data();
   Texture2d::Sampler* smp2d = (Texture2d::Sampler*)ux.smp[0].data();
   Texture3d::Sampler* smp3d = (Texture3d::Sampler*)ux.smp[1].data();
 
   for( int type:ux.desc ){
     const char* addr = ubo+bufsz;    
-    ux.fields[i] = (data-&ux.data[0]);
+    ux.fields[i] = (data-ux.data.data());
     ++i;
 
     if( type<Decl::count ){

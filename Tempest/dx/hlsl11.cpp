@@ -142,7 +142,7 @@ struct HLSL11::Data{
       filter |= D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
 
     if(s.anisotropic)
-      ;//filter=D3D11_FILTER_ANISOTROPIC;
+      filter=D3D11_FILTER_ANISOTROPIC;
 
     sampDesc.Filter   = D3D11_FILTER(filter);
     sampDesc.AddressU = addR[ s.uClamp ];
@@ -338,6 +338,8 @@ struct HLSL11::Data{
       }
     }
 
+  std::vector<ID3D11ShaderResourceView*> curTextures;
+
   void setSampler( int i, const Tempest::Texture3d::Sampler& s ){
     (void)i;
     (void)s;
@@ -347,6 +349,7 @@ struct HLSL11::Data{
 HLSL11::HLSL11(AbstractAPI::DirectX11Device *dev , void *context) {
   data = new Data();
   data->curSamplers.reserve(128);
+  data->curTextures.reserve(128);
   data->dev = (ID3D11Device*)dev;
   data->immediateContext = (ID3D11DeviceContext*)context;
   }
@@ -491,8 +494,13 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &ux,
     switch(t){
       case Decl::Texture2d:{
         DX11Texture* t = *(DX11Texture**)tex;
+        if(data->curTextures.size()<=size_t(slot))
+          data->curTextures.resize(slot+1);
         if( t ){
-          data->immediateContext->PSSetShaderResources(slot,1,&t->view);
+          if(data->curTextures[slot]!=t->view){
+            data->curTextures[slot]=t->view;
+            data->immediateContext->PSSetShaderResources(slot,1,&t->view);
+            }
           data->setSampler(slot,*smp2d);
           } else {
           data->immediateContext->PSSetShaderResources(slot,0,0);

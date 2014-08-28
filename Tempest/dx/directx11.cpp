@@ -110,6 +110,22 @@ struct DirectX11::Device{
       }
     }
 
+  ID3D11BlendState* currentBS = 0;
+  void OMSetBlendState(ID3D11BlendState* st){
+    if(currentBS!=st){
+      currentBS=st;
+      immediateContext->OMSetBlendState(st,0,0xffffffff);
+      }
+    }
+
+  ID3D11DepthStencilState* currentDS = 0;
+  void OMSetDepthStencilState(ID3D11DepthStencilState* ds){
+    if(currentDS!=ds){
+      currentDS=ds;
+      immediateContext->OMSetDepthStencilState(ds,0);
+      }
+    }
+
   ~Device(){
     if( immediateContext )
       immediateContext->ClearState();
@@ -363,8 +379,8 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
   sd.Scaling     = DXGI_SCALING_NONE;
   sd.AlphaMode   = DXGI_ALPHA_MODE_IGNORE;
 #else
-  sd.BufferCount = 2;
-  sd.SwapEffect  = DXGI_SWAP_EFFECT_SEQUENTIAL;
+  sd.BufferCount       = 2;
+  sd.SwapEffect        = DXGI_SWAP_EFFECT_SEQUENTIAL;
   sd.BufferDesc.Width  = dev->scrW;
   sd.BufferDesc.Height = dev->scrH;
   sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -1007,7 +1023,7 @@ void *DirectX11::lockBuffer( AbstractAPI::Device *d,
                                                 0, &resource);
   if(hResult != S_OK)
      return 0;
-  memset(resource.pData,0,desc.ByteWidth);//FIXME
+  //memset(resource.pData,0,desc.ByteWidth);//FIXME
   return (char*)resource.pData + offset;
   }
 
@@ -1107,8 +1123,6 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
     };
 
   Device* dev = (Device*)d;
-  ID3D11BlendState* state = 0;
-
   BlendDesc bd;
   bd.blend = rs.isBlend();
   bd.d     = blend[rs.getBlendDFactor()];
@@ -1116,8 +1130,9 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
 
   auto i=dev->blendSt.find(bd);
   if(i!=dev->blendSt.end()){
-    dev->immediateContext->OMSetBlendState(i->second, 0, 0xffffffff);
+    dev->OMSetBlendState(i->second);
     } else {
+    ID3D11BlendState* state = 0;
     D3D11_BLEND_DESC BlendState;
     ZeroMemory(&BlendState, sizeof(D3D11_BLEND_DESC));
     BlendState.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
@@ -1135,7 +1150,7 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
 
     dev->device->CreateBlendState(&BlendState, &state);
     dev->blendSt[bd] = state;
-    dev->immediateContext->OMSetBlendState(state, 0, 0xffffffff);
+    dev->OMSetBlendState(state);
     }
 
   static D3D11_COMPARISON_FUNC func[]={
@@ -1159,7 +1174,7 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
 
   auto zi=dev->ztestSt.find(zdesc);
   if(zi!=dev->ztestSt.end()){
-    dev->immediateContext->OMSetDepthStencilState(zi->second,0);
+    dev->OMSetDepthStencilState(zi->second);
     } else {
     D3D11_DEPTH_STENCIL_DESC dsDesc;
     dsDesc.DepthEnable    = rs.isZTest() || rs.isZWriting();
@@ -1186,7 +1201,7 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
     ID3D11DepthStencilState * dsState=0;
     HRESULT h = dev->device->CreateDepthStencilState(&dsDesc, &dsState);
     T_ASSERT( SUCCEEDED(h) );
-    dev->immediateContext->OMSetDepthStencilState(dsState,0);
+    dev->OMSetDepthStencilState(dsState);
     dev->ztestSt[zdesc] = dsState;
     }
   //TODO
