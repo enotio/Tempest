@@ -16,6 +16,7 @@ using namespace Windows::UI::Input;
 using namespace Windows::System;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
+using namespace Windows::Phone::UI::Input;
 
 static WinRt::MainFunction main_func=0;
 static Tempest::Window *main_window = 0;
@@ -98,6 +99,8 @@ ref class App sealed : public IFrameworkView{
 
       CoreApplication::Resuming +=
         ref new EventHandler<Platform::Object^>( this, &App::OnResuming );
+
+      HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs^>(this, &App::OnBackButtonPressed);   
       }
 
     virtual void SetWindow( Windows::UI::Core::CoreWindow^ window ){
@@ -178,10 +181,12 @@ ref class App sealed : public IFrameworkView{
 
 
     void OnSuspending( Platform::Object^ sender, SuspendingEventArgs^ args ){
-      int x = 0;
+      using namespace Tempest;
+      SystemAPI::activateEvent( main_window, false );
       }
     void OnResuming( Platform::Object^ sender, Platform::Object^ args ){
-      int x = 0;
+      using namespace Tempest;
+      SystemAPI::activateEvent( main_window, true );
       }
 
     void OnPointerPressed( CoreWindow^window, PointerEventArgs^ event ){
@@ -229,6 +234,15 @@ ref class App sealed : public IFrameworkView{
       //send paint event
       }
 
+    void OnBackButtonPressed(Object^ sender, BackPressedEventArgs^ args) {
+	    if(!m_windowClosed) {
+        args->Handled=true;
+        WinEvent ev = {WinEvent::EvClose,0,0};
+        events.push_back(ev);
+        } else {
+            // Do nothing. Leave args->Handled set to the current value, false.
+        }
+      }
     void OnWindowClosed( CoreWindow^ sender, CoreWindowEventArgs^ args ){
       using namespace Tempest;
       WinEvent ev = {WinEvent::EvClose,0,0};
@@ -321,7 +335,9 @@ static void processEvent( const WinEvent& e ){
       case WinEvent::EvClose:{
         CloseEvent e;
         SystemAPI::emitEvent( main_window, e );
-        isAppClosed = true;
+        if(!e.isAccepted()){
+          isAppClosed = true;
+          }
         }
         break;
       default:

@@ -83,13 +83,13 @@ static void render( Tempest::Window* w ){
   }
 
 int WinPhoneAPI::nextEvent(bool &quit) {
-  quit = WinRt::nextEvent();
+  quit |= WinRt::nextEvent();
   render(window);
   return 0;
   }
 
 int WinPhoneAPI::nextEvents( bool &quit ) {
-  quit = WinRt::nextEvents();
+  quit |= WinRt::nextEvents();
   render( window );
   return 0;
   }
