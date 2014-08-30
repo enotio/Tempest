@@ -26,19 +26,13 @@ using namespace Tempest::GLProc;
 #include <Tempest/GLSL>
 #include <Tempest/RenderState>
 #include <Tempest/Log>
-
-#include <map>
-#include <set>
-#include <iostream>
 #include <Tempest/Pixmap>
-
 #include <Tempest/Assert>
-#include <stdexcept>
 
-#include "gltypes.h"
 #include <squish.h>
 #include <cstring>
-#include <unordered_set>
+
+#include "gltypes.h"
 
 #ifndef GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
 #define GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER 0x8CDB
@@ -562,10 +556,10 @@ bool Opengl2x::setupFBO() const {
     for( int i=0; err[i].desc; ++i )
       if( err[i].err==status )
         desc = err[i].desc;
-#ifndef __ANDROID__
-    std::cout << "fbo error " << desc <<" " << std::hex << status << std::dec << std::endl;
-#else
     void* ierr = (void*)status;
+#ifndef __ANDROID__
+    printf("OpenGL : fbo error %s %p", desc, ierr);
+#else
     __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "fbo error %s %p", desc, ierr);
 #endif
     T_ASSERT_X(status==0, desc);
