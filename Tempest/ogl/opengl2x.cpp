@@ -140,11 +140,11 @@ bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
 #endif
 
 #if defined(__linux__) && !defined(__ANDROID__)
-  dev->dpy = (Display*)LinuxAPI::display();
-  Display *dpy = dev->dpy;//FIXME
-  GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
-  XVisualInfo  *vi = glXChooseVisual (dpy, 0, att);
-  dev->glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
+  dev->dpy        = (Display*)LinuxAPI::display();
+  Display *dpy    = dev->dpy;//FIXME
+  GLint att[]     = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+  XVisualInfo *vi = glXChooseVisual (dpy, 0, att);
+  dev->glc        = glXCreateContext(dpy, vi, NULL, GL_TRUE);
   XFree( vi );
 
   glXMakeCurrent( dev->dpy, dev->window, dev->glc);

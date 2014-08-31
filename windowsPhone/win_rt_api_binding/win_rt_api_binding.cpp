@@ -240,7 +240,7 @@ ref class App sealed : public IFrameworkView{
         WinEvent ev = {WinEvent::EvClose,0,0};
         events.push_back(ev);
         } else {
-            // Do nothing. Leave args->Handled set to the current value, false.
+        // Do nothing. Leave args->Handled set to the current value, false.
         }
       }
     void OnWindowClosed( CoreWindow^ sender, CoreWindowEventArgs^ args ){
@@ -248,6 +248,7 @@ ref class App sealed : public IFrameworkView{
       WinEvent ev = {WinEvent::EvClose,0,0};
       events.push_back(ev);
       m_windowClosed = true;
+      isAppClosed = true;
       }
 
     // DisplayInformation event handlers.
@@ -346,7 +347,7 @@ static void processEvent( const WinEvent& e ){
   }
 
 int WinRt::orientation() {
-  return int(DisplayProperties::CurrentOrientation);
+  return int(DisplayInformation::GetForCurrentView()->CurrentOrientation);
   }
 
 bool WinRt::nextEvent(){

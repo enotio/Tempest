@@ -49,12 +49,20 @@ struct ZDesc{
   bool enable, writing;
   };
 
+struct RSDesc{
+  D3D11_FILL_MODE fill;
+  D3D11_CULL_MODE cull;
+  };
+
 struct Hash {
   size_t operator () ( const BlendDesc& a ) const {
     return a.blend ? size_t(a.d+1) : 0;
     }
   size_t operator () ( const ZDesc& a ) const {
     return a.enable ? size_t(a.func+1) : 0;
+    }
+  size_t operator () ( const RSDesc& a ) const {
+    return a.fill*4+a.cull;
     }
   };
 
@@ -68,6 +76,10 @@ struct Cmp {
     return a.enable==b.enable &&
            a.writing==b.writing &&
            a.func==b.func;
+    }
+  bool operator () ( const RSDesc& a, const RSDesc& b ) const {
+    return a.fill==b.fill &&
+           a.cull==b.cull;
     }
   };
 
@@ -94,13 +106,15 @@ struct DirectX11::Device{
   ID3D11DepthStencilView*  rtDepth = NULL;
   int rtW, rtH;
 
-  std::unordered_map<BlendDesc,ID3D11BlendState*,Hash,Cmp> blendSt;
+  std::unordered_map<BlendDesc,ID3D11BlendState*,   Hash,Cmp> blendSt;
   std::unordered_map<ZDesc,ID3D11DepthStencilState*,Hash,Cmp> ztestSt;
+  std::unordered_map<RSDesc,ID3D11RasterizerState*, Hash,Cmp> rasterSt;
 
   ID3D11Buffer* vbo       = 0;
   ID3D11Buffer* ibo       = 0;
 
   int scrW, scrH;
+  bool vSync = false;
 
   D3D_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
   void IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY t){
@@ -126,7 +140,27 @@ struct DirectX11::Device{
       }
     }
 
+  ID3D11RasterizerState* currentRS = 0;
+  void RSSetState(ID3D11RasterizerState* rs){
+    if(currentRS!=rs){
+      currentRS=rs;
+      immediateContext->RSSetState(rs);
+      }
+    }
+
   ~Device(){
+    for( auto i:blendSt )
+      if(i.second)
+        i.second->Release();
+
+    for( auto i:ztestSt )
+      if(i.second)
+        i.second->Release();
+
+    for( auto i:rasterSt )
+      if(i.second)
+        i.second->Release();
+
     if( immediateContext )
       immediateContext->ClearState();
 
@@ -152,23 +186,52 @@ struct DirectX11::Device{
     return ((Device*)d)->device;
     }
 
-  std::vector<uint8_t> texFlipped;
-  void* flipTexture(int w, int h, int bpp, const uint8_t * pix){
-    if( texFlipped.size()<size_t(w*h*4) )
-      texFlipped.resize(w*h*4);
+  static size_t sizeWithMip(int w, int h){
+    size_t s=w*h*4;
+    while( w>1|| h>1 ){
+      if( w>0 )
+        w/=2;
+      if( h>0 )
+        h/=2;
+      s+=w*h*4;
+      }
+    return s;
+    }
 
-    unsigned char* tx = &texFlipped[0];
+  std::vector<uint8_t> texFlipped;
+  const void* flipTexture(int w, int h, int bpp, const uint8_t * pix, bool mips ){
+    size_t sz=mips ? sizeWithMip(w,h) : w*h*4;
+
+    if( texFlipped.size()<size_t(sz) )
+      texFlipped.resize(sz);
+
+    uint8_t* tx = &texFlipped[0];
     if(bpp==4){
-      for( int r=0; r<h; ++r ){
-        memcpy( &tx[r*w*bpp], pix+w*(h-r-1)*bpp, w*bpp );
-        }
+      return pix;
       } else {
-      for( int r=0; r<h; ++r )
-        for(int i=0; i<w; ++i){
-          const int r1 = h-r-1;
-          memcpy( &tx[(r*w+i)*4], pix+(w*r1+i)*3, 3 );
-          tx[(r*w+i)*4+3] = 255;
-          }
+      size_t count=w*h;
+      for( size_t i=0; i<count; ++i ){
+        *tx=*pix;  ++tx; ++pix;
+        *tx=*pix;  ++tx; ++pix;
+        *tx=*pix;  ++tx; ++pix;
+        *tx=255;   ++tx;
+        }
+      }
+
+    if(mips){
+      tx = &texFlipped[0];
+      while( w>1|| h>1 ){
+        uint8_t* mip = tx+w*h*4;
+        if( w>0 )
+          w/=2;
+        if( h>0 )
+          h/=2;
+        for(int i=0; i<w; ++i)
+          for(int r=0; r<h; ++r){
+            //mip[]
+            }
+        tx+=w*h*4;
+        }
       }
 
     return &texFlipped[0];
@@ -261,6 +324,53 @@ std::string DirectX11::renderer( AbstractAPI::Device *d ) const {
   return "";//dx->adapter.Description;
   }
 
+#ifdef __WINDOWS_PHONE__
+static HRESULT createSwapChain( ID3D11Device*  device,
+                                const SWAP_CHAIN_DESC *swapChainDesc,
+                                SwapChain **ppSwapChain ){
+  HRESULT        hr          = S_OK;
+  IDXGIDevice2 * pDXGIDevice;
+  hr = device->QueryInterface(__uuidof(IDXGIDevice2), (void **)&pDXGIDevice );
+  if(FAILED(hr))
+    return hr;
+
+  IDXGIAdapter * pDXGIAdapter;
+  hr = pDXGIDevice->GetParent(__uuidof(IDXGIAdapter), (void **)&pDXGIAdapter);
+  if(FAILED(hr)){
+    pDXGIDevice->Release();
+    return hr;
+    }
+
+  IDXGIFactory2 * pIDXGIFactory;
+  pDXGIAdapter->GetParent(__uuidof(IDXGIFactory2), (void **)&pIDXGIFactory);
+  if(FAILED(hr)){
+    pDXGIDevice->Release();
+    pDXGIAdapter->Release();
+    return hr;
+    }
+
+  IUnknown* mainWidget = (IUnknown*)WinRt::getMainRtWidget();
+  hr = pIDXGIFactory->CreateSwapChainForCoreWindow( device,
+                                                    mainWidget,
+                                                    swapChainDesc,
+                                                    nullptr,
+                                                    ppSwapChain
+                                                    );
+  if(FAILED(hr)){
+    pDXGIDevice->Release();
+    pDXGIAdapter ->Release();
+    pIDXGIFactory->Release();
+    return hr;
+    }
+
+  pDXGIDevice  ->Release();
+  pDXGIAdapter ->Release();
+  pIDXGIFactory->Release();
+
+  return S_OK;
+  }
+#endif
+
 static HRESULT createDevice( IDXGIAdapter *pAdapter,
                              D3D_DRIVER_TYPE driverType,
                              HMODULE software,
@@ -290,23 +400,7 @@ static HRESULT createDevice( IDXGIAdapter *pAdapter,
     return hr;
     }
 
-  ID3D11Device* device = *ppDevice;
-  IDXGIDevice2 * pDXGIDevice;
-  hr = device->QueryInterface(__uuidof(IDXGIDevice2), (void **)&pDXGIDevice );
-
-  IDXGIAdapter * pDXGIAdapter;
-  hr = pDXGIDevice->GetParent(__uuidof(IDXGIAdapter), (void **)&pDXGIAdapter);
-
-  IDXGIFactory2 * pIDXGIFactory;
-  pDXGIAdapter->GetParent(__uuidof(IDXGIFactory2), (void **)&pIDXGIFactory);
-
-  IUnknown* mainWidget = (IUnknown*)WinRt::getMainRtWidget();
-  return pIDXGIFactory->CreateSwapChainForCoreWindow( device,
-                                                      mainWidget,
-                                                      swapChainDesc,
-                                                      nullptr,
-                                                      ppSwapChain
-                                                      );
+  return createSwapChain(*ppDevice,swapChainDesc,ppSwapChain);
 #else
   return D3D11CreateDeviceAndSwapChain( pAdapter,
                                         driverType,
@@ -321,8 +415,10 @@ static HRESULT createDevice( IDXGIAdapter *pAdapter,
 #endif
   }
 
-AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Options &/*opt*/) const {
+AbstractAPI::Device *DirectX11::createDevice( void *Hwnd,
+                                              const AbstractAPI::Options &opt ) const {
   std::unique_ptr<Device> dev( new Device() );
+  dev->vSync = opt.vSync;
 
   HRESULT hr   = S_OK;
   HWND    hwnd = (HWND)Hwnd;
@@ -420,16 +516,6 @@ AbstractAPI::Device *DirectX11::createDevice(void *Hwnd, const AbstractAPI::Opti
   }
 
 void DirectX11::deleteDevice(AbstractAPI::Device *d) const {
-  Device* dev = (Device*)d;
-
-  for( auto i:dev->blendSt )
-    if(i.second)
-      i.second->Release();
-
-  for( auto i:dev->ztestSt )
-    if(i.second)
-      i.second->Release();
-
   delete ((Device*)d);
   }
 
@@ -634,13 +720,18 @@ bool DirectX11::startRender( AbstractAPI::Device *, bool /*isLost*/ ) const{
 
 bool DirectX11::present( AbstractAPI::Device *d, SwapBehavior /*b*/ ) const{
   Device* dev = (Device*)d;
+#ifdef __WINDOWS_PHONE__
   dev->swapChain->Present(1,0);
+#else
+  dev->swapChain->Present( dev->vSync ? 1:0, 0 );
+#endif
   return false;
   }
 
 bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
-                       const Options & /*opt*/ ) const{
+                       const Options & opt ) const{
   Device* dx = (Device*)d;
+  dx->vSync = opt.vSync;
 #ifdef __WINDOWS_PHONE__
   WinRt::getScreenRect( hwnd, dx->scrW, dx->scrH );
 #else
@@ -662,7 +753,23 @@ bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
     // Preserve the existing buffer count and format.
     // Automatically choose the width and height to match the client rect for HWNDs.
 #if defined(__WINDOWS_PHONE__)
-    hr = dx->swapChain->ResizeBuffers(2,dx->scrW, dx->scrH,DXGI_FORMAT_UNKNOWN,0);
+    dx->swapChain->Release();
+
+    SWAP_CHAIN_DESC sd;
+    ZeroMemory( &sd, sizeof( sd ) );
+    sd.Width  = dx->scrW; // Match the size of the window.
+    sd.Height = dx->scrH;
+    sd.Format = DXGI_FORMAT_B8G8R8A8_UNORM; // This is the most common swap chain format.
+    sd.Stereo = false;
+    sd.SampleDesc.Count   = 1; // Don't use multi-sampling.
+    sd.SampleDesc.Quality = 0;
+    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    sd.BufferCount = 2; // Use double-buffering to minimize latency.
+    sd.SwapEffect  = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; // All Windows Store apps must use this SwapEffect.
+    sd.Flags       = 0;
+    sd.Scaling     = DXGI_SCALING_NONE;
+    sd.AlphaMode   = DXGI_ALPHA_MODE_IGNORE;
+    hr = createSwapChain(dx->device,&sd,&dx->swapChain);
 #else
     hr = dx->swapChain->ResizeBuffers(2,0,0,DXGI_FORMAT_R8G8B8A8_UNORM,0);
 #endif
@@ -735,7 +842,7 @@ AbstractAPI::Texture *DirectX11::createTexture( AbstractAPI::Device *d,
   std::vector<D3D11_SUBRESOURCE_DATA> pix;
   pix.resize(desc.MipLevels);
   const int bpp      = p.hasAlpha() ? 4:3;
-  pix[0].pSysMem     = dev->flipTexture(p.width(), p.height(), bpp, p.const_data());
+  pix[0].pSysMem     = dev->flipTexture(p.width(), p.height(), bpp, p.const_data(), mips);
   pix[0].SysMemPitch = p.width()*4;
   w=p.width();
   for(size_t i=1; i<pix.size(); ++i ){
@@ -1122,6 +1229,33 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
     D3D11_BLEND_ZERO
     };
 
+  static D3D11_COMPARISON_FUNC func[]={
+    D3D11_COMPARISON_NEVER,
+
+    D3D11_COMPARISON_GREATER,
+    D3D11_COMPARISON_LESS,
+
+    D3D11_COMPARISON_GREATER_EQUAL,
+    D3D11_COMPARISON_LESS_EQUAL,
+
+    D3D11_COMPARISON_NOT_EQUAL,
+    D3D11_COMPARISON_EQUAL,
+    D3D11_COMPARISON_ALWAYS,
+    D3D11_COMPARISON_ALWAYS
+    };
+
+  static const D3D11_CULL_MODE cull[] = {
+    D3D11_CULL_NONE,
+    D3D11_CULL_BACK,
+    D3D11_CULL_FRONT,
+    };
+
+  static const D3D11_FILL_MODE fill[] = {
+    D3D11_FILL_SOLID,
+    D3D11_FILL_WIREFRAME,
+    D3D11_FILL_SOLID
+    };
+
   Device* dev = (Device*)d;
   BlendDesc bd;
   bd.blend = rs.isBlend();
@@ -1153,20 +1287,6 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
     dev->OMSetBlendState(state);
     }
 
-  static D3D11_COMPARISON_FUNC func[]={
-    D3D11_COMPARISON_NEVER,
-
-    D3D11_COMPARISON_GREATER,
-    D3D11_COMPARISON_LESS,
-
-    D3D11_COMPARISON_GREATER_EQUAL,
-    D3D11_COMPARISON_LESS_EQUAL,
-
-    D3D11_COMPARISON_NOT_EQUAL,
-    D3D11_COMPARISON_EQUAL,
-    D3D11_COMPARISON_ALWAYS,
-    D3D11_COMPARISON_ALWAYS
-    };
   ZDesc zdesc;
   zdesc.enable  = rs.isZTest();
   zdesc.writing = rs.isZWriting();
@@ -1204,5 +1324,26 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
     dev->OMSetDepthStencilState(dsState);
     dev->ztestSt[zdesc] = dsState;
     }
-  //TODO
+
+  RSDesc rdesc;
+  rdesc.fill = fill[rs.frontPolygonRenderMode()];
+  rdesc.cull = cull[rs.cullFaceMode()];
+
+  auto ri=dev->rasterSt.find(rdesc);
+  if(ri!=dev->rasterSt.end()){
+    dev->RSSetState(ri->second);
+    } else {
+    D3D11_RASTERIZER_DESC desc;
+    ZeroMemory(&desc, sizeof(D3D11_RASTERIZER_DESC));
+
+    desc.FillMode              = fill[rs.frontPolygonRenderMode()];
+    desc.CullMode              = cull[rs.cullFaceMode()];
+    desc.FrontCounterClockwise = true;
+
+    ID3D11RasterizerState * state=0;
+    HRESULT h = dev->device->CreateRasterizerState(&desc, &state);
+    T_ASSERT( SUCCEEDED(h) );
+    dev->RSSetState(state);
+    dev->rasterSt[rdesc] = state;
+    }
   }

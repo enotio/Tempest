@@ -75,6 +75,8 @@
     <IncludePath>../../Tempest/include;$(VC_IncludePath);$(WindowsPhoneSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <IncludePath>../../Tempest/include;$(VC_IncludePath);$(WindowsPhoneSDK_IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)bin\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -114,8 +116,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAsWinRT>true</CompileAsWinRT>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>

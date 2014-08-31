@@ -94,8 +94,7 @@ void Matrix4x4::rotateOZ( float angle ){
   }
 
 const float* Matrix4x4::data() const{
-  return (const float*)m;//WTF?
-  //return glm::value_ptr( matrix->gm );
+  return &m[0][0];
   }
 
 float Matrix4x4::at(int x, int y) const {

@@ -29,10 +29,10 @@ struct Tempest::FontElement::FreeTypeLib{
   std::map<Key, Leters*> letterBox;
   FT_Library    library;
 
-  static unsigned long ft_stream_io( FT_Stream       stream,
-                                     unsigned long   offset,
-                                     unsigned char*  buffer,
-                                     unsigned long   count ) {
+  static unsigned long ft_stream_io( FT_Stream      stream,
+                                     unsigned long  offset,
+                                     unsigned char* buffer,
+                                     unsigned long  count ) {
     if( !count && offset > stream->size )
       return 1;
 

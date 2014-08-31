@@ -545,7 +545,7 @@ std::string HLSL11::surfaceShader( GraphicsSubsystem::ShaderType t,
 
       "FS_Input main( VS_Input vs ){"
         "FS_Input fs;"
-        "fs.tc  = float2( vs.TexCoord.x, 1.0-vs.TexCoord.y );"
+        "fs.tc  = float2( vs.TexCoord.x,vs.TexCoord.y );"
         "fs.cl  = vs.TexCoord1;"
         "fs.pos = float4(vs.Position, 0.0, 1.0);"
         "return fs;"

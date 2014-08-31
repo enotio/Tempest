@@ -342,7 +342,7 @@
     <PlatformToolset>v120_wp81</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v120_wp81</PlatformToolset>
@@ -376,6 +376,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IncludePath>../../Tempest;../../Tempest/include;../../Tempest/thirdparty;../../Tempest/thirdparty/fakeGL;../../Tempest/thirdparty/freetype/include;../../Tempest/thirdparty/squish;../../Tempest/thirdparty/zlib;../win_rt_api_binding;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)bin\;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)bin\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -419,9 +422,10 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>FT2_BUILD_LIBRARY=1;NO_GETENV;_CRT_SECURE_NO_WARNINGS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
