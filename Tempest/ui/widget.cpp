@@ -702,8 +702,11 @@ void Widget::impl_mouseUpEvent( Widget* w, Tempest::MouseEvent & e ){
     }
 
   Widget * rec = 0;
-  if( size_t(e.mouseID) < w->mouseReleseReciver.size() )
+  if( size_t(e.mouseID) < w->mouseReleseReciver.size() ){
     rec = w->mouseReleseReciver[e.mouseID];
+    if( rec )
+      w->mouseReleseReciver[e.mouseID] = 0;
+    }
 
   if( rec ){
     Widget * r = rec;
@@ -714,9 +717,6 @@ void Widget::impl_mouseUpEvent( Widget* w, Tempest::MouseEvent & e ){
     if( ex.isAccepted() )
       e.accept(); else
       e.ignore();
-
-    if( size_t(e.mouseID) < w->mouseReleseReciver.size() )
-      w->mouseReleseReciver[e.mouseID] = 0;
     }
   }
 
