@@ -1246,8 +1246,8 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
 
   static const D3D11_CULL_MODE cull[] = {
     D3D11_CULL_NONE,
-    D3D11_CULL_BACK,
     D3D11_CULL_FRONT,
+    D3D11_CULL_BACK,
     };
 
   static const D3D11_FILL_MODE fill[] = {
@@ -1336,9 +1336,9 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
     D3D11_RASTERIZER_DESC desc;
     ZeroMemory(&desc, sizeof(D3D11_RASTERIZER_DESC));
 
-    desc.FillMode              = fill[rs.frontPolygonRenderMode()];
-    desc.CullMode              = cull[rs.cullFaceMode()];
-    desc.FrontCounterClockwise = true;
+    desc.FillMode        = fill[rs.frontPolygonRenderMode()];
+    desc.CullMode        = cull[rs.cullFaceMode()];
+    desc.DepthClipEnable = true;     
 
     ID3D11RasterizerState * state=0;
     HRESULT h = dev->device->CreateRasterizerState(&desc, &state);

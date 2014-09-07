@@ -33,8 +33,10 @@ void Log::flush() {
   if( m==Debug )
      __android_log_print(ANDROID_LOG_DEBUG, "", "%s", st.str().c_str());
 #elif defined(__WINDOWS_PHONE__)
+#ifdef _DEBUG
   OutputDebugStringA(st.str().c_str());
   OutputDebugStringA("\r\n");
+#endif
 #else
   if( m==Error )
     std::cerr << st.str() << std::endl;

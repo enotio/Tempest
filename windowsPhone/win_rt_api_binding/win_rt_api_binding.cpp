@@ -30,6 +30,8 @@ struct WinEvent{
     EvPointerPressed,
     EvPointerReleased,
     EvResize,
+    EvKeyDown,
+    EvKeyUp
     } type;
   int data1, data2, data3;
   };
@@ -130,6 +132,13 @@ ref class App sealed : public IFrameworkView{
       window->SizeChanged += 
         ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this,&App::OnWindowSizeChanged);
   
+      window->KeyDown += ref new TypedEventHandler<CoreWindow^,KeyEventArgs^>(this,&App::OnKeyDown);
+      window->KeyUp   += ref new TypedEventHandler<CoreWindow^,KeyEventArgs^>(this,&App::OnKeyUp);
+      
+      window->Activated +=
+        ref new TypedEventHandler<CoreWindow^, WindowActivatedEventArgs^>(this,&App::OnWindowActivationChanged);
+      
+	    //window->IsKeyboardInputEnabled = true;
   #if !(WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
       window->SizeChanged +=
         ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>( this, &App::OnWindowSizeChanged );
@@ -179,17 +188,26 @@ ref class App sealed : public IFrameworkView{
       CoreWindow::GetForCurrentThread()->Activate();
       }
 
-
     void OnSuspending( Platform::Object^ sender, SuspendingEventArgs^ args ){
       using namespace Tempest;
       SystemAPI::activateEvent( main_window, false );
       }
+
     void OnResuming( Platform::Object^ sender, Platform::Object^ args ){
       using namespace Tempest;
       SystemAPI::activateEvent( main_window, true );
       }
 
-    void OnPointerPressed( CoreWindow^window, PointerEventArgs^ event ){
+    void OnWindowActivationChanged(
+           Windows::UI::Core::CoreWindow^ /* sender */,
+           Windows::UI::Core::WindowActivatedEventArgs^ args ) {
+      using namespace Tempest;
+      if(args->WindowActivationState==CoreWindowActivationState::Deactivated)
+        SystemAPI::activateEvent( main_window, false );  else
+        SystemAPI::activateEvent( main_window, true );
+      }
+
+    void OnPointerPressed( CoreWindow^ window, PointerEventArgs^ event ){
       DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
       const float dpi = currentDisplayInformation->LogicalDpi;
       
@@ -199,6 +217,7 @@ ref class App sealed : public IFrameworkView{
 
       WinEvent ev = {WinEvent::EvPointerPressed, p.x, p.y, p.nid };
       events.push_back(ev);
+      window->IsInputEnabled=true;
       }
 
     void OnPointerReleased( CoreWindow^window, PointerEventArgs^ event ){
@@ -224,6 +243,15 @@ ref class App sealed : public IFrameworkView{
 
       WinEvent ev = {WinEvent::EvPointerMoved, p.x, p.y, p.nid };
       events.push_back(ev);
+      }
+    
+    void OnKeyDown( CoreWindow^ window, KeyEventArgs^ event ){
+      const int key=(int)event->VirtualKey;
+      WinEvent ev = {WinEvent::EvKeyDown, key };
+      events.push_back(ev);
+      }
+    
+    void OnKeyUp( CoreWindow^ window, KeyEventArgs^ event ){
       }
 
     // Window event handlers.

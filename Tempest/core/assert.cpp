@@ -8,6 +8,7 @@
 #include <android/log.h>
 #include <Tempest/Android>
 #endif
+#include <Tempest/Platform>
 
 namespace Tempest{
   static void h_default( const char *file, int line,
@@ -18,10 +19,10 @@ namespace Tempest{
     __android_log_assert("","","%s","");
     assert(0);
 #endif   
-#else
-#if defined(__WIN32)
+#elif defined(_MSC_VER)
+    __debugbreak();
+#elif defined(__WIN32)
     __asm__("int $3");
-#endif
 #endif
     (void)file;
     (void)line;
