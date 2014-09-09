@@ -822,4 +822,31 @@ void WindowsAPI::setCursor( Tempest::Window &w,
   DestroyCursor( cr );
   }
 
+std::string WindowsAPI::iso3Locale() {
+  /*
+  WCHAR loc[LOCALE_NAME_MAX_LENGTH] = {};
+  int l = GetUserDefaultLocaleName(loc,LOCALE_NAME_MAX_LENGTH);
+  if(l==3){
+    std::string s;
+    s.resize(3);
+    for(int i=0; i<3; ++i )
+      s[i] = loc[i];
+    return s;
+    }
+
+  return "eng";*/
+  const LCID id = GetUserDefaultLCID();
+  static const struct{LCID id;const char* name;} loc[] = {
+    {1033,"eng"},
+    {1049,"rus"},
+    {0,(const char*)0}
+    };
+
+  for(int i=0; loc[i].name; ++i)
+    if(loc[i].id==id)
+      return loc[i].name;
+
+  return "eng";
+  }
+
 #endif

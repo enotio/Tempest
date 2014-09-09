@@ -14,12 +14,13 @@ class WindowsAPI:public SystemAPI {
                            const Pixmap& pinput,
                            int hotSpotX,
                            int hotSpotY );
+    static std::string iso3Locale();
   protected:
     WindowsAPI();
     ~WindowsAPI();
 
     bool testDisplaySettings( Window* w, const DisplaySettings& );
-    bool setDisplaySettings( Window* w, const DisplaySettings& );
+    bool setDisplaySettings ( Window* w, const DisplaySettings& );
     Size implScreenSize();
 
     void startApplication( ApplicationInitArgs* );
