@@ -5,6 +5,8 @@
 #include <vector>
 #include <cstdint>
 #include <Tempest/Platform>
+#include <Tempest/Font>
+#include <Tempest/UIMetrics>
 
 #ifdef __WINDOWS_PHONE__
 #define main Tempest_main
@@ -12,6 +14,7 @@
 
 namespace Tempest{
 
+class Font;
 class Timer;
 /**
  * \addtogroup Core
@@ -20,6 +23,16 @@ class Application {
   public:
     Application();
     ~Application();
+
+    static signal<const std::u16string,const Rect&> showHint;
+
+    static Font mainFont();
+    static void setMainFont(const Font& f);
+    static signal<Font> fontChanged;
+
+    static UIMetrics& uiMetrics();
+    static void       setUiMetrics(const UIMetrics& u);
+    static signal<UIMetrics> uiMetricsChanged;
 
     int exec();
     static bool isQuit();
@@ -32,6 +45,9 @@ class Application {
     static struct App{
       int  ret;
       bool quit;
+
+      Font mainFont;
+      UIMetrics uiMetrics;
 
       std::vector<Timer*> timer;
       } app;

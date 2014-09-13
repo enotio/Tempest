@@ -32,10 +32,10 @@ static LARGE_INTEGER getFILETIMEoffset() {
   FILETIME f;
   LARGE_INTEGER t;
 
-  s.wYear = 1970;
-  s.wMonth = 1;
-  s.wDay = 1;
-  s.wHour = 0;
+  s.wYear   = 1970;
+  s.wMonth  = 1;
+  s.wDay    = 1;
+  s.wHour   = 0;
   s.wMinute = 0;
   s.wSecond = 0;
   s.wMilliseconds = 0;
@@ -93,7 +93,10 @@ static int clock_gettime( int X, struct timespec *tv ) {
 
 using namespace Tempest;
 
-Application::App Application::app;
+Application::App                         Application::app;
+signal<Font>                             Application::fontChanged;
+signal<UIMetrics>                        Application::uiMetricsChanged;
+signal<const std::u16string,const Rect&> Application::showHint;
 
 Application::Application() {
   app.ret  = -1;
@@ -105,7 +108,25 @@ Application::~Application() {
   SystemAPI::instance().endApplication();
 
   T_ASSERT_X( Widget::count==0, "not all widgets was destroyed");
-  } 
+  }
+
+Font Application::mainFont() {
+  return app.mainFont;
+  }
+
+void Application::setMainFont(const Font &f) {
+  app.mainFont = f;
+  fontChanged(app.mainFont);
+  }
+
+UIMetrics& Application::uiMetrics() {
+  return app.uiMetrics;
+  }
+
+void Application::setUiMetrics(const UIMetrics &u) {
+  app.uiMetrics = u;
+  uiMetricsChanged(u);
+  }
 
 int Application::exec() {
   execImpl(0);

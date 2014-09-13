@@ -184,7 +184,9 @@ SOURCES += \
     ogl/openglbase.cpp \
     system/winphoneapi.cpp \
     dataControl/shaderprogramholder.cpp \
-    shading/shaderprogram.cpp
+    shading/shaderprogram.cpp \
+    ui/controls/button.cpp \
+    ui/controls/uimetrics.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -267,7 +269,9 @@ HEADERS += \
     dataControl/shaderprogramholder.h \
     core/wrappers/uniformdeclaration.h \
     shading/shaderprogram.h \
-    dx/dx11types.h
+    dx/dx11types.h \
+    ui/controls/button.h \
+    ui/controls/uimetrics.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -309,6 +313,8 @@ OTHER_FILES += \
     include/Tempest/File \
     include/Tempest/GraphicsSubsystem \
     include/Tempest/HLSL \
+    include/Tempest/Button \
+    include/Tempest/UIMetrics \
     ../README.md \
     Doxyfile \
     doc_title.doxy \
