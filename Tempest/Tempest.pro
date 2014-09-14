@@ -186,7 +186,8 @@ SOURCES += \
     dataControl/shaderprogramholder.cpp \
     shading/shaderprogram.cpp \
     ui/controls/button.cpp \
-    ui/controls/uimetrics.cpp
+    ui/controls/uimetrics.cpp \
+    ui/controls/panel.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -271,12 +272,19 @@ HEADERS += \
     shading/shaderprogram.h \
     dx/dx11types.h \
     ui/controls/button.h \
-    ui/controls/uimetrics.h
+    ui/controls/uimetrics.h \
+    ui/controls/panel.h
 
 OTHER_FILES += \
     ../.gitignore \
     Android.mk \
     android/jni/Android.mk \
+    ../README.md \
+    Doxyfile \
+    doc_title.doxy \
+    ../doc/header.html \
+    ../doc/footer.html \
+    ../doc/html/style.css \
     include/Tempest/DirectX11 \
     include/Tempest/ShaderProgramHolder \
     include/Tempest/Windows \
@@ -313,15 +321,10 @@ OTHER_FILES += \
     include/Tempest/File \
     include/Tempest/GraphicsSubsystem \
     include/Tempest/HLSL \
-    include/Tempest/Button \
-    include/Tempest/UIMetrics \
-    ../README.md \
-    Doxyfile \
-    doc_title.doxy \
-    ../doc/header.html \
-    ../doc/footer.html \
-    ../doc/html/style.css \
     include/Tempest/OpenGL4x \
     include/Tempest/Platform \
     include/Tempest/WindowsPhone \
-    include/Tempest/UniformDeclaration
+    include/Tempest/UniformDeclaration \
+    include/Tempest/UIMetrics \
+    include/Tempest/Button \
+    include/Tempest/Panel

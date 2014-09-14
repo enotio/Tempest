@@ -10,7 +10,7 @@ Button::Button()
   setFocusPolicy( Tempest::ClickFocus );
 
   UIMetrics& m = Application::uiMetrics();
-  const int h = int(m.buttonHeight*m.uiScale);
+  const int  h = int(m.buttonHeight*m.uiScale);
 
   fnt = Application::mainFont();
   fnt.setSize(int(m.normalTextSize*m.uiScale));
@@ -20,6 +20,7 @@ Button::Button()
   p.minSize = Tempest::Size(h, h);
   p.typeV   = Tempest::FixedMax;
   p.typeH   = Tempest::FixedMax;
+  resize(int(m.buttonWidth*m.uiScale), h);
 
   setSizePolicy(p);
 
@@ -59,6 +60,10 @@ void Button::setHint(const std::u16string &str) {
   hnt = str;
   }
 
+void Button::setHint(const std::string &str) {
+  setText( Tempest::SystemAPI::toUtf16( str ) );
+  }
+
 const std::u16string &Button::hint() const {
   return hnt;
   }
@@ -72,8 +77,8 @@ const Tempest::Font &Button::font() const {
   }
 
 void Button::mouseDownEvent(Tempest::MouseEvent &) {
-  pressed  = true;
-  presAnim = true;
+  pressed     = true;
+  presAnim    = true;
   timePressed = clock();
 
   update();
@@ -103,7 +108,7 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
   p.setBlendMode( Tempest::alphaBlend );
 
   Tempest::Rect vRect = viewRect();
-  Tempest::Rect r = p.scissor();
+  Tempest::Rect r     = p.scissor();
 
   p.setScissor( r.intersected( vRect ) );
 
@@ -132,8 +137,9 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
   drawFrame( p );
 
   p.setFont(fnt);
-  p.drawText( 0,0,w()-1,h()-1, txt,
-              Tempest::AlignHCenter | Tempest::AlignVCenter );
+  p.setColor(0,0,0,1);
+  p.drawText(0, 0, w()-1, h()-1, txt,
+             Tempest::AlignHCenter|Tempest::AlignVCenter );
 
   finishPaint();
   }
@@ -154,34 +160,30 @@ void Button::gestureEvent(Tempest::AbstractGestureEvent &e) {
   }
 
 void Button::drawBack(Tempest::Painter &p){
-  Tempest::Rect r = viewRect();
-  static const int d = 3;
-  r.x += d;
-  r.y += d;
-
-  r.w -= 2*d;
-  r.h -= 2*d;
-
-  drawBack(p, r);
+  drawBack(p, viewRect());
   }
 
 void Button::drawBack(Tempest::Painter &p, const Tempest::Rect& r ){
+  auto c = p.color();
   p.setColor(Color(0.8,0.8,0.85,0.75));
-  p.drawRect(r,Rect());
+  p.drawRect(r);
+  p.setColor(c);
   }
 
 void Button::drawFrame( Tempest::Painter &p ) {
   drawFrame(p, viewRect());
   }
 
-void Button::drawFrame( Tempest::Painter & p, const Tempest::Rect &vRect ) {
-  p.setColor(Color(0.5,0.5,0.5,1));
+void Button::drawFrame(Tempest::Painter & p, const Tempest::Rect &vRect) {
+  auto c = p.color();
+  p.setColor(Color(0.25,0.25,0.25,1));
 
   p.drawLine(vRect.x,vRect.y,        vRect.x+vRect.w,vRect.y);
   p.drawLine(vRect.x,vRect.y+vRect.h,vRect.x+vRect.w,vRect.y+vRect.h);
 
   p.drawLine(vRect.x,        vRect.y,vRect.x,        vRect.y+vRect.h);
   p.drawLine(vRect.x+vRect.w,vRect.y,vRect.x+vRect.w,vRect.y+vRect.h);
+  p.setColor(c);
   }
 
 Tempest::Rect Button::viewRect() const {
@@ -189,7 +191,7 @@ Tempest::Rect Button::viewRect() const {
       pw = w(), ph = h();
 
   if( presAnim ){
-    const int s = 1;
+    const int s = 2;
     px += s;
     py += s;
 

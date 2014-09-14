@@ -7,6 +7,7 @@
 #include <Tempest/Platform>
 #include <Tempest/Font>
 #include <Tempest/UIMetrics>
+#include <Tempest/signal>
 
 #ifdef __WINDOWS_PHONE__
 #define main Tempest_main
