@@ -26,6 +26,7 @@ class Button : public Tempest::Widget {
     void setText( const std::string& t );
 
     void setHint( const std::u16string & str );
+    void setHint( const std::string & str );
     const std::u16string &hint() const;
 
     void setFont( const Tempest::Font& f );
