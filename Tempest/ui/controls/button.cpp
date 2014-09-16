@@ -37,8 +37,8 @@ const Shortcut& Button::shortcut() const {
 
 void Button::setShortcut(const Tempest::Shortcut &sc) {
   hotKey = sc;
-  hotKey.activated.bind( this, &Button::emitClick );
-  hotKey.activated.bind( this, &Button::onShortcut);
+  hotKey.activated.bind(this, &Button::emitClick );
+  hotKey.activated.bind(this, &Button::onShortcut);
   }
 
 const std::u16string Button::text() const {
@@ -61,7 +61,7 @@ void Button::setHint(const std::u16string &str) {
   }
 
 void Button::setHint(const std::string &str) {
-  setText( Tempest::SystemAPI::toUtf16( str ) );
+  setHint( Tempest::SystemAPI::toUtf16( str ) );
   }
 
 const std::u16string &Button::hint() const {
@@ -202,10 +202,12 @@ Tempest::Rect Button::viewRect() const {
   return Tempest::Rect(px, py, pw, ph);
   }
 
-void Button::keyPressEvent(Tempest::KeyEvent &e) {
-  if( hasFocus() && e.key==Tempest::KeyEvent::K_Return ){
+void Button::keyUpEvent(Tempest::KeyEvent &e) {
+  if( hasFocus() &&
+      (e.key==Tempest::KeyEvent::K_Return || e.u16==32) ){
     emitClick();
     presAnim = true;
+    timePressed = clock();
     update();
     } else
     e.ignore();

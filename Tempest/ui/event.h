@@ -49,6 +49,8 @@ class Event {
       K_NoKey = 0,
       K_ESCAPE,
 
+      K_Control,
+
       K_Left,
       K_Up,
       K_Right,

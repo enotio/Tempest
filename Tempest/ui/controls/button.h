@@ -19,18 +19,18 @@ class Button : public Tempest::Widget {
     Tempest::Sprite icon;
 
     const Tempest::Shortcut& shortcut() const;
-    void setShortcut( const Tempest::Shortcut & sc );
+    void  setShortcut( const Tempest::Shortcut & sc );
 
     const std::u16string text() const;
-    void setText(const std::u16string &t );
-    void setText( const std::string& t );
+    void  setText(const std::u16string &t );
+    void  setText( const std::string& t   );
 
-    void setHint( const std::u16string & str );
-    void setHint( const std::string & str );
     const std::u16string &hint() const;
+    void  setHint( const std::u16string & str );
+    void  setHint( const std::string & str    );
 
-    void setFont( const Tempest::Font& f );
     const Tempest::Font& font() const;
+    void  setFont( const Tempest::Font& f );
 
   protected:
     virtual void drawFrame(Tempest::Painter &p, const Tempest::Rect& r );
@@ -49,7 +49,7 @@ class Button : public Tempest::Widget {
 
     void gestureEvent(Tempest::AbstractGestureEvent &e);
 
-    void keyPressEvent(Tempest::KeyEvent &e);
+    void keyUpEvent(Tempest::KeyEvent &e);
 
     void focusChange(bool);
 

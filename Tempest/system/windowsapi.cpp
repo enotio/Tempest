@@ -31,23 +31,27 @@ static LRESULT CALLBACK WindowProc( HWND   hWnd,
 
 WindowsAPI::WindowsAPI() {
   TranslateKeyPair k[] = {
-    { VK_LEFT,   Event::K_Left   },
-    { VK_RIGHT,  Event::K_Right  },
-    { VK_UP,     Event::K_Up     },
-    { VK_DOWN,   Event::K_Down   },
+    { VK_LCONTROL, Event::K_Control },
+    { VK_RCONTROL, Event::K_Control },
+    { VK_CONTROL,  Event::K_Control },
 
-    { VK_ESCAPE, Event::K_ESCAPE },
-    { VK_BACK,   Event::K_Back   },
-    { VK_DELETE, Event::K_Delete },
-    { VK_INSERT, Event::K_Insert },
-    { VK_HOME,   Event::K_Home   },
-    { VK_END,    Event::K_End    },
-    { VK_PAUSE,  Event::K_Pause  },
-    { VK_RETURN, Event::K_Return },
+    { VK_LEFT,     Event::K_Left    },
+    { VK_RIGHT,    Event::K_Right   },
+    { VK_UP,       Event::K_Up      },
+    { VK_DOWN,     Event::K_Down    },
 
-    { VK_F1,     Event::K_F1 },
-    { 0x30,      Event::K_0  },
-    { 0x41,      Event::K_A  },
+    { VK_ESCAPE,   Event::K_ESCAPE  },
+    { VK_BACK,     Event::K_Back    },
+    { VK_DELETE,   Event::K_Delete  },
+    { VK_INSERT,   Event::K_Insert  },
+    { VK_HOME,     Event::K_Home    },
+    { VK_END,      Event::K_End     },
+    { VK_PAUSE,    Event::K_Pause   },
+    { VK_RETURN,   Event::K_Return  },
+
+    { VK_F1,       Event::K_F1 },
+    { 0x30,        Event::K_0  },
+    { 0x41,        Event::K_A  },
 
     { 0,         Event::K_NoKey }
     };
@@ -542,8 +546,8 @@ static Tempest::KeyEvent makeKeyEvent( WPARAM k,
 
 LRESULT CALLBACK WindowProc( HWND   hWnd,
                              UINT   msg,
-                             WPARAM wParam,
-                             LPARAM lParam ) {
+                             const WPARAM wParam,
+                             const LPARAM lParam ) {
     //return DefWindowProc( hWnd, msg, wParam, lParam );
 
     Tempest::Window* w = 0;
@@ -556,18 +560,24 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
     if( !w )
       return DefWindowProc( hWnd, msg, wParam, lParam );
 
+    if(msg==WM_CHAR || msg==WM_KEYDOWN || msg==WM_KEYUP){
+      if(wParam==0x7 || (wParam>0xe && wParam<0xf))
+        return DefWindowProc( hWnd, msg, wParam, lParam );//undefined keys
+      }
+
     switch( msg ) {
       case WM_CHAR:
       {
          Tempest::KeyEvent e = Tempest::KeyEvent( uint32_t(wParam) );
 
-         DWORD wrd[3] = {
+         DWORD wrd[4] = {
            VK_RETURN,
            VK_BACK,
+           VK_CONTROL,
            0
            };
 
-         if( 0 == *std::find( wrd, wrd+2, wParam) ){
+         if( 0 == *std::find( wrd, wrd+3, wParam) ){
            Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );
            SystemAPI::emitEvent(w, ed);
 

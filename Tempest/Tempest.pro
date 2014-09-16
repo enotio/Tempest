@@ -187,7 +187,8 @@ SOURCES += \
     shading/shaderprogram.cpp \
     ui/controls/button.cpp \
     ui/controls/uimetrics.cpp \
-    ui/controls/panel.cpp
+    ui/controls/panel.cpp \
+    ui/controls/lineedit.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -273,7 +274,8 @@ HEADERS += \
     dx/dx11types.h \
     ui/controls/button.h \
     ui/controls/uimetrics.h \
-    ui/controls/panel.h
+    ui/controls/panel.h \
+    ui/controls/lineedit.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -327,4 +329,5 @@ OTHER_FILES += \
     include/Tempest/UniformDeclaration \
     include/Tempest/UIMetrics \
     include/Tempest/Button \
-    include/Tempest/Panel
+    include/Tempest/Panel \
+    include/Tempest/LineEdit

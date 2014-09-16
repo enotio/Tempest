@@ -7,6 +7,7 @@
 #include <Tempest/Application>
 #include <Tempest/Layout>
 #include <Tempest/Button>
+#include <Tempest/LineEdit>
 #include <Tempest/Panel>
 
 using namespace Tempest;
@@ -34,6 +35,11 @@ void MainWindow::setupUi() {
   button->setText("Button");
   button->setHint("button hint");
   panel->layout().add(button);
+
+  LineEdit* edit = new LineEdit();
+  edit->setText("LineEdit");
+  edit->setHint("some edit");
+  panel->layout().add(edit);
 
   layout().add(panel);
   }
