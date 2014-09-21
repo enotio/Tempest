@@ -188,7 +188,11 @@ SOURCES += \
     ui/controls/button.cpp \
     ui/controls/uimetrics.cpp \
     ui/controls/panel.cpp \
-    ui/controls/lineedit.cpp
+    ui/controls/lineedit.cpp \
+    ui/controls/listview.cpp \
+    ui/controls/listdelegate.cpp \
+    ui/controls/scroolbar.cpp \
+    ui/controls/scroolwidget.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -275,7 +279,11 @@ HEADERS += \
     ui/controls/button.h \
     ui/controls/uimetrics.h \
     ui/controls/panel.h \
-    ui/controls/lineedit.h
+    ui/controls/lineedit.h \
+    ui/controls/listview.h \
+    ui/controls/listdelegate.h \
+    ui/controls/scroolbar.h \
+    ui/controls/scroolwidget.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -330,4 +338,8 @@ OTHER_FILES += \
     include/Tempest/UIMetrics \
     include/Tempest/Button \
     include/Tempest/Panel \
-    include/Tempest/LineEdit
+    include/Tempest/LineEdit \
+    include/Tempest/ListDelegate \
+    include/Tempest/ListView \
+    include/Tempest/ScroolBar \
+    include/Tempest/ScroolWidget

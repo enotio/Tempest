@@ -2,7 +2,7 @@
 
 using namespace Tempest;
 
-UIMetrics::UIMetrics() {
+UiMetrics::UiMetrics() {
 #ifdef __MOBILE_PLATFORM__
   buttonHeight = 35;
 #else

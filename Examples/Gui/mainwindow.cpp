@@ -9,6 +9,7 @@
 #include <Tempest/Button>
 #include <Tempest/LineEdit>
 #include <Tempest/Panel>
+#include <Tempest/ListView>
 
 using namespace Tempest;
 
@@ -40,6 +41,12 @@ void MainWindow::setupUi() {
   edit->setText("LineEdit");
   edit->setHint("some edit");
   panel->layout().add(edit);
+
+  static std::vector<int> data = {1, 2, 3, 4, 5, 6, 7};
+  static ArrayListDelegate<int> delegate(data);
+
+  ListView* list = new ListView(delegate);
+  panel->layout().add(list);
 
   layout().add(panel);
   }

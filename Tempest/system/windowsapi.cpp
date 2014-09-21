@@ -533,7 +533,7 @@ static Tempest::KeyEvent makeKeyEvent( WPARAM k,
                                        bool scut = false ){
   Tempest::KeyEvent::KeyType e = SystemAPI::translateKey(k);
 
-  if( !scut ){
+  if( !scut && 0 ){
     if( Event::K_0<=e && e<= Event::K_9 )
       e = Tempest::KeyEvent::K_NoKey;
 

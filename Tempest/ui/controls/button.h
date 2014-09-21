@@ -32,6 +32,9 @@ class Button : public Tempest::Widget {
     const Tempest::Font& font() const;
     void  setFont( const Tempest::Font& f );
 
+    void setFontColor(const Tempest::Color& color);
+    const Tempest::Color& fontColor() const;
+
   protected:
     virtual void drawFrame(Tempest::Painter &p, const Tempest::Rect& r );
     virtual void drawFrame(Tempest::Painter &p);
@@ -65,7 +68,8 @@ class Button : public Tempest::Widget {
     std::u16string txt, hnt;
 
     Tempest::Shortcut hotKey;
-    Tempest::Font fnt;
+    Tempest::Font  fnt;
+    Tempest::Color fntColor;
   };
 }
 

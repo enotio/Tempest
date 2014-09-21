@@ -9,7 +9,7 @@ Button::Button()
        : hotKey(this, Tempest::KeyEvent::K_NoKey) {
   setFocusPolicy( Tempest::ClickFocus );
 
-  UIMetrics& m = Application::uiMetrics();
+  const UiMetrics& m = Application::uiMetrics();
   const int  h = int(m.buttonHeight*m.uiScale);
 
   fnt = Application::mainFont();
@@ -29,6 +29,8 @@ Button::Button()
 
   onFocusChange.bind( *this, &Button::focusChange );
   timePressed = clock();
+
+  setFontColor(Color(1));
   }
 
 const Shortcut& Button::shortcut() const {
@@ -72,8 +74,16 @@ void Button::setFont(const Tempest::Font &f) {
   fnt = f;
   }
 
-const Tempest::Font &Button::font() const {
+const Tempest::Font& Button::font() const {
   return fnt;
+  }
+
+void Button::setFontColor(const Color &color) {
+  fntColor = color;
+  }
+
+const Color& Button::fontColor() const {
+  return fntColor;
   }
 
 void Button::mouseDownEvent(Tempest::MouseEvent &) {
@@ -137,7 +147,7 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
   drawFrame( p );
 
   p.setFont(fnt);
-  p.setColor(0,0,0,1);
+  p.setColor(fntColor);
   p.drawText(0, 0, w()-1, h()-1, txt,
              Tempest::AlignHCenter|Tempest::AlignVCenter );
 
@@ -149,8 +159,9 @@ void Button::gestureEvent(Tempest::AbstractGestureEvent &e) {
     Tempest::DragGesture& g = (Tempest::DragGesture&)e;
 
     if( g.state()==Tempest::DragGesture::GestureUpdated ){
-      pressed  = false;
-      presAnim = false;
+      const Point p = e.hotSpot();
+      pressed  &= (0<=p.x && 0<=p.y && p.x<w() && p.y<h());
+      presAnim &= pressed;
       update();
       }
     e.ignore();

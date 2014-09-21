@@ -2,18 +2,20 @@
 #define UIMETRICS_H
 
 namespace Tempest{
-  class UIMetrics {
+  class UiMetrics {
     public:
-      UIMetrics();
-      virtual ~UIMetrics() = default;
+      UiMetrics();
+      virtual ~UiMetrics() = default;
 
-      int   buttonWidth    = 128;
-      int   buttonHeight   = 27;
-      float uiScale        = 1.0;
+      int   buttonWidth      = 128;
+      int   buttonHeight     = 27;
+      float uiScale          = 1.0;
 
-      int   smallTextSize  = 8;
-      int   normalTextSize = 16;
-      int   largeTextSize  = 24;
+      int   smallTextSize    = 8;
+      int   normalTextSize   = 16;
+      int   largeTextSize    = 24;
+
+      int   scroolButtonSize = 27;
     };
   }
 

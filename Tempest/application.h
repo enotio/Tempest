@@ -31,9 +31,9 @@ class Application {
     static void setMainFont(const Font& f);
     static signal<Font> fontChanged;
 
-    static UIMetrics& uiMetrics();
-    static void       setUiMetrics(const UIMetrics& u);
-    static signal<UIMetrics> uiMetricsChanged;
+    static const UiMetrics&  uiMetrics();
+    static void              setUiMetrics(const UiMetrics& u);
+    static signal<UiMetrics> uiMetricsChanged;
 
     int exec();
     static bool isQuit();
@@ -48,7 +48,7 @@ class Application {
       bool quit;
 
       Font mainFont;
-      UIMetrics uiMetrics;
+      UiMetrics uiMetrics;
 
       std::vector<Timer*> timer;
       } app;

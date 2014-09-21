@@ -12,6 +12,7 @@ class Panel : public Tempest::Widget {
 
     void setDragable( bool d );
     bool isDragable();
+
   protected:
     void mouseDownEvent(Tempest::MouseEvent &e);
     void mouseDragEvent(Tempest::MouseEvent &e);
@@ -22,8 +23,8 @@ class Panel : public Tempest::Widget {
     void gestureEvent(Tempest::AbstractGestureEvent &e);
 
     void paintEvent(Tempest::PaintEvent &p);
-    virtual void paintFrame(Tempest::Painter &p);
-    virtual void paintBackground(Tempest::Painter &p);
+    virtual void drawFrame(Tempest::Painter &p);
+    virtual void drawBack(Tempest::Painter &p);
 
   private:
     bool mouseTracking, dragable;

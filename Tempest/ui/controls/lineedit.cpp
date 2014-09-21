@@ -22,7 +22,7 @@ LineEdit::LineEdit(): anim(0), ctrlPressed(0) {
 
   scrool = 0;
 
-  const UIMetrics& uiMetrics = Application::uiMetrics();
+  const UiMetrics& uiMetrics = Application::uiMetrics();
   font = Application::mainFont();
   font.setSize( uiMetrics.normalTextSize*uiMetrics.uiScale );
 
@@ -217,15 +217,15 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
     }
 
   if(ctrlPressed>0){
-    if(e.u16=='z'-'a'+1)
-      undo();
-    if(e.u16=='y'-'a'+1)
-      redo();
     return;
     }
 
   if(!isEdited)
     storeOldText();
+
+  if( e.u16==' ' ){
+    storeOldText();
+    }
 
   if( e.key==KeyEvent::K_NoKey && editable ){
     char16_t ch[2] = { char16_t(e.u16), 0 };
@@ -302,6 +302,13 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
   }
 
 void LineEdit::keyUpEvent(KeyEvent &e) {
+  if(ctrlPressed>0){
+    if(e.key==KeyEvent::K_Z)
+      undo();
+    if(e.key==KeyEvent::K_Y)
+      redo();
+    }
+
   if(e.key==KeyEvent::K_Control)
     ctrlPressed=0;
   }
@@ -369,6 +376,7 @@ void LineEdit::updateSel() {
 void LineEdit::storeText(bool) {
   if( isEdited ){
     isEdited = 0;
+    storeOldText();
     onEditingFinished( txt );
     }
   }

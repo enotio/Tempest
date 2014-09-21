@@ -62,12 +62,12 @@ void Panel::gestureEvent(Tempest::AbstractGestureEvent &e) {
 void Panel::paintEvent( Tempest::PaintEvent &e ) {
   Tempest::Painter p(e);
   p.setBlendMode(alphaBlend);
-  paintBackground(p);
-  paintFrame(p);
+  drawBack(p);
+  drawFrame(p);
   paintNested(e);
   }
 
-void Panel::paintFrame( Tempest::Painter &p ){
+void Panel::drawFrame( Tempest::Painter &p ){
   auto vRect = Rect(0,0,w()-1,h()-1);
   auto c     = p.color();
   p.setColor(Color(0.25,0.25,0.25,1));
@@ -80,7 +80,7 @@ void Panel::paintFrame( Tempest::Painter &p ){
   p.setColor(c);
   }
 
-void Panel::paintBackground(Painter &p) {
+void Panel::drawBack(Painter &p) {
   auto c = p.color();
   p.setColor(Color(0.8,0.8,0.85,0.75));
   p.drawRect(0,0,w()-1,h()-1);

@@ -95,7 +95,7 @@ using namespace Tempest;
 
 Application::App                         Application::app;
 signal<Font>                             Application::fontChanged;
-signal<UIMetrics>                        Application::uiMetricsChanged;
+signal<UiMetrics>                        Application::uiMetricsChanged;
 signal<const std::u16string,const Rect&> Application::showHint;
 
 Application::Application() {
@@ -119,11 +119,11 @@ void Application::setMainFont(const Font &f) {
   fontChanged(app.mainFont);
   }
 
-UIMetrics& Application::uiMetrics() {
+const UiMetrics &Application::uiMetrics() {
   return app.uiMetrics;
   }
 
-void Application::setUiMetrics(const UIMetrics &u) {
+void Application::setUiMetrics(const UiMetrics &u) {
   app.uiMetrics = u;
   uiMetricsChanged(u);
   }

@@ -104,7 +104,8 @@ struct DirectX11::Device{
 
   std::vector<ID3D11RenderTargetView*> rt;
   ID3D11DepthStencilView*  rtDepth = NULL;
-  int rtW, rtH;
+  int  rtW, rtH;
+  bool renderToTexture = false;
 
   std::unordered_map<BlendDesc,ID3D11BlendState*,   Hash,Cmp> blendSt;
   std::unordered_map<ZDesc,ID3D11DepthStencilState*,Hash,Cmp> ztestSt;
@@ -523,7 +524,7 @@ void DirectX11::clear( AbstractAPI::Device *d, const Color &cl,
                        float z, unsigned stencil ) const {
   Device* dev = (Device*)d;
 
-  if(dev->rt.size()){
+  if(dev->renderToTexture){
     for( size_t i=0; i<dev->rt.size(); ++i )
       dev->immediateContext->ClearRenderTargetView( dev->rt[i], cl.data() );
     dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
@@ -539,7 +540,7 @@ void DirectX11::clear( AbstractAPI::Device *d, const Color &cl,
 
 void DirectX11::clear(AbstractAPI::Device *d, const Color &cl) const {
   Device* dev = (Device*)d;
-  if(dev->rt.size()){
+  if(dev->renderToTexture){
     for( size_t i=0; i<dev->rt.size(); ++i )
       dev->immediateContext->ClearRenderTargetView( dev->rt[i], cl.data() );
     } else {
@@ -550,7 +551,7 @@ void DirectX11::clear(AbstractAPI::Device *d, const Color &cl) const {
 void DirectX11::clear(AbstractAPI::Device *d, const Color &cl, float z) const {
   Device* dev = (Device*)d;
 
-  if(dev->rt.size()){
+  if(dev->renderToTexture){
     for( size_t i=0; i<dev->rt.size(); ++i )
       dev->immediateContext->ClearRenderTargetView( dev->rt[i], cl.data() );
     dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
@@ -566,7 +567,7 @@ void DirectX11::clear(AbstractAPI::Device *d, const Color &cl, float z) const {
 
 void DirectX11::clear(AbstractAPI::Device *d, float z, unsigned stencil) const {
   Device* dev = (Device*)d;
-  if(dev->rt.size()){
+  if(dev->renderToTexture){
     dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
                                                   D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
                                                   z, 0 );
@@ -579,7 +580,7 @@ void DirectX11::clear(AbstractAPI::Device *d, float z, unsigned stencil) const {
 
 void DirectX11::clearZ(AbstractAPI::Device *d, float z) const {
   Device* dev = (Device*)d;
-  if(dev->rt.size()){
+  if(dev->renderToTexture){
     dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
                                                   D3D11_CLEAR_DEPTH,
                                                   z, 0 );
@@ -592,7 +593,7 @@ void DirectX11::clearZ(AbstractAPI::Device *d, float z) const {
 
 void DirectX11::clearStencil(AbstractAPI::Device *d, unsigned stencil) const {
   Device* dev = (Device*)d;
-  if(dev->rt.size()){
+  if(dev->renderToTexture){
     dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
                                                   D3D11_CLEAR_STENCIL,
                                                   1.0f, stencil );
@@ -624,7 +625,7 @@ void DirectX11::beginPaint(AbstractAPI::Device *d) const {
 
 void DirectX11::endPaint(AbstractAPI::Device *d) const {
   Device* dev = (Device*)d;
-  if(dev->rt.size()>0){
+  if(dev->renderToTexture){
     // Setup the viewport
     D3D11_VIEWPORT vp;
     vp.Width    = (FLOAT)dev->scrW;
@@ -636,6 +637,7 @@ void DirectX11::endPaint(AbstractAPI::Device *d) const {
     dev->immediateContext->RSSetViewports( 1, &vp );
     }
 
+  dev->renderToTexture = false;
   dev->vbo = 0;
   dev->ibo = 0;
   }
@@ -665,6 +667,7 @@ void DirectX11::setRenderTaget( AbstractAPI::Device *d,
     T_ASSERT(SUCCEEDED(dev->device->CreateRenderTargetView(tex->texture,&rtDesc,&tex->rt)));
     }
 
+  dev->renderToTexture = true;
   dev->rt[mrtSlot] = tex->rt;
   }
 
