@@ -27,12 +27,16 @@ Crossplatform 3d engine.
 
 ### 2. Build(Console):
  2.1 open Tempest directory
+
  2.2 run qmake
+
  2.3 run make
 
 ### 3. Build(QtCreator 3.0):
  2.1 open Tempest.pro
+
  2.2 configure build kit( set to MinGW4.8 )
+
  2.3 click build button
 
 ## Examples
@@ -40,6 +44,8 @@ Crossplatform 3d engine.
 ### [00-Cube](https://github.com/Try/Tempest/tree/master/Examples/Cube)
 ![example-01-cube](https://raw.githubusercontent.com/Try/Tempest/master/doc/screens/cube.png)
 
+### [01-Bump](https://github.com/Try/Tempest/tree/master/Examples/Bump)
+![example-02-bump](https://raw.githubusercontent.com/Try/Tempest/master/doc/screens/bump.png)
 
 
 
