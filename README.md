@@ -47,5 +47,10 @@ Crossplatform 3d engine.
 ### [01-Bump](https://github.com/Try/Tempest/tree/master/Examples/Bump)
 ![example-02-bump](https://raw.githubusercontent.com/Try/Tempest/master/doc/screens/bump.png)
 
+### [02-Paint2d](https://github.com/Try/Tempest/tree/master/Examples/Paint2d)
+![example-03-paint2d](https://raw.githubusercontent.com/Try/Tempest/master/doc/screens/paint2d.png)
+
+### [03-Load3ds](https://github.com/Try/Tempest/tree/master/Examples/Load3ds)
+![example-04-bump](https://raw.githubusercontent.com/Try/Tempest/master/doc/screens/load3ds.png)
 
 
