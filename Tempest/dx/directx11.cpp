@@ -321,7 +321,7 @@ std::string DirectX11::vendor( AbstractAPI::Device * ) const {
 
 std::string DirectX11::renderer( AbstractAPI::Device *d ) const {
   //TODO
-  Device *dx = (Device*)d;
+  //Device *dx = (Device*)d;
   return "";//dx->adapter.Description;
   }
 
@@ -865,6 +865,8 @@ AbstractAPI::Texture *DirectX11::createTexture( AbstractAPI::Device *d,
       }
     return (AbstractAPI::Texture*)tex;
     }
+
+  delete tex;
   return 0;
   }
 

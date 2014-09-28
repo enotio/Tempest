@@ -200,7 +200,7 @@ void HLSL::setUniforms( Sh* prog,
     const char* v = &ux.data[0] + fields[0];
     ++fields;
 
-    float *vec = (float*)v;
+    const float *vec = reinterpret_cast<const float*>(v);
     if(prm!=0)
       switch(t){
         case Decl::float1:

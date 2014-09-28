@@ -85,23 +85,6 @@ size_t Tempest::FontElement::findFontName(const std::string &n) {
   return fnames.size()-1;
   }
 
-bool Tempest::FontElement::cmpS( const std::string &tg,
-                                 const std::string& s,
-                                 const char* ss ){
-  if( tg.size()<s.size() )
-    return 0;
-
-  for( size_t i=0; i<s.size(); ++i )
-    if( tg[i]!=s[i] )
-      return 0;
-
-  for( size_t i=0; ss[i]; ++i )
-    if( !( s.size()+i<=tg.size() && tg[i+s.size()]==ss[i] ) )
-      return 0;
-
-  return 1;
-  }
-
 Tempest::FontElement::FontElement( const std::string &name,
                                    int sz) {
   init(name, sz);

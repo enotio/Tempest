@@ -333,6 +333,7 @@ struct HLSL11::Data{
     if(curSamplers.size()<=size_t(i))
       curSamplers.resize(i+1);
     if(curSamplers[i]!=st){
+      immediateContext->VSSetSamplers( i, 1, &st );
       immediateContext->PSSetSamplers( i, 1, &st );
       curSamplers[i] = st;
       }
@@ -499,10 +500,12 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &ux,
         if( t ){
           if(data->curTextures[slot]!=t->view){
             data->curTextures[slot]=t->view;
+            data->immediateContext->VSSetShaderResources(slot,1,&t->view);
             data->immediateContext->PSSetShaderResources(slot,1,&t->view);
             }
           data->setSampler(slot,*smp2d);
           } else {
+          data->immediateContext->VSSetShaderResources(slot,0,0);
           data->immediateContext->PSSetShaderResources(slot,0,0);
           }
         }

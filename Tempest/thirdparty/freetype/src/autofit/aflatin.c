@@ -1131,8 +1131,6 @@
       {
         FT_Int  is_round    = 0;  /* does it contain round segments?    */
         FT_Int  is_straight = 0;  /* does it contain straight segments? */
-        FT_Pos  ups         = 0;  /* number of upwards segments         */
-        FT_Pos  downs       = 0;  /* number of downwards segments       */
 
 
         seg = edge->first;
@@ -1147,12 +1145,6 @@
             is_round++;
           else
             is_straight++;
-
-          /* check for segment direction */
-          if ( seg->dir == up_dir )
-            ups   += seg->max_coord-seg->min_coord;
-          else
-            downs += seg->max_coord-seg->min_coord;
 
           /* check for links -- if seg->serif is set, then seg->link must */
           /* be ignored                                                   */

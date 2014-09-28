@@ -184,7 +184,7 @@
   af_face_globals_new( FT_Face          face,
                        AF_FaceGlobals  *aglobals )
   {
-    FT_Error        error;
+    FT_Error        error = 0;
     FT_Memory       memory;
     AF_FaceGlobals  globals = NULL;
 
