@@ -161,7 +161,7 @@ void Widget::setGeometry(int x, int y, int w, int h) {
   }
 
 void Widget::setMaximumSize(const Size &s) {
-  if(sp.minSize==s)
+  if(sp.maxSize==s)
     return;
 
   sp.maxSize = s;
