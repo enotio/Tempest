@@ -28,6 +28,7 @@ class LineEdit : public Tempest::Widget {
     size_t selectionBegin();
     size_t selectionEnd();
     void   setSelectionBounds( size_t begin, size_t end );
+    void   resetSelection();
 
     bool isEditable() const;
     void setEditable( bool e );

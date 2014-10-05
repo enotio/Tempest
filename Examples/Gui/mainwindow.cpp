@@ -10,6 +10,7 @@
 #include <Tempest/LineEdit>
 #include <Tempest/Panel>
 #include <Tempest/ListView>
+#include <Tempest/ListBox>
 
 using namespace Tempest;
 
@@ -42,6 +43,12 @@ void MainWindow::setupUi() {
   edit->setHint("some edit");
   panel->layout().add(edit);
 
+  const std::vector<std::string> items = {"1","2"};
+  ListBox* listBox = new ListBox();
+  listBox->setText("list box");
+  listBox->setItemList(items);
+  panel->layout().add(listBox);
+
   static std::vector<int> data = {1, 2, 3, 4, 5, 6, 7};
   static ArrayListDelegate<int> delegate(data);
 
@@ -67,7 +74,9 @@ void MainWindow::render() {
   if( !device.startRender() )
     return;
 
-  uiRender.buildVbo(*this, vboHolder, iboHolder, spHolder );
+  if( needToUpdate() )
+    uiRender.buildWindowVbo(*this, vboHolder, iboHolder, spHolder);
+
   device.clear( Color(0,0,1), 1 );
 
   device.beginPaint();
@@ -83,4 +92,5 @@ void MainWindow::resizeEvent( SizeEvent & ) {
 
 void MainWindow::setHint(const std::u16string &h, const Rect &) {
   hint = h;
+  update();
   }

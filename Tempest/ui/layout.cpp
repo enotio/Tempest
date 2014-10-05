@@ -61,11 +61,13 @@ void Layout::del(Widget *widget) {
   }
 
 void Tempest::Layout::removeAll() {
-  for( size_t i=0; i<w.size(); ++i ){
-    w[i]->parentLay = 0;
-    w[i]->deleteLater();
+  std::vector<Widget*> wx;
+  std::swap(wx,w);
+  for( size_t i=0; i<wx.size(); ++i ){
+    wx[i]->parentLay = 0;
+    wx[i]->deleteLater();
     }
-  w.clear();
+  wx.clear();
 
   applyLayout();
 

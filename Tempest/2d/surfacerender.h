@@ -29,6 +29,13 @@ class SurfaceRender {
 
     void clearVbo();
 
+    void buildWindowVbo( Window &window,
+                         Tempest::VertexBufferHolder & vbHolder,
+                         Tempest::IndexBufferHolder  & ibHolder,
+                         Tempest::SpritesHolder & spHolder,
+                         bool clrVbo   = true,
+                         bool flushVbo = true);
+
     void buildVbo( Widget &surf,
                    Tempest::VertexBufferHolder & vbHolder,
                    Tempest::IndexBufferHolder  & ibHolder,

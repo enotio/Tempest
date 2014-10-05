@@ -17,6 +17,7 @@ Makefile.Release
 ant.properties
 local.properties
 project.properties
+out/*
 
 #################
 ## Eclipse

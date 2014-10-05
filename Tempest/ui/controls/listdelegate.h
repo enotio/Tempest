@@ -20,8 +20,6 @@ class ListDelegate {
     virtual Widget* createView(size_t position           ) = 0;
     virtual void    removeView(Widget* w, size_t position) = 0;
 
-    virtual int     viewLengthTotal() const = 0;
-
     Tempest::signal<> invalidateView, updateView;
   };
 
@@ -48,11 +46,6 @@ class ArrayListDelegate : public ListDelegate {
 
     void removeView(Widget* w, size_t /*position*/){
       delete w;
-      }
-
-    int viewLengthTotal() const {
-      const UiMetrics& m = Application::uiMetrics();
-      return m.buttonHeight*size();
       }
 
   private:

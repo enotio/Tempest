@@ -92,6 +92,10 @@ void LineEdit::setSelectionBounds(size_t begin, size_t end) {
   eedit = end;
   }
 
+void LineEdit::resetSelection() {
+  setSelectionBounds(sedit,sedit);
+  }
+
 void LineEdit::setEditable(bool e) {
   editable = e;
   }

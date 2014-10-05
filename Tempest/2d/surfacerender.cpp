@@ -4,6 +4,7 @@
 #include <Tempest/Sprite>
 #include <Tempest/Font>
 #include <Tempest/Log>
+#include <Tempest/Window>
 #include <functional>
 
 using namespace Tempest;
@@ -51,6 +52,22 @@ void SurfaceRender::clearVbo() {
   blocks.clear();
 
   vbo = Tempest::VertexBuffer<Vertex>();
+  }
+
+void SurfaceRender::buildWindowVbo(Window &window,
+                                   VertexBufferHolder &vbHolder,
+                                   IndexBufferHolder &ibHolder,
+                                   SpritesHolder &spHolder,
+                                   bool clrVbo,
+                                   bool flushVbo) {
+  buildVbo(window, vbHolder, ibHolder,
+           spHolder,
+           clrVbo, window.overlayCount()==0);
+  for(size_t i=0; i<window.overlayCount(); ++i){
+    buildVbo(window.overlay(i), vbHolder, ibHolder,
+             spHolder,
+             false, i+1==window.overlayCount() && flushVbo);
+    }
   }
 
 void SurfaceRender::loadShader() {

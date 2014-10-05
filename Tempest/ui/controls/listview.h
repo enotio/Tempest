@@ -11,23 +11,23 @@ namespace Tempest {
 
 class ListView : public Widget {
   public:
-    ListView(ListDelegate& delegate);
+    ListView(ListDelegate& delegate,Tempest::Orientation ori = Tempest::Vertical);
+
+    void setOrientation(Tempest::Orientation ori);
 
   private:
-    struct Layout : Tempest::Layout {
+    Tempest::Orientation orientation;
+
+    struct Layout : Tempest::LinearLayout {
       Layout(ListDelegate& delegate, Tempest::Orientation ori);
       ~Layout();
 
-      void    applyLayout();
-      Widget* widget(size_t i);
-
-      Tempest::Orientation ori;
-      size_t               placedStart;
-      std::vector<Widget*> placed;
-      ListDelegate& delegate;
-
+      void applyLayout();
       void invalidate();
-      bool busy;
+
+      ListDelegate& delegate;
+      bool          busy;
+      void          removeAll();
       };
 
     using Widget::layout;
