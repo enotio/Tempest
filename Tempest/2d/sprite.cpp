@@ -74,10 +74,22 @@ const Tempest::Texture2d &Sprite::pageRawData() const {
   flush();
 
   static const Tempest::Texture2d nullTex;
-  if( tex )
+  if( tex ){
+    holder->flush();
     return (*tex)[id]->t;
+    }
 
   return nullTex;
+  }
+
+Size Sprite::pageRawSize() const {
+  flush();
+
+  if( tex ){
+    return (*tex)[id]->p.size();
+    }
+
+  return Size();
   }
 
 Rect Sprite::pageRect() const {

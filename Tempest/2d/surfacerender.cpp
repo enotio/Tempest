@@ -253,7 +253,7 @@ void SurfaceRender::update( Vertex* v, int count ){
       }
 
   if( !state.curTex.size().isEmpty() ){
-    const Tempest::Size s = state.curTex.pageRawData().size();
+    const Tempest::Size s = state.curTex.pageRawSize();
     const Tempest::Rect r = state.curTex.pageRect();
 
     float dx = r.x/float(s.w),
