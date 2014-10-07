@@ -48,12 +48,14 @@ void Sprite::flush() const {
   }
 
 int Sprite::w() const {
-  flush();
+  if( isDelayd() )
+    return holder->spriteSizeD( delayd ).w;
   return prect.w;
   }
 
 int Sprite::h() const {
-  flush();
+  if( isDelayd() )
+    return holder->spriteSizeD( delayd ).h;
   return prect.h;
   }
 
