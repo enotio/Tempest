@@ -22,6 +22,12 @@ class ScroolBar : public Tempest::Widget {
     void setValue( int v );
     int  value() const;
 
+    int smallStep() const;
+    int largeStep() const;
+
+    void setSmallStep(int step);
+    void setLargeStep(int step);
+
     void setCentralButtonSize( int sz );
 
     Tempest::signal<int> valueChanged;
@@ -29,6 +35,7 @@ class ScroolBar : public Tempest::Widget {
     const Widget& centralWidget() const;
   protected:
     void resizeEvent( Tempest::SizeEvent& e );
+    void mouseWheelEvent(Tempest::MouseEvent& e);
     virtual Sprite buttonIcon(bool inc) const;
 
   private:
@@ -41,7 +48,7 @@ class ScroolBar : public Tempest::Widget {
     void updateValueFromView(int, unsigned);
     void updateView();
 
-    int rmin, rmax, smallStep, largeStep;
+    int rmin, rmax, msmallStep, mlargeStep;
     int mvalue;
 
     Tempest::Orientation orient;

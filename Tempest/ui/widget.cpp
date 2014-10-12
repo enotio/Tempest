@@ -114,6 +114,11 @@ void Widget::setPosition(const Point &p) {
   }
 
 void Widget::resize(int w, int h) {
+  if(w<0)
+    w=0;
+  if(h<0)
+    h=0;
+
   int ow = wrect.w, oh = wrect.h;
 
   if( ow==w && oh==h )
@@ -141,13 +146,16 @@ void Widget::setGeometry(const Rect &r) {
 
   int ox = wrect.x, oy = wrect.y, ow = wrect.w, oh = wrect.h;
   wrect = r;
-
-  layout().applyLayout();
+  if(wrect.w<0)
+    wrect.w = 0;
+  if(wrect.h<0)
+    wrect.h = 0;
 
   if( ox!=r.x && oy!=r.y )
     onPositionChange(ox,oy);
 
   if( ow!=r.w || oh!=r.h ){
+    layout().applyLayout();
     onResize(ow,oh);
     SizeEvent e(w(),h());
     resizeEvent( e );

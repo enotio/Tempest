@@ -7,8 +7,8 @@ using namespace Tempest;
 
 ScroolBar::ScroolBar() {
   mvalue = 0;
-  smallStep = 10;
-  largeStep = 20;
+  msmallStep = 10;
+  mlargeStep = 20;
 
   setRange(0, 100);
 
@@ -31,6 +31,7 @@ ScroolBar::ScroolBar() {
     b[i]->setSizePolicy(p);
     }
 
+  layout().setMargin(0);
   layout().add( b[0] );
   layout().add( cen );
   layout().add( b[1] );
@@ -81,8 +82,8 @@ void ScroolBar::setRange(int min, int max) {
   rmax = max;
   int nmvalue = std::max( rmin, std::min(mvalue, rmax) );
 
-  smallStep = std::max(1, std::min( 10, range()/100 ));
-  largeStep = std::max(1, std::min( 20, range()/10 ));
+  msmallStep = std::max(1, std::min( 10, range()/100 ));
+  mlargeStep = std::max(1, std::min( 20, range()/10 ));
 
   setValue( nmvalue );
   }
@@ -113,6 +114,22 @@ int ScroolBar::value() const {
   return mvalue;
   }
 
+int ScroolBar::smallStep() const {
+  return msmallStep;
+  }
+
+int ScroolBar::largeStep() const {
+  return mlargeStep;
+  }
+
+void ScroolBar::setSmallStep(int step) {
+  msmallStep = step>=0 ? step : 0;
+  }
+
+void ScroolBar::setLargeStep(int step) {
+  mlargeStep = step>=0 ? step : 0;
+  }
+
 void ScroolBar::setCentralButtonSize(int sz) {
   const UiMetrics& metric = Application::uiMetrics();
   cenBtnSize = std::max<int>(metric.scroolButtonSize*metric.uiScale, sz);
@@ -127,24 +144,31 @@ void ScroolBar::resizeEvent(Tempest::SizeEvent &) {
   updateView();
   }
 
+void ScroolBar::mouseWheelEvent(MouseEvent &e) {
+  if(e.delta>0)
+    decL(); else
+  if(e.delta<0)
+    incL();
+  }
+
 Sprite ScroolBar::buttonIcon(bool /*inc*/) const {
   return Sprite();
   }
 
 void ScroolBar::inc() {
-  setValue( value()+smallStep );
+  setValue( value()+msmallStep );
   }
 
 void ScroolBar::dec() {
-  setValue( value()-smallStep );
+  setValue( value()-msmallStep );
   }
 
 void ScroolBar::incL() {
-  setValue( value()+largeStep );
+  setValue( value()+mlargeStep );
   }
 
 void ScroolBar::decL() {
-  setValue( value()-largeStep );
+  setValue( value()-mlargeStep );
   }
 
 void ScroolBar::updateValueFromView(int, unsigned) {

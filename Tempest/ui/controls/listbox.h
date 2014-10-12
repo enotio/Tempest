@@ -8,13 +8,11 @@
 
 namespace Tempest{
 
+class ListDelegate;
+
 class ListBox : public AbstractListBox {
   public:
-    ListBox();
-
-    void setItemList( const std::vector<std::string>    &list );
-    void setItemList( const std::vector<std::u16string> &list );
-    const std::vector<std::u16string> & items() const;
+    ListBox(ListDelegate& delegate);
 
     Tempest::signal<size_t> onItemSelected;
     Tempest::signal<const std::u16string&> onItemSelectedW;
@@ -26,9 +24,9 @@ class ListBox : public AbstractListBox {
 
   private:
     size_t selected;
+    ListDelegate& delegate;
 
     Tempest::Widget *createDropList();
-    std::vector<std::u16string> data;
 
     class ItemBtn;
 

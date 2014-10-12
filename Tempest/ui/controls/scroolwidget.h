@@ -10,12 +10,18 @@ class ScroolWidget : public Tempest::Widget {
   public:
     ScroolWidget();
 
+    enum ScroolViewMode{
+      AlwaysOn,
+      AsNeed,
+      AlwaysOff
+      };
+
     Widget& centralWidget();
 
-    void hideScroolBar();
-    void setScroolBarVisible( bool v );
-    void setOrientation( Tempest::Orientation ori );
-    Tempest::Orientation orientation() const;
+    void hideScroolBars();
+    void setScroolBarsVisible( bool h, bool v );
+    void setVScroolViewMode( ScroolViewMode );
+    void setHScroolViewMode( ScroolViewMode );
 
     void scroolAfterEnd( bool s );
     bool hasScroolAfterEnd() const;
@@ -23,7 +29,9 @@ class ScroolWidget : public Tempest::Widget {
     void scroolBeforeBegin( bool s );
     bool hasScroolBeforeBegin() const;
 
-    void scrool( int v );
+    void scroolH( int v );
+    void scroolV( int v );
+
   protected:
     void mouseWheelEvent(Tempest::MouseEvent &e);
     void mouseMoveEvent(Tempest::MouseEvent &e);
@@ -32,18 +40,19 @@ class ScroolWidget : public Tempest::Widget {
     void resizeEvent(Tempest::SizeEvent& e);
 
   private:
-    ScroolBar sb;
-    struct Box:Widget {
-      Box();
-      void paintEvent( Tempest::PaintEvent& e );
+    Widget    helper;
+    Widget    cen;
+    ScroolBar sbH, sbV;
+    ScroolViewMode vert, hor;
 
+    struct Box:Widget {
       ScroolWidget* owner;
       } box;
 
-    Widget *cen;
-
     struct ProxyLayout;
     ProxyLayout *mlay;
+
+    struct BoxLayout;
 
     void resizeEv(int w, int h);
     static Tempest::Size sizeHint( const Widget *w );

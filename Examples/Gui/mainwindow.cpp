@@ -11,6 +11,7 @@
 #include <Tempest/Panel>
 #include <Tempest/ListView>
 #include <Tempest/ListBox>
+#include <Tempest/ScroolWidget>
 
 using namespace Tempest;
 
@@ -43,10 +44,10 @@ void MainWindow::setupUi() {
   edit->setHint("some edit");
   panel->layout().add(edit);
 
-  const std::vector<std::string> items = {"1","2"};
-  ListBox* listBox = new ListBox();
+  static const std::vector<std::string> items = {"1","2"};
+  static ArrayListDelegate<std::string> ldelegate(items);
+  ListBox* listBox = new ListBox(ldelegate);
   listBox->setText("list box");
-  listBox->setItemList(items);
   panel->layout().add(listBox);
 
   static std::vector<int> data = {1, 2, 3, 4, 5, 6, 7};
@@ -56,6 +57,17 @@ void MainWindow::setupUi() {
   panel->layout().add(list);
 
   layout().add(panel);
+
+  Panel *panel2 = new Panel();
+  panel2->setDragable(true);
+  panel2->setLayout(Vertical);
+  panel2->resize(200,200);
+  panel2->setLayout(Horizontal);
+  ScroolWidget *sc=new ScroolWidget();
+  for(int i=0; i<15; ++i)
+    sc->centralWidget().layout().add(new Button());
+  panel2->layout().add(sc);
+  layout().add(panel2);
   }
 
 void MainWindow::paintEvent(PaintEvent &e) {

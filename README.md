@@ -20,7 +20,7 @@ Crossplatform 3d engine.
 
  1.3. Install Android SDK+NDK to compile android version
 
- 1.4. Install CgToolkit(optional),              from [http://developer.nvidia.com/cg-toolkit-download](developer.nvidia.com/cg-toolkit-download)
+ 1.4. Install CgToolkit(optional),              from [developer.nvidia.com/cg-toolkit-download](http://developer.nvidia.com/cg-toolkit-download)
 
      hint: you can disable directx support in .pro file.
      hint: you can enable cg support in .pro file.
