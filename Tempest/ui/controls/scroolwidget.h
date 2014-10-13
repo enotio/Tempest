@@ -23,11 +23,17 @@ class ScroolWidget : public Tempest::Widget {
     void setVScroolViewMode( ScroolViewMode );
     void setHScroolViewMode( ScroolViewMode );
 
-    void scroolAfterEnd( bool s );
-    bool hasScroolAfterEnd() const;
+    void scroolAfterEndH( bool s );
+    bool hasScroolAfterEndH() const;
 
-    void scroolBeforeBegin( bool s );
-    bool hasScroolBeforeBegin() const;
+    void scroolBeforeBeginH( bool s );
+    bool hasScroolBeforeBeginH() const;
+
+    void scroolAfterEndV( bool s );
+    bool hasScroolAfterEndV() const;
+
+    void scroolBeforeBeginV( bool s );
+    bool hasScroolBeforeBeginV() const;
 
     void scroolH( int v );
     void scroolV( int v );

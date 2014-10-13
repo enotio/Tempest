@@ -4,6 +4,7 @@
 #include <Tempest/Widget>
 #include <Tempest/Button>
 #include <Tempest/Timer>
+#include <cstdint>
 
 namespace Tempest{
 
@@ -14,8 +15,9 @@ class ScroolBar : public Tempest::Widget {
     void setOrientation( Tempest::Orientation ori );
     Tempest::Orientation orientation() const;
 
-    void setRange( int min, int max );
-    int range() const;
+    void    setRange( int min, int max );
+    int64_t range() const;
+
     int minValue() const;
     int maxValue() const;
 

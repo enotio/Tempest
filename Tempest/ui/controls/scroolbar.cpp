@@ -82,13 +82,13 @@ void ScroolBar::setRange(int min, int max) {
   rmax = max;
   int nmvalue = std::max( rmin, std::min(mvalue, rmax) );
 
-  msmallStep = std::max(1, std::min( 10, range()/100 ));
-  mlargeStep = std::max(1, std::min( 20, range()/10 ));
+  msmallStep = std::max<int>(1, std::min<int64_t>( 10, range()/100 ));
+  mlargeStep = std::max<int>(1, std::min<int64_t>( 20, range()/10 ));
 
   setValue( nmvalue );
   }
 
-int ScroolBar::range() const {
+int64_t ScroolBar::range() const {
   return rmax-rmin;
   }
 
@@ -173,20 +173,25 @@ void ScroolBar::decL() {
 
 void ScroolBar::updateValueFromView(int, unsigned) {
   int v;
+  const int xrange = cen->w() - cenBtn->w();
+  const int yrange = cen->h() - cenBtn->h();
   if( orient==Tempest::Vertical )
-    v = (range()*cenBtn->y())/(cen->h() - cenBtn->h()); else
-    v = (range()*cenBtn->x())/(cen->w() - cenBtn->w());
+    v = (range()*cenBtn->y())/(yrange>0 ? yrange : 1); else
+    v = (range()*cenBtn->x())/(xrange>0 ? xrange : 1);
 
-  mvalue = v + rmin;
-  valueChanged(v);
+  const int nvalue = v + rmin;
+  if(nvalue!=mvalue){
+    mvalue = nvalue;
+    valueChanged(nvalue);
+    }
   }
 
 void ScroolBar::updateView() {
   Tempest::Point p = cenBtn->pos();
 
   if( orient==Tempest::Vertical )
-    p.y = mvalue*(cen->h()-cenBtnSize)/std::max(1, rmax-rmin); else
-    p.x = mvalue*(cen->w()-cenBtnSize)/std::max(1, rmax-rmin);
+    p.y = ((mvalue-rmin)*(cen->h()-cenBtnSize))/std::max<int64_t>(1, range()); else
+    p.x = ((mvalue-rmin)*(cen->w()-cenBtnSize))/std::max<int64_t>(1, range());
 
   int w = cen->w(), h = cen->h();
 

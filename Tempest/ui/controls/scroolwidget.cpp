@@ -40,8 +40,11 @@ struct ScroolWidget::ProxyLayout: public Tempest::Layout {
   ScroolBar *scroolV;
   Widget    *helper;
 
-  bool scroolAfterEnd    = false;
-  bool scroolBeforeBegin = false;
+  bool scroolAfterEndH    = false;
+  bool scroolBeforeBeginH = false;
+
+  bool scroolAfterEndV    = true;
+  bool scroolBeforeBeginV = false;
   };
 
 struct ScroolWidget::BoxLayout: public Tempest::LinearLayout {
@@ -50,8 +53,12 @@ struct ScroolWidget::BoxLayout: public Tempest::LinearLayout {
     if(widgets().size()==0)
       return;
 
-    Widget* ow = owner()->owner();
-    Size sz = ow!=nullptr ? ow->size() : Size{0,0};
+    Size sz = Size{0,0};
+    Widget* cen = owner()->owner();
+    if(cen){
+      sz.w = std::max(cen->w(),sz.w);
+      sz.h = std::max(cen->h(),sz.h);
+      }
 
     for(const Widget* w : widgets()) {
       sz.w = std::max(sz.w,w->x()+w->w());
@@ -108,30 +115,60 @@ void ScroolWidget::setScroolBarsVisible(bool vh, bool vv) {
 
 void ScroolWidget::setVScroolViewMode(ScroolViewMode mode) {
   vert = mode;
+  switch(mode){
+    case AsNeed:    resizeEv(cen.w(), cen.h()); break;
+    case AlwaysOff: sbV.setVisible(false);      break;
+    case AlwaysOn:  sbV.setVisible(true);       break;
+    }
   }
 
 void ScroolWidget::setHScroolViewMode(ScroolViewMode mode) {
   hor = mode;
+  switch(mode){
+    case AsNeed:    resizeEv(cen.w(), cen.h()); break;
+    case AlwaysOff: sbH.setVisible(false);      break;
+    case AlwaysOn:  sbH.setVisible(true);       break;
+    }
   }
 
-void ScroolWidget::scroolAfterEnd(bool s) {
-  mlay->scroolAfterEnd = s;
+void ScroolWidget::scroolAfterEndH(bool s) {
+  mlay->scroolAfterEndH = s;
   resizeEv( w(), h() );
   mlay->applyLayout();
   }
 
-bool ScroolWidget::hasScroolAfterEnd() const {
-  return mlay->scroolAfterEnd;
+bool ScroolWidget::hasScroolAfterEndH() const {
+  return mlay->scroolAfterEndH;
   }
 
-void ScroolWidget::scroolBeforeBegin(bool s) {
-  mlay->scroolBeforeBegin = s;
+void ScroolWidget::scroolBeforeBeginH(bool s) {
+  mlay->scroolBeforeBeginH = s;
   resizeEv( w(), h() );
   mlay->applyLayout();
   }
 
-bool ScroolWidget::hasScroolBeforeBegin() const {
-  return mlay->scroolBeforeBegin;
+bool ScroolWidget::hasScroolBeforeBeginH() const {
+  return mlay->scroolBeforeBeginH;
+  }
+
+void ScroolWidget::scroolAfterEndV(bool s) {
+  mlay->scroolAfterEndV = s;
+  resizeEv( w(), h() );
+  mlay->applyLayout();
+  }
+
+bool ScroolWidget::hasScroolAfterEndV() const {
+  return mlay->scroolAfterEndV;
+  }
+
+void ScroolWidget::scroolBeforeBeginV(bool s) {
+  mlay->scroolBeforeBeginV = s;
+  resizeEv( w(), h() );
+  mlay->applyLayout();
+  }
+
+bool ScroolWidget::hasScroolBeforeBeginV() const {
+  return mlay->scroolBeforeBeginV;
   }
 
 void ScroolWidget::mouseWheelEvent(Tempest::MouseEvent &e) {
@@ -180,12 +217,26 @@ void ScroolWidget::scroolH( int v ) {
 void ScroolWidget::scroolV(int v) {
   sbV.setValue( v );
   cen.setPosition(cen.x(), -v);
-  //mlay->applyLayout();
   }
 
 void ScroolWidget::resizeEv(int,int) {
-  sbH.setRange(0,cen.w());
-  sbV.setRange(0,cen.h());
+  const std::vector<Widget*>& wx = cen.layout().widgets();
+  const Widget* first = wx.size()>0 ? wx[0]     : nullptr;
+  const Widget* last  = wx.size()>0 ? wx.back() : nullptr;
+
+  const int dx = std::max(cen.w()-helper.w(),0);
+  const int dy = std::max(cen.h()-helper.h(),0);
+  sbH.setRange( mlay->scroolBeforeBeginH && first!=nullptr ? first->w()-dx : 0,
+                mlay->scroolAfterEndH && last!=nullptr ? cen.w()-last->w() : dx );
+  sbV.setRange( mlay->scroolBeforeBeginV && first!=nullptr ? first->h()-dy : 0,
+                mlay->scroolAfterEndV && last!=nullptr ? cen.h()-last->h() : dy );
+
+  if(hor==AsNeed)
+    sbH.setVisible(dx>0);
+  if(vert==AsNeed)
+    sbV.setVisible(dy>0);
+
+  cen.layout().applyLayout();
   }
 
 Tempest::Size ScroolWidget::sizeHint(const Tempest::Widget *wid) {
