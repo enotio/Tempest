@@ -61,29 +61,13 @@ Tempest::Widget* ListBox::createDropList() {
   box->setLayout( Tempest::Horizontal );
   box->layout().setMargin(6);
   box->setPosition( mapToRoot( Tempest::Point(0,h()) ) );
-  box->resize(160*ui.uiScale, 200*ui.uiScale);
+  //box->resize(160*ui.uiScale, 200*ui.uiScale);
 
   ScroolWidget *sw = new ScroolWidget();
   ListView* list   = new ListView(delegate,Vertical);
   sw->centralWidget().layout().add(list);
   sw->resize(list->w(), std::min(list->h(),box->h()));
-/*
-  int h = box->layout().margin().yMargin();
-  for( size_t i=0; i<delegate.size(); ++i ){
-    ItemBtn * b = new ItemBtn(i);
-    b->setText( data[i] );
-    b->clickedEx.bind( *this, &ListBox::onItem );
-
-    sw->centralWidget().layout().add( b );
-    h += b->sizePolicy().maxSize.h;
-    }
-
-  h += delegate.size()*sw->centralWidget().layout().spacing();
-  if( h<box->h() ){
-    sw->setScroolBarVisible(0);
-    box->resize( box->w(), h );
-    }
-*/
+  box->resize(160+box->margin().xMargin(), list->h()+box->margin().yMargin());
 
   box->layout().add(sw);
   return box;
@@ -95,7 +79,7 @@ void ListBox::onItem(size_t id) {
 
   onItemSelected(id);
   //onItemSelectedW( data[id] );
-  onItemSelectedW( u"caption" );
+  //onItemSelectedW( u"caption" );
   selected = id;
   close();
   }

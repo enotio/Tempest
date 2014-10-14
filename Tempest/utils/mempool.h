@@ -82,8 +82,7 @@ class MemPool {
         }
 
       void destruct(){
-        T* t = (T*)d;
-        t->~T();
+        ((T*)d)->~T();
         }
       };
 

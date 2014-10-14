@@ -1,6 +1,12 @@
 #ifndef GLTYPES_H
 #define GLTYPES_H
 
+#include <Tempest/Platform>
+
+#ifdef __WINDOWS__
+#include <windows.h>
+#endif
+
 #ifdef __ANDROID__
 #include <EGL/egl.h>
 #include <GLES/gl.h>
@@ -34,7 +40,7 @@ namespace Detail{
     std::vector<char> vba;
     };
 
-  class GLTexture;
+  struct GLTexture;
   struct RenderTg{
     static const int maxMRT = 32;
 
@@ -82,12 +88,12 @@ namespace Detail{
     EGLint     swapEfect;
   #endif
 
-  #ifdef __WIN32
+  #ifdef __WINDOWS__
     HDC   hDC;
     HGLRC hRC;
   #endif
 
-  #if defined(__linux__) && !defined(__ANDROID__)
+  #ifdef __LINUX__
     GLXContext   glc;
     Display*     dpy;
     XID          window;
@@ -118,9 +124,10 @@ namespace Detail{
 
     std::vector<bool> vAttrLoc;
 
-    int vertexSize;
-    char* curVboOffsetIndex, curIboOffsetIndex;
-    bool   isPainting;
+    int   vertexSize;
+    char* curVboOffsetIndex;
+    int   curIboOffsetIndex;
+    bool  isPainting;
 
     Tempest::RenderState renderState;
 

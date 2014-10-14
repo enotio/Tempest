@@ -96,6 +96,10 @@ ScroolWidget::ScroolWidget()
 #endif
   }
 
+ScroolWidget::~ScroolWidget() {
+  helper.onResize.removeBinds();
+  }
+
 Tempest::Widget &ScroolWidget::centralWidget() {
   return cen;
   }

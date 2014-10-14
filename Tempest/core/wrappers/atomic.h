@@ -11,6 +11,7 @@ namespace Detail{
 
 struct Spin {
   Spin();
+  Spin(const Spin&) = delete;
   void lock();
   void unlock();
 

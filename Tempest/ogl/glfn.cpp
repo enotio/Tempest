@@ -1,7 +1,9 @@
 #include "glfn.h"
 
-#ifdef __WIN32
-#include "windows.h"
+#include <Tempest/Platform>
+
+#ifdef __WINDOWS__
+#include <windows.h>
 #endif
 
 namespace Tempest {
@@ -29,7 +31,7 @@ void ( GLAPIENTRY *glFramebufferRenderbuffer) (GLenum target, GLenum attachment,
 GLenum ( GLAPIENTRY *glCheckFramebufferStatus) (GLenum target) = 0;
 void ( GLAPIENTRY *glDrawBuffers)( GLsizei n, const GLenum *bufs) = 0;
 void ( GLAPIENTRY *glGenerateMipmap) (GLenum target) = 0;
-#ifdef __WIN32__
+#ifdef __WINDOWS__
 void ( GLAPIENTRY *glCompressedTexImage2D) (GLenum target, GLint level, GLenum internalformat,
                                        GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid* data) = 0;
 void ( GLAPIENTRY *glActiveTexture) (GLenum texture) = 0;
@@ -75,7 +77,7 @@ using namespace Tempest;
 using namespace Tempest::GLProc;
 
 Detail::GLContext Detail::createContext(void *hdc) {
-#ifdef __WIN32
+#ifdef __WINDOWS__
   return wglCreateContext( (HDC)hdc );
 #endif
 
@@ -87,7 +89,7 @@ Detail::GLContext Detail::createContext(void *hdc) {
   }
 
 static void* getAddr( const char* name ){
-#ifdef __WIN32
+#ifdef __WINDOWS__
   return (void*)wglGetProcAddress(name);
 #endif
 
@@ -95,7 +97,7 @@ static void* getAddr( const char* name ){
   return (void*)eglGetProcAddress( name );
 #endif
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __LINUX__
   return (void*)glXGetProcAddress( (const GLubyte*)name );
 #endif
   return 0;
@@ -134,7 +136,7 @@ bool Detail::initGLProc() {
       get(glDrawBuffers) &
       get(glGenerateMipmap) &
 
-    #ifdef __WIN32__
+    #ifdef __WINDOWS__
       get(glCompressedTexImage2D) &
       get(glActiveTexture) &
       get(glTexImage3D) &

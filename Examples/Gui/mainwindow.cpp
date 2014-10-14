@@ -60,6 +60,7 @@ void MainWindow::setupUi() {
 
   Panel *panel2 = new Panel();
   panel2->setDragable(true);
+  panel2->setMargin(0);
   panel2->setLayout(Vertical);
   panel2->resize(200,200);
   panel2->setLayout(Horizontal);

@@ -18,13 +18,13 @@ else {
   DESTDIR = ../lib
   }
 
-QMAKE_CXXFLAGS += -std=c++11 -Wall
+QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
 
 INCLUDEPATH += \
                "./thirdparty/" \
                "."
 
-win32:LIBS += -l"gdi32"
+win32:LIBS += -l"gdi32" -l"user32"
 
 #DEFINES += D3D_DEBUG_INFO
 
@@ -41,6 +41,11 @@ unix: {
   DEFINES -= TEMPEST_M_TREADS
   CONFIG += ogl
   CONFIG -= directx
+  }
+
+win32 {
+  DEFINES += _CRT_SECURE_NO_WARNINGS
+  DEFINES += NOMINMAX
   }
 
 ogl:{

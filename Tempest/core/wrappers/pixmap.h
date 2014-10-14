@@ -68,10 +68,10 @@ class Pixmap {
 
       template< class T >
       void assign( T it ){
-        r = *it; ++it;
-        g = *it; ++it;
-        b = *it; ++it;
-        a = *it; ++it;
+        r = uint8_t(*it); ++it;
+        g = uint8_t(*it); ++it;
+        b = uint8_t(*it); ++it;
+        a = uint8_t(*it); ++it;
         }
       };
 

@@ -1,18 +1,18 @@
 #include "atomic.h"
 
 #include <Tempest/Application>
+#include <Tempest/Platform>
 
-#ifdef __WIN32
+#ifdef __WINDOWS__
 #include <windows.h>
 #endif
 
 using namespace Tempest;
 
-Detail::Spin::Spin()
+Detail::Spin::Spin() {
 #ifdef TEMPEST_M_TREADS
-  :flag(ATOMIC_FLAG_INIT)
+  flag.clear();
 #endif
-  {
   }
 
 void Detail::Spin::lock() {
@@ -31,7 +31,7 @@ void Detail::Spin::unlock() {
 Detail::atomic_counter Detail::atomicInc( volatile Detail::atomic_counter &src,
                                           Detail::atomic_counter add) {
 #ifdef TEMPEST_M_TREADS
-#ifdef __WIN32
+#ifdef __WINDOWS__
   //return std::atomic_fetch_add(&src, add);
   return InterlockedExchangeAdd( &src, add );
 #else

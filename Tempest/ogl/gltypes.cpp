@@ -72,7 +72,7 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
   hasQCOMTiles      = strstr(ext, "GL_QCOM_tiled_rendering")!=0;
   hasDiscardBuffers = strstr(ext, "GL_EXT_discard_framebuffer")!=0;
 
-#ifdef __WIN32
+#ifdef __WINDOWS__
   if( strstr(ext, "WGL_EXT_swap_control") ){
     wglSwapInterval = (Detail::PFNGLWGLSWAPINTERVALPROC)wglGetProcAddress("wglSwapIntervalEXT");
     }

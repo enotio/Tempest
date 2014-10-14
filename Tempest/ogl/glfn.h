@@ -16,6 +16,9 @@
 #endif
 
 #if defined(__WINDOWS__) || defined(__LINUX__)
+#ifdef __WINDOWS__
+#include <windows.h>
+#endif
 #include <GL/gl.h>
 
 #define GL_HALF_FLOAT 0x140B
@@ -109,7 +112,7 @@ typedef void* GLContext;
   }
 
 namespace GLProc{
-#if defined(__WIN32__) || (defined(__linux__) && !defined(__ANDROID__) )
+#if defined(__WINDOWS__) || (defined(__LINUX__) && !defined(__ANDROID__) )
 extern void ( GLAPIENTRY *glGenFramebuffers)(GLsizei n, const GLuint* framebuffers);
 extern void ( GLAPIENTRY *glDeleteFramebuffers)(GLsizei n, const GLuint* framebuffers);
 
@@ -132,7 +135,7 @@ extern void ( GLAPIENTRY *glFramebufferRenderbuffer) (GLenum target, GLenum atta
 extern GLenum ( GLAPIENTRY *glCheckFramebufferStatus) (GLenum target);
 extern void ( GLAPIENTRY *glGenerateMipmap) (GLenum target);
 extern void ( GLAPIENTRY *glDrawBuffers)( GLsizei n, const GLenum *bufs);
-#ifdef __WIN32__
+#ifdef __WINDOWS__
 extern void ( GLAPIENTRY *glCompressedTexImage2D) (GLenum target, GLint level, GLenum internalformat,
                                        GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid* data);
 extern void ( GLAPIENTRY *glActiveTexture) (GLenum texture);

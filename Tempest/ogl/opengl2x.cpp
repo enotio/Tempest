@@ -1,6 +1,8 @@
 #include "opengl2x.h"
 
-#ifdef __linux__
+#include <Tempest/Platform>
+
+#ifdef __LINUX__
 #include "system/linuxapi.h"
 #endif
 
@@ -31,6 +33,7 @@ using namespace Tempest::GLProc;
 
 #include <squish.h>
 #include <cstring>
+#include <algorithm>
 
 #include "gltypes.h"
 
@@ -102,7 +105,7 @@ bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
                               void *hwnd, const Options & ) const {
   (void)hwnd;
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
   GLuint PixelFormat;
 
   PIXELFORMATDESCRIPTOR pfd;
@@ -139,7 +142,7 @@ bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
   return 1;
 #endif
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __LINUX__
   dev->dpy        = (Display*)LinuxAPI::display();
   Display *dpy    = dev->dpy;//FIXME
   GLint att[]     = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
@@ -163,7 +166,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   if( !createContext(dev, hwnd, opt) )
     return 0;
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __LINUX__
   dev->window = *((::Window*)hwnd);
 #endif
 
@@ -193,12 +196,12 @@ void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
   if( !setDevice(d) ) return;
   dev->free(dev->dynVbo);
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
   wglMakeCurrent( NULL, NULL );
   wglDeleteContext( dev->hRC );
 #endif
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __LINUX__
   glXDestroyContext( dev->dpy, dev->glc );
   glXMakeCurrent( dev->dpy, None, NULL);
 #endif
@@ -757,10 +760,10 @@ bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
 #ifdef  __ANDROID__
   return AndroidAPI::startRender(0);
 #endif
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __LINUX__
   glXMakeCurrent( dev->dpy, dev->window, dev->glc);
 #endif
-#ifdef __WIN32
+#ifdef __WINDOWS__
   wglMakeCurrent( dev->hDC, dev->hRC );
 #endif
   //glViewport(0,0, dev->scrW, dev->scrH);
@@ -769,12 +772,12 @@ bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
 
 bool Opengl2x::present(AbstractAPI::Device *d, SwapBehavior b) const {
   ImplDevice* dev = (ImplDevice*)d;
-#ifdef __WIN32__
+#ifdef __WINDOWS__
   (void)b;
   SwapBuffers( dev->hDC );
 #endif
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __LINUX__
   glXSwapBuffers( dev->dpy, dev->window );
 #endif
 
@@ -797,7 +800,7 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
                       const Options &opt ) const {
   if( !setDevice(d) ) return 0;
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __LINUX__
   ::Window* w = (::Window*)hwnd;
 
   ::Window root;
@@ -815,7 +818,7 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   glViewport(0,0, dev->scrW, dev->scrH);
 #endif
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
   RECT rectWindow;
   GetClientRect( HWND(hwnd), &rectWindow);
 
@@ -1836,7 +1839,7 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
 #else
   if( r.alphaTestMode()!=Tempest::RenderState::AlphaTestMode::Always ){
     glEnable( GL_ALPHA_TEST );
-    glAlphaFunc( cmp[ r.alphaTestMode() ], r.alphaTestRef() );
+    glAlphaFunc( cmp[ r.alphaTestMode() ], GLclampf(r.alphaTestRef()) );
     } else {
     glDisable( GL_ALPHA_TEST );
     }

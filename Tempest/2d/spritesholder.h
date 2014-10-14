@@ -15,6 +15,7 @@ class SpritesHolder {
     struct Page;
   public:
     SpritesHolder( Tempest::TextureHolder & h );
+    virtual ~SpritesHolder();
 
     virtual Sprite load( const char* f );
     virtual Sprite load( const std::string& f );

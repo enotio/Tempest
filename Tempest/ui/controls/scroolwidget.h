@@ -9,6 +9,7 @@ namespace Tempest {
 class ScroolWidget : public Tempest::Widget {
   public:
     ScroolWidget();
+    ~ScroolWidget();
 
     enum ScroolViewMode{
       AlwaysOn,

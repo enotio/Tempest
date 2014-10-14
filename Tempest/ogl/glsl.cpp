@@ -1,5 +1,10 @@
 #include "glsl.h"
 
+#include <Tempest/Platform>
+
+#ifdef __WINDOWS__
+#include <windows.h>
+#endif
 #ifdef __ANDROID__
 #include <EGL/egl.h>
 #include <GLES/gl.h>

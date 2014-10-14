@@ -21,7 +21,7 @@ namespace Tempest{
 #endif   
 #elif defined(_MSC_VER)
     __debugbreak();
-#elif defined(__WIN32)
+#elif defined(__WINDOWS__)
     __asm__("int $3");
 #endif
     (void)file;

@@ -7,7 +7,7 @@
 namespace Tempest{
 
 namespace Detail{
-  class ImplDeviceBase;
+  struct ImplDeviceBase;
   }
 
 class Opengl2x : public OpenGLBase {

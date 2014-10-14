@@ -17,6 +17,9 @@ SpritesHolder::SpritesHolder(Tempest::TextureHolder &h):holder(h) {
   addPage();
   }
 
+SpritesHolder::~SpritesHolder() {
+  }
+
 Sprite SpritesHolder::load(const char *f) {
   return load( Pixmap(f) );
   }

@@ -1,26 +1,31 @@
 #include "opengl4x.h"
 
+#include <Tempest/Platform>
+
+#ifdef __WINDOWS__
+#include <windows.h>
+#endif
+
 #ifndef __ANDROID__
 #include <GL/gl.h>
 #include "ogl/glcorearb.h"
-
-#ifdef __WIN32
-#include <windows.h>
+#ifdef __WINDOWS__
 #include "glfn.h"
 #endif
+
 #include "gltypes.h"
 
 #include <Tempest/Log>
 
 using namespace Tempest;
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
   typedef HGLRC (GLAPIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)
       (HDC hDC, HGLRC hshareContext,const int *attribList);
 #endif
 
 static void* getAddr( const char* name ){
-#ifdef __WIN32
+#ifdef __WINDOWS__
   return (void*)wglGetProcAddress(name);
 #endif
 
@@ -28,7 +33,7 @@ static void* getAddr( const char* name ){
   return (void*)eglGetProcAddress( name );
 #endif
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __LINUX__
   return (void*)glXGetProcAddress( (const GLubyte*)name );
 #endif
   return 0;
@@ -65,7 +70,7 @@ AbstractAPI::Device *Opengl4x::createDevice( void *hwnd,
   if( !createContext(dev, hwnd, opt) )
     return 0;
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __LINUX__
   dev->window = *((::Window*)hwnd);
 #endif
 
@@ -102,7 +107,7 @@ bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
                               const AbstractAPI::Options & ) const {
   (void)hwnd;
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
   int attribs[] =
   {
     WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
@@ -134,8 +139,7 @@ bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
   wglMakeCurrent( hDC, hRC );
 
   PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = 0;
-  wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
-                               wglGetProcAddress("wglCreateContextAttribsARB");
+  wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
 
   dev->hDC = hDC;
   dev->hRC = hRC;
@@ -173,7 +177,7 @@ bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
   return 1;
 #endif
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __LINUX__
   dev->dpy = (Display*)LinuxAPI::display();
   Display *dpy = dev->dpy;//FIXME
   GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
