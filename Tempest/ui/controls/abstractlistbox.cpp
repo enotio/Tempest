@@ -71,26 +71,6 @@ void AbstractListBox::mouseUpEvent(Tempest::MouseEvent &e) {
   needToShow = true;
   }
 
-Tempest::Widget* AbstractListBox::createDropList() {
-  Panel *box = new Panel();
-
-  const UiMetrics& ui=Application::uiMetrics();
-
-  box->setLayout( Tempest::Horizontal );
-  box->layout().setMargin(6);
-  box->setPosition( mapToRoot(Tempest::Point(0,h())) );
-  box->resize(170*ui.uiScale, 200*ui.uiScale);
-
-  ScroolWidget *sw = new ScroolWidget();
-  for( int i=0; i<10; ++i ){
-    Button * b = new AbstractListBox();
-    sw->centralWidget().layout().add( b );
-    }
-
-  box->layout().add(sw);
-  return box;
-  }
-
 AbstractListBox::Overlay::~Overlay() {
   owner->overlay = 0;
   }

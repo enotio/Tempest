@@ -35,7 +35,7 @@ static inline void align(void*& ptr){
   }
 
 template< class T >
-static inline void align(size_t& ptr){
+static inline void align(size_t& /*ptr*/){
   //ptr = ((ptr+alignof(T)-1)/alignof(T))*alignof(T);
   }
 

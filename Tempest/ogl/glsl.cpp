@@ -560,7 +560,7 @@ void GLSL::enable() const {
 void GLSL::disable() const {
   }
 
-void GLSL::setUniforms( unsigned int prog,
+void GLSL::setUniforms( unsigned int /*prog*/,
                         const UBO &ux,
                         int& slot ) const {
   const char*  name      = ux.names.data();

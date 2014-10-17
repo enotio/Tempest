@@ -15,6 +15,7 @@ class ListView : public Widget {
 
     void setOrientation(Tempest::Orientation ori);
 
+    Tempest::signal<size_t> onItemSelected;
   private:
     Tempest::Orientation orientation;
 

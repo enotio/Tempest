@@ -723,6 +723,7 @@ bool DirectX11::startRender( AbstractAPI::Device *, bool /*isLost*/ ) const{
 
 bool DirectX11::present( AbstractAPI::Device *d, SwapBehavior /*b*/ ) const{
   Device* dev = (Device*)d;
+  HRESULT err=S_OK;
 #ifdef __WINDOWS_PHONE__
   dev->swapChain->Present(1,0);
 #else
@@ -1164,7 +1165,9 @@ void DirectX11::unlockBuffer(AbstractAPI::Device *d, AbstractAPI::IndexBuffer *b
 
 AbstractShadingLang *DirectX11::createShadingLang(AbstractAPI::Device *d) const {
   Device* dev = (Device*)d;
-  return new HLSL11( (DirectX11Device*)dev->device, dev->immediateContext );
+  return new HLSL11( (DirectX11Device*)dev->device,
+                     dev->immediateContext,
+                     dev->featureLevel );
   }
 
 void DirectX11::deleteShadingLang(const AbstractShadingLang *l) const {

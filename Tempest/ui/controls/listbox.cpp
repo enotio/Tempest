@@ -24,8 +24,9 @@ class ListBox::ItemBtn:public Button{
   };
 
 ListBox::ListBox(ListDelegate &delegate)
-  : AbstractListBox(), delegate(delegate) {
+  : AbstractListBox(), delegate(delegate), view(0) {
   selected = 0;
+  //setupView(size_t(-1));
   }
 
 void ListBox::setCurrentItem(size_t i) {
@@ -53,10 +54,23 @@ void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
     }
   }
 
+void ListBox::setupView(size_t oldSelected) {
+  if(view){
+    layout().take(view);
+    delegate.removeView(view,oldSelected);
+    view = 0;
+    }
+
+  if(delegate.size()){
+    view = delegate.createView(selected);
+    layout().add(view);
+    }
+  }
+
 Tempest::Widget* ListBox::createDropList() {
   Panel *box = new Panel();
 
-  const UiMetrics& ui = Application::uiMetrics();
+  //const UiMetrics& ui = Application::uiMetrics();
 
   box->setLayout( Tempest::Horizontal );
   box->layout().setMargin(6);
@@ -66,20 +80,21 @@ Tempest::Widget* ListBox::createDropList() {
   ScroolWidget *sw = new ScroolWidget();
   ListView* list   = new ListView(delegate,Vertical);
   sw->centralWidget().layout().add(list);
-  sw->resize(list->w(), std::min(list->h(),box->h()));
-  box->resize(160+box->margin().xMargin(), list->h()+box->margin().yMargin());
-
+  //sw->resize(list->w(), std::min(list->h(),box->h()));
+  int wx = std::max(w(), list->minSize().w+box->margin().xMargin());
+  box->resize(wx, list->h()+box->margin().yMargin());
   box->layout().add(sw);
+
+  delegate.onItemSelected.bind(this, &ListBox::onItem);
+
   return box;
   }
 
 void ListBox::onItem(size_t id) {
-  //setText( data[id] );
-  setText( "caption" );
-
+  size_t old = selected;
   onItemSelected(id);
-  //onItemSelectedW( data[id] );
-  //onItemSelectedW( u"caption" );
   selected = id;
+  if(old!=selected)
+    setupView(old);
   close();
   }

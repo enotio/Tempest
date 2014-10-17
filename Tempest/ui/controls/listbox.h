@@ -15,18 +15,20 @@ class ListBox : public AbstractListBox {
     ListBox(ListDelegate& delegate);
 
     Tempest::signal<size_t> onItemSelected;
-    Tempest::signal<const std::u16string&> onItemSelectedW;
 
     void setCurrentItem( size_t i );
 
   protected:
     void mouseWheelEvent(Tempest::MouseEvent &e);
+    using AbstractListBox::layout;
 
+    void setupView(size_t oldSelected);
   private:
     size_t selected;
     ListDelegate& delegate;
 
     Tempest::Widget *createDropList();
+    Tempest::Widget *view;
 
     class ItemBtn;
 

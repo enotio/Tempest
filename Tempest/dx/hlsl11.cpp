@@ -59,6 +59,7 @@ struct SmpCmp{
 struct HLSL11::Data{
   ID3D11Device*        dev;
   ID3D11DeviceContext* immediateContext;
+  D3D_FEATURE_LEVEL    featureLevel = D3D_FEATURE_LEVEL_11_0;
 
   ID3D11InputLayout* dxDecl = 0;
   void IASetInputLayout(ID3D11InputLayout* d){
@@ -333,7 +334,8 @@ struct HLSL11::Data{
     if(curSamplers.size()<=size_t(i))
       curSamplers.resize(i+1);
     if(curSamplers[i]!=st){
-      immediateContext->VSSetSamplers( i, 1, &st );
+      if(featureLevel>=D3D_FEATURE_LEVEL_10_0)
+        immediateContext->VSSetSamplers( i, 1, &st );
       immediateContext->PSSetSamplers( i, 1, &st );
       curSamplers[i] = st;
       }
@@ -347,12 +349,13 @@ struct HLSL11::Data{
     }
   };
 
-HLSL11::HLSL11(AbstractAPI::DirectX11Device *dev , void *context) {
+HLSL11::HLSL11(AbstractAPI::DirectX11Device *dev , void *context, unsigned featureLevel) {
   data = new Data();
   data->curSamplers.reserve(128);
   data->curTextures.reserve(128);
   data->dev = (ID3D11Device*)dev;
   data->immediateContext = (ID3D11DeviceContext*)context;
+  data->featureLevel = D3D_FEATURE_LEVEL(featureLevel);
   }
 
 HLSL11::~HLSL11() {
@@ -500,12 +503,14 @@ void Tempest::HLSL11::setUniforms( const AbstractShadingLang::UBO &ux,
         if( t ){
           if(data->curTextures[slot]!=t->view){
             data->curTextures[slot]=t->view;
-            data->immediateContext->VSSetShaderResources(slot,1,&t->view);
+            if(data->featureLevel>=D3D_FEATURE_LEVEL_10_0)
+              data->immediateContext->VSSetShaderResources(slot,1,&t->view);
             data->immediateContext->PSSetShaderResources(slot,1,&t->view);
             }
           data->setSampler(slot,*smp2d);
           } else {
-          data->immediateContext->VSSetShaderResources(slot,0,0);
+          if(data->featureLevel>=D3D_FEATURE_LEVEL_10_0)
+            data->immediateContext->VSSetShaderResources(slot,0,0);
           data->immediateContext->PSSetShaderResources(slot,0,0);
           }
         }

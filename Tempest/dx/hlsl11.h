@@ -8,7 +8,9 @@ namespace Tempest {
 
 class HLSL11 : public AbstractShadingLang {
   public:
-    HLSL11( AbstractAPI::DirectX11Device *dev, void* context );
+    HLSL11( AbstractAPI::DirectX11Device *dev,
+            void* context,
+            unsigned featureLevel );
     ~HLSL11();
 
     void enable() const;

@@ -21,6 +21,7 @@ class ListDelegate {
     virtual void    removeView(Widget* w, size_t position) = 0;
 
     Tempest::signal<> invalidateView, updateView;
+    Tempest::signal<size_t> onItemSelected;
   };
 
 template< class T >
@@ -33,7 +34,8 @@ class ArrayListDelegate : public ListDelegate {
       }
 
     virtual Widget* createView(size_t position){
-      Button* b = new Button();
+      ListItem* b = new ListItem(position);
+      b->clicked.bind(onItemSelected);
 
       SizePolicy p = b->sizePolicy();
       p.typeH      = Preferred;
@@ -47,6 +49,19 @@ class ArrayListDelegate : public ListDelegate {
     void removeView(Widget* w, size_t /*position*/){
       delete w;
       }
+
+  protected:
+    struct ListItem: Button{
+      ListItem(size_t id):id(id){}
+
+      const size_t id;
+      Tempest::signal<size_t> clicked;
+
+      void emitClick(){
+        Button::emitClick();
+        clicked(id);
+        }
+      };
 
   private:
     const std::vector<T>& data;

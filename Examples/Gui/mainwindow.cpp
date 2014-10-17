@@ -22,10 +22,20 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     iboHolder(device),
     shHolder (device),
     spHolder (texHolder),
-    uiRender (shHolder) {
-  texture = texHolder.load("data/texture.png");
+    uiRender (shHolder),
+    listBoxDelegate(listBoxItems),
+    listViewDelegate(listViewItems) {
   Application::showHint.bind(*this,&MainWindow::setHint);
   Application::setMainFont(Font("data/arial",16));
+
+  texture = texHolder.load("data/texture.png");
+
+  for(int i=0; i<5; ++i )
+    listBoxItems.emplace_back("item "+std::to_string(i));
+
+  for(int i=0; i<16; ++i )
+    listViewItems.push_back(1.0/(i+1.0));
+
   setupUi();
   }
 
@@ -44,31 +54,13 @@ void MainWindow::setupUi() {
   edit->setHint("some edit");
   panel->layout().add(edit);
 
-  static const std::vector<std::string> items = {"1","2"};
-  static ArrayListDelegate<std::string> ldelegate(items);
-  ListBox* listBox = new ListBox(ldelegate);
-  listBox->setText("list box");
+  ListBox* listBox = new ListBox(listBoxDelegate);
   panel->layout().add(listBox);
 
-  static std::vector<int> data = {1, 2, 3, 4, 5, 6, 7};
-  static ArrayListDelegate<int> delegate(data);
-
-  ListView* list = new ListView(delegate);
+  ListView* list = new ListView(listViewDelegate);
   panel->layout().add(list);
 
   layout().add(panel);
-
-  Panel *panel2 = new Panel();
-  panel2->setDragable(true);
-  panel2->setMargin(0);
-  panel2->setLayout(Vertical);
-  panel2->resize(200,200);
-  panel2->setLayout(Horizontal);
-  ScroolWidget *sc=new ScroolWidget();
-  for(int i=0; i<15; ++i)
-    sc->centralWidget().layout().add(new Button());
-  panel2->layout().add(sc);
-  layout().add(panel2);
   }
 
 void MainWindow::paintEvent(PaintEvent &e) {

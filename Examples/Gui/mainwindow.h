@@ -17,6 +17,8 @@
 #include <Tempest/SurfaceRender>
 #include <Tempest/SpritesHolder>
 
+#include <Tempest/ListDelegate>
+
 class MainWindow:public Tempest::Window {
   public:
     MainWindow( Tempest::AbstractAPI& api );
@@ -42,6 +44,13 @@ class MainWindow:public Tempest::Window {
 
     void setHint(const std::u16string& hint, const Tempest::Rect& r);
     std::u16string hint;
+
+    // list items
+    std::vector<std::string>                listBoxItems;
+    Tempest::ArrayListDelegate<std::string> listBoxDelegate;
+
+    std::vector<double>                listViewItems;
+    Tempest::ArrayListDelegate<double> listViewDelegate;
   };
 
 #endif // MAINWINDOW_H

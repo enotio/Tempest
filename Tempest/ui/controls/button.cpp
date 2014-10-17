@@ -151,6 +151,7 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
   p.drawText(0, 0, w()-1, h()-1, txt,
              Tempest::AlignHCenter|Tempest::AlignVCenter );
 
+  paintNested(e);
   finishPaint();
   }
 
