@@ -26,7 +26,8 @@ class ListBox::ItemBtn:public Button{
 ListBox::ListBox(ListDelegate &delegate)
   : AbstractListBox(), delegate(delegate), view(0) {
   selected = 0;
-  //setupView(size_t(-1));
+  setupView(size_t(-1));
+  delegate.onItemSelected.bind(this, &ListBox::onItem);
   }
 
 void ListBox::setCurrentItem(size_t i) {
@@ -85,16 +86,17 @@ Tempest::Widget* ListBox::createDropList() {
   box->resize(wx, list->h()+box->margin().yMargin());
   box->layout().add(sw);
 
-  delegate.onItemSelected.bind(this, &ListBox::onItem);
-
   return box;
   }
 
 void ListBox::onItem(size_t id) {
-  size_t old = selected;
-  onItemSelected(id);
-  selected = id;
-  if(old!=selected)
+  if(dropListLayer()!=nullptr){
+    size_t old = selected;
+    onItemSelected(id);
+    selected = id;
     setupView(old);
-  close();
+    close();
+    } else {
+    showList();
+    }
   }

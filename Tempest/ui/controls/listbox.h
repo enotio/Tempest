@@ -23,6 +23,7 @@ class ListBox : public AbstractListBox {
     using AbstractListBox::layout;
 
     void setupView(size_t oldSelected);
+
   private:
     size_t selected;
     ListDelegate& delegate;

@@ -8,12 +8,13 @@
 
 using namespace Tempest;
 
-AbstractListBox::AbstractListBox() : Button() {
-  clicked.bind( *this, &AbstractListBox::showList );
+AbstractListBox::AbstractListBox() {
   overlay    = 0;
   needToShow = 1;
 
   lastRM = Tempest::Application::tickCount();
+  setMargin(0);
+  setLayout(new WrapLayout());
   }
 
 AbstractListBox::~AbstractListBox() {
@@ -61,14 +62,8 @@ void AbstractListBox::close() {
     }
   }
 
-void AbstractListBox::mouseDownEvent(Tempest::MouseEvent &e) {
-  needToShow = Tempest::Application::tickCount()!=lastRM;
-  Button::mouseDownEvent(e);
-  }
-
-void AbstractListBox::mouseUpEvent(Tempest::MouseEvent &e) {
-  Button::mouseUpEvent(e);
-  needToShow = true;
+AbstractListBox::Overlay *AbstractListBox::dropListLayer() {
+  return overlay;
   }
 
 AbstractListBox::Overlay::~Overlay() {
@@ -79,4 +74,14 @@ void AbstractListBox::Overlay::mouseDownEvent(MouseEvent &e) {
   deleteLater();
   e.ignore();
   owner->lastRM = Tempest::Application::tickCount();
+  }
+
+void AbstractListBox::WrapLayout::applyLayout() {
+  if(widgets().size()){
+    Widget*  w = widgets()[0];
+    Widget* ow = owner();
+    const Margin m = owner()->margin();
+    ow->setMinimumSize(w->minSize().w+m.xMargin(), w->minSize().h+m.yMargin());
+    ow->setMaximumSize(w->maxSize().w+m.xMargin(), w->maxSize().h+m.yMargin());
+    }
   }

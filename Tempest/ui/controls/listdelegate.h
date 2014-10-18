@@ -47,7 +47,7 @@ class ArrayListDelegate : public ListDelegate {
       }
 
     void removeView(Widget* w, size_t /*position*/){
-      delete w;
+      w->deleteLater();
       }
 
   protected:

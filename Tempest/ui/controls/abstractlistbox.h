@@ -1,22 +1,18 @@
 #ifndef ABSTRACTLISTBOX_H
 #define ABSTRACTLISTBOX_H
 
-#include <Tempest/Button>
+#include <Tempest/Layout>
 #include <Tempest/Window>
 
 namespace Tempest{
 
-class AbstractListBox : public Button {
+class AbstractListBox : public Widget {
   public:
     AbstractListBox();
     ~AbstractListBox();
 
-  private:
-    void showList();
-
   protected:
-    void mouseDownEvent(Tempest::MouseEvent &e);
-    void mouseUpEvent(Tempest::MouseEvent &e);
+    void showList();
 
     bool needToShow;
     uint64_t lastRM;
@@ -27,10 +23,17 @@ class AbstractListBox : public Button {
 
       AbstractListBox* owner;
       };
-    Overlay * overlay;
 
     virtual Tempest::Widget *createDropList() = 0;
     void close();
+
+    Overlay * dropListLayer();
+
+    struct WrapLayout: Layout{
+      void applyLayout();
+      };
+  private:
+    Overlay * overlay;
   };
 
 }
