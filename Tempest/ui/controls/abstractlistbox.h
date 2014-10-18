@@ -14,9 +14,6 @@ class AbstractListBox : public Widget {
   protected:
     void showList();
 
-    bool needToShow;
-    uint64_t lastRM;
-
     struct Overlay:Tempest::WindowOverlay {
       ~Overlay();
       void mouseDownEvent( Tempest::MouseEvent& e );

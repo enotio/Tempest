@@ -9,10 +9,7 @@
 using namespace Tempest;
 
 AbstractListBox::AbstractListBox() {
-  overlay    = 0;
-  needToShow = 1;
-
-  lastRM = Tempest::Application::tickCount();
+  overlay = 0;
   setMargin(0);
   setLayout(new WrapLayout());
   }
@@ -22,9 +19,6 @@ AbstractListBox::~AbstractListBox() {
   }
 
 void AbstractListBox::showList() {
-  if( !needToShow )
-    return;
-
   if( overlay )
     close();
 
@@ -72,8 +66,12 @@ AbstractListBox::Overlay::~Overlay() {
 
 void AbstractListBox::Overlay::mouseDownEvent(MouseEvent &e) {
   deleteLater();
-  e.ignore();
-  owner->lastRM = Tempest::Application::tickCount();
+  const Point pt0 = mapToRoot(e.pos());
+  const Point pt1 = owner->mapToRoot(Point());
+  const Point pt = pt0-pt1;
+  if(!(pt.x>=0 && pt.y>=0 && pt.x<owner->w() && pt.y<owner->h()))
+    e.ignore(); else
+    e.accept();
   }
 
 void AbstractListBox::WrapLayout::applyLayout() {
