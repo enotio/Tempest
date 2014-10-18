@@ -11,6 +11,8 @@
 
 #ifdef __WINDOWS_PHONE__
 #define main Tempest_main
+#elif defined(_MSC_VER)
+#pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
 #endif
 
 namespace Tempest{

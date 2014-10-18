@@ -3,7 +3,8 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 INCLUDEPATH += ../../Tempest/include
-LIBS += -L../../lib/ -lTempest
+LIBS        += -L../../lib/ -lTempest
+LIBS        += -l"gdi32" -l"user32" -l"opengl32"
 
 DESTDIR = ../bin
 

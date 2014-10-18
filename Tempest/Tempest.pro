@@ -4,8 +4,13 @@ CONFIG -= qt
 
 CONFIG += ogl directx
 
-TEMPLATE = lib
-CONFIG   += dll
+mcvs_static: {
+  TEMPLATE = lib
+  CONFIG   += staticlib
+  } else {
+  TEMPLATE = lib
+  CONFIG   += dll
+  }
 
 DEFINES += TEMPEST_M_TREADS
 
@@ -13,12 +18,12 @@ INCLUDEPATH += "./include"
 
 android:{
   DESTDIR = ../lib/$$ANDROID_TARGET_ARCH
-  }
-else {
+  } else {
   DESTDIR = ../lib
   }
 
-QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
+g++:QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
+QMAKE_LFLAGS += /IMPLIB:Tempest.lib
 
 INCLUDEPATH += \
                "./thirdparty/" \

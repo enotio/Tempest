@@ -55,8 +55,13 @@ class MainWindow : public Tempest::Window {
 
     Tempest::UniformDeclaration udecl;
     struct UBO{
+      UBO(){
+        lightDir[0] = 0;
+        lightDir[1] = 0;
+        lightDir[2] = -1;
+        }
       Tempest::Matrix4x4 modelView,mvpMatrix;
-      float lightDir[3] = {0,0,-1};
+      float lightDir[3];
       Tempest::Texture2d texture, bump, heightMap;
       } ubo;
     Tempest::Matrix4x4 mProj;
