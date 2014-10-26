@@ -6,7 +6,7 @@
 #include <android/log.h>
 #endif
 
-#ifdef __WINDOWS_PHONE__
+#if defined(__WINDOWS_PHONE__) || defined(_MSC_VER)
 #include <windows.h>
 #endif
 
@@ -33,14 +33,19 @@ void Log::flush() {
   if( m==Debug )
      __android_log_print(ANDROID_LOG_DEBUG, "", "%s", st.str().c_str());
 #elif defined(__WINDOWS_PHONE__)
-#ifdef _DEBUG
+#if !defined(_DEBUG)
   OutputDebugStringA(st.str().c_str());
   OutputDebugStringA("\r\n");
 #endif
+#else
+#if defined(_MSC_VER) && !defined(_DEBUG)
+  OutputDebugStringA(st.str().c_str());
+  OutputDebugStringA("\r\n");
 #else
   if( m==Error )
     std::cerr << st.str() << std::endl;
     else
     std::cout << st.str() << std::endl;
+#endif
 #endif
   }

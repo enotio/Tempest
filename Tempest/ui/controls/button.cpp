@@ -177,7 +177,7 @@ void Button::drawBack(Tempest::Painter &p){
 
 void Button::drawBack(Tempest::Painter &p, const Tempest::Rect& r ){
   auto c = p.color();
-  p.setColor(Color(0.8,0.8,0.85,0.75));
+  p.setColor(Color(0.8f,0.8f,0.85f,0.75f));
   p.drawRect(r);
   p.setColor(c);
   }

@@ -12,6 +12,7 @@ mcvs_static: {
   CONFIG   += dll
   }
 
+DEFINES += TEMPEST_LIBRARY_BUILD
 DEFINES += TEMPEST_M_TREADS
 
 INCLUDEPATH += "./include"

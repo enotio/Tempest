@@ -106,7 +106,7 @@ static void* getAddr( const char* name ){
 template< class T >
 static bool getP( T& t, const char* name ){
   t = (T)getAddr(name);
-  return t;
+  return t!=nullptr;
   }
 
 #define get(X) getP(X, #X)

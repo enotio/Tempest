@@ -10,6 +10,7 @@ ListView::ListView(Tempest::ListDelegate &delegate, Orientation ori)
     setSizePolicy(Preferred,FixedMin);
 
   setLayout(new Layout(delegate,ori));
+  delegate.onItemSelected.bind(onItemSelected);
   }
 
 void ListView::setOrientation(Orientation ori) {

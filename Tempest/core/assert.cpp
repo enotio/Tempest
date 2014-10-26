@@ -10,6 +10,10 @@
 #endif
 #include <Tempest/Platform>
 
+#ifdef __WINDOWS__
+#include <windows.h>
+#endif
+
 namespace Tempest{
   static void h_default( const char *file, int line,
                          const char *func,
@@ -62,19 +66,24 @@ void Tempest::Detail::te_assert_impl( bool a,
   if(a)
     return;
 
-  std::stringstream ss;
-  ss << "ASSERT failure: \"" << X <<"\"";
+  std::stringstream st;
+  st << "ASSERT failure: \"" << X <<"\"";
 
   if( msg )
-    ss << ",\t\"" << msg <<"\"\t";
+    st << ",\t\"" << msg <<"\"\t";
 
-  ss << "[file " << file <<", line " << line <<", func: '" << func <<"']";
+  st << "[file " << file <<", line " << line <<", func: '" << func <<"']";
 
 #ifdef __ANDROID__
-  __android_log_print( ANDROID_LOG_ERROR, "Tempest", "%s", ss.str().c_str() );
-  Tempest::AndroidAPI::toast( ss.str() );
+  __android_log_print( ANDROID_LOG_ERROR, "Tempest", "%s", st.str().c_str() );
+  Tempest::AndroidAPI::toast( st.str() );
 #else
-  std::cerr << ss.str() << std::endl;
+#if defined(_MSC_VER) && !defined(_NDEBUG)
+  OutputDebugStringA(st.str().c_str());
+  OutputDebugStringA("\r\n");
+#else
+  std::cerr << st.str() << std::endl;
+#endif
 #endif
 
   h_assert(file, line, func, X, msg);
@@ -89,19 +98,24 @@ void Tempest::Detail::te_warning_impl( bool a,
   if(a)
     return;
 
-  std::stringstream ss;
-  ss << "ASSERT failure: \"" << X <<"\"";
+  std::stringstream st;
+  st << "WARNING : \"" << X <<"\"";
 
   if( msg )
-    ss << ",\t\"" << msg <<"\"\t";
+    st << ",\t\"" << msg <<"\"\t";
 
-  ss << "[file " << file <<", line " << line <<", func: '" << func <<"']";
+  st << "[file " << file <<", line " << line <<", func: '" << func <<"']";
 
 #ifdef __ANDROID__
-  __android_log_print( ANDROID_LOG_WARN, "Tempest", "%s", ss.str().c_str() );
-  Tempest::AndroidAPI::toast( ss.str() ); 
+  __android_log_print( ANDROID_LOG_WARN, "Tempest", "%s", st.str().c_str() );
+  Tempest::AndroidAPI::toast( st.str() );
 #else
-  std::cerr << ss.str() << std::endl;
+#if defined(_MSC_VER) && !defined(_NDEBUG)
+  OutputDebugStringA(st.str().c_str());
+  OutputDebugStringA("\r\n");
+#else
+  std::cerr << st.str() << std::endl;
+#endif
 #endif
 
   h_assert_warn(file, line, func, X, msg);

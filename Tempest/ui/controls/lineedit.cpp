@@ -24,7 +24,7 @@ LineEdit::LineEdit(): anim(0), ctrlPressed(0) {
 
   const UiMetrics& uiMetrics = Application::uiMetrics();
   font = Application::mainFont();
-  font.setSize( uiMetrics.normalTextSize*uiMetrics.uiScale );
+  font.setSize( int(uiMetrics.normalTextSize*uiMetrics.uiScale) );
 
   SizePolicy p = sizePolicy();
   p.maxSize.h = font.size() + font.size()/2;

@@ -46,7 +46,7 @@ static LARGE_INTEGER getFILETIMEoffset() {
   return (t);
   }
 
-static int clock_gettime( int X, struct timespec *tv ) {
+static int clock_gettime( int /*X*/, struct timespec *tv ) {
   LARGE_INTEGER       t;
   FILETIME            f;
   double                  microseconds;

@@ -17,7 +17,7 @@ ScroolBar::ScroolBar() {
   Tempest::SizePolicy p;
   p.typeH   = Tempest::FixedMax;
   p.typeV   = Tempest::FixedMax;
-  p.maxSize = Tempest::Size(metric.scroolButtonSize*metric.uiScale);
+  p.maxSize = Tempest::Size(int(metric.scroolButtonSize*metric.uiScale));
 
   MoveBtn *b[2] = { new MoveBtn(this,false), new MoveBtn(this,true) };
   btn[0] = b[0];
@@ -56,14 +56,14 @@ void ScroolBar::setOrientation( Tempest::Orientation ori ) {
 
   Tempest::SizePolicy p;
   if( ori==Tempest::Vertical ){
-    p.maxSize.w = metric.scroolButtonSize*metric.uiScale;
+    p.maxSize.w = int(metric.scroolButtonSize*metric.uiScale);
     p.typeH     = Tempest::FixedMax;
     } else {
-    p.maxSize.h = metric.scroolButtonSize*metric.uiScale;
+    p.maxSize.h = int(metric.scroolButtonSize*metric.uiScale);
     p.typeV     = Tempest::FixedMax;
     }
 
-  p.minSize = Tempest::Size(metric.scroolButtonSize*metric.uiScale);
+  p.minSize = Tempest::Size(int(metric.scroolButtonSize*metric.uiScale));
   setSizePolicy(p);
 
   btn[0]->icon = buttonIcon(true);
@@ -82,8 +82,8 @@ void ScroolBar::setRange(int min, int max) {
   rmax = max;
   int nmvalue = std::max( rmin, std::min(mvalue, rmax) );
 
-  msmallStep = std::max<int>(1, std::min<int64_t>( 10, range()/100 ));
-  mlargeStep = std::max<int>(1, std::min<int64_t>( 20, range()/10 ));
+  msmallStep = std::max<int>(1, int(std::min<int64_t>( 10, range()/100 )));
+  mlargeStep = std::max<int>(1, int(std::min<int64_t>( 20, range()/10 )));
 
   setValue( nmvalue );
   }
@@ -132,7 +132,7 @@ void ScroolBar::setLargeStep(int step) {
 
 void ScroolBar::setCentralButtonSize(int sz) {
   const UiMetrics& metric = Application::uiMetrics();
-  cenBtnSize = std::max<int>(metric.scroolButtonSize*metric.uiScale, sz);
+  cenBtnSize = std::max<int>(int(metric.scroolButtonSize*metric.uiScale), sz);
   alignCenBtn(0,0);
   }
 
@@ -176,8 +176,8 @@ void ScroolBar::updateValueFromView(int, unsigned) {
   const int xrange = cen->w() - cenBtn->w();
   const int yrange = cen->h() - cenBtn->h();
   if( orient==Tempest::Vertical )
-    v = (range()*cenBtn->y())/(yrange>0 ? yrange : 1); else
-    v = (range()*cenBtn->x())/(xrange>0 ? xrange : 1);
+    v = int((range()*cenBtn->y())/(yrange>0 ? yrange : 1)); else
+    v = int((range()*cenBtn->x())/(xrange>0 ? xrange : 1));
 
   const int nvalue = v + rmin;
   if(nvalue!=mvalue){
@@ -190,8 +190,8 @@ void ScroolBar::updateView() {
   Tempest::Point p = cenBtn->pos();
 
   if( orient==Tempest::Vertical )
-    p.y = ((mvalue-rmin)*(cen->h()-cenBtnSize))/std::max<int64_t>(1, range()); else
-    p.x = ((mvalue-rmin)*(cen->w()-cenBtnSize))/std::max<int64_t>(1, range());
+    p.y = int(((mvalue-rmin)*(cen->h()-cenBtnSize))/std::max<int64_t>(1, range())); else
+    p.x = int(((mvalue-rmin)*(cen->w()-cenBtnSize))/std::max<int64_t>(1, range()));
 
   int w = cen->w(), h = cen->h();
 
