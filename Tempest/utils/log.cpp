@@ -38,7 +38,7 @@ void Log::flush() {
   OutputDebugStringA("\r\n");
 #endif
 #else
-#if defined(_MSC_VER) && !defined(_DEBUG)
+#if defined(_MSC_VER) && !defined(_NDEBUG)
   OutputDebugStringA(st.str().c_str());
   OutputDebugStringA("\r\n");
 #else
