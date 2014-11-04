@@ -64,6 +64,7 @@ void ListBox::setupView(size_t oldSelected) {
 
   if(delegate.size()){
     view = delegate.createView(selected);
+    //view;
     layout().add(view);
     }
   }

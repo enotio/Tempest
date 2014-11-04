@@ -13,6 +13,10 @@ ListView::ListView(Tempest::ListDelegate &delegate, Orientation ori)
   delegate.onItemSelected.bind(onItemSelected);
   }
 
+ListView::~ListView() {
+  ((Layout&)layout()).delegate.onItemSelected.ubind(onItemSelected);
+  }
+
 void ListView::setOrientation(Orientation ori) {
   orientation = ori;
   if(orientation==Horizontal)
@@ -27,6 +31,7 @@ ListView::Layout::Layout(ListDelegate &delegate, Orientation ori)
   }
 
 ListView::Layout::~Layout(){
+  delegate.invalidateView.ubind(this,&Layout::invalidate);
   }
 
 void ListView::Layout::applyLayout() {

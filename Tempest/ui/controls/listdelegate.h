@@ -35,7 +35,7 @@ class ArrayListDelegate : public ListDelegate {
 
     virtual Widget* createView(size_t position){
       ListItem* b = new ListItem(position);
-      b->clicked.bind(onItemSelected);
+      b->clicked.bind(this,&ArrayListDelegate<T>::implItemSelected);
 
       SizePolicy p = b->sizePolicy();
       p.typeH      = Preferred;
@@ -58,12 +58,16 @@ class ArrayListDelegate : public ListDelegate {
       Tempest::signal<size_t> clicked;
 
       void emitClick(){
-        Button::emitClick();
         clicked(id);
+        Button::emitClick();
         }
       };
 
-  private:
+  private:    
+    void implItemSelected(size_t item){
+      onItemSelected(item);
+      }
+
     const std::vector<T>& data;
 
     const std::string    textOf( const std::string& s ){

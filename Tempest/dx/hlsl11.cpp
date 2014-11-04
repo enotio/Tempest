@@ -465,7 +465,7 @@ void HLSL11::enable() const {
   if(data->curUboD->size() < ubo.size() )
     data->curUboD->resize(ubo.size());
 
-  ID3D11Buffer** curD = &(*data->curUboD)[0];
+  ID3D11Buffer** curD = (*data->curUboD).data();
   for( const UBO u:ubo ){
     if(!u.updated){
       setUniforms( u, slot );
@@ -474,7 +474,8 @@ void HLSL11::enable() const {
         curD[bufNum] = data->createUBO(u.data.size());
 
       if(curD[bufNum]){
-        data->immediateContext->UpdateSubresource( curD[bufNum], 0, 0, &u.data[0], 0, 0 );
+        data->immediateContext->UpdateSubresource( curD[bufNum],  0, 0,
+                                                   u.data.data(), 0, 0 );
         data->immediateContext->VSSetConstantBuffers( bufNum, 1, &curD[bufNum] );
         data->immediateContext->PSSetConstantBuffers( bufNum, 1, &curD[bufNum] );
         }

@@ -12,6 +12,7 @@ namespace Tempest {
 class ListView : public Widget {
   public:
     ListView(ListDelegate& delegate,Tempest::Orientation ori = Tempest::Vertical);
+    ~ListView();
 
     void setOrientation(Tempest::Orientation ori);
 

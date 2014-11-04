@@ -41,12 +41,14 @@ android:{
 
   CONFIG += ogl
   CONFIG -= directx
+  SOURCES += system/androidapi.cpp
   }
 
 unix: {
   DEFINES -= TEMPEST_M_TREADS
   CONFIG += ogl
   CONFIG -= directx
+  SOURCES += system/linuxapi.cpp
   }
 
 win32 {
@@ -133,7 +135,7 @@ include( thirdparty/fakeGL/GLES2/gles.pri )
 SOURCES += \
     system/windowsapi.cpp \
     system/systemapi.cpp \
-    system/androidapi.cpp \
+    system/winphoneapi.cpp \
     core/graphicssubsystem.cpp \
     ui/window.cpp \
     ui/widget.cpp \
@@ -148,14 +150,11 @@ SOURCES += \
     core/device.cpp \
     core/abstractapi.cpp \
     core/wrappers/vertexdeclaration.cpp \
-    core/wrappers/vertexbuffer.cpp \
     core/wrappers/texture2d.cpp \
     core/wrappers/pixmap.cpp \
-    core/wrappers/indexbuffer.cpp \
     core/wrappers/atomic.cpp \
     dataControl/vertexbufferholder.cpp \
     dataControl/textureholder.cpp \
-    dataControl/localvertexbufferholder.cpp \
     dataControl/localtexturesholder.cpp \
     dataControl/indexbufferholder.cpp \
     dataControl/abstractholder.cpp \
@@ -164,11 +163,8 @@ SOURCES += \
     scene/model.cpp \
     scene/lightcollection.cpp \
     scene/light.cpp \
-    scene/graphicobject.cpp \
     scene/camera.cpp \
-    scene/abstractscene.cpp \
     scene/abstractlightcollection.cpp \
-    scene/abstractgraphicobject.cpp \
     scene/abstractcamera.cpp \
     shading/abstractshadinglang.cpp \
     utils/tessobject.cpp \
@@ -191,9 +187,7 @@ SOURCES += \
     io/buffer.cpp \
     io/file.cpp \
     ogl/glfn.cpp \
-    system/linuxapi.cpp \
     ogl/openglbase.cpp \
-    system/winphoneapi.cpp \
     dataControl/shaderprogramholder.cpp \
     shading/shaderprogram.cpp \
     ui/controls/button.cpp \
@@ -201,7 +195,6 @@ SOURCES += \
     ui/controls/panel.cpp \
     ui/controls/lineedit.cpp \
     ui/controls/listview.cpp \
-    ui/controls/listdelegate.cpp \
     ui/controls/scroolbar.cpp \
     ui/controls/scroolwidget.cpp \
     ui/controls/abstractlistbox.cpp \
