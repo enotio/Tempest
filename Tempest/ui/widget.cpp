@@ -582,8 +582,12 @@ void Widget::rootMouseDownEvent(MouseEvent &e) {
                                                    true,
                                                    true );
 
-  if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()))
+  if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch())){
+    e.accept();
     this->event(e);
+    if(e.isAccepted() && this->focusPolicy()==ClickFocus)
+      this->setFocus(1);
+    }
   }
 
 void Widget::rootMouseDragEvent(MouseEvent &e) {
@@ -662,6 +666,8 @@ void Widget::rootMouseWheelEvent(MouseEvent &e) {
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
     this->event(e);
+    if(e.isAccepted() && this->focusPolicy()==ClickFocus)
+      this->setFocus(1);
     }
   }
 
