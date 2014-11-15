@@ -450,7 +450,7 @@ void LineEdit::IntValidator::insert(std::u16string &string,
       return;
       }
 
-    if(data=='0' && !(string.size()>=1 && (string[0]=='0' || string[0]=='-'))){
+    if(data=='0' && ((string.size()==1 && string[0]=='-') || string.size()==0)){
       Validator::insert(string,cursor,ecursor,data);
       return;
       }
@@ -459,10 +459,13 @@ void LineEdit::IntValidator::insert(std::u16string &string,
       Validator::insert(string,cursor,ecursor,data);
       return;
       }
+    return;
     }
 
   const size_t pos = cursor-1;
-  if(data=='0' && !(pos<string.size() && (string[pos]=='0' || string[pos]=='-'))){
+  if( data=='0'
+      && !(pos<string.size() && string[pos]=='-')
+      && !(string.size()==1 && string[0]=='0') ){
     Validator::insert(string,cursor,ecursor,data);
     return;
     }
