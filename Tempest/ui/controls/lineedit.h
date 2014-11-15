@@ -33,6 +33,27 @@ class LineEdit : public Tempest::Widget {
     bool isEditable() const;
     void setEditable( bool e );
 
+    class Validator {
+      public:
+        virtual ~Validator(){}
+
+        virtual void insert(std::u16string& string, size_t& cursor, size_t &ecursor, const std::u16string& data) const;
+        virtual void insert(std::u16string& string, size_t& cursor, size_t &ecursor, char16_t data) const;
+        virtual void erase(std::u16string& string, size_t& scursor, size_t& ecursor) const;
+        virtual void assign(std::u16string& string, const std::u16string& arg) const;
+      };
+
+    class IntValidator : public Validator{
+      public:
+        void insert(std::u16string& string, size_t& cursor, size_t &ecursor, const std::u16string& data) const;
+        void insert(std::u16string& string, size_t& cursor, size_t &ecursor, char16_t data) const;
+        void erase(std::u16string& string, size_t& scursor, size_t& ecursor) const;
+        void assign(std::u16string& string, const std::u16string &arg) const;
+      };
+
+    void setValidator(Validator* v);
+    const Validator& validator() const;
+
   protected:
     void mouseDownEvent(Tempest::MouseEvent &e);
     void mouseUpEvent(Tempest::MouseEvent &e);
@@ -47,8 +68,10 @@ class LineEdit : public Tempest::Widget {
     virtual void storeOldText();
     virtual void undo();
     virtual void redo();
+
   private:
     std::u16string txt, oldTxt, hnt;
+    mutable std::unique_ptr<Validator> mvalidator;
 
     bool editable;
     bool anim;
