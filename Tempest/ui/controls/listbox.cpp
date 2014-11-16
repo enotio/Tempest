@@ -12,7 +12,7 @@ using namespace Tempest;
 class ListBox::ItemBtn:public Button{
   public:
     ItemBtn( size_t id ):id(id){
-      clicked.bind( this, &ItemBtn::onClick );
+      onClicked.bind( this, &ItemBtn::onClick );
       }
 
     size_t id;
@@ -48,10 +48,10 @@ void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
     }
 
   if( delegate.size() ){
-    if( e.delta < 0 )
-      setCurrentItem(selected+1); else
+    if( e.delta < 0 && selected+1<delegate.size() )
+      selectItem(selected+1); else
     if( e.delta > 0 && selected>0 )
-      setCurrentItem(selected-1);
+      selectItem(selected-1);
     }
   }
 
@@ -64,7 +64,6 @@ void ListBox::setupView(size_t oldSelected) {
 
   if(delegate.size()){
     view = delegate.createView(selected);
-    //view;
     layout().add(view);
     }
   }
@@ -92,12 +91,16 @@ Tempest::Widget* ListBox::createDropList() {
 
 void ListBox::onItem(size_t id) {
   if(dropListLayer()!=nullptr){
-    size_t old = selected;
-    onItemSelected(id);
-    selected = id;
-    setupView(old);
-    close();
+    selectItem(id);
     } else {
     showList();
     }
+  }
+
+void ListBox::selectItem(size_t id) {
+  size_t old = selected;
+  onItemSelected(id);
+  selected = id;
+  setupView(old);
+  close();
   }

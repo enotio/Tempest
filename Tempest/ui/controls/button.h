@@ -14,7 +14,7 @@ class Button : public Tempest::Widget {
   public:
     Button();
 
-    Tempest::signal<> clicked;
+    Tempest::signal<> onClicked;
 
     Tempest::Sprite icon;
 

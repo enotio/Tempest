@@ -236,7 +236,7 @@ void Button::onShortcut() {
   }
 
 void Button::emitClick() {
-  clicked();
+  onClicked();
   }
 
 bool Button::isPressed() const {
