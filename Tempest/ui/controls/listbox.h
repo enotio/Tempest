@@ -34,6 +34,7 @@ class ListBox : public AbstractListBox {
     class ItemBtn;
 
     void onItem( size_t id );
+    void selectItem( size_t id );
   };
 
 }
