@@ -52,6 +52,7 @@ void LineEdit::setText(const std::u16string &t) {
     sedit = std::max<size_t>(0, std::min(sedit, txt.size() ));
     eedit = std::max<size_t>(0, std::min(eedit, txt.size() ));
 
+    scrool = 0;
     onTextChanged(txt);
     update();
     }
@@ -244,9 +245,18 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
 
   const Validator& v = validator();
   if( e.key==KeyEvent::K_NoKey && editable ){
-    if( sedit < eedit )
-      v.erase(txt, sedit, eedit);
-    v.insert(txt,sedit, eedit,e.u16);
+    if( sedit < eedit && eedit-sedit==txt.size() ){
+      std::u16string tmp;
+      tmp.resize(1);
+      tmp[0] = e.u16;
+      v.assign(txt,tmp);
+      sedit = txt.size();
+      eedit = sedit;
+      } else {
+      if( sedit < eedit )
+        v.erase(txt, sedit, eedit);
+      v.insert(txt,sedit, eedit,e.u16);
+      }
 
     isEdited = true;
     onTextChanged( txt );

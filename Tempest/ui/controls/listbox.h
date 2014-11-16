@@ -26,6 +26,7 @@ class ListBox : public AbstractListBox {
 
   private:
     size_t selected;
+    bool dropListEnabled;
     ListDelegate& delegate;
 
     Tempest::Widget *createDropList();
