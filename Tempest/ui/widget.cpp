@@ -124,6 +124,7 @@ void Widget::resize(int w, int h) {
   if( ow==w && oh==h )
     return;
 
+  nToUpdate &= wrect.w>0 && wrect.h>0;
   wrect.w = w;
   wrect.h = h;
 
@@ -447,7 +448,7 @@ void Widget::update() {
   if( nToUpdate || wvisible==false )
     return;
 
-  nToUpdate = true;
+  nToUpdate = wrect.w>0 && wrect.h>0;
   intentToUpdate();
 
   if( owner() )
