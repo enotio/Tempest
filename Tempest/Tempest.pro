@@ -4,7 +4,7 @@ CONFIG -= qt
 
 CONFIG += ogl directx
 
-mcvs_static: {
+msvc_static: {
   TEMPLATE = lib
   CONFIG   += staticlib
   } else {
