@@ -28,7 +28,7 @@ ListBox::ListBox(ListDelegate &delegate)
   selected = 0;
   dropListEnabled = true;
   setupView(size_t(-1));
-  delegate.onItemSelected.bind(this, &ListBox::onItem);
+  delegate.onItemViewSelected.bind(this, &ListBox::onItem);
   }
 
 void ListBox::setCurrentItem(size_t i) {
@@ -38,7 +38,10 @@ void ListBox::setCurrentItem(size_t i) {
   i = std::min( delegate.size()-1, i );
   if( selected!=i ){
     selected = i;
-    onItem(selected);
+    auto tmp = dropListEnabled;
+    dropListEnabled = false;
+    onItem(selected,nullptr);
+    dropListEnabled = tmp;
     }
   }
 
@@ -89,11 +92,15 @@ Tempest::Widget* ListBox::createDropList() {
   return box;
   }
 
-void ListBox::onItem(size_t id) {
+void ListBox::onItem(size_t id,Widget* item) {
+  Layout& l = layout();
+  Widget* view = (l.widgets().size()==0 ? nullptr : l.widgets()[0]);
+
   if(dropListLayer()!=nullptr || !dropListEnabled ){
     selectItem(id);
     } else {
-    showList();
+    if(view==item)
+      showList();
     }
   }
 

@@ -21,7 +21,8 @@ class ListDelegate {
     virtual void    removeView(Widget* w, size_t position) = 0;
 
     Tempest::signal<> invalidateView, updateView;
-    Tempest::signal<size_t> onItemSelected;
+    Tempest::signal<size_t>         onItemSelected;
+    Tempest::signal<size_t,Widget*> onItemViewSelected;
   };
 
 template< class T >
@@ -55,17 +56,18 @@ class ArrayListDelegate : public ListDelegate {
       ListItem(size_t id):id(id){}
 
       const size_t id;
-      Tempest::signal<size_t> clicked;
+      Tempest::signal<size_t,Widget*> clicked;
 
       void emitClick(){
-        clicked(id);
+        clicked(id,this);
         Button::emitClick();
         }
       };
 
   private:    
-    void implItemSelected(size_t item){
+    void implItemSelected(size_t item, Widget* itemView){
       onItemSelected(item);
+      onItemViewSelected(item,itemView);
       }
 
     const std::vector<T>& data;
