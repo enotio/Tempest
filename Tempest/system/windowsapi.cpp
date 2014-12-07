@@ -2,6 +2,7 @@
 
 #ifdef __WINDOWS__
 #include <windows.h>
+#include <windowsx.h>
 
 #include <Tempest/Window>
 #include <Tempest/Event>
@@ -10,6 +11,7 @@
 #include <unordered_map>
 #include <fstream>
 #include <Tempest/Assert>
+#include <Tempest/Log>
 
 #include <iostream>
 #include "core/wrappers/atomic.h"
@@ -164,7 +166,7 @@ void WindowsAPI::startApplication(ApplicationInitArgs *) {
   winClass.cbClsExtra    = 0;
   winClass.cbWndExtra    = 0;
 
-  T_ASSERT_X( RegisterClassEx(&winClass), "window not initalized" );
+  T_ASSERT_X( SUCCEEDED(RegisterClassEx(&winClass)), "window not initalized" );
   }
 
 void WindowsAPI::endApplication() {
@@ -609,8 +611,9 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       case WM_LBUTTONDOWN:
       case WM_MBUTTONDOWN:
       case WM_RBUTTONDOWN: {
-        MouseEvent e( LOWORD (lParam),
-                      HIWORD (lParam),
+        SetCapture(hWnd);
+        MouseEvent e( GET_X_LPARAM(lParam),
+                      GET_Y_LPARAM(lParam),
                       toButton(msg),
                       0,
                       0,
@@ -622,8 +625,9 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       case WM_LBUTTONUP:
       case WM_RBUTTONUP:
       case WM_MBUTTONUP: {
-        MouseEvent e( LOWORD (lParam),
-                      HIWORD (lParam),
+        ReleaseCapture();
+        MouseEvent e( GET_X_LPARAM(lParam),
+                      GET_Y_LPARAM(lParam),
                       toButton(msg),
                       0,
                       0,
@@ -638,8 +642,8 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         break;
 
       case WM_MOUSEMOVE: {
-        MouseEvent e( LOWORD (lParam),
-                      HIWORD (lParam),
+        MouseEvent e( GET_X_LPARAM(lParam),
+                      GET_Y_LPARAM(lParam),
                       Event::ButtonNone,
                       0,
                       0,
@@ -650,8 +654,8 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
        case WM_MOUSEWHEEL:{
           POINT p;
-          p.x = LOWORD (lParam);
-          p.y = HIWORD (lParam);
+          p.x = GET_X_LPARAM(lParam);
+          p.y = GET_Y_LPARAM(lParam);
 
           ScreenToClient(hWnd, &p);
 
