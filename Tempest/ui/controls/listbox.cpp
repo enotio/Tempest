@@ -53,11 +53,13 @@ void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
 
   dropListEnabled = false;
   if( delegate.size() ){
+    Layout& l = layout();
+    Widget* view = (l.widgets().size()==0 ? nullptr : l.widgets()[0]);
     if( e.delta < 0 && selected+1<delegate.size() )
-      delegate.onItemSelected(selected+1);
+      delegate.onItemViewSelected(selected+1,view);
       else
     if( e.delta > 0 && selected>0 )
-      delegate.onItemSelected(selected-1);
+      delegate.onItemViewSelected(selected-1,view);
     }
   dropListEnabled = true;
   }
@@ -106,8 +108,13 @@ void ListBox::onItem(size_t id,Widget* item) {
 
 void ListBox::selectItem(size_t id) {
   size_t old = selected;
-  onItemSelected(id);
   selected = id;
+  onItemSelected(id);
   setupView(old);
   close();
+  }
+
+
+size_t Tempest::ListBox::currentItem() const {
+  return selected;
   }

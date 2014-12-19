@@ -16,7 +16,8 @@ class ListBox : public AbstractListBox {
 
     Tempest::signal<size_t> onItemSelected;
 
-    void setCurrentItem( size_t i );
+    void   setCurrentItem( size_t i );
+    size_t currentItem() const;
 
   protected:
     void mouseWheelEvent(Tempest::MouseEvent &e);
