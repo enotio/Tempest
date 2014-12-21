@@ -500,12 +500,14 @@ void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
   if( flg & Tempest::AlignBottom )
     y += (h-th);
 
-
+  static const T tab = T('\t');
   for( size_t i=0; str[i]; ++i ){
     const Font::Letter& l = fnt.letter( str[i], p.sp );
-    p.setTexture( l.surf );
-    p.drawRect( x+l.dpos.x, y+l.dpos.y, l.size.w, l.size.h,
-                0,0 );
+    if(str[i]!=tab){
+      p.setTexture( l.surf );
+      p.drawRect( x+l.dpos.x, y+l.dpos.y, l.size.w, l.size.h,
+                  0,0 );
+      }
     x+= l.advance.x;
     y+= l.advance.y;
     }

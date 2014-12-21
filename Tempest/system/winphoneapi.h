@@ -3,7 +3,7 @@
 
 #include <Tempest/SystemAPI>
 
-int WinMain();
+int __stdcall WinMain();
 
 namespace Tempest{
 

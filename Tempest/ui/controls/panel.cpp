@@ -82,7 +82,7 @@ void Panel::drawFrame( Tempest::Painter &p ){
 
 void Panel::drawBack(Painter &p) {
   auto c = p.color();
-  p.setColor(Color(0.8,0.8,0.85,0.75));
+  p.setColor(Color(0.8f,0.8f,0.85f,0.75f));
   p.drawRect(0,0,w()-1,h()-1);
   p.setColor(c);
   }

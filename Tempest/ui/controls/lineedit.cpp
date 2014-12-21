@@ -177,12 +177,10 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
     --sx;
     if( x+oldSc > w() ){
       scrool += ( w() - (x+oldSc) );
-      //scrool += w()/3;
       }
 
     if( x+oldSc < 0 ){
       scrool -= (x+oldSc);
-      //scrool -= w()/3;
       }
 
     x += 1;

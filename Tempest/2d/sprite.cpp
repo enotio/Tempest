@@ -2,7 +2,7 @@
 
 using namespace Tempest;
 
-Sprite::Sprite():holder(0), delayd(-1), tex(0), id(-1) {
+Sprite::Sprite():holder(nullptr), delayd(-1), tex(nullptr), id(-1) {
 
   }
 
@@ -45,6 +45,14 @@ void Sprite::flush() const {
   if( isDelayd() ){
     holder->loadDelayd();
     }
+  }
+
+void Sprite::reset() {
+  holder = nullptr;
+  delayd = -1;
+  tex    = nullptr;
+  id     = -1;
+  prect  = Tempest::Rect();
   }
 
 int Sprite::w() const {

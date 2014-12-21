@@ -32,7 +32,10 @@ class Sprite {
 
     bool   isDelayd() const;
     void   flush() const;
-  private:
+
+  private:    
+    void   reset();
+
     Tempest::Rect    prect;
     SpritesHolder   *holder;
     size_t           delayd;

@@ -18,6 +18,13 @@ SpritesHolder::SpritesHolder(Tempest::TextureHolder &h):holder(h) {
   }
 
 SpritesHolder::~SpritesHolder() {
+  for(LoadRq& l : loadRq){
+    if( l.sprite )
+      l.sprite->reset();
+
+    for( size_t i=0; i<l.spr.size(); ++i )
+      l.spr[i]->reset();
+    }
   }
 
 Sprite SpritesHolder::load(const char *f) {
