@@ -19,33 +19,45 @@ const Widget *Layout::owner() const {
   return ow;
   }
 
-void Layout::add(Widget *widget) {
-  if( std::find(w.begin(), w.end(), widget)==w.end() ){
-    if( widget->hasFocus() || widget->hasChildFocus() )
-      widget->unsetChFocus(widget, 0);
+void Layout::add(Widget *widget, size_t pos) {
+  if(widget->parentLay==this)
+    return;
 
-    w.push_back(widget);
+  if(widget->parentLay)
+    widget->parentLay->take(widget);
 
-    if( widget->parentLay ){
-      widget->parentLay->take(widget);
-      }
+  if(pos>=w.size())
+    pos=w.size();
 
-    widget->parentLay = this;
-    if( owner() )
-      widget->setContext( owner()->context() );
+  if( widget->hasFocus() || widget->hasChildFocus() )
+    widget->unsetChFocus(widget, 0);
 
-    if( widget->nToUpdate ){
-      widget->nToUpdate    = false;
-      widget->update();
-      }
+  w.insert(w.begin()+pos,widget);
 
-    //widget->setFocus(0);
+  if( widget->parentLay ){
+    widget->parentLay->take(widget);
+    }
+
+  widget->parentLay = this;
+  if( owner() )
+    widget->setContext( owner()->context() );
+
+  if( widget->nToUpdate ){
+    widget->nToUpdate    = false;
+    widget->update();
     }
 
   applyLayout();
   }
 
+void Layout::add(Widget *widget) {
+  add(widget,w.size());
+  }
+
 void Layout::del(Widget *widget) {
+  if(widget->parentLay!=this)
+    return;
+
   w.resize( std::remove( w.begin(), w.end(), widget ) - w.begin() );
   widget->deleteLater();
 
@@ -78,6 +90,9 @@ void Tempest::Layout::removeAll() {
   }
 
 Widget *Layout::take(Widget *widget) {
+  if(widget->parentLay!=this)
+    return widget;
+
   if( widget->hasFocus() )
     widget->setFocus(0);
 

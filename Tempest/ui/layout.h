@@ -21,6 +21,7 @@ class Layout {
     Widget * owner();
     const Widget * owner() const;
 
+    void add(Widget* w, size_t pos);
     void add( Widget* widget );
     void del( Widget* widget );
     void removeAll();
