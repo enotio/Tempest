@@ -86,7 +86,7 @@ void SurfaceRender::loadShader() {
 
   for(int i=0; i<2; ++i ){
     if( !stdShaders[i].isValid() )
-      Log() << "std shader[" << i <<"] :" << stdShaders[i].log();
+      Log::e("std shader[",i,"] :",stdShaders[i].log());
     }
   }
 

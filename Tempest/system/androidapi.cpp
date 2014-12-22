@@ -923,15 +923,15 @@ bool Android::initialize() {
   EGLDisplay ini_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
   if(!eglInitialize(ini_display, 0, 0))
-    Log() << "eglInitialize failed";
+    Log::e("eglInitialize failed");
   //chooseConfig(display, config);
   if(!eglChooseConfig(ini_display, attribs, &config, 1, &numConfigs))
-    Log() << "eglChooseConfig failed"; else
-    Log() << "eglChooseConfig = " << config;
+    Log::e("eglChooseConfig failed"); else
+    Log::e("eglChooseConfig = ",config);
   if(numConfigs==0){
     eglChooseConfig(ini_display, attribs4, &config, 1, &numConfigs);
     }
-  Log() << "numConfigs="<<numConfigs;
+  Log::d("numConfigs=",numConfigs);
   eglGetConfigAttrib(ini_display, config, EGL_NATIVE_VISUAL_ID, &format);
 
   ANativeWindow_setBuffersGeometry( window, 0, 0, format);

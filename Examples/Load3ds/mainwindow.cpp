@@ -178,7 +178,7 @@ void MainWindow::loadShader( ShaderProgram &shader,
                           file+".fs.glsl",
                           "","",""});
   if( !shader.isValid() )
-    Log() << shader.log();
+    Log::e("sh:",shader.log());
   }
 
 void MainWindow::loadShader( ShaderProgram &shader,
@@ -188,7 +188,7 @@ void MainWindow::loadShader( ShaderProgram &shader,
                              shaderSource(file+".fs.glsl", def ),
                              "","",""});
   if( !shader.isValid() )
-    Log() << shader.log();
+    Log::e("sh:",shader.log());
   }
 
 std::string MainWindow::shaderSource(const std::string &f, const std::initializer_list<const char *> &def) {
@@ -206,7 +206,6 @@ std::string MainWindow::shaderSource(RFile &f, const std::initializer_list<const
     ss <<"#define "<< i << "\n";
   ss << s;
 
-  //Log() << ss.str();
   return ss.str();
   }
 

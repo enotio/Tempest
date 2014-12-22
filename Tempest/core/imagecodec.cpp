@@ -324,7 +324,7 @@ struct JpegCodec:ImageCodec {
       info.bpp = cInfo.output_components;
 
       if( !jpeg_finish_decompress(&cInfo) )
-        Log() << "jpeg_finish_decompress error";
+        Log::e("jpeg_finish_decompress error");
       }
     catch( const std::runtime_error & ){
       return false;

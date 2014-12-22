@@ -81,7 +81,7 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
   vdecl = VertexDeclaration( device, decl );
 
   if( !shader.isValid() )
-    Log() << shader.log();
+    Log::e("sh:",shader.log());
   }
 
 void MainWindow::render() {

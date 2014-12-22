@@ -164,12 +164,12 @@ bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
   glGetIntegerv(GL_MAJOR_VERSION, &major);
   glGetIntegerv(GL_MINOR_VERSION, &minor);
 
-  Log() << "OpenGL render context information:";
-  Log() << "  Renderer       : " << (const char*)glGetString(GL_RENDERER);
-  Log() << "  Vendor         : " << (const char*)glGetString(GL_VENDOR);
-  Log() << "  Version        : " << (const char*)glGetString(GL_VERSION);
-  Log() << "  GLSL version   : " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
-  Log() << "  OpenGL version : " << major <<"." << minor;
+  Log::d("OpenGL render context information:");
+  Log::d("  Renderer       : ",(const char*)glGetString(GL_RENDERER));
+  Log::d("  Vendor         : ",(const char*)glGetString(GL_VENDOR));
+  Log::d("  Version        : ",(const char*)glGetString(GL_VERSION));
+  Log::d("  GLSL version   : ",(const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+  Log::d("  OpenGL version : ",major,".", minor);
 
   if( !Detail::initGLProc() ) {
     return 0;

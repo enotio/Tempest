@@ -9,6 +9,7 @@
 #include <Tempest/Android>
 #endif
 #include <Tempest/Platform>
+#include <Tempest/Log>
 
 #ifdef __WINDOWS__
 #include <windows.h>
@@ -66,25 +67,9 @@ void Tempest::Detail::te_assert_impl( bool a,
   if(a)
     return;
 
-  std::stringstream st;
-  st << "ASSERT failure: \"" << X <<"\"";
-
-  if( msg )
-    st << ",\t\"" << msg <<"\"\t";
-
-  st << "[file " << file <<", line " << line <<", func: '" << func <<"']";
-
-#ifdef __ANDROID__
-  __android_log_print( ANDROID_LOG_ERROR, "Tempest", "%s", st.str().c_str() );
-  Tempest::AndroidAPI::toast( st.str() );
-#else
-#if defined(_MSC_VER) && !defined(_NDEBUG)
-  OutputDebugStringA(st.str().c_str());
-  OutputDebugStringA("\r\n");
-#else
-  std::cerr << st.str() << std::endl;
-#endif
-#endif
+  if(msg)
+    Log::e("ASSERT failure: \"",X,"\"",",\t\"",msg,"\"\t","[file ",file,", line ",line,", func: '",func,"']"); else
+    Log::e("ASSERT failure: \"",X,"\"",                   "[file ",file,", line ",line,", func: '",func,"']");
 
   h_assert(file, line, func, X, msg);
   }

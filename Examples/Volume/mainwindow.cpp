@@ -74,7 +74,7 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
                           "","",""});
 
   if( !shader.isValid() ){
-    Log() << shader.log();
+    Log::e(shader.log());
     }
   T_ASSERT( shader.isValid() );
 
