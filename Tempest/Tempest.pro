@@ -198,7 +198,8 @@ SOURCES += \
     ui/controls/scroolbar.cpp \
     ui/controls/scroolwidget.cpp \
     ui/controls/abstractlistbox.cpp \
-    ui/controls/listbox.cpp
+    ui/controls/listbox.cpp \
+    ui/controls/uifactory.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -291,7 +292,8 @@ HEADERS += \
     ui/controls/scroolbar.h \
     ui/controls/scroolwidget.h \
     ui/controls/abstractlistbox.h \
-    ui/controls/listbox.h
+    ui/controls/listbox.h \
+    ui/controls/uifactory.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -353,3 +355,6 @@ OTHER_FILES += \
     include/Tempest/ScroolWidget \
     include/Tempest/AbstractListBox \
     include/Tempest/ListBox
+
+DISTFILES += \
+    include/Tempest/UiFactory

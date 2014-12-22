@@ -95,7 +95,7 @@ Tempest::Widget* ListBox::createDropList() {
   }
 
 void ListBox::onItem(size_t id,Widget* item) {
-  Layout& l = layout();
+  Layout& l    = layout();
   Widget* view = (l.widgets().size()==0 ? nullptr : l.widgets()[0]);
 
   if(dropListLayer()!=nullptr || !dropListEnabled ){

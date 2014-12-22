@@ -40,9 +40,6 @@ class Log {
     Log(){}
 
     static void flush(Mode m, char*& msg, size_t& count);
-    Mode m;
-
-    static void printImpl(Mode m,char* out, size_t count);
     static void write(Mode m, char*& out, size_t& count, const std::string& msg);
     static void write(Mode m, char*& out, size_t& count, const char*  msg);
     static void write(Mode m, char*& out, size_t& count, char     msg);
@@ -57,6 +54,7 @@ class Log {
     static void write(Mode m, char*& out, size_t& count, float    msg);
     static void write(Mode m, char*& out, size_t& count, double   msg);
 
+    static void printImpl(Mode m,char* out, size_t count);
     template<class T, class ... Args>
     static void printImpl(Mode m, char* out, size_t count,
                           const T& t, const Args& ... args){

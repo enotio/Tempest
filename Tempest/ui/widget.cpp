@@ -106,6 +106,7 @@ void Widget::setPosition(int x, int y) {
   wrect.y = y;
   onPositionChange(ox,oy);
 
+  nToUpdate = false;
   update();
   }
 
@@ -759,8 +760,6 @@ bool Widget::isVisible() const {
 void Widget::setVisible(bool v) {
   if( wvisible==v )
     return;
-
-  update();
 
   wvisible = v;
   if( !wvisible )
