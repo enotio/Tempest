@@ -181,6 +181,20 @@ struct DirectX11::Device{
       device->Release();
     }
 
+  D3D11_SHADER_RESOURCE_VIEW_DESC* buildDesc(DXGI_FORMAT format){
+    ZeroMemory(&retDesc,sizeof(retDesc));
+    if(format==DXGI_FORMAT_R32_TYPELESS)
+      retDesc.Format = DXGI_FORMAT_R32_FLOAT; else
+    if(format==DXGI_FORMAT_R16_TYPELESS)
+      retDesc.Format = DXGI_FORMAT_R16_UNORM; else
+      retDesc.Format = format;
+    retDesc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
+    retDesc.Texture2D.MipLevels       = -1;
+    retDesc.Texture2D.MostDetailedMip =  0;
+    return &retDesc;
+    }
+  D3D11_SHADER_RESOURCE_VIEW_DESC retDesc;
+
   Tempest::AbstractAPI::Caps caps;
 
   static ID3D11Device* dev(void* d){
@@ -438,7 +452,7 @@ AbstractAPI::Device *DirectX11::createDevice( void *Hwnd,
 
   UINT createDeviceFlags = 0;
 #ifndef NDEBUG
-  //createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+  createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
   D3D_DRIVER_TYPE driverTypes[] =
@@ -695,9 +709,19 @@ void DirectX11::setDSSurfaceTaget(AbstractAPI::Device * d,
 
     D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
     ZeroMemory( &descDSV, sizeof(descDSV) );
-    descDSV.Format             = textureDesc.Format;
+    if(textureDesc.Format==DXGI_FORMAT_R16_TYPELESS)
+      descDSV.Format = DXGI_FORMAT_D16_UNORM; else
+    if(textureDesc.Format==DXGI_FORMAT_R32_TYPELESS)
+      descDSV.Format = DXGI_FORMAT_D32_FLOAT; else
+      descDSV.Format = textureDesc.Format;
+
     descDSV.ViewDimension      = D3D11_DSV_DIMENSION_TEXTURE2D;
     descDSV.Texture2D.MipSlice = 0;
+
+    if(tex->depth){
+      tex->depth->Release();
+      tex->depth = nullptr;
+      }
     HRESULT hr = dev->device->CreateDepthStencilView( tex->texture,
                                                       &descDSV,
                                                       &tex->depth );
@@ -921,26 +945,30 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
 
     DXGI_FORMAT_R16G16_FLOAT,// RG16
 
-    DXGI_FORMAT_R16_UNORM,   // RedableDepth16,
-    DXGI_FORMAT_R32_FLOAT,   // RedableDepth32,
+    DXGI_FORMAT_R32_TYPELESS,   // RedableDepth16,
+    DXGI_FORMAT_R32_TYPELESS,   // RedableDepth32,
 
     DXGI_FORMAT_R8G8B8A8_UNORM, //Count
     };
 
   Device* dev = (Device*)d;
   D3D11_TEXTURE2D_DESC desc;
-  desc.ArraySize        = 1;
-  desc.Width            = w;
-  desc.Height           = h;
-  desc.MipLevels        = 1;//desc.ArraySize = 1;
-  desc.Format           = d3frm[f];//DXGI_FORMAT_R8G8B8A8_UNORM;
-  desc.Usage            = u[usage];
-  desc.BindFlags        = 0;
-  desc.CPUAccessFlags   = 0;
-  desc.MiscFlags        = 0;
+  desc.ArraySize          = 1;
+  desc.Width              = w;
+  desc.Height             = h;
+  desc.MipLevels          = 1;//desc.ArraySize = 1;
+  desc.Format             = d3frm[f];//DXGI_FORMAT_R8G8B8A8_UNORM;
+  desc.Usage              = u[usage];
+  desc.BindFlags          = 0;
+  desc.CPUAccessFlags     = 0;
+  desc.MiscFlags          = 0;
   desc.SampleDesc.Count   = 1;
   desc.SampleDesc.Quality = 0;
 
+  if(desc.Format==DXGI_FORMAT_R16_TYPELESS ||
+     desc.Format==DXGI_FORMAT_R32_TYPELESS){
+    desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+    } else
   if( desc.Format!=DXGI_FORMAT_D16_UNORM &&
       desc.Format!=DXGI_FORMAT_D24_UNORM_S8_UINT &&
       desc.Format!=DXGI_FORMAT_D32_FLOAT ) {
@@ -953,7 +981,7 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
   DX11Texture* tex = new DX11Texture;
   if( SUCCEEDED(dev->device->CreateTexture2D( &desc, NULL, &tex->texture )) ){
     if( desc.BindFlags&D3D11_BIND_SHADER_RESOURCE )
-      dev->device->CreateShaderResourceView(tex->texture, NULL, &tex->view);
+      dev->device->CreateShaderResourceView(tex->texture, dev->buildDesc(desc.Format), &tex->view);
 
     if( mips && (desc.MiscFlags&D3D11_RESOURCE_MISC_GENERATE_MIPS) )
       dev->immediateContext->GenerateMips(tex->view);
