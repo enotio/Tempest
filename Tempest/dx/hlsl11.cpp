@@ -18,6 +18,8 @@
 #define __inout_opt
 #define __in_ecount_part_opt(X,Y)
 #define __out_ecount_part_opt(X,Y)
+#else
+#pragma warning( disable : 4005 ) //macro redefinitions in DXGIType.h
 #endif
 
 #include "dx11types.h"

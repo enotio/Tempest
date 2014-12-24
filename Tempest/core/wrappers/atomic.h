@@ -40,7 +40,7 @@ struct GuardBase{
 typedef GuardBase<Spin> Guard;
 typedef long atomic_counter;
 
-atomic_counter atomicInc(volatile atomic_counter &src, atomic_counter add );
+atomic_counter atomicInc(volatile atomic_counter &src, long add );
 
 }
 

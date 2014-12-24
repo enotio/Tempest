@@ -27,6 +27,8 @@
 #define __inout_opt
 #define __in_ecount_part_opt(X,Y)
 #define __out_ecount_part_opt(X,Y)
+#else
+#pragma warning( disable : 4005 ) //macro redefinitions in DXGIType.h
 #endif
 
 #include <D3D11.h>
@@ -186,7 +188,7 @@ struct DirectX11::Device{
     if(format==DXGI_FORMAT_R32_TYPELESS)
       retDesc.Format = DXGI_FORMAT_R32_FLOAT; else
     if(format==DXGI_FORMAT_R16_TYPELESS)
-      retDesc.Format = DXGI_FORMAT_R16_UNORM; else
+      retDesc.Format = DXGI_FORMAT_R16_FLOAT; else
       retDesc.Format = format;
     retDesc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
     retDesc.Texture2D.MipLevels       = -1;
@@ -333,7 +335,7 @@ std::string DirectX11::vendor( AbstractAPI::Device * ) const {
   return "Direct3D";
   }
 
-std::string DirectX11::renderer( AbstractAPI::Device *d ) const {
+std::string DirectX11::renderer( AbstractAPI::Device * ) const {
   //TODO
   //Device *dx = (Device*)d;
   return "";//dx->adapter.Description;
@@ -452,7 +454,7 @@ AbstractAPI::Device *DirectX11::createDevice( void *Hwnd,
 
   UINT createDeviceFlags = 0;
 #ifndef NDEBUG
-  createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+  //createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
   D3D_DRIVER_TYPE driverTypes[] =
@@ -747,7 +749,6 @@ bool DirectX11::startRender( AbstractAPI::Device *, bool /*isLost*/ ) const{
 
 bool DirectX11::present( AbstractAPI::Device *d, SwapBehavior /*b*/ ) const{
   Device* dev = (Device*)d;
-  HRESULT err=S_OK;
 #ifdef __WINDOWS_PHONE__
   dev->swapChain->Present(1,0);
 #else
@@ -1151,7 +1152,7 @@ void DirectX11::bindIndexBuffer( AbstractAPI::Device *d,
 void *DirectX11::lockBuffer( AbstractAPI::Device *d,
                              AbstractAPI::VertexBuffer *b,
                              unsigned offset,
-                             unsigned size ) const {
+                             unsigned /*size*/ ) const {
   Device* dev = (Device*)d;
   ID3D11Buffer* buf = (ID3D11Buffer*)b;
 

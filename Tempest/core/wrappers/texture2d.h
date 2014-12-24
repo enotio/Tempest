@@ -49,6 +49,7 @@ namespace Tempest{
       bool isEmpty() const;
 
       Format::Type format() const;
+
     private:
       Detail::Ptr<AbstractAPI::Texture*, TextureHolder::ImplManip> data;
       Sampler m_sampler;

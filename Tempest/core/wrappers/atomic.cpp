@@ -29,7 +29,7 @@ void Detail::Spin::unlock() {
   }
 
 Detail::atomic_counter Detail::atomicInc( volatile Detail::atomic_counter &src,
-                                          Detail::atomic_counter add) {
+                                          long add) {
 #ifdef TEMPEST_M_TREADS
 #ifdef __WINDOWS__
   //return std::atomic_fetch_add(&src, add);

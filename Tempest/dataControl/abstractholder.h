@@ -44,8 +44,8 @@ class AbstractHolder : public AbstractHolderBase {
 
     struct ImplManip{
       struct Ref{
-        Ref( APIDescriptor* t ):data(t), count(1){}
-        Ref( const Ref& r ):data(r.data), count(1){}
+        Ref( APIDescriptor* t ):data(t),  count(1) {}
+        Ref( const Ref& r ):data(r.data), count(1) {}
 
         APIDescriptor*  data;
         Detail::atomic_counter count;

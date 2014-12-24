@@ -267,7 +267,7 @@ struct GLSL::Data{
 
     //Non-Linked
     GLuint program = glCreateProgram();
-    T_ASSERT( program );
+    T_ASSERT( program!=0 );
 
     glAttachShader(program, p.vs );
     glAttachShader(program, p.fs  );
@@ -310,7 +310,7 @@ struct GLSL::Data{
 
     if(!curLinked.linked){
       curLinked.linked = link( *prog, curLinked.vdecl, 0 );
-      T_ASSERT( curLinked.linked );
+      T_ASSERT( curLinked.linked!=0 );
       }
 
     if( bindedProg!=curLinked.linked ){

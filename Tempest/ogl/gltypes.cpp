@@ -47,7 +47,7 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
     ext = "";
   const char *renderer= (const char*)glGetString(GL_RENDERER);
 
-  T_ASSERT_X(ext, "opengl context not created");
+  T_ASSERT_X(ext!=nullptr, "opengl context not created");
 
   hasS3tcTextures =
       (strstr(ext, "GL_OES_texture_compression_S3TC")!=0) ||

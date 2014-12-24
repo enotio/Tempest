@@ -7,40 +7,7 @@ namespace Tempest{
 
 namespace Detail{
 
-template< class T >
-struct PtrManip{
-
-  struct Ref{
-    Ref( const T& t ):data(t), count(1){}
-
-    T   data;
-    atomic_counter count;
-
-    Detail::Spin spin;
-
-    void lock(){ spin.lock(); }
-    void unlock(){ spin.unlock(); }
-    };
-
-  Ref * newRef(){
-    return new Ref( T() );
-    }
-
-  Ref * newRef( const Ref * base ){
-    return new Ref( base->data );
-    }
-
-  void delRef( Ref * r ){
-    delete r->data;
-    delete r;
-    }
-
-  bool isValid() const {
-    return true;
-    }
-  };
-
-template< class T, class Manip = PtrManip<T> >
+template< class T, class Manip >
 class Ptr {
   public:
     Ptr():r( 0 ){}
@@ -50,17 +17,11 @@ class Ptr {
       if( c.r )
         atomicInc( c.r->count, 1 );
       r = c.r;
-
-      /*
-      if( !isNull() )
-        atomicInc( r->count, 1 );
-        */
       }
 
     ~Ptr(){
-      if( !isNull() ){
+      if( !isNull() )
         delRef();
-        }
       }
 
     Ptr& operator = ( const Ptr& c ){
