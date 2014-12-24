@@ -73,6 +73,24 @@ void Log::write(Mode m, char *&out, size_t &count, double msg) {
   write(m,out,count,sym);
   }
 
+void Log::write(Log::Mode m, char *&out, size_t &count, void *msg) {
+  char sym[sizeof(void*)*2+3];
+  sym[sizeof(sym)-1] = '\0';
+  int pos = sizeof(sym)-2;
+
+  uintptr_t ptr = uintptr_t(msg);
+  for(int i=0; i<sizeof(void*)*2; ++i){
+    auto num = ptr%16;
+    sym[pos] = num<=9 ? num+'0' : num-10+'a';
+    ptr/=16;
+    --pos;
+    }
+  sym[pos] = 'x';
+  --pos;
+  sym[pos] = '0';
+  write(m,out,count,sym+pos);
+  }
+
 void Log::write(Mode m, char*& out, size_t& count, int16_t msg){
   writeInt(m,out,count,msg);
   }
@@ -101,10 +119,15 @@ void Log::write(Mode m, char*& out, size_t& count, const char* msg){
   while(*msg){
     if(count<=1)
       flush(m,out,count);
-    *out = *msg;
-    ++out;
-    ++msg;
-    --count;
+    if(*msg=='\n'){
+      flush(m,out,count);
+      ++msg;
+      } else {
+      *out = *msg;
+      ++out;
+      ++msg;
+      --count;
+      }
     }
   }
 

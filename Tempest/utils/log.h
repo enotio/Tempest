@@ -53,6 +53,7 @@ class Log {
     static void write(Mode m, char*& out, size_t& count, int64_t  msg);
     static void write(Mode m, char*& out, size_t& count, float    msg);
     static void write(Mode m, char*& out, size_t& count, double   msg);
+    static void write(Mode m, char*& out, size_t& count, void*    msg);
 
     static void printImpl(Mode m,char* out, size_t count);
     template<class T, class ... Args>
