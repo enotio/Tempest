@@ -25,8 +25,8 @@ void PainterDevice::setScissor(int x, int y, int w, int h) {
 
   m_scissor.x  = x + rstate.orign.x;
   m_scissor.y  = y + rstate.orign.y;
-  m_scissor.x1 = m_scissor.x+w;
-  m_scissor.y1 = m_scissor.y+h;
+  m_scissor.x1 = m_scissor.x+w-1;
+  m_scissor.y1 = m_scissor.y+h-1;
 
   textEngine().setScissor( x + rstate.orign.x,
                            y + rstate.orign.y,
@@ -43,8 +43,8 @@ Rect PainterDevice::scissor() const {
 
   return Rect( m_scissor.x  - orign.x,
                m_scissor.y  - orign.y,
-               m_scissor.x1 - m_scissor.x,
-               m_scissor.y1 - m_scissor.y );
+               m_scissor.x1 - m_scissor.x + 1,
+               m_scissor.y1 - m_scissor.y + 1 );
   }
 
 void PainterDevice::drawRect(int x, int y, int w, int h, int tx, int ty) {
