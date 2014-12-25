@@ -257,7 +257,7 @@ void DirectX9::endPaint  ( AbstractAPI::Device *d ) const{
 void DirectX9::setRenderTaget( AbstractAPI::Device *d,
                                AbstractAPI::Texture   *t, int mip,
                                int mrtSlot ) const {
-  T_ASSERT_X(t, "null render taget");
+  T_ASSERT_X(t!=nullptr, "null render taget");
   LPDIRECT3DDEVICE9  dev  = Data::dev(d);
   LPDIRECT3DTEXTURE9 tex  = LPDIRECT3DTEXTURE9(t);
 
@@ -320,8 +320,8 @@ void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
 
   {
     Device*  dev  = (Device*)(d);
-    dev->hasDepthTaget   = surf;
-    dev->hasStencilTaget = surf;
+    dev->hasDepthTaget   = (surf!=nullptr);
+    dev->hasStencilTaget = (surf!=nullptr);
     }
   //surf->Release();
   }
@@ -343,8 +343,8 @@ void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
 
   {
     Device*  dev  = (Device*)(d);
-    dev->hasDepthTaget   = tx;
-    dev->hasStencilTaget = tx;
+    dev->hasDepthTaget   = (tx!=nullptr);
+    dev->hasStencilTaget = (tx!=nullptr);
     }
   }
 
@@ -1093,7 +1093,7 @@ void DirectX9::setRenderState( AbstractAPI::Device *d,
   if( r.alphaTestMode()!=RenderState::AlphaTestMode::Always ){
     dev->SetRenderState( D3DRS_ALPHATESTENABLE, TRUE );
     dev->SetRenderState( D3DRS_ALPHAFUNC, cmp[ r.alphaTestMode() ] );
-    dev->SetRenderState( D3DRS_ALPHAREF, 255*r.alphaTestRef() );
+    dev->SetRenderState( D3DRS_ALPHAREF, DWORD(255*r.alphaTestRef()) );
     } else {
     dev->SetRenderState( D3DRS_ALPHATESTENABLE, FALSE );
     }
