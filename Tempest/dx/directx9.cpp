@@ -961,7 +961,8 @@ void DirectX9::deleteVertexDecl( AbstractAPI::Device *,
   }
 
 void DirectX9::setVertexDeclaration( AbstractAPI::Device *d,
-                                     AbstractAPI::VertexDecl* de ) const {
+                                     AbstractAPI::VertexDecl* de,
+                                     size_t  ) const {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
   LPDIRECT3DVERTEXDECLARATION9  decl = LPDIRECT3DVERTEXDECLARATION9(de);
 

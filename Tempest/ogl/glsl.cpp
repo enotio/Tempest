@@ -571,8 +571,7 @@ void GLSL::setUniforms( unsigned int /*prog*/,
   Texture3d::Sampler* smp3d = (Texture3d::Sampler*)ux.smp[1].data();
 
   for( int t: ux.desc ){
-    //*id = data->location( prog, name ); // int to uint convertion
-    const char* v = &ux.data[0] + fields[0];
+    const char* v = ux.data.data() + fields[0];
     ++fields;
 
     if(*id!=uintptr_t(-1))

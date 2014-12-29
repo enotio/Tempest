@@ -20,8 +20,9 @@ char       Log::buffer[128];
 std::mutex Log::mutex;
 
 void Log::flush(Mode m, char *&out, size_t &count) {
-  if(count!=sizeof(buffer)-1){
-    buffer[sizeof(buffer)-count] = '\0';
+  if(count!=sizeof(buffer)){
+    *out = '\0';
+
 #ifdef __ANDROID__
   if( m==Info )
      __android_log_print(ANDROID_LOG_INFO, "", "%s", buffer);

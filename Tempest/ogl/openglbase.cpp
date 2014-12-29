@@ -1,6 +1,7 @@
 #include "openglbase.h"
 
 #include <Tempest/Platform>
+#include <Tempest/Log>
 #include "gltypes.h"
 
 //#define OGL_DEBUG
@@ -39,17 +40,7 @@ bool OpenGLBase::errCk() const {
 
   while( err!=GL_NO_ERROR ){
     const char* glErrorDesc = Detail::ImplDeviceBase::glErrorDesc(err);
-#ifndef __ANDROID__
-    std::cout << "[OpenGL]: ";
-    if( glErrorDesc )
-      std::cout << glErrorDesc <<" ";
-    std::cout  <<"0x"<< std::hex << err << std::dec << std::endl;
-#else
-    void* ierr = (void*)err;
-    if( glErrorDesc )
-      __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "error %s", glErrorDesc); else
-      __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "error %p", ierr);
-#endif
+    Log::e("[OpenGL]: ",(glErrorDesc ? glErrorDesc : "")," ",(void*)err);
     err = glGetError();
     ok = false;
     }

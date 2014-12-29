@@ -1123,7 +1123,8 @@ void DirectX11::deleteVertexDecl( AbstractAPI::Device *,
   }
 
 void DirectX11::setVertexDeclaration(AbstractAPI::Device *,
-                                     AbstractAPI::VertexDecl *) const {
+                                     AbstractAPI::VertexDecl *,
+                                     size_t) const {
   }//NOP
 
 void DirectX11::bindVertexBuffer( AbstractAPI::Device *d,

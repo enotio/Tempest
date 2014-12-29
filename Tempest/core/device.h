@@ -140,7 +140,7 @@ class Device {
                           const Tempest::VertexBuffer<T> & vbo,
                           int vboOffsetIndex,
                           int pCount ){
-      bind(decl);
+      bind( decl, sizeof(T) );
       bind( vbo.data.const_value(), sizeof(T) );
 
       const AbstractShadingLang& sh = shadingLang();
@@ -160,7 +160,7 @@ class Device {
                                  int vboOffsetIndex,
                                  int iboOffsetIndex,
                                  int pCount ){
-      bind(decl);
+      bind( decl, sizeof(T) );
       bind( vbo.data.const_value(), sizeof(T) );
       bind( ibo.data.const_value() );
 
@@ -177,7 +177,7 @@ class Device {
     void assertPaint();
     void applyRs() const;
 
-    void bind( const Tempest::VertexDeclaration & d );
+    void bind( const Tempest::VertexDeclaration & d, size_t vsize );
     void bind( AbstractAPI::VertexBuffer* b, int vsize );
     void bind( AbstractAPI::IndexBuffer* b );
 

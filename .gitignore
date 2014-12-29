@@ -2,6 +2,7 @@
 ## MakeFile - generated
 #################
 Makefile
+Makefile.*
 Makefile.Debug
 Makefile.Release
 Makefile.*.Debug

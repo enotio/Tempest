@@ -215,7 +215,8 @@ class AbstractAPI: public GraphicsSubsystem {
     virtual void deleteVertexDecl( AbstractAPI::Device *d,
                                    AbstractAPI::VertexDecl* ) const = 0;
     virtual void setVertexDeclaration( AbstractAPI::Device *d,
-                                       AbstractAPI::VertexDecl* ) const = 0;
+                                       AbstractAPI::VertexDecl*,
+                                       size_t ) const = 0;
 
     virtual void* lockBuffer( AbstractAPI::Device *d,
                               AbstractAPI::VertexBuffer*,

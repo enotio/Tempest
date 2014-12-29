@@ -127,7 +127,8 @@ class Opengl2x : public OpenGLBase {
                            AbstractAPI::VertexDecl* ) const;
 
     void setVertexDeclaration( AbstractAPI::Device *d,
-                               AbstractAPI::VertexDecl* ) const;
+                               AbstractAPI::VertexDecl*,
+                               size_t vsize ) const;
 
     void bindVertexBuffer( AbstractAPI::Device *d,
                            AbstractAPI::VertexBuffer*,

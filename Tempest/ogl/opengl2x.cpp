@@ -896,6 +896,7 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
   Detail::GLTexture* tex = dev->texPool.alloc();
   glGenTextures(1, &tex->id);
   glBindTexture(GL_TEXTURE_2D, tex->id);
+  T_ASSERT_X( errCk(), "OpenGL error" );
 
   tex->mips     = mips;
   tex->compress = false;
@@ -920,17 +921,21 @@ AbstractAPI::Texture *Opengl2x::createTexture( AbstractAPI::Device *d,
     } else
   if( p.format()==Pixmap::Format_RGB ||
       p.format()==Pixmap::Format_RGBA ){
+    T_ASSERT_X( errCk(), "OpenGL error" );
     glTexImage2D( GL_TEXTURE_2D, 0, tex->format, p.width(), p.height(), 0,tex->format,
                   GL_UNSIGNED_BYTE, p.const_data() );
+    T_ASSERT_X( errCk(), "OpenGL error" );
     if( mips )
       glGenerateMipmap( GL_TEXTURE_2D );
+    T_ASSERT_X( errCk(), "OpenGL error" );
     } else {
     loadTextureS3TC(d, (AbstractAPI::Texture*)tex, p, mips, compress);
     }
 
   if( glGetError()==GL_INVALID_VALUE ){
     glDeleteTextures( 1, &tex->id );
-    delete tex;
+    Log::e("OpenGL: unable to alloc texture");
+    dev->texPool.free(tex);
     return 0;
     }
 
@@ -1568,13 +1573,15 @@ void Opengl2x::deleteVertexDecl( AbstractAPI::Device *d,
   }
 
 void Opengl2x::setVertexDeclaration( AbstractAPI::Device *d,
-                                     AbstractAPI::VertexDecl* de ) const {
+                                     AbstractAPI::VertexDecl* de,
+                                     size_t vsize ) const {
   if( !setDevice(d) ) return;
 
   if( dev->decl==(VertexDeclaration::Declarator*)de )
     return;
 
-  dev->decl   = (VertexDeclaration::Declarator*)de;
+  dev->decl       = (VertexDeclaration::Declarator*)de;
+  dev->vertexSize = vsize;
 
   if( dev->isPainting )
     setupAttrPtr( *dev->decl, 0, true, true, true );

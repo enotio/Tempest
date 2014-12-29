@@ -112,7 +112,8 @@ class DirectX9 : public AbstractAPI {
                            AbstractAPI::VertexDecl* ) const;
 
     void setVertexDeclaration( AbstractAPI::Device *d,
-                               AbstractAPI::VertexDecl* ) const;
+                               AbstractAPI::VertexDecl*,
+                               size_t ) const;
 
     void bindVertexBuffer( AbstractAPI::Device *d,
                            AbstractAPI::VertexBuffer*,

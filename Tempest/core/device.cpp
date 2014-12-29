@@ -869,11 +869,11 @@ void Device::bind(const ShaderProgram &s) {
   shadingLang().bind(s);
   }
 
-void Device::bind( const Tempest::VertexDeclaration & d ){
+void Device::bind(const Tempest::VertexDeclaration & d, size_t vsize){
   Tempest::AbstractAPI::VertexDecl* decl =
       reinterpret_cast<Tempest::AbstractAPI::VertexDecl*>(d.decl->impl);
 
-  api.setVertexDeclaration( impl, decl );
+  api.setVertexDeclaration( impl, decl, vsize );
   }
  
 void Device::bind( AbstractAPI::VertexBuffer* b, int vsize ){
