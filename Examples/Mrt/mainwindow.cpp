@@ -107,8 +107,8 @@ void MainWindow::mouseDragEvent(MouseEvent &e) {
 
 void MainWindow::mouseWheelEvent(MouseEvent &e) {
   if( e.delta>0 )
-    zoom *= 1.1; else
-    zoom /= 1.1;
+    zoom *= 1.1f; else
+    zoom /= 1.1f;
   }
 
 void MainWindow::mrt( Texture2d* a ) {
@@ -153,11 +153,11 @@ void MainWindow::setupShaderConstants( ShaderProgram &sh,
                                        const Size& rtSize ) {
   Matrix4x4 mvpMatrix, projective, view;
 
-  projective.perspective( 45.0, (float)rtSize.w/rtSize.h, 0.1, 100.0 );
+  projective.perspective( 45.0f, (float)rtSize.w/rtSize.h, 0.1f, 100.0f );
 
   view.translate(0,0,4);
-  view.rotate(rotate.y, 1, 0, 0);
-  view.rotate(rotate.x, 0, 1, 0);
+  view.rotate(float(rotate.y), 1, 0, 0);
+  view.rotate(float(rotate.x), 0, 1, 0);
   view.scale(zoom);
 
   mvpMatrix = projective;

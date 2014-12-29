@@ -16,28 +16,28 @@ enum APIType{
 Tempest::AbstractAPI& api( APIType a ){
   using namespace Tempest;
 
-  switch( a ){
-    case Direct3D:{
-      static DirectX9 api;
-      return api;
-      }
+  static std::unique_ptr<Tempest::AbstractAPI> api;
 
-    case Direct3D11:{
-      static DirectX11 api;
-      return api;
-      }
+  switch( a ){
+    case Direct3D:
+      api.reset(new DirectX9());
+      break;
+
+    case Direct3D11:
+      api.reset(new DirectX11());
+      break;
 
     case OpenGL4:
-      static Opengl4x api;
-      return api;
+      api.reset(new Opengl4x());
       break;
 
     case OpenGL:
-    default:{//avoid gcc 4.8 warning
-      static Opengl2x api;
-      return api;
-      }
+    default: //avoid gcc 4.8 warning
+      api.reset(new Opengl2x());
+      break;
     }
+
+  return *api;
   }
 
 int main() {

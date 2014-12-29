@@ -49,7 +49,7 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     vboHolder( device ),
     iboHolder( device ),
     shHolder ( device ){
-  mProj.perspective( 45, w()/double(h()), 0.1, 100.0 );
+  mProj.perspective( 45.f, w()/float(h()), 0.1f, 100.0f );
   udecl.add("modelView",Decl::Matrix4x4)
        .add("mvpMatrix",Decl::Matrix4x4)
        .add("lightDir", Decl::float3)
@@ -84,7 +84,7 @@ void MainWindow::render() {
   device.beginPaint();
   device.clear( Tempest::Color(0), 1.0 );
 
-  setShaderConstants( spin.x, spin.y, texture, normal, height );
+  setShaderConstants( float(spin.x), float(spin.y), texture, normal, height );
 
   shader.setUniform(ubo,udecl,0);
   device.drawIndexed( Tempest::AbstractAPI::Triangle,
@@ -98,7 +98,7 @@ void MainWindow::render() {
   }
 
 void MainWindow::resizeEvent(Tempest::SizeEvent &) {
-  mProj.perspective( 45, w()/double(h()), 0.1, 100.0 );
+  mProj.perspective( 45.f, w()/float(h()), 0.1f, 100.0f );
   device.reset( options() );
   }
 

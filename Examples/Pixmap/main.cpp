@@ -1,6 +1,6 @@
+#include <Tempest/Application>
 #include <Tempest/Pixmap>
 #include <Tempest/File>
-#include <iostream>
 
 int main() {
   Tempest::Pixmap p;

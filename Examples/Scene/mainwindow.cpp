@@ -89,7 +89,7 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     SceneObject obj(scene);
     obj.setModel(m);
     obj.setMaterial(mat);
-    obj.setPosition( i*2,0,0);
+    obj.setPosition( i*2.f,0,0);
     objects.push_back( obj );
     }
 
@@ -97,14 +97,14 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     SceneObject obj(scene);
     obj.setModel(m);
     obj.setMaterial(mat);
-    obj.setPosition( 0,i*2,0);
+    obj.setPosition( 0,i*2.f,0);
     objects.push_back( obj );
     }
   for( int i=1; i<3; ++i ){
     SceneObject obj(scene);
     obj.setModel(m);
     obj.setMaterial(mat);
-    obj.setPosition( 0,0,i*2);
+    obj.setPosition( 0,0,i*2.f);
     objects.push_back( obj );
     }
   }

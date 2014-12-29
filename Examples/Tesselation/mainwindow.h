@@ -53,7 +53,6 @@ class MainWindow : public Tempest::Window {
     Tempest::IndexBuffer <uint16_t> ibo;
 
     Tempest::VertexDeclaration    vdecl;
-    Tempest::Matrix4x4 mProj;
 
     struct UBO{
       Tempest::Matrix4x4 modelView;

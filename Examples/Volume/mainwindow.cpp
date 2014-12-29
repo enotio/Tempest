@@ -119,7 +119,7 @@ void MainWindow::loadData() {
 
   volume.setSampler(s);
 
-  double sz = std::max( std::max(x,y), z );
+  float sz = std::max( std::max(x,y), z );
   modeSize[0] = x/sz;
   modeSize[1] = y/sz;
   modeSize[2] = z/sz;
@@ -138,8 +138,8 @@ void MainWindow::mouseDragEvent(MouseEvent &e) {
 
 void MainWindow::mouseWheelEvent(MouseEvent &e) {
   if( e.delta>0 )
-    zoom *= 1.1; else
-    zoom /= 1.1;
+    zoom *= 1.1f; else
+    zoom /= 1.1f;
   }
 
 void MainWindow::render() {
@@ -166,11 +166,11 @@ void MainWindow::resizeEvent( SizeEvent & ) {
 void MainWindow::setupShaderConstants( ShaderProgram &sh ) {
   Matrix4x4 mvpMatrix, projective, view;
 
-  projective.perspective( 45.0, (float)w()/h(), 0.1, 100.0 );
+  projective.perspective( 45.0f, (float)w()/h(), 0.1f, 100.0f );
 
   view.translate(0,0,4);
-  view.rotate(rotate.y, 1, 0, 0);
-  view.rotate(rotate.x, 0, 0, 1);
+  view.rotate(float(rotate.y), 1, 0, 0);
+  view.rotate(float(rotate.x), 0, 0, 1);
   view.scale(zoom);
   view.mul( this->view );
 

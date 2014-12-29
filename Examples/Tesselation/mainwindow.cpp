@@ -52,8 +52,6 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     vboHolder( device ),
     iboHolder( device ),
     shHolder ( device ) {
-  mProj.perspective( 45, w()/double(h()), 0.1, 100.0 );
-
   udecl.add("modelMatrix",Decl::Matrix4x4)
        .add("mvpMatrix",  Decl::Matrix4x4)
        .add("diffuse",    Decl::Texture2d)
@@ -91,7 +89,7 @@ void MainWindow::render() {
   device.beginPaint();
   device.clear( Tempest::Color(0,0,1), 1.0 );
 
-  setShaderConstants( spin.x, spin.y, texture, normal, height );
+  setShaderConstants( float(spin.x), float(spin.y), texture, normal, height );
 
   shader.setUniform(ubo,udecl,0);
   device.drawIndexed( AbstractAPI::PrimitiveType(0),
@@ -105,7 +103,6 @@ void MainWindow::render() {
   }
 
 void MainWindow::resizeEvent(Tempest::SizeEvent &) {
-  mProj.perspective( 45, w()/double(h()), 0.1, 100.0 );
   device.reset( options() );
   }
 
@@ -115,7 +112,7 @@ void MainWindow::setShaderConstants( float spinX, float spinY,
                                      const Texture2d &height  ) {
   Matrix4x4 mvpMatrix, projective, view;
 
-  projective.perspective( 45.0, (float)w()/h(), 0.1, 100.0 );
+  projective.perspective( 45.f, w()/float(h()), 0.1f, 100.0f );
 
   view.translate(0,0,4);
   view.rotate(spinY, 1, 0, 0);

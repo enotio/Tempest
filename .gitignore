@@ -4,12 +4,16 @@
 Makefile
 Makefile.Debug
 Makefile.Release
+Makefile.*.Debug
+Makefile.*.Release
 
 #################
 ## QtCreator
 #################
 *.pro.user
 *.pro.user.*
+*.exe_manifest.rc
+*.exe_manifest.res
 
 #################
 ## Android
@@ -57,6 +61,7 @@ local.properties
 *.exe
 *.a
 *.lib
+*.exe.embed.manifest
 
 
 #################
