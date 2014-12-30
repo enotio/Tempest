@@ -21,7 +21,7 @@ class ListBox : public AbstractListBox {
 
       delegate.reset(new D(d));
       setupView(size_t(-1));
-      seupDelegateCallback();
+      setupDelegateCallback();
       }
 
     void removeDelegate();
@@ -50,7 +50,7 @@ class ListBox : public AbstractListBox {
     void onItem(size_t id , Widget *view);
     void selectItem( size_t id );
 
-    void seupDelegateCallback();
+    void setupDelegateCallback();
 
     struct ProxyDelegate;
   };

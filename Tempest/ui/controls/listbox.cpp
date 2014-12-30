@@ -167,10 +167,9 @@ void ListBox::selectItem(size_t id) {
   close();
   }
 
-void ListBox::seupDelegateCallback() {
+void ListBox::setupDelegateCallback() {
   delegate->onItemViewSelected.bind(this, &ListBox::onItem);
   }
-
 
 size_t Tempest::ListBox::currentItem() const {
   return selected;
