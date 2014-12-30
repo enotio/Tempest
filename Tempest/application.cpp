@@ -21,7 +21,7 @@
 #define CLOCK_MONOTONIC 1
 #endif
 
-#if !defined(_INC_TYPES)&&!defined(_LINUX_TIME_H)
+#if !defined(_INC_TYPES)&&!defined(_LINUX_TIME_H)&&!defined(_TIME_H)
 struct timespec {
   long tv_sec;
   long tv_nsec;

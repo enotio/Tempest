@@ -23,8 +23,8 @@ android:{
   DESTDIR = ../lib
   }
 
-g++:QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
-QMAKE_LFLAGS += /IMPLIB:Tempest.lib
+QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
+#QMAKE_LFLAGS += /IMPLIB:Tempest.lib
 
 INCLUDEPATH += \
                "./thirdparty/" \

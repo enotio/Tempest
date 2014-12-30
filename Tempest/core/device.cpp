@@ -14,6 +14,7 @@
 #include <unordered_set>
 #include <sstream>
 #include <algorithm>
+#include <stdexcept>
 
 using namespace Tempest;
 

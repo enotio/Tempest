@@ -3,12 +3,13 @@
 
 #include <Tempest/SystemAPI>
 
+#ifdef __WINDOWS_PHONE__
 int __stdcall WinMain();
+#endif
 
 namespace Tempest{
 
 class Window;
-
 #ifdef __WINDOWS_PHONE__
 class WinPhoneAPI:public SystemAPI {
   protected:

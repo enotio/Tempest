@@ -13,6 +13,10 @@
 #include "glfn.h"
 #endif
 
+#ifdef __LINUX__
+#include "../system/linuxapi.h"
+#endif
+
 #include "gltypes.h"
 
 #include <Tempest/Log>
