@@ -2,19 +2,24 @@
 
 using namespace Tempest;
 
-ListView::ListView(Tempest::ListDelegate &delegate, Orientation ori)
-  : delegate(delegate), orientation(ori) {
+ListView::ListView(Orientation ori)
+  : orientation(ori) {
   if(orientation==Horizontal)
     setSizePolicy(FixedMin,Preferred);
   else
     setSizePolicy(Preferred,FixedMin);
-
-  setLayout(new Layout(delegate,ori));
-  delegate.onItemSelected.bind(onItemSelected);
   }
 
 ListView::~ListView() {
-  ((Layout&)layout()).delegate.onItemSelected.ubind(onItemSelected);
+  removeDelegate();
+  }
+
+void ListView::removeDelegate() {
+  if(delegate){
+    delegate->onItemSelected.ubind(onItemSelected);
+    delegate.reset();
+    setLayout(new Tempest::Layout());
+    }
   }
 
 void ListView::setOrientation(Orientation ori) {
@@ -24,8 +29,10 @@ void ListView::setOrientation(Orientation ori) {
   else
     setSizePolicy(Preferred,FixedMin);
 
-  setLayout(new Layout(delegate,ori));
+  if(delegate)
+    setLayout(new Layout(*delegate,ori));
   }
+
 
 ListView::Layout::Layout(ListDelegate &delegate, Orientation ori)
   :LinearLayout(ori), delegate(delegate), busy(false) {

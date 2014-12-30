@@ -715,6 +715,11 @@ void Widget::rootGestureEvent(AbstractGestureEvent &e) {
   impl_gestureEvent(this, e);
   }
 
+void Widget::rootCustomEvent(CustomEvent &e) {
+  e.ignore();
+  impl_customEvent(this, e);
+  }
+
 void Widget::impl_mouseUpEvent( Widget* w, Tempest::MouseEvent & e ){
   DeleteGuard guard(w);
   (void)guard;

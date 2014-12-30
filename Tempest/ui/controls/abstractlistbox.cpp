@@ -23,6 +23,8 @@ void AbstractListBox::showList() {
     close();
 
   Widget *box = createDropList();
+  if(!box)
+    return;
 
   overlay = new Overlay();
   T_ASSERT( SystemAPI::instance().addOverlay( overlay )!=0 );

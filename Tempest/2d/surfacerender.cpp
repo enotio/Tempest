@@ -133,12 +133,14 @@ void SurfaceRender::render(Device &dev) const {
     dev.setRenderState( rstate[b.state.bm] );
 
     ShaderProgram& sh = shaderForBlock(b);
-    if( !b.curTex.pageRect().isEmpty() )
-      uniforms.brush = b.curTex.pageRawData(); else
-    if( b.curTex2d )
+    if( !b.curTex.pageRect().isEmpty() ){
+      uniforms.brush = b.curTex.pageRawData();
+      sh.setUniform(uniforms,udecl,0);
+      } else
+    if( b.curTex2d ){
       uniforms.brush = *b.curTex2d;
-
-    sh.setUniform(uniforms,udecl,0);
+      sh.setUniform(uniforms,udecl,0);
+      }
 
     int sz = b.isLine? 2:3;
     dev.drawPrimitive( b.isLine? AbstractAPI::Lines : AbstractAPI::Triangle,
@@ -149,6 +151,7 @@ void SurfaceRender::render(Device &dev) const {
                        (b.end-b.begin)/sz );
     }
 
+  uniforms.brush = Tempest::Texture2d();
   dev.setRenderState(rs);
   }
 

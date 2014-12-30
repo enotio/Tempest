@@ -202,7 +202,7 @@ class PaintEvent: public Event {
 
 class CustomEvent: public Event {
   public:
-   CustomEvent(){ setType(Custom); }
+    CustomEvent(){ setType(Custom); }
   };
 
 class CloseEvent: public Event {

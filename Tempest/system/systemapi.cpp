@@ -377,7 +377,7 @@ void SystemAPI::processEvents( Widget *w,
       break;
 
     case Event::Custom:
-      w->customEvent( (CustomEvent&)e );
+      w->rootCustomEvent( (CustomEvent&)e );
       break;
     }
   }

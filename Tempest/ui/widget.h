@@ -163,6 +163,7 @@ class Widget {
     void rootCloseEvent   ( Tempest::CloseEvent & e );
 
     void rootGestureEvent( Tempest::AbstractGestureEvent & e );
+    void rootCustomEvent(CustomEvent &e );
 
 
     static Widget* impl_mouseEvent( Tempest::MouseEvent & e,

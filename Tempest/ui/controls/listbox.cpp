@@ -9,6 +9,37 @@
 
 using namespace Tempest;
 
+struct ListBox::ProxyDelegate : public ListDelegate {
+  ProxyDelegate(const std::shared_ptr<ListDelegate>& d):delegate(d){
+    d->invalidateView    .bind(invalidateView    );
+    d->updateView        .bind(updateView        );
+    d->onItemSelected    .bind(onItemSelected    );
+    d->onItemViewSelected.bind(onItemViewSelected);
+    }
+
+  ~ProxyDelegate(){
+    const std::shared_ptr<ListDelegate>& d = delegate;
+    d->invalidateView    .ubind(invalidateView    );
+    d->updateView        .ubind(updateView        );
+    d->onItemSelected    .ubind(onItemSelected    );
+    d->onItemViewSelected.ubind(onItemViewSelected);
+    }
+
+  std::shared_ptr<ListDelegate> delegate;
+
+  virtual size_t size() const{
+    return delegate->size();
+    }
+
+  virtual Widget* createView(size_t position){
+    return delegate->createView(position);
+    }
+
+  virtual void removeView(Widget* w, size_t position){
+    return delegate->removeView(w,position);
+    }
+  };
+
 class ListBox::ItemBtn:public Button{
   public:
     ItemBtn( size_t id ):id(id){
@@ -23,19 +54,29 @@ class ListBox::ItemBtn:public Button{
     Tempest::signal<size_t> clickedEx;
   };
 
-ListBox::ListBox(ListDelegate &delegate)
-  : AbstractListBox(), delegate(delegate), view(0) {
+ListBox::ListBox() : view(0) {
   selected = 0;
   dropListEnabled = true;
-  setupView(size_t(-1));
-  delegate.onItemViewSelected.bind(this, &ListBox::onItem);
+  }
+
+void ListBox::removeDelegate() {
+  if(view){
+    layout().take(view);
+    delegate->removeView(view,selected);
+    view = 0;
+    }
+
+  if(delegate){
+    delegate->onItemSelected.ubind(onItemSelected);
+    delegate.reset();
+    }
   }
 
 void ListBox::setCurrentItem(size_t i) {
-  if( delegate.size()==0 )
+  if( !delegate || delegate->size()==0 )
     return;
 
-  i = std::min( delegate.size()-1, i );
+  i = std::min( delegate->size()-1, i );
   if( selected!=i ){
     selected = i;
     auto tmp = dropListEnabled;
@@ -52,32 +93,38 @@ void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
     }
 
   dropListEnabled = false;
-  if( delegate.size() ){
+  if( delegate && delegate->size() ){
     Layout& l = layout();
     Widget* view = (l.widgets().size()==0 ? nullptr : l.widgets()[0]);
-    if( e.delta < 0 && selected+1<delegate.size() )
-      delegate.onItemViewSelected(selected+1,view);
+    if( e.delta < 0 && selected+1<delegate->size() )
+      delegate->onItemViewSelected(selected+1,view);
       else
     if( e.delta > 0 && selected>0 )
-      delegate.onItemViewSelected(selected-1,view);
+      delegate->onItemViewSelected(selected-1,view);
     }
   dropListEnabled = true;
   }
 
 void ListBox::setupView(size_t oldSelected) {
+  if(!delegate)
+    return;
+
   if(view){
     layout().take(view);
-    delegate.removeView(view,oldSelected);
+    delegate->removeView(view,oldSelected);
     view = 0;
     }
 
-  if(delegate.size()){
-    view = delegate.createView(selected);
+  if(delegate->size()){
+    view = delegate->createView(selected);
     layout().add(view);
     }
   }
 
 Tempest::Widget* ListBox::createDropList() {
+  if(!delegate)
+    return nullptr;
+
   Panel *box = new Panel();
 
   box->setLayout( Tempest::Horizontal );
@@ -85,7 +132,9 @@ Tempest::Widget* ListBox::createDropList() {
   box->setPosition( mapToRoot( Tempest::Point(0,h()) ) );
 
   ScroolWidget *sw = new ScroolWidget();
-  ListView* list   = new ListView(delegate,Vertical);
+  ListView* list   = new ListView(Vertical);
+  list->setDelegate(ProxyDelegate(delegate));
+
   sw->centralWidget().layout().add(list);
   int wx = std::max(w(), list->minSize().w+box->margin().xMargin());
   box->resize(wx, list->h()+box->margin().yMargin());

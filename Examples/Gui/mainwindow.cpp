@@ -54,12 +54,14 @@ void MainWindow::setupUi() {
   edit->setHint("some edit");
   panel->layout().add(edit);
 
-  ListBox* listBox = new ListBox(listBoxDelegate);
+  ListBox* listBox = new ListBox();
+  listBox->setDelegate(listBoxDelegate);
   panel->layout().add(listBox);
 
   ScroolWidget* sc = new ScroolWidget();
 
-  ListView* list = new ListView(listViewDelegate);
+  ListView* list = new ListView();
+  list->setDelegate(listViewDelegate);
   sc->centralWidget().layout().add(list);
   panel->layout().add(sc);
 

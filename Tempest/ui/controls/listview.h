@@ -6,21 +6,33 @@
 #include <Tempest/ListDelegate>
 
 #include <unordered_set>
+#include <memory>
 
 namespace Tempest {
 
 class ListView : public Widget {
   public:
-    ListView(ListDelegate& delegate,Tempest::Orientation ori = Tempest::Vertical);
+    ListView(Tempest::Orientation ori = Tempest::Vertical);
     ~ListView();
+
+    template<class D>
+    void setDelegate(const D& d){
+      removeDelegate();
+
+      delegate.reset(new D(d));
+      delegate->onItemSelected.bind(onItemSelected);
+      setLayout(new Layout(*delegate,orientation));
+      }
+
+    void removeDelegate();
 
     void setOrientation(Tempest::Orientation ori);
 
     Tempest::signal<size_t> onItemSelected;
 
   private:
-    Tempest::Orientation orientation;
-    ListDelegate& delegate;
+    Tempest::Orientation          orientation;
+    std::unique_ptr<ListDelegate> delegate;
 
     struct Layout : Tempest::LinearLayout {
       Layout(ListDelegate& delegate, Tempest::Orientation ori);

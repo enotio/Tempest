@@ -12,7 +12,18 @@ class ListDelegate;
 
 class ListBox : public AbstractListBox {
   public:
-    ListBox(ListDelegate& delegate);
+    ListBox();
+
+    template<class D>
+    void setDelegate(const D& d){
+      removeDelegate();
+
+      delegate.reset(new D(d));
+      setupView(size_t(-1));
+      delegate->onItemViewSelected.bind(this, &ListBox::onItem);
+      }
+
+    void removeDelegate();
 
     Tempest::signal<size_t> onItemSelected;
 
@@ -28,7 +39,7 @@ class ListBox : public AbstractListBox {
   private:
     size_t selected;
     bool dropListEnabled;
-    ListDelegate& delegate;
+    std::shared_ptr<ListDelegate> delegate;
 
     Tempest::Widget *createDropList();
     Tempest::Widget *view;
@@ -37,6 +48,8 @@ class ListBox : public AbstractListBox {
 
     void onItem(size_t id , Widget *view);
     void selectItem( size_t id );
+
+    struct ProxyDelegate;
   };
 
 }
