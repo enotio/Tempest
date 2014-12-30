@@ -13,7 +13,7 @@ class Widget;
 
 class ListDelegate {
   public:
-    virtual ~ListDelegate() = default;
+    virtual ~ListDelegate(){}
 
     virtual size_t  size() const = 0;
 

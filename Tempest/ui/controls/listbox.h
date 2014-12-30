@@ -13,6 +13,7 @@ class ListDelegate;
 class ListBox : public AbstractListBox {
   public:
     ListBox();
+    ~ListBox();
 
     template<class D>
     void setDelegate(const D& d){
@@ -20,7 +21,7 @@ class ListBox : public AbstractListBox {
 
       delegate.reset(new D(d));
       setupView(size_t(-1));
-      delegate->onItemViewSelected.bind(this, &ListBox::onItem);
+      seupDelegateCallback();
       }
 
     void removeDelegate();
@@ -48,6 +49,8 @@ class ListBox : public AbstractListBox {
 
     void onItem(size_t id , Widget *view);
     void selectItem( size_t id );
+
+    void seupDelegateCallback();
 
     struct ProxyDelegate;
   };

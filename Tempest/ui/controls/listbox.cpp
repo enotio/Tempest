@@ -59,6 +59,10 @@ ListBox::ListBox() : view(0) {
   dropListEnabled = true;
   }
 
+ListBox::~ListBox() {
+  removeDelegate();
+  }
+
 void ListBox::removeDelegate() {
   if(view){
     layout().take(view);
@@ -161,6 +165,10 @@ void ListBox::selectItem(size_t id) {
   onItemSelected(id);
   setupView(old);
   close();
+  }
+
+void ListBox::seupDelegateCallback() {
+  delegate->onItemViewSelected.bind(this, &ListBox::onItem);
   }
 
 
