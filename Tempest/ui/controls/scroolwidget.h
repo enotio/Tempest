@@ -18,6 +18,7 @@ class ScroolWidget : public Tempest::Widget {
       };
 
     Widget& centralWidget();
+    void setLayout(Tempest::Orientation ori);
 
     void hideScroolBars();
     void setScroolBarsVisible( bool h, bool v );

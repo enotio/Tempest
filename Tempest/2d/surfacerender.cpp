@@ -218,11 +218,11 @@ void SurfaceRender::triangle (int x1, int y1, int u1, int v1,
 
 void SurfaceRender::line(int x, int y, int x2, int y2) {
   Vertex v[2];
-  v[0].x = x*invW;
-  v[0].y = y*invH;
+  v[0].x = x*invW + invW*0.5f;
+  v[0].y = y*invH + invH*0.5f;
 
-  v[1].x = x2*invW;
-  v[1].y = y2*invH;
+  v[1].x = x2*invW + invW*0.5f;
+  v[1].y = y2*invH + invH*0.5f;
 
   update(v,2);
 

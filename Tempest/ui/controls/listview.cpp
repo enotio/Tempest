@@ -3,7 +3,7 @@
 using namespace Tempest;
 
 ListView::ListView(Tempest::ListDelegate &delegate, Orientation ori)
-  : orientation(ori) {
+  : delegate(delegate), orientation(ori) {
   if(orientation==Horizontal)
     setSizePolicy(FixedMin,Preferred);
   else
@@ -23,6 +23,8 @@ void ListView::setOrientation(Orientation ori) {
     setSizePolicy(FixedMin,Preferred);
   else
     setSizePolicy(Preferred,FixedMin);
+
+  setLayout(new Layout(delegate,ori));
   }
 
 ListView::Layout::Layout(ListDelegate &delegate, Orientation ori)

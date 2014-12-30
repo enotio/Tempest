@@ -178,7 +178,7 @@ void Button::drawBack(Tempest::Painter &p){
 void Button::drawBack(Tempest::Painter &p, const Tempest::Rect& r ){
   auto c = p.color();
   p.setColor(Color(0.8f,0.8f,0.85f,0.75f));
-  p.drawRect(Rect(r.x,r.y,r.w-1,r.h-1));
+  p.drawRect(Rect(r.x,r.y,r.w,r.h));
   p.setColor(c);
   }
 
@@ -194,7 +194,7 @@ void Button::drawFrame(Tempest::Painter & p, const Tempest::Rect &vRect) {
   p.drawLine(vRect.x,vRect.y+vRect.h-1,vRect.x+vRect.w-1,vRect.y+vRect.h-1);
 
   p.drawLine(vRect.x,          vRect.y,vRect.x,          vRect.y+vRect.h-1);
-  p.drawLine(vRect.x+vRect.w-1,vRect.y,vRect.x+vRect.w-1,vRect.y+vRect.h-1);
+  p.drawLine(vRect.x+vRect.w-1,vRect.y,vRect.x+vRect.w-1,vRect.y+vRect.h  );
   p.setColor(c);
   }
 

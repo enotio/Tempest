@@ -9,15 +9,19 @@
 using namespace Tempest;
 
 PainterDevice::PainterDevice() {
-  State::ScissorRect & m_scissor = rstate.scissor;
+  State::ScissorRect & scissor = rstate.scissor;
 
-  m_scissor.x  = 0 + rstate.orign.x;
-  m_scissor.y  = 0 + rstate.orign.y;
-  m_scissor.x1 = m_scissor.x-1;
-  m_scissor.y1 = m_scissor.y-1;
+  scissor.x  = 0 + rstate.orign.x;
+  scissor.y  = 0 + rstate.orign.y;
+  scissor.x1 = scissor.x-1;
+  scissor.y1 = scissor.y-1;
   }
 
 PainterDevice::~PainterDevice() {
+  }
+
+void PainterDevice::setScissor( const Rect &r ) {
+  setScissor( r.x, r.y, r.w, r.h );
   }
 
 void PainterDevice::setScissor(int x, int y, int w, int h) {
@@ -25,16 +29,12 @@ void PainterDevice::setScissor(int x, int y, int w, int h) {
 
   m_scissor.x  = x + rstate.orign.x;
   m_scissor.y  = y + rstate.orign.y;
-  m_scissor.x1 = m_scissor.x+w-1;
-  m_scissor.y1 = m_scissor.y+h-1;
+  m_scissor.x1 = m_scissor.x+w;
+  m_scissor.y1 = m_scissor.y+h;
 
   textEngine().setScissor( x + rstate.orign.x,
                            y + rstate.orign.y,
                            w, h );
-  }
-
-void PainterDevice::setScissor( const Rect &r ) {
-  setScissor( r.x, r.y, r.w, r.h );
   }
 
 Rect PainterDevice::scissor() const {
@@ -43,8 +43,8 @@ Rect PainterDevice::scissor() const {
 
   return Rect( m_scissor.x  - orign.x,
                m_scissor.y  - orign.y,
-               m_scissor.x1 - m_scissor.x + 1,
-               m_scissor.y1 - m_scissor.y + 1 );
+               m_scissor.x1 - m_scissor.x,
+               m_scissor.y1 - m_scissor.y );
   }
 
 void PainterDevice::drawRect(int x, int y, int w, int h, int tx, int ty) {

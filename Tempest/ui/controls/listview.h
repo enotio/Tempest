@@ -20,6 +20,7 @@ class ListView : public Widget {
 
   private:
     Tempest::Orientation orientation;
+    ListDelegate& delegate;
 
     struct Layout : Tempest::LinearLayout {
       Layout(ListDelegate& delegate, Tempest::Orientation ori);
@@ -34,6 +35,7 @@ class ListView : public Widget {
       };
 
     using Widget::layout;
+    using Widget::setLayout;
   };
 
 }

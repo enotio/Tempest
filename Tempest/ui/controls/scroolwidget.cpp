@@ -48,6 +48,8 @@ struct ScroolWidget::ProxyLayout: public Tempest::Layout {
   };
 
 struct ScroolWidget::BoxLayout: public Tempest::LinearLayout {
+  BoxLayout(Tempest::Orientation ori):LinearLayout(ori){}
+
   void applyLayout(){
     LinearLayout::applyLayout();
     if(widgets().size()==0)
@@ -82,11 +84,11 @@ ScroolWidget::ScroolWidget()
   mlay->helper  = &helper;
   sbH.setOrientation(Horizontal);
 
-  setLayout(mlay);
+  Widget::setLayout(mlay);
   layout().add(&sbH);
   layout().add(&sbV);
   layout().add(&helper);
-  cen.setLayout(new BoxLayout());
+  cen.setLayout(new BoxLayout(Vertical));
   helper.layout().add(&cen);
 
   sbH.valueChanged.bind(this, &ScroolWidget::scroolH);
@@ -102,6 +104,10 @@ ScroolWidget::~ScroolWidget() {
 
 Tempest::Widget &ScroolWidget::centralWidget() {
   return cen;
+  }
+
+void ScroolWidget::setLayout(Orientation ori) {
+  cen.setLayout(new BoxLayout(ori));
   }
 
 void ScroolWidget::hideScroolBars() {
@@ -224,16 +230,18 @@ void ScroolWidget::scroolV(int v) {
   }
 
 void ScroolWidget::resizeEv(int,int) {
+  using std::max;
+
   const std::vector<Widget*>& wx = cen.layout().widgets();
   const Widget* first = wx.size()>0 ? wx[0]     : nullptr;
   const Widget* last  = wx.size()>0 ? wx.back() : nullptr;
 
-  const int dx = std::max(cen.w()-helper.w(),0);
-  const int dy = std::max(cen.h()-helper.h(),0);
+  const int dx = max(cen.w()-helper.w(),0);
+  const int dy = max(cen.h()-helper.h(),0);
   sbH.setRange( mlay->scroolBeforeBeginH && first!=nullptr ? first->w()-dx : 0,
-                mlay->scroolAfterEndH && last!=nullptr ? cen.w()-last->w() : dx );
+                mlay->scroolAfterEndH && last!=nullptr ? max(last->w()-helper.w(),0) : dx );
   sbV.setRange( mlay->scroolBeforeBeginV && first!=nullptr ? first->h()-dy : 0,
-                mlay->scroolAfterEndV && last!=nullptr ? cen.h()-last->h() : dy );
+                mlay->scroolAfterEndV && last!=nullptr ? max(last->h()-helper.h(),0) : dy );
 
   if(hor==AsNeed)
     sbH.setVisible(dx>0);
