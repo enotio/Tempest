@@ -57,8 +57,11 @@ void MainWindow::setupUi() {
   ListBox* listBox = new ListBox(listBoxDelegate);
   panel->layout().add(listBox);
 
+  ScroolWidget* sc = new ScroolWidget();
+
   ListView* list = new ListView(listViewDelegate);
-  panel->layout().add(list);
+  sc->centralWidget().layout().add(list);
+  panel->layout().add(sc);
 
   layout().add(panel);
   }
@@ -69,7 +72,7 @@ void MainWindow::paintEvent(PaintEvent &e) {
   p.setTexture(texture);
   p.drawRect( Rect(100,100, 256, 256), texture.rect() );
 
-  p.setFont( Font("data/arial", 16) );
+  p.setFont( Application::mainFont() );
   p.drawText(100, 80, hint);
 
   paintNested(e);
