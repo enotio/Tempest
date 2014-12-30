@@ -1,10 +1,13 @@
 #include "mainwindow.h"
 
 #include <Tempest/Application>
+#ifdef __WINDOWS__
 #include <Tempest/DirectX9>
 #include <Tempest/DirectX11>
-#include <Tempest/Opengl2x>
 #include <Tempest/Opengl4x>
+#endif
+#include <Tempest/Opengl2x>
+
 
 enum APIType{
   OpenGL,
@@ -19,6 +22,7 @@ Tempest::AbstractAPI& api( APIType a ){
   static std::unique_ptr<Tempest::AbstractAPI> api;
 
   switch( a ){
+#ifdef __WINDOWS__
     case Direct3D:
       api.reset(new DirectX9());
       break;
@@ -30,7 +34,7 @@ Tempest::AbstractAPI& api( APIType a ){
     case OpenGL4:
       api.reset(new Opengl4x());
       break;
-
+#endif
     case OpenGL:
     default: //avoid gcc 4.8 warning
       api.reset(new Opengl2x());

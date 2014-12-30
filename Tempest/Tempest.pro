@@ -49,6 +49,7 @@ unix: {
   CONFIG += ogl
   CONFIG -= directx
   SOURCES += system/linuxapi.cpp
+  LIBS += -lrt
   }
 
 win32 {
