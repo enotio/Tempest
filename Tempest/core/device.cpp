@@ -365,31 +365,43 @@ std::string Device::renderer() const {
 
 void Device::clear(const Color &cl, float z, unsigned s) {
   applyRs();
+  if(!data->isPaintMode)
+    forceEndPaint();
   api.clear(impl, cl, z, s);
   }
 
 void Device::clear( const Color& cl ) {
   applyRs();
+  if(!data->isPaintMode)
+    forceEndPaint();
   api.clear(impl, cl );
   }
 
 void Device::clear( const Color& cl, float z ) {
   applyRs();
+  if(!data->isPaintMode)
+    forceEndPaint();
   api.clear(impl, cl, z);
   }
 
 void Device::clear(float z, unsigned s ) {
   applyRs();
+  if(!data->isPaintMode)
+    forceEndPaint();
   api.clear(impl, z, s);
   }
 
 void Device::clearZ(float z ) {
   applyRs();
+  if(!data->isPaintMode)
+    forceEndPaint();
   api.clearZ(impl, z);
   }
 
 void Device::clearStencil( unsigned s ) {
   applyRs();
+  if(!data->isPaintMode)
+    forceEndPaint();
   api.clearStencil(impl, s);
   }
 
