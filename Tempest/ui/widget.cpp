@@ -875,10 +875,10 @@ void Widget::unsetChFocus( Widget* root, Widget* emiter ){
   }
 
 void Widget::deleteLater() {
-  deleteLaterFlag = true;
-
   if( deleteLaterFlagGuard==0 )
     delete this;
+  else
+    deleteLaterFlag = true;
   }
 
 void Widget::shortcutEvent(KeyEvent &e) {
