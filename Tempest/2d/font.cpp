@@ -262,27 +262,27 @@ void Tempest::FontElement::fetch( const std::string &str,
     fetchLeter( str[i], sp );
   }
 
-Tempest::Size Tempest::FontElement::textSize(const std::u16string &str ) {
+Tempest::Size Tempest::FontElement::textSize(const std::u16string &str ) const {
   return textSize( str.data(), str.data()+str.size() );
   }
 
-Tempest::Size Tempest::FontElement::textSize(const std::string &str ) {
+Tempest::Size Tempest::FontElement::textSize(const std::string &str ) const {
   return textSize( str.data(), str.data()+str.size() );
   }
 
-Tempest::Size Tempest::FontElement::textSize(const char16_t *str) {
+Tempest::Size Tempest::FontElement::textSize(const char16_t *str) const {
   const char16_t *e = str;
   while(*e) ++e;
   return textSize(str, e);
   }
 
-Tempest::Size Tempest::FontElement::textSize(const char *str) {
+Tempest::Size Tempest::FontElement::textSize(const char *str) const {
   const char *e = str;
   while(*e) ++e;
   return textSize(str, e);
   }
 
-Tempest::Size Tempest::FontElement::textSize(const char16_t *b, const char16_t *e) {
+Tempest::Size Tempest::FontElement::textSize(const char16_t *b, const char16_t *e) const {
   int tx = 0, ty = 0, tw = 0, th = 0;
   for( const char16_t* i=b; i<e; ++i ){
     const LetterGeometry& l = letterGeometry( *i );
@@ -297,7 +297,7 @@ Tempest::Size Tempest::FontElement::textSize(const char16_t *b, const char16_t *
   return Tempest::Size(tw,th);
   }
 
-Tempest::Size Tempest::FontElement::textSize(const char *b, const char *e) {
+Tempest::Size Tempest::FontElement::textSize(const char *b, const char *e) const {
   int tx = 0, ty = 0, tw = 0, th = 0;
   for( const char* i=b; i<e; ++i ){
     const LetterGeometry& l = letterGeometry( *i );
@@ -457,27 +457,27 @@ Tempest::Font::LetterGeometry Tempest::Font::letterGeometry(char16_t ch) const {
   return ttf[bold][italic].letterGeometry(ch);
   }
 
-Tempest::Size Tempest::Font::textSize(const std::u16string &s) {
+Tempest::Size Tempest::Font::textSize(const std::u16string &s) const {
   return ttf[bold][italic].textSize(s);
   }
 
-Tempest::Size Tempest::Font::textSize(const std::string &s) {
+Tempest::Size Tempest::Font::textSize(const std::string &s) const {
   return ttf[bold][italic].textSize(s);
   }
 
-Tempest::Size Tempest::Font::textSize(const char16_t *b, const char16_t *e) {
+Tempest::Size Tempest::Font::textSize(const char16_t *b, const char16_t *e) const {
   return ttf[bold][italic].textSize(b,e);
   }
 
-Tempest::Size Tempest::Font::textSize(const char *b, const char *e) {
+Tempest::Size Tempest::Font::textSize(const char *b, const char *e) const {
   return ttf[bold][italic].textSize(b,e);
   }
 
-Tempest::Size Tempest::Font::textSize(const char16_t *s) {
+Tempest::Size Tempest::Font::textSize(const char16_t *s) const {
   return ttf[bold][italic].textSize(s);
   }
 
-Tempest::Size Tempest::Font::textSize(const char *s) {
+Tempest::Size Tempest::Font::textSize(const char *s) const {
   return ttf[bold][italic].textSize(s);
   }
 

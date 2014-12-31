@@ -44,6 +44,8 @@ class ArrayListDelegate : public ListDelegate {
       b->setSizePolicy(p);
 
       b->setText(textOf(data[position]));
+      b->setMinimumSize( b->font().textSize(b->text()).w + b->margin().xMargin(),
+                         b->minSize().h );
       return b;
       }
 
