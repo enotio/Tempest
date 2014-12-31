@@ -16,6 +16,7 @@ namespace Tempest{
       int   largeTextSize    = 24;
 
       int   scroolButtonSize = 27;
+      int   margin           = 8;
     };
   }
 

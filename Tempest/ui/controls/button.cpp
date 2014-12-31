@@ -22,6 +22,8 @@ Button::Button()
   p.typeH   = Tempest::FixedMax;
   resize(int(m.buttonWidth*m.uiScale), h);
 
+  setMargin(int(m.margin*m.uiScale));
+
   setSizePolicy(p);
 
   pressed  = false;
