@@ -14,6 +14,7 @@ ShaderProgramHolder::ShaderProgramHolder(Device &d):BaseType(d){
   }
 
 ShaderProgramHolder::~ShaderProgramHolder() {
+  T_WARNING_X(data->sh.size()==0,"Not all shaders was deleted");
   delete data;
   }
 

@@ -53,26 +53,11 @@ VertexDeclaration &VertexDeclaration::operator = ( const VertexDeclaration& v) {
   return *this;
   }
 
-/*
-void VertexDeclaration::delRef() {
-  if( decl==0 )
-    return;
-
-  --decl->count;
-
-  if( decl->count==0 ){
-    if( dev )
-      dev->deleteVertexDecl( (Tempest::AbstractAPI::VertexDecl*)decl->impl );
-    delete decl;
-    }
-  }
-*/
-
 VertexDeclaration::Declarator::Declarator():maxTexId(0){
-}
+  }
 
 VertexDeclaration::Declarator::~Declarator(){
-}
+  }
 
 VertexDeclaration::Declarator&
   VertexDeclaration::Declarator::operator <<( const Element & t ){
