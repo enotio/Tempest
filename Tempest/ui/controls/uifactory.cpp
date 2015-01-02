@@ -3,6 +3,7 @@
 #include <Tempest/Button>
 #include <Tempest/Panel>
 #include <Tempest/LineEdit>
+#include <Tempest/ListBox>
 
 using namespace Tempest;
 
@@ -28,4 +29,8 @@ Panel *UiFactory::panel() {
 
 LineEdit *UiFactory::lineEdit() {
   return new LineEdit();
+  }
+
+ListBox *UiFactory::listBox() {
+  return new ListBox();
   }

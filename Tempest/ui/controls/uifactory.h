@@ -9,6 +9,7 @@ class Widget;
 class Button;
 class Panel;
 class LineEdit;
+class ListBox;
 
 class UiFactory {
   public:
@@ -21,6 +22,7 @@ class UiFactory {
     virtual Button*        button();
     virtual Panel*         panel();
     virtual LineEdit*      lineEdit();
+    virtual ListBox*       listBox();
   };
 
 }

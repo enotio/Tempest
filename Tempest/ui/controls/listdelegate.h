@@ -25,10 +25,10 @@ class ListDelegate {
     Tempest::signal<size_t,Widget*> onItemViewSelected;
   };
 
-template< class T >
-class ArrayListDelegate : public ListDelegate {
+template< class T, class VT, class Ctrl >
+class AbstractListDelegate : public ListDelegate {
   public:
-    ArrayListDelegate( const std::vector<T>& vec ):data(vec){}
+    AbstractListDelegate( const VT& vec ):data(vec){}
 
     virtual size_t size() const {
       return data.size();
@@ -36,16 +36,8 @@ class ArrayListDelegate : public ListDelegate {
 
     virtual Widget* createView(size_t position){
       ListItem* b = new ListItem(position);
-      b->clicked.bind(this,&ArrayListDelegate<T>::implItemSelected);
-
-      SizePolicy p = b->sizePolicy();
-      p.typeH      = Preferred;
-      p.maxSize.w  = SizePolicy::maxWidgetSize().w;
-      b->setSizePolicy(p);
-
-      b->setText(textOf(data[position]));
-      b->setMinimumSize( b->font().textSize(b->text()).w + b->margin().xMargin(),
-                         b->minSize().h );
+      b->clicked.bind(this,&AbstractListDelegate<T,VT,Ctrl>::implItemSelected);
+      initializeItem(b,data[position]);
       return b;
       }
 
@@ -54,7 +46,20 @@ class ArrayListDelegate : public ListDelegate {
       }
 
   protected:
-    struct ListItem: Button{
+    const VT& data;
+
+    void initializeItem(Ctrl* c, const T& data){
+      SizePolicy p = c->sizePolicy();
+      p.typeH      = Preferred;
+      p.maxSize.w  = SizePolicy::maxWidgetSize().w;
+      c->setSizePolicy(p);
+
+      c->setText(textOf(data));
+      c->setMinimumSize( c->font().textSize(c->text()).w + c->margin().xMargin(),
+                         c->minSize().h );
+      }
+
+    struct ListItem: Ctrl {
       ListItem(size_t id):id(id){}
 
       const size_t id;
@@ -62,28 +67,40 @@ class ArrayListDelegate : public ListDelegate {
 
       void emitClick(){
         clicked(id,this);
-        Button::emitClick();
         }
       };
 
-  private:    
+    virtual const std::u16string textOf( const T& t ) const = 0;
+
+  private:
     void implItemSelected(size_t item, Widget* itemView){
       onItemSelected(item);
       onItemViewSelected(item,itemView);
       }
+  };
 
-    const std::vector<T>& data;
+template< class T >
+class ArrayListDelegate : public AbstractListDelegate<T,std::vector<T>,Button> {
+  public:
+    ArrayListDelegate( const std::vector<T>& vec ):
+      AbstractListDelegate<T,std::vector<T>,Button>(vec){}
 
-    const std::string    textOf( const std::string& s ){
-      return s;
+  private:
+    virtual const std::u16string textOf( const T& t ) const {
+      return std::move(implTextOf(t));
       }
-    const std::u16string textOf( const std::u16string& s ){
+
+    static std::u16string implTextOf( const std::string& s ){
+      return SystemAPI::toUtf16(s);
+      }
+
+    static std::u16string implTextOf( const std::u16string& s ){
       return s;
       }
 
     template< class E >
-    const std::string textOf( const E& s ){
-      return std::to_string(s);
+    static std::u16string implTextOf( const E& s ){
+      return SystemAPI::toUtf16(std::to_string(s));
       }
   };
 }

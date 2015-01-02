@@ -71,7 +71,8 @@ void ListBox::removeDelegate() {
     }
 
   if(delegate){
-    delegate->onItemSelected.ubind(onItemSelected);
+    delegate->onItemViewSelected.ubind(this, &ListBox::onItem);
+    delegate->updateView.ubind(this,&ListBox::updateView);
     delegate.reset();
     }
   }
@@ -125,6 +126,10 @@ void ListBox::setupView(size_t oldSelected) {
     }
   }
 
+void ListBox::updateView() {
+  setupView(selected);
+  }
+
 Tempest::Widget* ListBox::createDropList() {
   if(!delegate)
     return nullptr;
@@ -169,6 +174,7 @@ void ListBox::selectItem(size_t id) {
 
 void ListBox::setupDelegateCallback() {
   delegate->onItemViewSelected.bind(this, &ListBox::onItem);
+  delegate->updateView.bind(this, &ListBox::updateView);
   }
 
 size_t Tempest::ListBox::currentItem() const {

@@ -36,6 +36,7 @@ class ListBox : public AbstractListBox {
     using AbstractListBox::layout;
 
     void setupView(size_t oldSelected);
+    void updateView();
 
   private:
     size_t selected;
