@@ -1,3 +1,4 @@
+
 #ifndef WIDGET_H
 #define WIDGET_H
 
@@ -84,8 +85,8 @@ class Widget {
     FocusPolicy focusPolicy() const;
     void setFocusPolicy( FocusPolicy f );
 
-    void setLayout( Orientation ori );
-    void setLayout( Layout* l );
+    virtual void setLayout( Orientation ori );
+    virtual void setLayout( Layout* l );
 
     Layout& layout();
     const Layout& layout() const;

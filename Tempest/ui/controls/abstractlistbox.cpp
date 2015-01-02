@@ -11,11 +11,15 @@ using namespace Tempest;
 AbstractListBox::AbstractListBox() {
   overlay = 0;
   setMargin(0);
-  setLayout(new WrapLayout());
+  Widget::setLayout(new WrapLayout());
   }
 
 AbstractListBox::~AbstractListBox() {
   close();
+  }
+
+void AbstractListBox::setLayout(Layout *) {
+  T_WARNING_X(0,"AbstractListBox::setLayout is not available");
   }
 
 void AbstractListBox::showList() {

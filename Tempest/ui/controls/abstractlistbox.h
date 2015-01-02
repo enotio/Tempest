@@ -29,8 +29,10 @@ class AbstractListBox : public Widget {
     struct WrapLayout: Layout{
       void applyLayout();
       };
+
   private:
-    Overlay * overlay;
+    Overlay * overlay;    
+    void setLayout(Tempest::Layout* l);
   };
 
 }
