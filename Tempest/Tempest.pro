@@ -23,7 +23,7 @@ android:{
   DESTDIR = ../lib
   }
 
-QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
+gcc:QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
 #QMAKE_LFLAGS += /IMPLIB:Tempest.lib
 
 INCLUDEPATH += \
@@ -200,7 +200,10 @@ SOURCES += \
     ui/controls/scroolwidget.cpp \
     ui/controls/abstractlistbox.cpp \
     ui/controls/listbox.cpp \
-    ui/controls/uifactory.cpp
+    ui/controls/uifactory.cpp \
+    ui/controls/dialog.cpp \
+    ui/controls/checkbox.cpp \
+    ui/controls/menu.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -294,7 +297,10 @@ HEADERS += \
     ui/controls/scroolwidget.h \
     ui/controls/abstractlistbox.h \
     ui/controls/listbox.h \
-    ui/controls/uifactory.h
+    ui/controls/uifactory.h \
+    ui/controls/dialog.h \
+    ui/controls/checkbox.h \
+    ui/controls/menu.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -358,4 +364,7 @@ OTHER_FILES += \
     include/Tempest/ListBox
 
 DISTFILES += \
-    include/Tempest/UiFactory
+    include/Tempest/UiFactory \
+    include/Tempest/Dialog \
+    include/Tempest/CheckBox \
+    include/Tempest/Menu

@@ -117,6 +117,11 @@ bool LineEdit::isEditable() const {
   }
 
 void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
+  if(!editable){
+    e.ignore();
+    return;
+    }
+
   sp = e.pos();
   ep = e.pos();
 
