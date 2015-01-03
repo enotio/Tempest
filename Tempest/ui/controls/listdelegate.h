@@ -11,7 +11,7 @@ namespace Tempest{
 
 class Widget;
 
-class ListDelegate {
+class ListDelegate : public slot {
   public:
     virtual ~ListDelegate(){}
 

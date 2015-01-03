@@ -6,13 +6,60 @@
 #include <cstddef>
 
 namespace Tempest{
+
+template< class ... Args >
+class signal;
+class slot;
+namespace Detail{
+  class signalBase;
+  }
+
+class slot {
+  protected:
+    ~slot(){
+      for(SigInfo& s : sig)
+        (*s.del)(s.ptr,this);
+      }
+
+  private:
+    struct SigInfo{
+      void* ptr;
+      void (*del)(void* t, void* ptr);
+      };
+
+    std::vector<SigInfo> sig;
+
+  friend class Detail::signalBase;
+
+  template< class ... Args >
+  friend class Tempest::signal;
+  };
+
+namespace Detail{
+
+class signalBase : public slot {
+  protected:
+    struct IEmit{
+      virtual ~IEmit(){}
+
+      virtual bool  isEq( void *t, char *f, size_t s ) = 0;
+      virtual bool  isEq( void *f ) = 0;
+      virtual slot* toSlot() = 0;
+      };
+
+  friend class Tempest::slot;
+  };
+}
+
 /**
  * \addtogroup Core
  */
 //! signal class, for signals and slots system.
 template< class ... Args >
-class signal{
+class signal : Detail::signalBase {
   public:
+    ~signal();
+
     inline void exec( Args ... args ){
       for( size_t i=0; i<v.size(); ++i ){
         IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
@@ -40,7 +87,8 @@ class signal{
     template< class T, class Ret, class TBase, class ... FuncArgs >
     void bind( T &t, Ret (TBase::*f)( FuncArgs... ) ){
       v.push_back( Impl() );
-      new (&v.back()) Emit<T, Ret, TBase, FuncArgs...>(t,f);
+      new (v.back().impl) Emit<T, Ret, TBase, FuncArgs...>(t,f);
+      reg(&t);
       }
 
     template< class T, class Ret, class TBase, class ... FuncArgs >
@@ -51,7 +99,7 @@ class signal{
     template< class Ret, class ... FuncArgs >
     void bind( Ret (&f)( FuncArgs... ) ){
       v.push_back( Impl() );
-      new (&v.back()) EmitFunc<Ret, FuncArgs...>(f);
+      new (v.back().impl) EmitFunc<Ret, FuncArgs...>(f);
       }
 
     template< class T, class TBase >
@@ -86,20 +134,34 @@ class signal{
       }
 
   private:
-    struct IEmit{
-      virtual ~IEmit(){}
+    void reg(slot* x);
+    void reg(void*  ){}
 
+    static void eraseBinds(void* s, void* this_ptr){
+      signal* sg = (signal*)s;
+      for( size_t i=0; i<sg->v.size(); ){
+        IEmit * e = reinterpret_cast<IEmit*>(sg->v[i].impl);
+
+        if( e->toSlot()==this_ptr ){
+          sg->v[i] = sg->v.back();
+          sg->v.pop_back();
+          } else {
+          ++i;
+          }
+        }
+      }
+
+    struct IEmit : Detail::signalBase::IEmit {
       virtual void exec( Args& ... args )   = 0;
-      virtual bool isEq( void *t, char *f, size_t s ) = 0;
-      virtual bool isEq( void *f ) = 0;
       };
 
     template< class T, class Ret, class TBase, class ... FuncArgs >
     struct Emit : public IEmit {
-      Emit( T & t, Ret (TBase::*f)( FuncArgs... ) ):obj(t), func(f) {}
+      Emit( T & t, Ret (TBase::*f)( FuncArgs... ) ):obj(&t), func(f) {
+        }
 
       void exec( Args& ... args ){
-        (obj.*func)( args... );
+        (*obj.*func)( args... );
         }
 
       bool isEq( void *t, char *f, size_t s ){
@@ -112,36 +174,50 @@ class signal{
           if( x[i]!=f[i] )
             return false;
 
-        return &obj == t;
+        return obj == t;
         }
 
       bool isEq( void * ){return 0;}
 
-      T & obj;
+      slot* toSlot(){
+        return implIsSlot(obj);
+        }
+
+      static slot* implIsSlot(Tempest::slot* s){
+        return s;
+        }
+
+      static slot* implIsSlot(void*){
+        return nullptr;
+        }
+
+      T * obj;
       Ret (TBase::*func)( FuncArgs... );
       };
 
-      template< class Ret, class ... FuncArgs >
-      struct EmitFunc : public IEmit {
-        EmitFunc( Ret (&f)( FuncArgs... ) ): func(f) {}
+    template< class Ret, class ... FuncArgs >
+    struct EmitFunc : public IEmit {
+      EmitFunc( Ret (&f)( FuncArgs... ) ): func(f) {}
 
-        void exec( Args& ... args ){
-          func( args... );
-          }
+      void exec( Args& ... args ){
+        func( args... );
+        }
 
-        bool isEq( void *t, char *f, size_t s ){
-          (void)t;
-          (void)f;
-          (void)s;
-          return 0;
-          }
+      bool isEq( void *t, char *f, size_t s ){
+        (void)t;
+        (void)f;
+        (void)s;
+        return 0;
+        }
 
-        bool isEq( void * f ){
-          return f==&func;
-          }
+      bool isEq( void * f ){
+        return f==&func;
+        }
 
-      Ret (&func)( FuncArgs... );
-      };
+      slot* toSlot(){ return nullptr; }
+
+    Ret (&func)( FuncArgs... );
+    };
 
     // gcc 4.4 dont undestand const_expr keyword :(
     template< size_t a, size_t b >
@@ -152,14 +228,40 @@ class signal{
       };
 
     struct Impl{
-      struct Unknown{};
-      char impl[StaticMax< sizeof( Emit<Unknown, void, Unknown, Args...> ),
+      char impl[StaticMax< sizeof(void*)+20/*hack! intel italium, max fptr size = 20 bytes*/,
                            sizeof( EmitFunc<void,Args...>)>::value ];
       };
 
     std::vector<Impl> v;
   };
 
+template< class ... Args >
+signal<Args...>::~signal() {
+  for( size_t i=0; i<v.size(); ++i){
+    IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
+
+    if( slot* s = e->toSlot() ){
+      auto& sg = s->sig;
+      size_t size=sg.size();
+      for(size_t r=0; r<size;){
+        if(sg[r].ptr==this){
+          sg[r] = sg.back();
+          --size;
+          } else
+          ++r;
+        }
+      sg.resize(size);
+      }
+    }
+  }
+
+template< class ... Args >
+void signal<Args...>::reg(slot* s){
+  slot::SigInfo info;
+  info.ptr = this;
+  info.del = &signal<Args...>::eraseBinds;
+  s->sig.push_back(info);
+  }
 
 }
 

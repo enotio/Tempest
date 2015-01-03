@@ -17,14 +17,6 @@ struct ListBox::ProxyDelegate : public ListDelegate {
     d->onItemViewSelected.bind(onItemViewSelected);
     }
 
-  ~ProxyDelegate(){
-    const std::shared_ptr<ListDelegate>& d = delegate;
-    d->invalidateView    .ubind(invalidateView    );
-    d->updateView        .ubind(updateView        );
-    d->onItemSelected    .ubind(onItemSelected    );
-    d->onItemViewSelected.ubind(onItemViewSelected);
-    }
-
   std::shared_ptr<ListDelegate> delegate;
 
   virtual size_t size() const{

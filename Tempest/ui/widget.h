@@ -33,7 +33,7 @@ class Shortcut;
 
 // class Painter;
 
-class Widget {
+class Widget : public slot {
   public:
     Widget( ResourceContext* context = 0 );
     virtual ~Widget();
