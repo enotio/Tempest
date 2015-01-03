@@ -120,7 +120,7 @@ class MainWindow : public Tempest::Window {
 
     struct UboGauss{
       Tempest::Texture2d image;
-      float              dir[2] = {0,0};
+      float              dir[2];
       } uboGauss;
     Tempest::UniformDeclaration ugauss;
 

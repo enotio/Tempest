@@ -15,7 +15,7 @@ const Color cl[7] = {
   Color(0,1,0),
   Color(1,0,1),
   Color(0,1,1),
-  Color(1,0.8,0.5)
+  Color(1,0.8f,0.5f)
   };
 
 MainWindow::MainWindow(Tempest::AbstractAPI &api)
@@ -26,7 +26,7 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     iboHolder ( device ),
     shHolder  ( device ){
   spin.y = -40;
-  zoom   = 0.01;
+  zoom   = 0.01f;
 
   //stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT,NULL);
   //aiAttachLogStream(&stream);
@@ -49,8 +49,8 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
     if( id==12 ){
       std::vector<Vertex> v = vert;
       for( size_t i=0; i<v.size(); ++i ){
-        v[i].tu = v[i].x*0.01;
-        v[i].tv = v[i].y*0.01;
+        v[i].tu = v[i].x*0.01f;
+        v[i].tv = v[i].y*0.01f;
         }
 
       vbo     = vboHolder.load( v     );
@@ -80,7 +80,7 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
       }
 
     if( id==12 ){ // floor
-      mat.color   = Color(0.65);
+      mat.color   = Color(0.65f);
       mat.diffuse = texture;
       mat.shaderType = Material::Main;
       }
