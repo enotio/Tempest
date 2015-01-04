@@ -4,6 +4,7 @@
 #include <Tempest/Panel>
 #include <Tempest/LineEdit>
 #include <Tempest/ListBox>
+#include <Tempest/StackedWidget>
 
 using namespace Tempest;
 
@@ -33,4 +34,8 @@ LineEdit *UiFactory::lineEdit() {
 
 ListBox *UiFactory::listBox() {
   return new ListBox();
+  }
+
+StackedWidget* UiFactory::stackedWidget() {
+  return new StackedWidget();
   }
