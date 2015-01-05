@@ -423,8 +423,8 @@ Tempest::Font::Font(){
 
 Tempest::Font::Font(const std::string &name, int sz) {
   ttf[0][0] = FontElement(name +   ".ttf", sz);
-  ttf[0][1] = FontElement(name +  "b.ttf", sz);
-  ttf[1][0] = FontElement(name +  "i.ttf", sz);
+  ttf[0][1] = FontElement(name +  "i.ttf", sz);
+  ttf[1][0] = FontElement(name +  "b.ttf", sz);
   ttf[1][1] = FontElement(name + "bi.ttf", sz);
   }
 
@@ -433,8 +433,8 @@ Tempest::Font::Font( const Tempest::FontElement &n,
                      const Tempest::FontElement &i,
                      const Tempest::FontElement &bi ) {
   ttf[0][0] = n;
-  ttf[0][1] = b;
-  ttf[1][0] = i;
+  ttf[0][1] = i;
+  ttf[1][0] = b;
   ttf[1][1] = bi;
   }
 
