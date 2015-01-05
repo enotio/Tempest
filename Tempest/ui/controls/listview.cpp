@@ -3,7 +3,7 @@
 using namespace Tempest;
 
 ListView::ListView(Orientation ori)
-  : orientation(ori) {
+  : orientation(ori), lay(nullptr) {
   if(orientation==Horizontal)
     setSizePolicy(FixedMin,Preferred);
   else
@@ -17,7 +17,9 @@ ListView::~ListView() {
 void ListView::removeDelegate() {
   if(delegate){
     delegate->onItemSelected.ubind(onItemSelected);
+    removeAll();
     delegate.reset();
+    lay = nullptr;
     setLayout(new Tempest::Layout());
     }
   }
@@ -33,6 +35,12 @@ void ListView::setOrientation(Orientation ori) {
     setLayout(new Layout(*delegate,ori));
   }
 
+void ListView::removeAll() {
+  if(lay)
+    lay->removeAll(); else
+    layout().removeAll();
+  }
+
 
 ListView::Layout::Layout(ListDelegate &delegate, Orientation ori)
   :LinearLayout(ori), delegate(delegate), busy(false) {
@@ -41,6 +49,7 @@ ListView::Layout::Layout(ListDelegate &delegate, Orientation ori)
 
 ListView::Layout::~Layout(){
   delegate.invalidateView.ubind(this,&Layout::invalidate);
+  removeAll();
   }
 
 void ListView::Layout::applyLayout() {
@@ -101,9 +110,13 @@ void ListView::Layout::invalidate(){
   }
 
 void ListView::Layout::removeAll() {
+  bool b = busy;
+  busy = true;
+
   while(widgets().size()){
-    delegate.removeView(take(widgets().back()), widgets().size()-1);
+    size_t id = widgets().size()-1;
+    delegate.removeView(take(widgets().back()), id);
     }
 
-  LinearLayout::removeAll();
+  busy = b;
   }

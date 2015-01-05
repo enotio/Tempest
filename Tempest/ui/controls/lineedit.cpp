@@ -38,6 +38,11 @@ LineEdit::LineEdit(): anim(0), ctrlPressed(0) {
   onFocusChange.bind( this, &LineEdit::setupTimer );
   }
 
+LineEdit::~LineEdit() {
+  onFocusChange.ubind( this, &LineEdit::setupTimer );
+  onFocusChange.ubind( *this, &LineEdit::storeText );
+  }
+
 void LineEdit::setText( const std::string &t ) {
   std::u16string s;
   s.assign( t.begin(), t.end() );

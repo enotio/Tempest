@@ -21,7 +21,8 @@ class ListView : public Widget {
 
       delegate.reset(new D(d));
       delegate->onItemSelected.bind(onItemSelected);
-      setLayout(new Layout(*delegate,orientation));
+      lay = new Layout(*delegate,orientation);
+      setLayout(lay);
       }
 
     void removeDelegate();
@@ -46,8 +47,12 @@ class ListView : public Widget {
       void          removeAll();
       };
 
+    Layout* lay;
+
     using Widget::layout;
     using Widget::setLayout;
+
+    void removeAll();
   };
 
 }

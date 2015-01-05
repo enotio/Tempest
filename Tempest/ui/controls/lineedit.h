@@ -11,6 +11,7 @@ namespace Tempest{
 class LineEdit : public Tempest::Widget {
   public:
     LineEdit();
+    ~LineEdit();
 
     const std::u16string& text() const;
     void  setText( const std::string&    t );
