@@ -171,8 +171,10 @@ void Layout::rebind( Widget* wx) {
   ow = wx;
 
   if( ow ){
-    for( size_t i=0; i<w.size(); ++i )
+    for( size_t i=0; i<w.size(); ++i ){
+      T_ASSERT_X(w[i]!=ow,"recursive layout detected");
       w[i]->setContext( ow->context() );
+      }
     }
   }
 

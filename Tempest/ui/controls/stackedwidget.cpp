@@ -7,9 +7,25 @@ using namespace Tempest;
 struct StackedWidget::Layout : public Tempest::Layout {
   void applyLayout(){
     const Margin& m = owner()->margin();
-    Rect r = Rect(m.left,m.top, owner()->w()-m.xMargin(), owner()->h()-m.yMargin());
+    Rect r  = Rect(m.left,m.top, owner()->w()-m.xMargin(), owner()->h()-m.yMargin());
     for(Widget* w:widgets()){
-      w->setGeometry(r);
+      Rect sz = {r.x, r.y,std::min(r.w,w->maxSize().w),std::min(r.h,w->maxSize().h)};
+      sz.w = std::max(w->minSize().w,sz.w);
+      sz.h = std::max(w->minSize().w,sz.h);
+
+      if(w->sizePolicy().typeH==FixedMax)
+        sz.w = w->maxSize().w; else
+      if(w->sizePolicy().typeH==FixedMin)
+        sz.w = w->minSize().w;
+
+      if(w->sizePolicy().typeV==FixedMax)
+        sz.h = w->maxSize().h; else
+      if(w->sizePolicy().typeV==FixedMin)
+        sz.h = w->minSize().h;
+
+      sz.x += (r.w-sz.w)/2;
+      sz.y += (r.h-sz.h)/2;
+      w->setGeometry(sz);
       }
     }
   };
@@ -53,12 +69,12 @@ Widget *StackedWidget::takePage(Widget *w) {
   return w;
   }
 
-Widget *StackedWidget::page(size_t num) {
-  return pages[num];
+Widget& StackedWidget::page(size_t num) {
+  return *pages[num];
   }
 
-const Widget *StackedWidget::page(size_t num) const {
-  return pages[num];
+const Widget& StackedWidget::page(size_t num) const {
+  return *pages[num];
   }
 
 size_t StackedWidget::pagesCount() const {

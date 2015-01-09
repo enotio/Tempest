@@ -138,3 +138,22 @@ Widget *Menu::createItem(const Menu::Item &decl) {
 
   return b;
   }
+
+void Menu::assign(std::u16string &s, const char *ch) {
+  s.assign(ch,ch+strlen(ch));
+  }
+
+void Menu::assign(std::u16string &s, const char16_t *ch) {
+  const char16_t* e = ch;
+  while(*e)
+    ++e;
+  s.assign(ch,e);
+  }
+
+void Menu::assign(std::u16string &s, const std::string &ch) {
+  s.assign(ch.begin(),ch.end());
+  }
+
+void Menu::assign(std::u16string &s, const std::u16string &ch) {
+  s = ch;
+  }

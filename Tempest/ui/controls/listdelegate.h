@@ -79,11 +79,11 @@ class AbstractListDelegate : public ListDelegate {
       }
   };
 
-template< class T >
-class ArrayListDelegate : public AbstractListDelegate<T,std::vector<T>,Button> {
+template< class T, class Ctrl=Button >
+class ArrayListDelegate : public AbstractListDelegate<T,std::vector<T>,Ctrl> {
   public:
     ArrayListDelegate( const std::vector<T>& vec ):
-      AbstractListDelegate<T,std::vector<T>,Button>(vec){}
+      AbstractListDelegate<T,std::vector<T>,Ctrl>(vec){}
 
   private:
     virtual const std::u16string textOf( const T& t ) const {

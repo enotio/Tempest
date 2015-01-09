@@ -14,8 +14,8 @@ class StackedWidget : public Widget {
     void    delPage(Widget* w);
     Widget* takePage(Widget*);
 
-    Widget*       page(size_t num);
-    const Widget* page(size_t num) const;
+    Widget &page(size_t num);
+    const Widget &page(size_t num) const;
     size_t        pagesCount() const;
     size_t        currentPage() const;
 
@@ -27,6 +27,7 @@ class StackedWidget : public Widget {
   private:
     struct Layout;
 
+    using Widget::layout;
     void setLayout(Tempest::Layout*);
 
     std::vector<Widget*> pages;

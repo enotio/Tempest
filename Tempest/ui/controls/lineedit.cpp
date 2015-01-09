@@ -163,7 +163,8 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
 
   p.setFont( font );
 
-  int x = 0, y = 0;
+  const Margin& m = margin();
+  int x = m.left, y = 0;
 
   size_t s = std::min( sedit, eedit );
   size_t e = std::max( sedit, eedit );
@@ -185,14 +186,19 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
   int oldSc = scrool;
   if( editable && sx==x ){
     --sx;
-    if( x+oldSc > w() ){
-      scrool += ( w() - (x+oldSc) );
+    int clientW = w()-m.xMargin();
+    int delta = 0;
+    if( x+oldSc > clientW ){
+      delta = clientW - (x+oldSc);
       }
 
-    if( x+oldSc < 0 ){
-      scrool -= (x+oldSc);
+    if( x+oldSc < m.left ){
+      delta = -(x+oldSc-m.left);
       }
 
+    scrool += delta;
+    sx     += delta;
+    x      += delta;
     x += 1;
     }
 
@@ -205,7 +211,9 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
     }
 
   p.setColor(1,1,1,1);
-  p.drawText( scrool, 0, w()-scrool, h(), txt );
+  int dY = (h()-font.size()-m.yMargin())/2;
+  p.setScissor(m.left, 0, w()-m.xMargin(), h());
+  p.drawText( scrool+m.left, dY+m.top, w()-m.xMargin()-scrool, h()-m.yMargin(), txt );
   }
 
 void LineEdit::storeOldText(){
@@ -341,7 +349,7 @@ void LineEdit::updateSel() {
   if( a.x > b.x )
     std::swap(a,b);
 
-  int x = scrool, y = 0;
+  int x = scrool+margin().left, y = 0;
   for( size_t i=0; i<txt.size(); ++i ){
     Font::LetterGeometry l = font.letterGeometry(txt[i]);
 
@@ -366,7 +374,7 @@ void LineEdit::updateSel() {
     return;
     }
 
-  x = scrool;
+  x = scrool+margin().left;
   y = 0;
 
   if( b.x >= w() ){

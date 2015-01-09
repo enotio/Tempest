@@ -34,7 +34,7 @@ class Menu : public slot {
         items.emplace_back();
 
         Item& it = items.back();
-        it.text.assign(std::begin(text),std::end(text));
+        assign(it.text,text);
         it.activated.bind(a...);
 
         return *this;
@@ -45,7 +45,7 @@ class Menu : public slot {
         items.emplace_back();
 
         Item& it = items.back();
-        it.text.assign(std::begin(text),std::end(text));
+        assign(it.text,text);
         it.icon = icon;
         it.activated.bind(a...);
 
@@ -74,6 +74,12 @@ class Menu : public slot {
 
     Overlay * overlay;
     Declarator decl;
+
+    static void assign(std::u16string& s, const char*     ch);
+    static void assign(std::u16string& s, const char16_t* ch);
+
+    static void assign(std::u16string& s, const std::string& ch);
+    static void assign(std::u16string& s, const std::u16string& ch);
   };
 }
 
