@@ -77,7 +77,7 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   ux.tex.resize(tex[0]+tex[1]);
 
   bufsz = 0;
-  void** tx = &ux.tex[0];
+  void** tx  = ux.tex.data();
   int i=0;
   char *data = ux.data.data();
   Texture2d::Sampler* smp2d = (Texture2d::Sampler*)ux.smp[0].data();

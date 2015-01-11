@@ -481,10 +481,18 @@ void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
   p.setScissor( oldScissor.intersected( Tempest::Rect(x,y,w,h) ) );
   p.setBlendMode( Tempest::alphaBlend );
 
-  int tx = 0, ty = 0, tw = 0, th = 0;
+  int tx = 0, ty = 0, lx=0, ly=0, tw = 0, th = 0;
+  if(*str){
+    const Font::Letter& l = fnt.letter( *str, p.sp );
+    lx = l.dpos.x;
+    ly = l.dpos.y;
+    }
+
   for( size_t i=0; str[i]; ++i ){
     const Font::Letter& l = fnt.letter( str[i], p.sp );
 
+    lx = std::min( tx+l.dpos.x, lx);
+    ly = std::min( ty+l.dpos.y, ly);
     tw = std::max( tx+l.dpos.x+l.size.w, tw );
     th = std::max( ty+l.dpos.y+l.size.h, th );
 
@@ -492,9 +500,13 @@ void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
     ty+= l.advance.y;
     }
 
+  tw -= lx;
+  th -= ly;
+  x  -= lx;
+  y  -= ly;
+
   if( flg & Tempest::AlignHCenter )
     x += (w-tw)/2; else
-
   if( flg & Tempest::AlignRight )
     x += (w-tw);
 
