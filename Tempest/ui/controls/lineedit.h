@@ -13,6 +13,9 @@ class LineEdit : public Tempest::Widget {
     LineEdit();
     ~LineEdit();
 
+    void setFont(const Font& f);
+    const Font& font() const;
+
     const std::u16string& text() const;
     void  setText( const std::string&    t );
     void  setText( const std::u16string& t );
@@ -83,8 +86,8 @@ class LineEdit : public Tempest::Widget {
     Tempest::Point sp, ep;
     int scrool;
 
-    Tempest::Font   font;
-    Tempest::Timer  timer;
+    Tempest::Font  fnt;
+    Tempest::Timer timer;
 
     bool isEdited;
     void updateSel();

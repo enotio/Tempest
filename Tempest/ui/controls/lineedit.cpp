@@ -23,11 +23,11 @@ LineEdit::LineEdit(): anim(0), ctrlPressed(0) {
   scrool = 0;
 
   const UiMetrics& uiMetrics = Application::uiMetrics();
-  font = Application::mainFont();
-  font.setSize( int(uiMetrics.normalTextSize*uiMetrics.uiScale) );
+  fnt = Application::mainFont();
+  fnt.setSize( int(uiMetrics.normalTextSize*uiMetrics.uiScale) );
 
   SizePolicy p = sizePolicy();
-  p.maxSize.h = font.size() + font.size()/2;
+  p.maxSize.h = fnt.size() + fnt.size()/2;
   p.minSize.h = p.maxSize.h;
   p.typeV = FixedMax;
 
@@ -41,6 +41,15 @@ LineEdit::LineEdit(): anim(0), ctrlPressed(0) {
 LineEdit::~LineEdit() {
   onFocusChange.ubind( this, &LineEdit::setupTimer );
   onFocusChange.ubind( *this, &LineEdit::storeText );
+  }
+
+void LineEdit::setFont(const Font &f) {
+  fnt = f;
+  update();
+  }
+
+const Font &LineEdit::font() const {
+  return fnt;
   }
 
 void LineEdit::setText( const std::string &t ) {
@@ -161,7 +170,7 @@ void LineEdit::mouseDragEvent(MouseEvent &e) {
 void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
   Painter p(pe);
 
-  p.setFont( font );
+  p.setFont( fnt );
 
   const Margin& m = margin();
   int x = m.left, y = 0;
@@ -170,7 +179,7 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
   size_t e = std::max( sedit, eedit );
 
   for( size_t i=0; i<s && i<txt.size(); ++i ){
-    Font::Letter l = p.letter(font, txt[i]);
+    Font::Letter l = p.letter(fnt, txt[i]);
     x+= l.advance.x;
     y+= l.advance.y;
     }
@@ -178,7 +187,7 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
   int sx = x;
 
   for( size_t i=s; i<e && i<txt.size(); ++i ){
-    Font::Letter l = p.letter(font, txt[i]);
+    Font::Letter l = p.letter(fnt, txt[i]);
     x+= l.advance.x;
     y+= l.advance.y;
     }
@@ -211,9 +220,11 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
     }
 
   p.setColor(1,1,1,1);
-  int dY = (h()-font.size()-m.yMargin())/2;
-  p.setScissor(m.left, 0, w()-m.xMargin(), h());
-  p.drawText( scrool+m.left, dY+m.top, w()-m.xMargin()-scrool, h()-m.yMargin(), txt );
+  int dY = (h()-fnt.size()-m.yMargin())/2;
+  Rect sc = p.scissor();
+  p.setScissor(sc.intersected(Rect(m.left, 0, w()-m.xMargin(), h())));
+  p.drawText( scrool+m.left, m.top+dY, w()-m.xMargin()-scrool, fnt.size(),
+              txt, AlignBottom );
   }
 
 void LineEdit::storeOldText(){
@@ -351,7 +362,7 @@ void LineEdit::updateSel() {
 
   int x = scrool+margin().left, y = 0;
   for( size_t i=0; i<txt.size(); ++i ){
-    Font::LetterGeometry l = font.letterGeometry(txt[i]);
+    Font::LetterGeometry l = fnt.letterGeometry(txt[i]);
 
     if( Tempest::Rect( x, 0,
                        l.advance.x, h() ).contains(a,true) ){
@@ -384,7 +395,7 @@ void LineEdit::updateSel() {
 
   eedit = sedit;
   for( size_t i=0; i<txt.size(); ++i ){
-    Font::LetterGeometry l = font.letterGeometry(txt[i]);
+    Font::LetterGeometry l = fnt.letterGeometry(txt[i]);
 
     if( Rect( x, 0,
               l.advance.x, h() ).contains(b,true) ){

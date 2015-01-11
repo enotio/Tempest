@@ -283,10 +283,18 @@ Tempest::Size Tempest::FontElement::textSize(const char *str) const {
   }
 
 Tempest::Size Tempest::FontElement::textSize(const char16_t *b, const char16_t *e) const {
-  int tx = 0, ty = 0, tw = 0, th = 0;
+  int tx = 0, ty = 0, lx=0, ly=0, tw = 0, th = 0;
+  if(b!=e){
+    const LetterGeometry& l = letterGeometry( *b );
+    lx = l.dpos.x;
+    ly = l.dpos.y;
+    }
+
   for( const char16_t* i=b; i<e; ++i ){
     const LetterGeometry& l = letterGeometry( *i );
 
+    lx = std::min( tx+l.dpos.x, lx);
+    ly = std::min( ty+l.dpos.y, ly);
     tw = std::max( tx+l.dpos.x+l.size.w, tw );
     th = std::max( ty+l.dpos.y+l.size.h, th );
 
@@ -294,14 +302,22 @@ Tempest::Size Tempest::FontElement::textSize(const char16_t *b, const char16_t *
     ty+= l.advance.y;
     }
 
-  return Tempest::Size(tw,th);
+  return Tempest::Size(tw-lx,th-ly);
   }
 
 Tempest::Size Tempest::FontElement::textSize(const char *b, const char *e) const {
-  int tx = 0, ty = 0, tw = 0, th = 0;
+  int tx = 0, ty = 0, lx = 0, ly = 0, tw = 0, th = 0;
+  if(b!=e){
+    const LetterGeometry& l = letterGeometry( *b );
+    lx = l.dpos.x;
+    ly = l.dpos.y;
+    }
+
   for( const char* i=b; i<e; ++i ){
     const LetterGeometry& l = letterGeometry( *i );
 
+    lx = std::min( tx+l.dpos.x, lx);
+    ly = std::min( ty+l.dpos.y, ly);
     tw = std::max( tx+l.dpos.x+l.size.w, tw );
     th = std::max( ty+l.dpos.y+l.size.h, th );
 
@@ -309,7 +325,7 @@ Tempest::Size Tempest::FontElement::textSize(const char *b, const char *e) const
     ty+= l.advance.y;
     }
 
-  return Tempest::Size(tw,th);
+  return Tempest::Size(tw-lx,th-ly);
   }
 
 const Tempest::FontElement::Letter&
