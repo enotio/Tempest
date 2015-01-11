@@ -10,6 +10,7 @@ class Button;
 class Panel;
 class LineEdit;
 class ListBox;
+class ListView;
 class StackedWidget;
 
 class UiFactory {
@@ -24,6 +25,7 @@ class UiFactory {
     virtual Panel*         panel();
     virtual LineEdit*      lineEdit();
     virtual ListBox*       listBox();
+    virtual ListView*      listView();
     virtual StackedWidget* stackedWidget();
   };
 

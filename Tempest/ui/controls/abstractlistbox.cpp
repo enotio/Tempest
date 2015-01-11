@@ -88,7 +88,17 @@ void AbstractListBox::WrapLayout::applyLayout() {
     ow->setMinimumSize(w->minSize().w+m.xMargin(), w->minSize().h+m.yMargin());
     ow->setMaximumSize(w->maxSize().w+m.xMargin(), w->maxSize().h+m.yMargin());
 
-    w->setPosition(m.left,m.top);
-    w->resize(ow->w()-m.xMargin(),ow->h()-m.yMargin());
+    Size sz = {ow->w()-m.xMargin(),ow->h()-m.yMargin()};
+    if(w->sizePolicy().typeH==FixedMin)
+      sz.w = w->minSize().w;
+    if(w->sizePolicy().typeH==FixedMax)
+      sz.w = w->maxSize().w;
+    if(w->sizePolicy().typeV==FixedMin)
+      sz.h = w->minSize().h;
+    if(w->sizePolicy().typeV==FixedMax)
+      sz.h = w->maxSize().h;
+
+    w->setPosition(m.left+(ow->w()-sz.w)/2,m.top+(ow->h()-sz.h)/2);
+    w->resize(sz);
     }
   }

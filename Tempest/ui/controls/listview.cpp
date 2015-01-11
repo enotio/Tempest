@@ -24,6 +24,16 @@ void ListView::removeDelegate() {
     }
   }
 
+void ListView::invalidateView() {
+  if(delegate)
+    delegate->invalidateView();
+  }
+
+void ListView::updateView() {
+  if(delegate)
+    delegate->updateView();
+  }
+
 void ListView::setOrientation(Orientation ori) {
   orientation = ori;
   if(orientation==Horizontal)

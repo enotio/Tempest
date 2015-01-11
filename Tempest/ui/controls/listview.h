@@ -27,6 +27,9 @@ class ListView : public Widget {
 
     void removeDelegate();
 
+    void invalidateView();
+    void updateView();
+
     void setOrientation(Tempest::Orientation ori);
 
     Tempest::signal<size_t> onItemSelected;
