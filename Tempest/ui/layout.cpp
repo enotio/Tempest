@@ -20,6 +20,8 @@ const Widget *Layout::owner() const {
   }
 
 void Layout::add(Widget *widget, size_t pos) {
+  T_ASSERT_X(widget!=nullptr,"widget is null");
+
   if(widget->parentLay==this)
     return;
 

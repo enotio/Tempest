@@ -351,6 +351,8 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
 
   for( size_t i=root->layout().widgets().size(); i>=1; --i ){
     Widget* w = root->layout().widgets()[i-1];
+    DeleteGuard guard(w);
+    (void)guard;
 
     if( !w->isScissorUsed() ||
         w->rect().contains( e.x, e.y, true ) ){
@@ -370,7 +372,9 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
             w->mouseReleseReciver.resize( et.mouseID+1 );
           w->mouseReleseReciver[et.mouseID] = deep;
           }
-        return w;
+        if(w->deleteLaterFlag)
+          return nullptr; else
+          return w;
         }
 
       if( w->isVisible() && (et.mouseID==0 || w->multiTouch) ){
@@ -389,7 +393,9 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
         if( focus && w->focusPolicy()==ClickFocus )
           w->setFocus(1);
 
-        return w;
+        if(w->deleteLaterFlag)
+          return nullptr; else
+          return w;
         }
       }
     }
