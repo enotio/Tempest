@@ -35,6 +35,16 @@ struct ModelBounds{
   float min[3], max[3], mid[3];
   float diameter() const;
   float radius() const;
+
+  ModelBounds operator | (const ModelBounds& b) const {
+    ModelBounds xb;
+    for(int i=0; i<3; ++i){
+      xb.min[i] = std::min(min[i],b.min[i]);
+      xb.max[i] = std::max(max[i],b.max[i]);
+      xb.mid[i] = 0.5f*(xb.min[i]+xb.max[i]);
+      }
+    return xb;
+    }
   };
 
 template< class V = DefaultVertex >
