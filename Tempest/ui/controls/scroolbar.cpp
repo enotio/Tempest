@@ -66,8 +66,8 @@ void ScroolBar::setOrientation( Tempest::Orientation ori ) {
   p.minSize = Tempest::Size(int(metric.scroolButtonSize*metric.uiScale));
   setSizePolicy(p);
 
-  btn[0]->icon = buttonIcon(true);
-  btn[1]->icon = buttonIcon(false);
+  btn[0]->setIcon(buttonIcon(true));
+  btn[1]->setIcon(buttonIcon(false));
   }
 
 Tempest::Orientation ScroolBar::orientation() const {

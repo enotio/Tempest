@@ -129,7 +129,15 @@ Tempest::Pixmap::Pixmap(const std::string &p) {
   load(p);
   }
 
+Pixmap::Pixmap(const char *p) {
+  load(p);
+  }
+
 Tempest::Pixmap::Pixmap(const std::u16string &p) {
+  load(p);
+  }
+
+Pixmap::Pixmap(const char16_t *p) {
   load(p);
   }
 

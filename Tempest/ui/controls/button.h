@@ -5,6 +5,7 @@
 #include <Tempest/Shortcut>
 #include <Tempest/Sprite>
 #include <Tempest/Font>
+#include <Tempest/Icon>
 
 #include <ctime>
 
@@ -16,7 +17,12 @@ class Button : public Tempest::Widget {
 
     Tempest::signal<> onClicked;
 
-    Tempest::Sprite icon;
+    void  setIcon(const Tempest::Sprite& s);
+    void  setIcon(const Tempest::Icon&   s);
+    const Tempest::Icon& icon() const;
+
+    void  setEnabled(bool e);
+    bool  isEnabled() const;
 
     const Tempest::Shortcut& shortcut() const;
     void  setShortcut( const Tempest::Shortcut & sc );
@@ -70,6 +76,8 @@ class Button : public Tempest::Widget {
     Tempest::Shortcut hotKey;
     Tempest::Font  fnt;
     Tempest::Color fntColor;
+    Tempest::Icon  icn;
+    bool           enabled=true;
   };
 }
 

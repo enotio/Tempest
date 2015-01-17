@@ -204,7 +204,8 @@ SOURCES += \
     ui/controls/dialog.cpp \
     ui/controls/checkbox.cpp \
     ui/controls/menu.cpp \
-    ui/controls/stackedwidget.cpp
+    ui/controls/stackedwidget.cpp \
+    2d/icon.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -302,7 +303,8 @@ HEADERS += \
     ui/controls/dialog.h \
     ui/controls/checkbox.h \
     ui/controls/menu.h \
-    ui/controls/stackedwidget.h
+    ui/controls/stackedwidget.h \
+    2d/icon.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -370,4 +372,5 @@ DISTFILES += \
     include/Tempest/Dialog \
     include/Tempest/CheckBox \
     include/Tempest/Menu \
-    include/Tempest/StackedWidget
+    include/Tempest/StackedWidget \
+    include/Tempest/Icon

@@ -35,6 +35,30 @@ Button::Button()
   setFontColor(Color(1));
   }
 
+void Button::setIcon(const Sprite &s) {
+  icn.normal   = s;
+  icn.disabled = s;
+  }
+
+void Button::setIcon(const Icon &s) {
+  icn = s;
+  }
+
+const Icon &Button::icon() const {
+  return icn;
+  }
+
+void Button::setEnabled(bool e) {
+  if(enabled!=e){
+    enabled = e;
+    update();
+    }
+  }
+
+bool Button::isEnabled() const {
+  return enabled;
+  }
+
 const Shortcut& Button::shortcut() const {
   return hotKey;
   }
@@ -89,6 +113,8 @@ const Color& Button::fontColor() const {
   }
 
 void Button::mouseDownEvent(Tempest::MouseEvent &) {
+  if(!enabled)
+    return;
   pressed     = true;
   presAnim    = true;
   timePressed = clock();
@@ -103,7 +129,7 @@ void Button::mouseMoveEvent( Tempest::MouseEvent & ) {
 
 void Button::mouseUpEvent(Tempest::MouseEvent &e) {
   if( e.x <= w() && e.y <=h() &&  e.x >=0 && e.y >=0 &&
-      pressed ){
+      pressed && enabled ){
     emitClick();
     }
 
@@ -125,6 +151,7 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
   p.setScissor( r.intersected( vRect ) );
 
   drawBack(p);
+  const Sprite icon = enabled ? icn.normal : icn.disabled;
 
   if( !icon.size().isEmpty() ){
     p.setTexture( icon );

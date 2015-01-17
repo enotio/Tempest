@@ -19,7 +19,9 @@ class Pixmap {
   public:
     Pixmap();
     Pixmap( const std::string& p );
+    Pixmap( const char*        p );
     Pixmap( const std::u16string& p );
+    Pixmap( const char16_t*       p );
 
     Pixmap( int w, int h, bool alpha );
 

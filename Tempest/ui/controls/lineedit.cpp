@@ -40,7 +40,7 @@ LineEdit::LineEdit(): anim(0), ctrlPressed(0) {
 
 LineEdit::~LineEdit() {
   onFocusChange.ubind( this, &LineEdit::setupTimer );
-  onFocusChange.ubind( *this, &LineEdit::storeText );
+  onFocusChange.ubind( this, &LineEdit::storeText );
   }
 
 void LineEdit::setFont(const Font &f) {
