@@ -4,6 +4,8 @@
 #include <Tempest/Widget>
 #include <Tempest/Sprite>
 #include <Tempest/Window>
+#include <Tempest/Icon>
+#include <Tempest/Button>
 
 namespace Tempest {
 
@@ -12,11 +14,7 @@ class Menu : public slot {
     struct Delegate;
 
   protected:
-    struct Item{
-      std::u16string    text;
-      Tempest::Sprite   icon;
-      Tempest::signal<> activated;
-      };
+    struct Item;
 
   public:
     struct Declarator;
@@ -35,33 +33,74 @@ class Menu : public slot {
 
         Item& it = items.back();
         assign(it.text,text);
-        it.activated.bind(a...);
+        bind(it,a...);
 
         return *this;
         }
 
       template<class Str, class ... Args>
-      Declarator& item(const Tempest::Sprite& icon, const Str& text, Args... a){
+      Declarator& item(const Tempest::Icon& icon, const Str& text, Args... a){
         items.emplace_back();
 
         Item& it = items.back();
         assign(it.text,text);
         it.icon = icon;
-        it.activated.bind(a...);
+        bind(it,a...);
 
+        return *this;
+        }
+
+      Declarator& operator [](const Declarator& d){
+        T_ASSERT_X(items.size()>0,"no item found");
+        items.back().items = d;
+        return *this;
+        }
+
+      Declarator& operator [](Declarator&& d){
+        T_ASSERT_X(items.size()>0,"no item found");
+        items.back().items = std::move(d);
         return *this;
         }
 
       private:
         std::vector<Item> items;
+        size_t            level = 0;
 
-      friend struct Delegate;
+        void bind(Item&){}
+
+        template<class ... Args>
+        void bind(Item& it, Args... a){
+          it.activated.bind(a...);
+          }
+
+      friend class Menu;
       };
 
   protected:
-    virtual Tempest::Widget *createDropList(Widget &owner, bool alignWidthToOwner);
-    virtual Widget* createItems();
+    struct Item{
+      std::u16string    text;
+      Tempest::Icon     icon;
+      Tempest::signal<> activated;
+      Declarator        items;
+      };
+
+    virtual Tempest::Widget *createDropList( Widget &owner,
+                                             bool alignWidthToOwner,
+                                             const std::vector<Item> &items );
+    virtual Widget* createItems(const std::vector<Item> &items);
     virtual Widget* createItem(const Item& decl);
+
+    struct ItemButton:Tempest::Button {
+      ItemButton(const Declarator& item);
+      void mouseEnterEvent(MouseEvent& e);
+
+      Tempest::signal<const Declarator&,Widget&> onMouseEnter;
+      private:
+        const Declarator& item;
+      };
+
+    void openSubMenu(const Declarator &items, Widget& root);
+    void setupMenuPanel(Widget *box);
 
   private:
     struct Overlay:Tempest::WindowOverlay {
@@ -72,6 +111,9 @@ class Menu : public slot {
       Menu  * menu;
       };
 
+    void initMenuLevels(Declarator& decl);
+
+    std::vector<Widget*> panels;
     Overlay * overlay;
     Declarator decl;
 
