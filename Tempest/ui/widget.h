@@ -114,6 +114,9 @@ class Widget : public slot {
     virtual void mouseDownEvent ( Tempest::MouseEvent & e );
     virtual void mouseUpEvent   ( Tempest::MouseEvent & e );
 
+    virtual void mouseEnterEvent( Tempest::MouseEvent & e );
+    virtual void mouseLeaveEvent( Tempest::MouseEvent & e );
+
     virtual void mouseWheelEvent( Tempest::MouseEvent & e );
 
     virtual void keyDownEvent( Tempest::KeyEvent & e );
@@ -171,14 +174,18 @@ class Widget : public slot {
                                     Widget *root,
                                     bool focus  = true,
                                     bool mpress = false );
-    static void impl_mouseUpEvent  ( Widget* w, Tempest::MouseEvent & e );
-    static void impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e );
-    static void impl_keyPressEvent ( Widget* w, Tempest::KeyEvent & e );
+    static Widget* impl_mouseMoveEvent( Widget* w, Tempest::MouseEvent & e );
+    static void    impl_mouseUpEvent  ( Widget* w, Tempest::MouseEvent & e );
+    static void    impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e );
+    static void    impl_keyPressEvent ( Widget* w, Tempest::KeyEvent & e );
 
-    static void impl_customEvent(Widget *w, Tempest::CustomEvent & e );
-    static void impl_closeEvent (Widget *w, Tempest::CloseEvent & e );
+    static void    impl_customEvent(Widget *w, Tempest::CustomEvent & e );
+    static void    impl_closeEvent (Widget *w, Tempest::CloseEvent & e );
 
-    static void impl_gestureEvent( Widget *w, Tempest::AbstractGestureEvent & e );
+    static void    impl_leaveEvent(Widget *w, MouseEvent &e);
+    static void    impl_enterEvent(Widget *w, MouseEvent &e, bool emitEv);
+
+    static void    impl_gestureEvent( Widget *w, Tempest::AbstractGestureEvent & e );
 
     void unsetChFocus( Widget* root, Widget* emiter );
 
@@ -188,7 +195,7 @@ class Widget : public slot {
     FocusPolicy fpolicy;
 
     bool focus, chFocus, uscissor;
-    std::vector<Widget*> mouseReleseReciver;
+    std::vector<Widget*> mouseReleseReciver, mouseLeaveReciver;
     Layout * mlay;
     Layout * parentLay;
 

@@ -42,6 +42,7 @@ Widget::Widget(ResourceContext *context):
 #else
   mouseReleseReciver.reserve(1);
 #endif
+  mouseLeaveReciver.reserve(1);
   wvisible = true;
   mlay = 0;
   setLayout( new Layout() );
@@ -339,6 +340,120 @@ void Widget::multiPaintEvent(PaintEvent &pe) {
   paintNested(pe);
   }
 
+Widget* Widget::impl_mouseMoveEvent(Widget *root, MouseEvent &e) {
+  DeleteGuard guard(root);
+  (void)guard;
+
+  if( !root->isVisible() )
+    return 0;
+
+  for( size_t i=root->layout().widgets().size(); i>=1; --i ){
+    Widget* w = root->layout().widgets()[i-1];
+    DeleteGuard guard(w);
+    (void)guard;
+
+    if( !w->isScissorUsed() ||
+        w->rect().contains( e.x, e.y, true ) ){
+      MouseEvent et( e.x - w->x(),
+                     e.y - w->y(),
+                     e.button,
+                     e.delta,
+                     e.mouseID,
+                     e.type() );
+      et.ignore();
+
+      Widget* deep = impl_mouseMoveEvent(w,et);
+
+      if( w->mouseLeaveReciver.size() < size_t(et.mouseID+1) )
+        w->mouseLeaveReciver.resize( et.mouseID+1 );
+      Widget*& leave = w->mouseLeaveReciver[et.mouseID];
+      if(leave!=deep){
+        if(deep!=nullptr){
+          DeleteGuard g(deep);
+          (void)g;
+          impl_leaveEvent(leave,e);
+          leave = deep;
+          impl_enterEvent(deep,e,true);
+          if(leave->deleteLaterFlag)
+            leave = nullptr;
+          } else {
+          impl_leaveEvent(leave,e);
+          leave = nullptr;
+          }
+        }
+
+      if( et.isAccepted() ){
+        e.accept();
+        if(w->deleteLaterFlag)
+          return nullptr; else
+          return w;
+        }
+
+      if( w->isVisible() && (et.mouseID==0 || w->multiTouch) ){
+        et.accept();
+        w->event(et);
+        }
+
+      if( et.isAccepted() ){
+        e.accept();
+
+        if(w->deleteLaterFlag)
+          return nullptr; else
+          return w;
+        }
+      }
+    }
+
+  e.ignore();
+  return 0;
+  }
+
+void Widget::impl_leaveEvent(Widget *w, MouseEvent &e) {
+  if(w==nullptr)
+    return;
+
+  MouseEvent l(e.x - w->x(),
+               e.y - w->y(),
+               e.button,
+               e.delta,
+               e.mouseID,
+               Event::MouseLeave);
+  l.accept();
+  if(size_t(e.mouseID) < w->mouseLeaveReciver.size()) {
+    impl_leaveEvent(w->mouseLeaveReciver[e.mouseID],l);
+    w->mouseLeaveReciver[e.mouseID] = nullptr;
+    }
+  w->event(l);
+  }
+
+void Widget::impl_enterEvent(Widget *w, MouseEvent &e, bool emitEv) {
+  if(w==nullptr)
+    return;
+
+  if(size_t(e.mouseID) < w->mouseLeaveReciver.size()) {
+    MouseEvent l(e.x - w->x(),
+                 e.y - w->y(),
+                 e.button,
+                 e.delta,
+                 e.mouseID,
+                 Event::MouseLeave);
+    l.accept();
+    impl_leaveEvent(w->mouseLeaveReciver[e.mouseID],l);
+    w->mouseLeaveReciver[e.mouseID] = nullptr;
+    }
+
+  if(emitEv){
+    MouseEvent x(e.x - w->x(),
+                 e.y - w->y(),
+                 e.button,
+                 e.delta,
+                 e.mouseID,
+                 Event::MouseEnter);
+    x.accept();
+    w->event(x);
+    }
+  }
+
 Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
                                  Widget* root,
                                  bool focus,
@@ -428,6 +543,14 @@ void Widget::mouseDownEvent(MouseEvent &e){
   }
 
 void Widget::mouseUpEvent(MouseEvent &e) {
+  e.ignore();
+  }
+
+void Widget::mouseEnterEvent(MouseEvent &e) {
+  e.ignore();
+  }
+
+void Widget::mouseLeaveEvent(MouseEvent &e) {
   e.ignore();
   }
 
@@ -658,8 +781,13 @@ void Widget::impl_mouseDragEvent( Widget* w, Tempest::MouseEvent & e ){
   }
 
 void Widget::rootMouseMoveEvent(MouseEvent &e) {
-  e.ignore();
-  impl_mouseEvent( e, this, false, false );
+  DeleteGuard guard(this);
+  (void)guard;
+
+  e.ignore();  
+  if( mouseLeaveReciver.size() < size_t(e.mouseID+1) )
+    mouseLeaveReciver.resize( e.mouseID+1 );
+  impl_mouseMoveEvent( this, e );
 
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
@@ -668,6 +796,9 @@ void Widget::rootMouseMoveEvent(MouseEvent &e) {
   }
 
 void Widget::rootMouseWheelEvent(MouseEvent &e) {
+  DeleteGuard guard(this);
+  (void)guard;
+
   e.ignore();
   impl_mouseEvent( e, this, true, true );
 
@@ -680,6 +811,9 @@ void Widget::rootMouseWheelEvent(MouseEvent &e) {
   }
 
 void Widget::rootKeyDownEvent(KeyEvent &e) {
+  DeleteGuard guard(this);
+  (void)guard;
+
   if( chFocus && !focus ){
     e.accept();
     impl_keyPressEvent( this, e );
@@ -694,6 +828,9 @@ void Widget::rootKeyDownEvent(KeyEvent &e) {
   }
 
 void Widget::rootKeyUpEvent(KeyEvent &e) {
+  DeleteGuard guard(this);
+  (void)guard;
+
   if( chFocus && !focus ){
     e.accept();
     impl_keyPressEvent( this, e );
@@ -948,6 +1085,14 @@ void Widget::event( Event &e ) {
 
     case Event::MouseWheel:
       mouseWheelEvent( (Tempest::MouseEvent&)e );
+      break;
+
+    case Event::MouseEnter:
+      mouseEnterEvent( (Tempest::MouseEvent&)e );
+      break;
+
+    case Event::MouseLeave:
+      mouseLeaveEvent( (Tempest::MouseEvent&)e );
       break;
 
     case Event::KeyDown:

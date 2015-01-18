@@ -27,6 +27,8 @@ class Event {
       MouseMove,
       MouseDrag,
       MouseWheel,
+      MouseEnter,
+      MouseLeave,
       KeyDown,
       KeyUp,
       Resize,

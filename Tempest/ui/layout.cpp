@@ -70,6 +70,11 @@ void Layout::del(Widget *widget) {
     for( size_t i=0; i<mr.size(); ++i )
       if( mr[i]==widget )
         mr[i] = 0;
+
+    std::vector<Widget*> & ml = owner()->mouseLeaveReciver;
+    for( size_t i=0; i<ml.size(); ++i )
+      if( ml[i]==widget )
+        ml[i] = 0;
     owner()->update();
     }
   }
@@ -87,6 +92,7 @@ void Tempest::Layout::removeAll() {
 
   if( owner() ){
     owner()->mouseReleseReciver.clear();
+    owner()->mouseLeaveReciver.clear();
     owner()->update();
     }
   }
@@ -109,6 +115,11 @@ Widget *Layout::take(Widget *widget) {
     for( size_t i=0; i<mr.size(); ++i )
       if( mr[i]==widget )
         mr[i] = 0;
+    std::vector<Widget*>& ml = owner()->mouseLeaveReciver;
+
+    for( size_t i=0; i<ml.size(); ++i )
+      if( ml[i]==widget )
+        ml[i] = 0;
 
     owner()->update();
     }
