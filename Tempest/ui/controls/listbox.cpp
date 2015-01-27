@@ -113,7 +113,7 @@ void ListBox::setupView(size_t oldSelected) {
     }
 
   if(delegate->size()){
-    view = delegate->createView(selected);
+    view = delegate->createView(selected,ListDelegate::R_ListBoxView);
     layout().add(view);
     }
   }

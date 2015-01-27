@@ -13,12 +13,26 @@ class Widget;
 
 class ListDelegate : public slot {
   public:
+    enum Role{
+      R_Default,
+      R_ListBoxView,
+      R_ListItem,
+      R_Count
+      };
+
     virtual ~ListDelegate(){}
 
     virtual size_t  size() const = 0;
 
-    virtual Widget* createView(size_t position           ) = 0;
-    virtual void    removeView(Widget* w, size_t position) = 0;
+    virtual Widget* createView(size_t position, Role /*role*/){
+      return createView(position);
+      }
+    virtual Widget* createView( size_t position            ) = 0;
+    virtual void    removeView( Widget* w, size_t position ) = 0;
+    virtual Widget* update    ( Widget* w, size_t position ){
+      removeView(w,position);
+      return createView(position,R_Default);
+      }
 
     Tempest::signal<> invalidateView, updateView;
     Tempest::signal<size_t>         onItemSelected;
@@ -35,7 +49,7 @@ class AbstractListDelegate : public ListDelegate {
       }
 
     virtual Widget* createView(size_t position){
-      ListItem* b = new ListItem(position);
+      ListItem<Ctrl>* b = new ListItem<Ctrl>(position);
       b->clicked.bind(this,&AbstractListDelegate<T,VT,Ctrl>::implItemSelected);
       initializeItem(b,data[position]);
       return b;
@@ -59,7 +73,8 @@ class AbstractListDelegate : public ListDelegate {
                          c->minSize().h );
       }
 
-    struct ListItem: Ctrl {
+    template<class C>
+    struct ListItem: C {
       ListItem(size_t id):id(id){}
 
       const size_t id;
