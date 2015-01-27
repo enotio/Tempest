@@ -94,8 +94,10 @@ bool Dialog::isModal() const {
   return owner_ov ? owner_ov->isModal : false;
   }
 
-void Dialog::closeEvent( CloseEvent & ) {
-  close();
+void Dialog::closeEvent( CloseEvent & e ) {
+  if(!owner_ov)
+    e.ignore(); else
+    close();
   }
 
 void Dialog::paintShadow(PaintEvent &e) {
