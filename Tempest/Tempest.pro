@@ -196,8 +196,6 @@ SOURCES += \
     ui/controls/panel.cpp \
     ui/controls/lineedit.cpp \
     ui/controls/listview.cpp \
-    ui/controls/scroolbar.cpp \
-    ui/controls/scroolwidget.cpp \
     ui/controls/abstractlistbox.cpp \
     ui/controls/listbox.cpp \
     ui/controls/uifactory.cpp \
@@ -205,7 +203,9 @@ SOURCES += \
     ui/controls/checkbox.cpp \
     ui/controls/menu.cpp \
     ui/controls/stackedwidget.cpp \
-    2d/icon.cpp
+    2d/icon.cpp \
+    ui/controls/scrollbar.cpp \
+    ui/controls/scrollwidget.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -295,8 +295,6 @@ HEADERS += \
     ui/controls/lineedit.h \
     ui/controls/listview.h \
     ui/controls/listdelegate.h \
-    ui/controls/scroolbar.h \
-    ui/controls/scroolwidget.h \
     ui/controls/abstractlistbox.h \
     ui/controls/listbox.h \
     ui/controls/uifactory.h \
@@ -304,7 +302,9 @@ HEADERS += \
     ui/controls/checkbox.h \
     ui/controls/menu.h \
     ui/controls/stackedwidget.h \
-    2d/icon.h
+    2d/icon.h \
+    ui/controls/scrollbar.h \
+    ui/controls/scrollwidget.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -362,10 +362,10 @@ OTHER_FILES += \
     include/Tempest/LineEdit \
     include/Tempest/ListDelegate \
     include/Tempest/ListView \
-    include/Tempest/ScroolBar \
-    include/Tempest/ScroolWidget \
     include/Tempest/AbstractListBox \
-    include/Tempest/ListBox
+    include/Tempest/ListBox \
+    include/Tempest/ScrollBar \
+    include/Tempest/ScrollWidget
 
 DISTFILES += \
     include/Tempest/UiFactory \

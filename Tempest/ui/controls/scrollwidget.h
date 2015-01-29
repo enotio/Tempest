@@ -1,8 +1,8 @@
-#ifndef SCROOLWIDGET_H
-#define SCROOLWIDGET_H
+#ifndef SCROLLWIDGET_H
+#define SCROLLWIDGET_H
 
 #include <Tempest/Widget>
-#include <Tempest/ScroolBar>
+#include <Tempest/ScrollBar>
 
 namespace Tempest {
 
@@ -50,7 +50,7 @@ class ScroolWidget : public Tempest::Widget {
   private:
     Widget    helper;
     Widget    cen;
-    ScroolBar sbH, sbV;
+    ScrollBar sbH, sbV;
     ScroolViewMode vert, hor;
 
     struct Box:Widget {
@@ -70,4 +70,4 @@ class ScroolWidget : public Tempest::Widget {
 
   }
 
-#endif // SCROOLWIDGET_H
+#endif // SCROLLWIDGET_H

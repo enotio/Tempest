@@ -3,7 +3,7 @@
 #include <Tempest/Application>
 #include <Tempest/Window>
 #include <Tempest/Layout>
-#include <Tempest/ScroolWidget>
+#include <Tempest/ScrollWidget>
 #include <Tempest/Panel>
 
 using namespace Tempest;

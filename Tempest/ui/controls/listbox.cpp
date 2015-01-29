@@ -1,7 +1,7 @@
 #include "listbox.h"
 
 #include <Tempest/Panel>
-#include <Tempest/ScroolWidget>
+#include <Tempest/ScrollWidget>
 #include <Tempest/Layout>
 #include <Tempest/ListDelegate>
 #include <Tempest/ListView>

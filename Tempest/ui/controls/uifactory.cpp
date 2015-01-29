@@ -6,6 +6,7 @@
 #include <Tempest/ListBox>
 #include <Tempest/ListView>
 #include <Tempest/StackedWidget>
+#include <Tempest/ScrollBar>
 
 using namespace Tempest;
 
@@ -43,4 +44,8 @@ ListView *UiFactory::listView() {
 
 StackedWidget* UiFactory::stackedWidget() {
   return new StackedWidget();
+  }
+
+ScrollBar *UiFactory::scrollBar() {
+  return new ScrollBar();
   }

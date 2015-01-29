@@ -1,4 +1,4 @@
-#include "scroolwidget.h"
+#include "scrollwidget.h"
 
 #include <Tempest/Layout>
 
@@ -36,8 +36,8 @@ struct ScroolWidget::ProxyLayout: public Tempest::Layout {
     helper->setGeometry(margin().left, margin().top, sz.w, sz.h);
     }
 
-  ScroolBar *scroolH;
-  ScroolBar *scroolV;
+  ScrollBar *scroolH;
+  ScrollBar *scroolV;
   Widget    *helper;
 
   bool scroolAfterEndH    = false;

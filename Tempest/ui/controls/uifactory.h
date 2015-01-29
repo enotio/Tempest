@@ -12,6 +12,7 @@ class LineEdit;
 class ListBox;
 class ListView;
 class StackedWidget;
+class ScrollBar;
 
 class UiFactory {
   public:
@@ -27,6 +28,7 @@ class UiFactory {
     virtual ListBox*       listBox();
     virtual ListView*      listView();
     virtual StackedWidget* stackedWidget();
+    virtual ScrollBar*     scrollBar();
   };
 
 }
