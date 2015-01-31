@@ -78,6 +78,9 @@ class Pixmap {
       };
 
     inline const unsigned char* const_data() const {
+      if(data.const_value()==nullptr ||
+         data.const_value()->bytes.size()==0)
+        return nullptr;
       return &data.const_value()->bytes[0];
       }
 

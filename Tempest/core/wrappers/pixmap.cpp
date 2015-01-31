@@ -160,7 +160,8 @@ Pixmap::Pixmap(int iw, int ih, bool alpha) {
 
   //data.value() = new Data();
   //data.value()->bytes.resize(mw*mh*bpp);
-  rawPtr  = &data.const_value()->bytes[0];
+  if(data.const_value()->bytes.size()>0)
+    rawPtr = &data.const_value()->bytes[0];
   mrawPtr = 0;
 
   T_ASSERT( sizeof(Pixel)==4 );
