@@ -4,31 +4,32 @@
 
 using namespace Tempest;
 
-struct ScroolWidget::ProxyLayout: public Tempest::Layout {
+struct ScrollWidget::ProxyLayout: public Tempest::Layout {
   void applyLayout(){
-    const int w = scroolV->minSize().w;
-    const int h = scroolH->minSize().h;
+    const int w = scroolV==nullptr ? 0 : scroolV->minSize().w;
+    const int h = scroolH==nullptr ? 0 : scroolH->minSize().h;
     const Margin& m = margin();
+    Widget& ow = *owner();
 
     Size sz = owner()->size();
 
     sz.w -= m.xMargin();
     sz.h -= m.yMargin();
 
-    if(scroolV->isVisible()) {
-      if(scroolH->isVisible())
-        placeIn(scroolV, owner()->w()-w-m.right, m.top, w, owner()->h()-h-m.yMargin());
+    if(scroolV!=nullptr && scroolV->isVisible()) {
+      if(scroolH!=nullptr && scroolH->isVisible())
+        placeIn(scroolV, ow.w()-w-m.right, m.top, w, ow.h()-h-m.yMargin());
       else
-        placeIn(scroolV, owner()->w()-w-m.right, m.top, w, owner()->h()-m.yMargin());
+        placeIn(scroolV, ow.w()-w-m.right, m.top, w, ow.h()-m.yMargin());
       sz.w -= w;
       sz.w -= spacing();
       }
 
-    if(scroolH->isVisible()) {
-      if(scroolV->isVisible())
-        placeIn(scroolH, m.left, owner()->h()-h, owner()->w()-w-m.xMargin(), h);
+    if(scroolH!=nullptr && scroolH->isVisible()) {
+      if(scroolV!=nullptr && scroolV->isVisible())
+        placeIn(scroolH, m.left, ow.h()-h, ow.w()-w-m.xMargin(), h);
       else
-        placeIn(scroolH, m.left, owner()->h()-h, owner()->w()-m.xMargin(), h);
+        placeIn(scroolH, m.left, ow.h()-h, ow.w()-m.xMargin(), h);
       sz.h -= h;
       sz.h -= spacing();
       }
@@ -36,8 +37,8 @@ struct ScroolWidget::ProxyLayout: public Tempest::Layout {
     helper->setGeometry(margin().left, margin().top, sz.w, sz.h);
     }
 
-  ScrollBar *scroolH;
-  ScrollBar *scroolV;
+  ScrollBar *scroolH = nullptr;
+  ScrollBar *scroolV = nullptr;
   Widget    *helper;
 
   bool scroolAfterEndH    = false;
@@ -47,7 +48,7 @@ struct ScroolWidget::ProxyLayout: public Tempest::Layout {
   bool scroolBeforeBeginV = false;
   };
 
-struct ScroolWidget::BoxLayout: public Tempest::LinearLayout {
+struct ScrollWidget::BoxLayout: public Tempest::LinearLayout {
   BoxLayout(Tempest::Orientation ori):LinearLayout(ori){}
 
   void applyLayout(){
@@ -74,184 +75,338 @@ struct ScroolWidget::BoxLayout: public Tempest::LinearLayout {
     }
   };
 
-ScroolWidget::ScroolWidget()
-  : vert(AsNeed), hor(AsNeed) {
-  helper.onResize.bind(this,&ScroolWidget::resizeEv);
+struct ScrollWidget::HelperLayout: public Tempest::Layout {
+  void applyLayout(){
+    Size ow = owner()->size();
 
-  mlay=new ProxyLayout();
-  mlay->scroolH = &sbH;
-  mlay->scroolV = &sbV;
+    for(Widget* w : widgets()){
+      const SizePolicy& sp = w->sizePolicy();
+      Size sz = w->size();
+
+      if(sp.typeH==FixedMin)
+        sz.w = sp.minSize.w;
+      if(sp.typeH==FixedMax)
+        sz.w = sp.maxSize.w;
+      if(sp.typeH==Preferred || sp.typeH==Expanding)
+        sz.w = ow.w;
+
+      if(sp.typeV==FixedMin)
+        sz.h = sp.minSize.h;
+      if(sp.typeV==FixedMax)
+        sz.h = sp.maxSize.h;
+      if(sp.typeV==Preferred || sp.typeV==Expanding)
+        sz.h = ow.h;
+
+      w->resize(sz);
+      }
+    }
+  };
+
+ScrollWidget::ScrollWidget()
+  : vert(AsNeed), hor(AsNeed), sbH(nullptr), sbV(nullptr) {
+  helper.setLayout(new HelperLayout());
+  helper.onResize.bind(this,&ScrollWidget::resizeEv);
+  mlay = new ProxyLayout();
   mlay->helper  = &helper;
-  sbH.setOrientation(Horizontal);
 
-  Widget::setLayout(mlay);
-  layout().add(&sbH);
-  layout().add(&sbV);
   layout().add(&helper);
-  cen.setLayout(new BoxLayout(Vertical));
-  helper.layout().add(&cen);
+  Widget::setLayout(mlay);
 
-  sbH.valueChanged.bind(this, &ScroolWidget::scroolH);
-  sbV.valueChanged.bind(this, &ScroolWidget::scroolV);
+  cen = new Widget();
+  cen->setLayout(new BoxLayout(orient));
+  helper.layout().add(cen);
+
+  setScrollBars( createScrollBar(Horizontal),
+                 createScrollBar(Vertical  ),
+                 false );
+
 #ifdef __MOBILE_PLATFORM__
   hideScroolBars();
 #endif
   }
 
-ScroolWidget::~ScroolWidget() {
-  helper.onResize.removeBinds();
+ScrollWidget::ScrollWidget(bool noUi)
+  : vert(AsNeed), hor(AsNeed), sbH(nullptr), sbV(nullptr)  {
+  helper.setLayout(new HelperLayout());
+  helper.onResize.bind(this,&ScrollWidget::resizeEv);
+  mlay = new ProxyLayout();
+  mlay->helper  = &helper;
+
+  layout().add(&helper);
+  Widget::setLayout(mlay);
+
+  cen = new Widget();
+  cen->setLayout(new BoxLayout(orient));
+  helper.layout().add(cen);
+
+  if(!noUi)
+    setScrollBars( createScrollBar(Horizontal),
+                   createScrollBar(Vertical  ),
+                   false );
+
+#ifdef __MOBILE_PLATFORM__
+  hideScroolBars();
+#endif
   }
 
-Tempest::Widget &ScroolWidget::centralWidget() {
-  return cen;
-  }
+void ScrollWidget::setScrollBars( Tempest::ScrollBar* hor,
+                                  Tempest::ScrollBar* vert,
+                                  bool deleteOld ) {
+  if(sbH!=nullptr)
+    sbH->valueChanged.ubind(this, &ScrollWidget::scroolH);
+  if(sbV!=nullptr)
+    sbV->valueChanged.ubind(this, &ScrollWidget::scroolV);
 
-void ScroolWidget::setLayout(Orientation ori) {
-  cen.setLayout(new BoxLayout(ori));
-  }
+  if(deleteOld){
+    delete sbH;
+    delete sbV;
+    }
 
-void ScroolWidget::hideScroolBars() {
-  setScroolBarsVisible(0,0);
-  }
+  sbH           = hor;
+  sbV           = vert;
+  mlay->scroolH = sbH;
+  mlay->scroolV = sbV;
+  layout().add(sbH);
+  layout().add(sbV);
 
-void ScroolWidget::setScroolBarsVisible(bool vh, bool vv) {
-  if( vh==sbH.isVisible() && vv==sbV.isVisible() )
-    return;
+  if(sbH!=nullptr)
+    sbH->valueChanged.bind(this, &ScrollWidget::scroolH);
+  if(sbV!=nullptr)
+    sbV->valueChanged.bind(this, &ScrollWidget::scroolV);
 
-  sbH.setVisible(vh);
-  sbV.setVisible(vv);
+  setHScroolViewMode(this->hor);
+  setVScroolViewMode(this->vert);
+
   resizeEv( w(), h() );
   }
 
-void ScroolWidget::setVScroolViewMode(ScroolViewMode mode) {
+void ScrollWidget::initializeList() {
+  if(list!=nullptr)
+    return;
+
+  delete cen;
+  list = new ListView(orient);
+  cen  = list;
+  helper.layout().add(cen);
+  list->onItemListChanged.bind(this,&ScrollWidget::updateScrools);
+  }
+
+void ScrollWidget::updateScrools() {
+  resizeEv( w(), h() );
+  }
+
+ScrollWidget::~ScrollWidget() {
+  helper.onResize.removeBinds();
+  }
+
+Tempest::Widget &ScrollWidget::centralWidget() {
+  return *cen;
+  }
+
+bool ScrollWidget::isListBased() const {
+  return list!=nullptr;
+  }
+
+ListView *ScrollWidget::asListView() {
+  return list;
+  }
+
+const ListView *ScrollWidget::asListView() const {
+  return list;
+  }
+
+void ScrollWidget::removeList() {
+  if(list==nullptr)
+    return;
+
+  delete list;
+  list = nullptr;
+
+  cen = new Widget();
+  cen->setLayout(new BoxLayout(orient));
+  helper.layout().add(cen);
+  }
+
+void ScrollWidget::setLayout(Orientation ori) {
+  orient = ori;
+
+  if(list!=nullptr)
+    list->setOrientation(orient); else
+    cen->setLayout(new BoxLayout(ori));
+  }
+
+void ScrollWidget::hideScroolBars() {
+  setScroolBarsVisible(0,0);
+  }
+
+void ScrollWidget::setScroolBarsVisible(bool vh, bool vv) {
+  if( sbH==nullptr || sbV==nullptr )
+    return;
+
+  if( vh==sbH->isVisible() && vv==sbV->isVisible() )
+    return;
+
+  sbH->setVisible(vh);
+  sbV->setVisible(vv);
+  resizeEv( w(), h() );
+  }
+
+void ScrollWidget::setVScroolViewMode(ScroolViewMode mode) {
+  if(sbH==nullptr)
+    return;
+
   vert = mode;
   switch(mode){
-    case AsNeed:    resizeEv(cen.w(), cen.h()); break;
-    case AlwaysOff: sbV.setVisible(false);      break;
-    case AlwaysOn:  sbV.setVisible(true);       break;
+    case AsNeed:    resizeEv(cen->w(), cen->h()); break;
+    case AlwaysOff: sbV->setVisible(false);     break;
+    case AlwaysOn:  sbV->setVisible(true);      break;
     }
   }
 
-void ScroolWidget::setHScroolViewMode(ScroolViewMode mode) {
+void ScrollWidget::setHScroolViewMode(ScroolViewMode mode) {
+  if(sbH==nullptr)
+    return;
+
   hor = mode;
   switch(mode){
-    case AsNeed:    resizeEv(cen.w(), cen.h()); break;
-    case AlwaysOff: sbH.setVisible(false);      break;
-    case AlwaysOn:  sbH.setVisible(true);       break;
+    case AsNeed:    resizeEv(cen->w(), cen->h()); break;
+    case AlwaysOff: sbH->setVisible(false);     break;
+    case AlwaysOn:  sbH->setVisible(true);      break;
     }
   }
 
-void ScroolWidget::scroolAfterEndH(bool s) {
+void ScrollWidget::scroolAfterEndH(bool s) {
   mlay->scroolAfterEndH = s;
   resizeEv( w(), h() );
   mlay->applyLayout();
   }
 
-bool ScroolWidget::hasScroolAfterEndH() const {
+bool ScrollWidget::hasScroolAfterEndH() const {
   return mlay->scroolAfterEndH;
   }
 
-void ScroolWidget::scroolBeforeBeginH(bool s) {
+void ScrollWidget::scroolBeforeBeginH(bool s) {
   mlay->scroolBeforeBeginH = s;
   resizeEv( w(), h() );
   mlay->applyLayout();
   }
 
-bool ScroolWidget::hasScroolBeforeBeginH() const {
+bool ScrollWidget::hasScroolBeforeBeginH() const {
   return mlay->scroolBeforeBeginH;
   }
 
-void ScroolWidget::scroolAfterEndV(bool s) {
+void ScrollWidget::scroolAfterEndV(bool s) {
   mlay->scroolAfterEndV = s;
   resizeEv( w(), h() );
   mlay->applyLayout();
   }
 
-bool ScroolWidget::hasScroolAfterEndV() const {
+bool ScrollWidget::hasScroolAfterEndV() const {
   return mlay->scroolAfterEndV;
   }
 
-void ScroolWidget::scroolBeforeBeginV(bool s) {
+void ScrollWidget::scroolBeforeBeginV(bool s) {
   mlay->scroolBeforeBeginV = s;
   resizeEv( w(), h() );
   mlay->applyLayout();
   }
 
-bool ScroolWidget::hasScroolBeforeBeginV() const {
+bool ScrollWidget::hasScroolBeforeBeginV() const {
   return mlay->scroolBeforeBeginV;
   }
 
-void ScroolWidget::mouseWheelEvent(Tempest::MouseEvent &e) {
-  if( !rect().contains(e.x+x(), e.y+y()) || !sbV.isVisible() ){
+void ScrollWidget::mouseWheelEvent(Tempest::MouseEvent &e) {
+  if(sbV==nullptr)
+    return;
+
+  if( !rect().contains(e.x+x(), e.y+y()) || !sbV->isVisible() ){
     e.ignore();
     return;
     }
 
   if(e.delta>0)
-    sbV.setValue(sbV.value() - sbV.largeStep()); else
+    sbV->setValue(sbV->value() - sbV->largeStep()); else
   if(e.delta<0)
-    sbV.setValue(sbV.value() + sbV.largeStep());
+    sbV->setValue(sbV->value() + sbV->largeStep());
   }
 
-void ScroolWidget::mouseMoveEvent(Tempest::MouseEvent &e) {
+void ScrollWidget::mouseMoveEvent(Tempest::MouseEvent &e) {
   e.ignore();
   }
 
-void ScroolWidget::gestureEvent(Tempest::AbstractGestureEvent &e) {
+void ScrollWidget::gestureEvent(Tempest::AbstractGestureEvent &e) {
   e.ignore();
-  if( sbV.isVisible() )
+  if( sbV==nullptr || sbV->isVisible() )
     return;
 
   if( e.gestureType()==Tempest::AbstractGestureEvent::gtDragGesture ){
     Tempest::DragGesture &d = (Tempest::DragGesture&)(e);
-    int v = sbV.value();
+    int v = sbV->value();
     int dpos = d.dpos.y;
     dpos = d.dpos.x;
 
-    sbV.setValue(sbV.value() - dpos );
-    if( v!=sbV.value() )
+    sbV->setValue(sbV->value() - dpos );
+    if( v!=sbV->value() )
       e.accept();
     }
   }
 
-void ScroolWidget::resizeEvent(SizeEvent &) {
+void ScrollWidget::resizeEvent(SizeEvent &) {
   resizeEv(helper.w(), helper.h());
   }
 
-void ScroolWidget::scroolH( int v ) {
-  sbH.setValue( v );
-  cen.setPosition(-v, cen.y());
+ScrollBar *ScrollWidget::createScrollBar(Orientation ori) {
+  return new ScrollBar(ori);
+  }
+
+void ScrollWidget::scroolH( int v ) {
+  if(sbH!=nullptr)
+    sbH->setValue( v );
+  cen->setPosition(-v, cen->y());
   //mlay->applyLayout();
   }
 
-void ScroolWidget::scroolV(int v) {
-  sbV.setValue( v );
-  cen.setPosition(cen.x(), -v);
+void ScrollWidget::scroolV(int v) {
+  if(sbV!=nullptr)
+    sbV->setValue( v );
+  cen->setPosition(cen->x(), -v);
   }
 
-void ScroolWidget::resizeEv(int,int) {
+void ScrollWidget::resizeEv(int,int) {
   using std::max;
+  using std::min;
 
-  const std::vector<Widget*>& wx = cen.layout().widgets();
+  const std::vector<Widget*>& wx = cen->layout().widgets();
   const Widget* first = wx.size()>0 ? wx[0]     : nullptr;
   const Widget* last  = wx.size()>0 ? wx.back() : nullptr;
 
-  const int dx = max(cen.w()-helper.w(),0);
-  const int dy = max(cen.h()-helper.h(),0);
-  sbH.setRange( mlay->scroolBeforeBeginH && first!=nullptr ? first->w()-dx : 0,
-                mlay->scroolAfterEndH && last!=nullptr ? max(last->w()-helper.w(),0) : dx );
-  sbV.setRange( mlay->scroolBeforeBeginV && first!=nullptr ? first->h()-dy : 0,
-                mlay->scroolAfterEndV && last!=nullptr ? max(last->h()-helper.h(),0) : dy );
+  const int dx = max(cen->w()-helper.w(),0);
+  const int dy = max(cen->h()-helper.h(),0);
+  if(sbH!=nullptr){
+    int maxSc = dy;
+    if(mlay->scroolAfterEndH && last!=nullptr)
+      maxSc = max(cen->w()-min(last->w(),helper.w()),0);
+    sbH->setRange( (mlay->scroolBeforeBeginH && first!=nullptr) ? first->w()-dx : 0,
+                   maxSc );
+    }
+
+  if(sbV!=nullptr){
+    int maxSc = dy;
+    if(mlay->scroolAfterEndV && last!=nullptr)
+      maxSc = max(cen->h()-min(last->h(),helper.h()),0);
+    sbV->setRange( (mlay->scroolBeforeBeginV && first!=nullptr) ? first->h()-dy : 0,
+                    maxSc );
+    }
 
   if(hor==AsNeed)
-    sbH.setVisible(dx>0);
+    sbH->setVisible(dx>0);
   if(vert==AsNeed)
-    sbV.setVisible(dy>0);
+    sbV->setVisible(dy>0);
 
-  cen.layout().applyLayout();
+  cen->layout().applyLayout();
   }
 
-Tempest::Size ScroolWidget::sizeHint(const Tempest::Widget *wid) {
+Tempest::Size ScrollWidget::sizeHint(const Tempest::Widget *wid) {
   int w = wid->sizePolicy().minSize.w,
       h = wid->sizePolicy().minSize.h;
 

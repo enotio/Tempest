@@ -132,7 +132,7 @@ Tempest::Widget* ListBox::createDropList() {
   box->layout().setMargin(6);
   box->setPosition( mapToRoot( Tempest::Point(0,h()) ) );
 
-  ScroolWidget *sw = new ScroolWidget();
+  ScrollWidget *sw = new ScrollWidget();
   ListView* list   = new ListView(Vertical);
   list->setDelegate(ProxyDelegate(delegate));
 

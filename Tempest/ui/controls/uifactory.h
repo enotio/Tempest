@@ -2,6 +2,7 @@
 #define UIFACTORY_H
 
 #include <string>
+#include <Tempest/Widget>
 
 namespace Tempest{
 
@@ -13,6 +14,7 @@ class ListBox;
 class ListView;
 class StackedWidget;
 class ScrollBar;
+class ScrollWidget;
 
 class UiFactory {
   public:
@@ -28,7 +30,8 @@ class UiFactory {
     virtual ListBox*       listBox();
     virtual ListView*      listView();
     virtual StackedWidget* stackedWidget();
-    virtual ScrollBar*     scrollBar();
+    virtual ScrollBar*     scrollBar(Tempest::Orientation ori);
+    virtual ScrollWidget*  scrollWidget();
   };
 
 }

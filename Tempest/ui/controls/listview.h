@@ -21,7 +21,7 @@ class ListView : public Widget {
 
       delegate.reset(new D(d));
       delegate->onItemSelected.bind(onItemSelected);
-      lay = new Layout(*delegate,orientation);
+      lay = new Layout(*this,*delegate,orientation);
       setLayout(lay);
       }
 
@@ -33,18 +33,20 @@ class ListView : public Widget {
     void setOrientation(Tempest::Orientation ori);
 
     Tempest::signal<size_t> onItemSelected;
+    Tempest::signal<>       onItemListChanged;
 
   private:
     Tempest::Orientation          orientation;
     std::unique_ptr<ListDelegate> delegate;
 
     struct Layout : Tempest::LinearLayout {
-      Layout(ListDelegate& delegate, Tempest::Orientation ori);
+      Layout(ListView& view, ListDelegate& delegate, Tempest::Orientation ori);
       ~Layout();
 
       void applyLayout();
       void invalidate();
 
+      ListView&     view;
       ListDelegate& delegate;
       bool          busy;
       void          removeAll();

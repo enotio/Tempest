@@ -7,6 +7,7 @@
 #include <Tempest/ListView>
 #include <Tempest/StackedWidget>
 #include <Tempest/ScrollBar>
+#include <Tempest/ScrollWidget>
 
 using namespace Tempest;
 
@@ -46,6 +47,10 @@ StackedWidget* UiFactory::stackedWidget() {
   return new StackedWidget();
   }
 
-ScrollBar *UiFactory::scrollBar() {
-  return new ScrollBar();
+ScrollBar *UiFactory::scrollBar(Tempest::Orientation ori) {
+  return new ScrollBar(ori);
+  }
+
+ScrollWidget *UiFactory::scrollWidget() {
+  return new ScrollWidget();
   }

@@ -91,7 +91,7 @@ Widget *Menu::createDropList( Widget& owner,
   box->setLayout( Tempest::Horizontal );
   box->layout().setMargin(6);
 
-  ScroolWidget *sw = new ScroolWidget();
+  ScrollWidget *sw = new ScrollWidget();
   Widget*   list   = createItems(items);
 
   sw->centralWidget().layout().add(list);

@@ -35,8 +35,6 @@ class ScrollBar : public Tempest::Widget {
 
     Tempest::signal<int> valueChanged;
 
-    const Widget& centralWidget() const;
-
   protected:
     ScrollBar(bool noUi, Tempest::Orientation ori = Tempest::Vertical);
 
@@ -48,6 +46,9 @@ class ScrollBar : public Tempest::Widget {
     virtual Widget* createCentralWidget();
     virtual Widget* createCentralButton();
     virtual void    setupUi();
+    void            updateValueFromView(int,int);
+    void            assignCentralButton(Widget* btn);
+    virtual int     linearSize() const;
 
     struct MoveBtn: Button {
       MoveBtn(ScrollBar& owner, bool dir):owner(owner), dir(dir){}
@@ -62,8 +63,6 @@ class ScrollBar : public Tempest::Widget {
       };
 
     struct CentralButton: public Button {
-      CentralButton(){}
-
       void mouseDownEvent(Tempest::MouseEvent &e);
       void mouseDragEvent(Tempest::MouseEvent &e);
       void keyPressEvent(Tempest::KeyEvent &e);
@@ -90,7 +89,6 @@ class ScrollBar : public Tempest::Widget {
     void incL();
     void decL();
 
-    void updateValueFromView(int, unsigned);
     void updateView();
 
     int rmin, rmax, msmallStep, mlargeStep;
@@ -100,7 +98,6 @@ class ScrollBar : public Tempest::Widget {
 
     void alignCenBtn(int, int);
 
-    Widget * cen    = nullptr;
     Widget * cenBtn = nullptr;
     int cenBtnSize = 40;
 

@@ -3,21 +3,38 @@
 
 #include <Tempest/Widget>
 #include <Tempest/ScrollBar>
+#include <Tempest/ListView>
 
 namespace Tempest {
 
-class ScroolWidget : public Tempest::Widget {
+class ListView;
+
+class ScrollWidget : public Tempest::Widget {
   public:
-    ScroolWidget();
-    ~ScroolWidget();
+    ScrollWidget();
+    ~ScrollWidget();
 
     enum ScroolViewMode{
-      AlwaysOn,
+      AlwaysOff,
       AsNeed,
-      AlwaysOff
+      AlwaysOn
       };
 
     Widget& centralWidget();
+    bool    isListBased() const;
+
+    template<class D>
+    void setDelegate(const D& d){
+      initializeList();
+      list->setDelegate(d);
+      helper.layout().applyLayout();
+      resizeEv( w(), h() );
+      }
+
+    ListView* asListView();
+    const ListView* asListView() const;
+    void removeList();
+
     void setLayout(Tempest::Orientation ori);
 
     void hideScroolBars();
@@ -41,26 +58,40 @@ class ScroolWidget : public Tempest::Widget {
     void scroolV( int v );
 
   protected:
+    ScrollWidget(bool noUi);
+
     void mouseWheelEvent(Tempest::MouseEvent &e);
     void mouseMoveEvent(Tempest::MouseEvent &e);
 
     void gestureEvent(Tempest::AbstractGestureEvent &e);
     void resizeEvent(Tempest::SizeEvent& e);
 
+    virtual ScrollBar* createScrollBar(Tempest::Orientation ori);
+    virtual void setScrollBars(Tempest::ScrollBar* hor,
+                               Tempest::ScrollBar* vert , bool deleteOld);
+
   private:
-    Widget    helper;
-    Widget    cen;
-    ScrollBar sbH, sbV;
+    Widget     helper;
+    ScrollBar* sbH;
+    ScrollBar* sbV;
     ScroolViewMode vert, hor;
 
+    Widget*    cen;
+    ListView*  list = nullptr;
+
+    Tempest::Orientation orient = Tempest::Vertical;
+    void initializeList();
+    void updateScrools();
+
     struct Box:Widget {
-      ScroolWidget* owner;
+      ScrollWidget* owner;
       } box;
 
     struct ProxyLayout;
     ProxyLayout *mlay;
 
     struct BoxLayout;
+    struct HelperLayout;
 
     void resizeEv(int w, int h);
     static Tempest::Size sizeHint( const Widget *w );

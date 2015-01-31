@@ -37,7 +37,7 @@ void ScrollBar::setOrientation( Tempest::Orientation ori ) {
   if(orient==ori)
     return;
 
-  const UiMetrics& metric = Application::uiMetrics();
+  const int ls = linearSize();
 
   setLayout( ori );
   layout().setMargin(0);
@@ -45,14 +45,14 @@ void ScrollBar::setOrientation( Tempest::Orientation ori ) {
 
   Tempest::SizePolicy p;
   if( ori==Tempest::Vertical ){
-    p.maxSize.w = int(metric.scroolButtonSize*metric.uiScale);
+    p.maxSize.w = ls;
     p.typeH     = Tempest::FixedMax;
     } else {
-    p.maxSize.h = int(metric.scroolButtonSize*metric.uiScale);
+    p.maxSize.h = ls;
     p.typeV     = Tempest::FixedMax;
     }
 
-  p.minSize = Tempest::Size(int(metric.scroolButtonSize*metric.uiScale));
+  p.minSize = Tempest::Size(ls);
   setSizePolicy(p);
 
   onOrientationChanged(ori);
@@ -125,10 +125,6 @@ void ScrollBar::setCentralButtonSize(int sz) {
   alignCenBtn(0,0);
   }
 
-const Tempest::Widget &ScrollBar::centralWidget() const {
-  return *cen;
-  }
-
 void ScrollBar::resizeEvent(Tempest::SizeEvent &) {
   updateView();
   }
@@ -159,13 +155,12 @@ Widget *ScrollBar::createCentralButton() {
   }
 
 void ScrollBar::setupUi() {
-  const UiMetrics& metric = Application::uiMetrics();
-
   Tempest::SizePolicy p;
   p.typeH   = Tempest::FixedMax;
   p.typeV   = Tempest::FixedMax;
-  p.maxSize = Tempest::Size(int(metric.scroolButtonSize*metric.uiScale));
+  p.maxSize = Tempest::Size(linearSize());
 
+  Widget* cen;
   Button* btn[2];
   btn[0] = createMoveButton(false);
   btn[1] = createMoveButton(true);
@@ -202,7 +197,14 @@ void ScrollBar::decL() {
   setValue( value()-mlargeStep );
   }
 
-void ScrollBar::updateValueFromView(int, unsigned) {
+void ScrollBar::updateValueFromView(int, int) {
+  if( cenBtn==nullptr )
+    return;
+
+  Widget* cen = cenBtn->owner();
+  if(cen==nullptr)
+    return;
+
   int v;
   const int xrange = cen->w() - cenBtn->w();
   const int yrange = cen->h() - cenBtn->h();
@@ -217,8 +219,22 @@ void ScrollBar::updateValueFromView(int, unsigned) {
     }
   }
 
+void ScrollBar::assignCentralButton(Widget *btn) {
+  cenBtn = btn;
+  updateView();
+  }
+
+int ScrollBar::linearSize() const {
+  const UiMetrics& metric = Application::uiMetrics();
+  return int(metric.scroolButtonSize*metric.uiScale);
+  }
+
 void ScrollBar::updateView() {
   if( cenBtn==nullptr )
+    return;
+
+  Widget* cen = cenBtn->owner();
+  if(cen==nullptr)
     return;
 
   Tempest::Point p;

@@ -42,7 +42,7 @@ void ListView::setOrientation(Orientation ori) {
     setSizePolicy(Preferred,FixedMin);
 
   if(delegate)
-    setLayout(new Layout(*delegate,ori));
+    setLayout(new Layout(*this,*delegate,ori));
   }
 
 void ListView::removeAll() {
@@ -52,8 +52,8 @@ void ListView::removeAll() {
   }
 
 
-ListView::Layout::Layout(ListDelegate &delegate, Orientation ori)
-  :LinearLayout(ori), delegate(delegate), busy(false) {
+ListView::Layout::Layout(ListView &view, ListDelegate &delegate, Orientation ori)
+  :LinearLayout(ori), view(view), delegate(delegate), busy(false) {
   delegate.invalidateView.bind(this,&Layout::invalidate);
   }
 
@@ -117,6 +117,7 @@ void ListView::Layout::applyLayout() {
 void ListView::Layout::invalidate(){
   removeAll();
   applyLayout();
+  view.onItemListChanged();
   }
 
 void ListView::Layout::removeAll() {
