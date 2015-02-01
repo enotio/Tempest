@@ -160,7 +160,7 @@ void *HLSL::context() const {
 void HLSL::enable() const {
   Data::Prog* prog = data->curProgram;
 
-  auto ubo = *data->curUbo;
+  auto& ubo = *data->curUbo;
   for( const UBO u:ubo )
     setUniforms( prog->uniformVs, u, false );
   for( const UBO u:ubo )

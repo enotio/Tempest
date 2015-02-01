@@ -546,7 +546,7 @@ void GLSL::setVertexDecl(const AbstractAPI::VertexDecl *v ) const {
 
 void GLSL::enable() const {
   data->makeCurrent( data->curProgram );
-  auto ubo = *data->curUbo;
+  auto& ubo = *data->curUbo;
 
   int slot=0;
   for( UBO u:ubo ){

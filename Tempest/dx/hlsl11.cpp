@@ -460,7 +460,7 @@ void HLSL11::enable() const {
     data->IASetInputLayout(data->prog.dxDecl);
     }
 
-  auto ubo = *data->curUbo;
+  auto& ubo = *data->curUbo;
 
   int slot=0;
   int bufNum = 0;
