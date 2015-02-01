@@ -55,10 +55,12 @@ void ListView::removeAll() {
 ListView::Layout::Layout(ListView &view, ListDelegate &delegate, Orientation ori)
   :LinearLayout(ori), view(view), delegate(delegate), busy(false) {
   delegate.invalidateView.bind(this,&Layout::invalidate);
+  delegate.updateView    .bind(this,&Layout::update    );
   }
 
 ListView::Layout::~Layout(){
   delegate.invalidateView.ubind(this,&Layout::invalidate);
+  delegate.updateView    .ubind(this,&Layout::update    );
   removeAll();
   }
 
@@ -116,6 +118,11 @@ void ListView::Layout::applyLayout() {
 
 void ListView::Layout::invalidate(){
   removeAll();
+  applyLayout();
+  view.onItemListChanged();
+  }
+
+void ListView::Layout::update() {
   applyLayout();
   view.onItemListChanged();
   }

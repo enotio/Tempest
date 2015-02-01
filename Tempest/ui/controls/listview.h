@@ -45,6 +45,7 @@ class ListView : public Widget {
 
       void applyLayout();
       void invalidate();
+      void update();
 
       ListView&     view;
       ListDelegate& delegate;
