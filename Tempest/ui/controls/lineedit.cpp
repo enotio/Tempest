@@ -41,6 +41,7 @@ LineEdit::LineEdit(): anim(0), ctrlPressed(0) {
 LineEdit::~LineEdit() {
   onFocusChange.ubind( this, &LineEdit::setupTimer );
   onFocusChange.ubind( this, &LineEdit::storeText );
+  storeText(false);
   }
 
 void LineEdit::setFont(const Font &f) {
@@ -160,11 +161,11 @@ void LineEdit::mouseMoveEvent(MouseEvent &) {
   }
 
 void LineEdit::mouseDragEvent(MouseEvent &e) {
-  if( Rect(0,0,w(),h()).contains( e.pos() ) ){
+  //if( Rect(0,0,w(),h()).contains( e.pos() ) ){
     ep = e.pos();
     updateSel();
     update();
-    }
+    //}
   }
 
 void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
@@ -361,6 +362,9 @@ void LineEdit::updateSel() {
     std::swap(a,b);
 
   int x = scrool+margin().left, y = 0;
+  a.x = std::max(a.x,x);
+  b.x = std::max(b.x,x);
+
   for( size_t i=0; i<txt.size(); ++i ){
     Font::LetterGeometry l = fnt.letterGeometry(txt[i]);
 
