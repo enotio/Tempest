@@ -75,10 +75,10 @@ void ListBox::setCurrentItem(size_t i) {
 
   i = std::min( delegate->size()-1, i );
   if( selected!=i ){
-    selected = i;
     auto tmp = dropListEnabled;
     dropListEnabled = false;
-    onItem(selected,nullptr);
+    onItem(i,nullptr);
+    selected = i;
     dropListEnabled = tmp;
     }
   }
@@ -159,7 +159,8 @@ void ListBox::onItem(size_t id,Widget* item) {
 void ListBox::selectItem(size_t id) {
   size_t old = selected;
   selected = id;
-  onItemSelected(id);
+  if(old!=id)
+    onItemSelected(id);
   setupView(old);
   close();
   }
