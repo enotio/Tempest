@@ -196,6 +196,8 @@ void ScrollWidget::updateScrools() {
   }
 
 ScrollWidget::~ScrollWidget() {
+  if(list!=nullptr)
+    list->onItemListChanged.ubind(this,&ScrollWidget::updateScrools);
   helper.onResize.removeBinds();
   }
 

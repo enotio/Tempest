@@ -114,10 +114,11 @@ class signal : Detail::signalBase {
         if( e->isEq( &t, ch, sizeof(f) ) ){
           v[i] = v.back();
           v.pop_back();
+          unreg(&t);
           } else {
           ++i;
           }
-        }
+        }      
       }
 
     template< class T, class TBase >
@@ -136,6 +137,9 @@ class signal : Detail::signalBase {
   private:
     void reg(slot* x);
     void reg(void*  ){}
+
+    void unreg(slot* x);
+    void unreg(void*  ){}
 
     static void eraseBinds(void* s, void* this_ptr){
       signal* sg = (signal*)s;
@@ -261,6 +265,17 @@ void signal<Args...>::reg(slot* s){
   info.ptr = this;
   info.del = &signal<Args...>::eraseBinds;
   s->sig.push_back(info);
+  }
+
+template< class ... Args >
+void signal<Args...>::unreg(slot* s){
+  for(size_t i=0; i<s->sig.size(); ++i){
+    if(s->sig[i].ptr==this){
+      s->sig[i] = s->sig.back();
+      s->sig.pop_back();
+      return;
+      }
+    }
   }
 
 }
