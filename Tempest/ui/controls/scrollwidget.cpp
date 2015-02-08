@@ -188,16 +188,16 @@ void ScrollWidget::initializeList() {
   list = new ListView(orient);
   cen  = list;
   helper.layout().add(cen);
-  list->onItemListChanged.bind(this,&ScrollWidget::updatescrolls);
+  list->onItemListChanged.bind(this,&ScrollWidget::updateScrolls);
   }
 
-void ScrollWidget::updatescrolls() {
+void ScrollWidget::updateScrolls() {
   resizeEv( w(), h() );
   }
 
 ScrollWidget::~ScrollWidget() {
   if(list!=nullptr)
-    list->onItemListChanged.ubind(this,&ScrollWidget::updatescrolls);
+    list->onItemListChanged.ubind(this,&ScrollWidget::updateScrolls);
   helper.onResize.removeBinds();
   }
 
@@ -338,18 +338,25 @@ void ScrollWidget::mouseMoveEvent(Tempest::MouseEvent &e) {
 
 void ScrollWidget::gestureEvent(Tempest::AbstractGestureEvent &e) {
   e.ignore();
-  if( sbV==nullptr || sbV->isVisible() )
-    return;
 
   if( e.gestureType()==Tempest::AbstractGestureEvent::gtDragGesture ){
     Tempest::DragGesture &d = (Tempest::DragGesture&)(e);
-    int v = sbV->value();
-    int dpos = d.dpos.y;
-    dpos = d.dpos.x;
+    if(sbH!=nullptr && sbH->range()>w() && !sbH->isVisible()){
+      int v = sbH->value();
+      int dpos = d.dpos.x;
 
-    sbV->setValue(sbV->value() - dpos );
-    if( v!=sbV->value() )
-      e.accept();
+      sbH->setValue(sbH->value() - dpos );
+      if( v!=sbH->value() )
+        e.accept();
+      }
+    if(sbV!=nullptr && sbV->range()>h() && !sbV->isVisible()){
+      int v = sbV->value();
+      int dpos = d.dpos.y;
+
+      sbV->setValue(sbV->value() - dpos );
+      if( v!=sbV->value() )
+        e.accept();
+      }
     }
   }
 
@@ -400,10 +407,16 @@ void ScrollWidget::resizeEv(int,int) {
                     maxSc );
     }
 
-  if(hor==AsNeed)
+  if(hor==AsNeed){
     sbH->setVisible(dx>0);
-  if(vert==AsNeed)
+    if(dx<=0)
+      sbH->setValue(0);
+    }
+  if(vert==AsNeed){
     sbV->setVisible(dy>0);
+    if(dy<=0)
+      sbV->setValue(0);
+    }
 
   cen->layout().applyLayout();
   }

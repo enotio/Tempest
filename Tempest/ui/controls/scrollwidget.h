@@ -81,7 +81,7 @@ class ScrollWidget : public Tempest::Widget {
 
     Tempest::Orientation orient = Tempest::Vertical;
     void initializeList();
-    void updatescrolls();
+    void updateScrolls();
 
     struct Box:Widget {
       ScrollWidget* owner;
