@@ -800,7 +800,7 @@ void Widget::rootMouseWheelEvent(MouseEvent &e) {
   (void)guard;
 
   e.ignore();
-  impl_mouseEvent( e, this, true, true );
+  impl_mouseEvent( e, this, true, false );
 
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
