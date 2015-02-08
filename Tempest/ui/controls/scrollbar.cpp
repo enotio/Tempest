@@ -121,7 +121,7 @@ void ScrollBar::setLargeStep(int step) {
 
 void ScrollBar::setCentralButtonSize(int sz) {
   const UiMetrics& metric = Application::uiMetrics();
-  cenBtnSize = std::max<int>(int(metric.scroolButtonSize*metric.uiScale), sz);
+  cenBtnSize = std::max<int>(int(metric.scrollButtonSize*metric.uiScale), sz);
   alignCenBtn(0,0);
   }
 
@@ -226,7 +226,7 @@ void ScrollBar::assignCentralButton(Widget *btn) {
 
 int ScrollBar::linearSize() const {
   const UiMetrics& metric = Application::uiMetrics();
-  return int(metric.scroolButtonSize*metric.uiScale);
+  return int(metric.scrollButtonSize*metric.uiScale);
   }
 
 void ScrollBar::updateView() {
@@ -256,7 +256,7 @@ void ScrollBar::alignCenBtn( int, int ) {
   updateView();
   }
 
-void ScrollBar::buttonScroolStart(bool up) {
+void ScrollBar::buttonscrollStart(bool up) {
   timer.timeout.removeBinds();
   if(up){
     timer.timeout.bind(this,&ScrollBar::inc);
@@ -269,7 +269,7 @@ void ScrollBar::buttonScroolStart(bool up) {
   timer.start(50);
   }
 
-void ScrollBar::buttonScroolStop() {
+void ScrollBar::buttonscrollStop() {
   timer.stop();
   }
 
@@ -328,12 +328,12 @@ void ScrollBar::CentralWidget::mouseUpEvent(Tempest::MouseEvent &e) {
 
 void ScrollBar::MoveBtn::mouseDownEvent(MouseEvent &e) {
   Button::mouseDownEvent(e);
-  owner.buttonScroolStart(dir);
+  owner.buttonscrollStart(dir);
   }
 
 void ScrollBar::MoveBtn::mouseUpEvent(MouseEvent &e) {
   Button::mouseUpEvent(e);
-  owner.buttonScroolStop();
+  owner.buttonscrollStop();
   }
 
 void ScrollBar::MoveBtn::setupIcon(Orientation /*scrollBarOrientation*/) {

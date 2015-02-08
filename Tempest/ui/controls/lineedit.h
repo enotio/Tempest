@@ -84,7 +84,7 @@ class LineEdit : public Tempest::Widget {
     size_t sedit, eedit;
     size_t oldSedit, oldEedit;
     Tempest::Point sp, ep;
-    int scrool;
+    int scroll;
 
     Tempest::Font  fnt;
     Tempest::Timer timer;

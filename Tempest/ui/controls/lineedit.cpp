@@ -20,7 +20,7 @@ LineEdit::LineEdit(): anim(0), ctrlPressed(0) {
 
   onFocusChange.bind( *this, &LineEdit::storeText );
 
-  scrool = 0;
+  scroll = 0;
 
   const UiMetrics& uiMetrics = Application::uiMetrics();
   fnt = Application::mainFont();
@@ -67,7 +67,7 @@ void LineEdit::setText(const std::u16string &t) {
     sedit = std::max<size_t>(0, std::min(sedit, txt.size() ));
     eedit = std::max<size_t>(0, std::min(eedit, txt.size() ));
 
-    scrool = 0;
+    scroll = 0;
     onTextChanged(txt);
     update();
     }
@@ -193,7 +193,7 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
     y+= l.advance.y;
     }
 
-  int oldSc = scrool;
+  int oldSc = scroll;
   if( editable && sx==x ){
     --sx;
     int clientW = w()-m.xMargin();
@@ -206,7 +206,7 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
       delta = -(x+oldSc-m.left);
       }
 
-    scrool += delta;
+    scroll += delta;
     sx     += delta;
     x      += delta;
     x += 1;
@@ -224,7 +224,7 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
   int dY = (h()-fnt.size()-m.yMargin())/2;
   Rect sc = p.scissor();
   p.setScissor(sc.intersected(Rect(m.left, 0, w()-m.xMargin(), h())));
-  p.drawText( scrool+m.left, m.top+dY, w()-m.xMargin()-scrool, fnt.size(),
+  p.drawText( scroll+m.left, m.top+dY, w()-m.xMargin()-scroll, fnt.size(),
               txt, AlignBottom );
   }
 
@@ -361,7 +361,7 @@ void LineEdit::updateSel() {
   if( a.x > b.x )
     std::swap(a,b);
 
-  int x = scrool+margin().left, y = 0;
+  int x = scroll+margin().left, y = 0;
   a.x = std::max(a.x,x);
   b.x = std::max(b.x,x);
 
@@ -389,7 +389,7 @@ void LineEdit::updateSel() {
     return;
     }
 
-  x = scrool+margin().left;
+  x = scroll+margin().left;
   y = 0;
 
   if( b.x >= w() ){

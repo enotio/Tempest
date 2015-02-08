@@ -14,7 +14,7 @@ class ScrollWidget : public Tempest::Widget {
     ScrollWidget();
     ~ScrollWidget();
 
-    enum ScroolViewMode{
+    enum scrollViewMode{
       AlwaysOff,
       AsNeed,
       AlwaysOn
@@ -37,25 +37,25 @@ class ScrollWidget : public Tempest::Widget {
 
     void setLayout(Tempest::Orientation ori);
 
-    void hideScroolBars();
-    void setScroolBarsVisible( bool h, bool v );
-    void setVScroolViewMode( ScroolViewMode );
-    void setHScroolViewMode( ScroolViewMode );
+    void hidescrollBars();
+    void setscrollBarsVisible( bool h, bool v );
+    void setVscrollViewMode( scrollViewMode );
+    void setHscrollViewMode( scrollViewMode );
 
-    void scroolAfterEndH( bool s );
-    bool hasScroolAfterEndH() const;
+    void scrollAfterEndH( bool s );
+    bool hasscrollAfterEndH() const;
 
-    void scroolBeforeBeginH( bool s );
-    bool hasScroolBeforeBeginH() const;
+    void scrollBeforeBeginH( bool s );
+    bool hasscrollBeforeBeginH() const;
 
-    void scroolAfterEndV( bool s );
-    bool hasScroolAfterEndV() const;
+    void scrollAfterEndV( bool s );
+    bool hasscrollAfterEndV() const;
 
-    void scroolBeforeBeginV( bool s );
-    bool hasScroolBeforeBeginV() const;
+    void scrollBeforeBeginV( bool s );
+    bool hasscrollBeforeBeginV() const;
 
-    void scroolH( int v );
-    void scroolV( int v );
+    void scrollH( int v );
+    void scrollV( int v );
 
   protected:
     ScrollWidget(bool noUi);
@@ -74,14 +74,14 @@ class ScrollWidget : public Tempest::Widget {
     Widget     helper;
     ScrollBar* sbH;
     ScrollBar* sbV;
-    ScroolViewMode vert, hor;
+    scrollViewMode vert, hor;
 
     Widget*    cen;
     ListView*  list = nullptr;
 
     Tempest::Orientation orient = Tempest::Vertical;
     void initializeList();
-    void updateScrools();
+    void updatescrolls();
 
     struct Box:Widget {
       ScrollWidget* owner;
