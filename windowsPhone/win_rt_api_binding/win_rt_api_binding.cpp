@@ -162,7 +162,6 @@ ref class App sealed : public IFrameworkView{
       }
 
     virtual void Run(){
-      OutputDebugStringA( "start application" );
       static char* args[] = { "TempestAppForWindowsPhone" };
       main_func( 1, (const char**)(args) );
       }
