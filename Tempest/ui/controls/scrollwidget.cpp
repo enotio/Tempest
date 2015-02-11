@@ -392,7 +392,7 @@ void ScrollWidget::resizeEv(int,int) {
   const int dx = max(cen->w()-helper.w(),0);
   const int dy = max(cen->h()-helper.h(),0);
   if(sbH!=nullptr){
-    int maxSc = dy;
+    int maxSc = dx;
     if(mlay->scrollAfterEndH && last!=nullptr)
       maxSc = max(cen->w()-min(last->w(),helper.w()),0);
     sbH->setRange( (mlay->scrollBeforeBeginH && first!=nullptr) ? first->w()-dx : 0,

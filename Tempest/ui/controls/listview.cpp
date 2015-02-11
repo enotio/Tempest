@@ -18,9 +18,9 @@ void ListView::removeDelegate() {
   if(delegate){
     delegate->onItemSelected.ubind(onItemSelected);
     removeAll();
-    delegate.reset();
     lay = nullptr;
     setLayout(new Tempest::Layout());
+    delegate.reset();
     }
   }
 
