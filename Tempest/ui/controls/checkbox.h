@@ -12,7 +12,7 @@ class CheckBox: public Button {
     Tempest::signal<bool> onChecked;
 
     void setChecked(bool c = true);
-    bool isClicked() const;
+    bool isChecked() const;
 
   protected:
     virtual Tempest::Rect viewRect() const;

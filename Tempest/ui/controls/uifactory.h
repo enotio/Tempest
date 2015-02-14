@@ -15,6 +15,7 @@ class ListView;
 class StackedWidget;
 class ScrollBar;
 class ScrollWidget;
+class CheckBox;
 
 class UiFactory {
   public:
@@ -32,6 +33,7 @@ class UiFactory {
     virtual StackedWidget* stackedWidget();
     virtual ScrollBar*     scrollBar(Tempest::Orientation ori);
     virtual ScrollWidget*  scrollWidget();
+    virtual CheckBox*      checkBox();
   };
 
 }

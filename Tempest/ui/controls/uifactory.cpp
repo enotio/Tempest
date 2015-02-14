@@ -8,6 +8,7 @@
 #include <Tempest/StackedWidget>
 #include <Tempest/ScrollBar>
 #include <Tempest/ScrollWidget>
+#include <Tempest/CheckBox>
 
 using namespace Tempest;
 
@@ -53,4 +54,8 @@ ScrollBar *UiFactory::scrollBar(Tempest::Orientation ori) {
 
 ScrollWidget *UiFactory::scrollWidget() {
   return new ScrollWidget();
+  }
+
+CheckBox *UiFactory::checkBox() {
+  return new CheckBox();
   }

@@ -161,11 +161,9 @@ void LineEdit::mouseMoveEvent(MouseEvent &) {
   }
 
 void LineEdit::mouseDragEvent(MouseEvent &e) {
-  //if( Rect(0,0,w(),h()).contains( e.pos() ) ){
-    ep = e.pos();
-    updateSel();
-    update();
-    //}
+  ep = e.pos();
+  updateSel();
+  update();
   }
 
 void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
@@ -213,7 +211,7 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
     }
 
   p.setBlendMode(noBlend);
-  if( editable && ((anim && hasFocus()) || s!=e) ){
+  if( editable && ((anim || s!=e) && hasFocus()) ){
     p.setColor( 0,0,1,1 );
     //p.setBlendMode( addBlend );
     p.drawRect( sx+oldSc, 0, x-sx, h(),

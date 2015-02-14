@@ -23,7 +23,7 @@ void CheckBox::setChecked( bool c ) {
     }
   }
 
-bool CheckBox::isClicked() const {
+bool CheckBox::isChecked() const {
   return state;
   }
 
