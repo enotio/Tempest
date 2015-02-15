@@ -16,15 +16,32 @@ namespace Detail{
 
 class slot {
   protected:
+    slot(){}
+
+    slot(const slot& other){
+      sig = other.sig;
+      for(SigInfo& s : sig)
+        (*s.reg)(s.ptr,this);
+      }
+
     ~slot(){
       for(SigInfo& s : sig)
         (*s.del)(s.ptr,this);
+      }
+
+    slot& operator = (slot& other) {
+      for(SigInfo& s : sig)
+        (*s.del)(s.ptr,this);
+      sig = other.sig;
+      for(SigInfo& s : sig)
+        (*s.reg)(s.ptr,this);
       }
 
   private:
     struct SigInfo{
       void* ptr;
       void (*del)(void* t, void* ptr);
+      void (*reg)(void* t, void* ptr);
       };
 
     std::vector<SigInfo> sig;
@@ -58,7 +75,10 @@ class signalBase : public slot {
 template< class ... Args >
 class signal : Detail::signalBase {
   public:
+    signal(){}
+    signal(const signal& other);
     ~signal();
+    signal& operator = (const signal& sg);
 
     inline void exec( Args ... args ){
       for( size_t i=0; i<v.size(); ++i ){
@@ -140,6 +160,11 @@ class signal : Detail::signalBase {
 
     void unreg(slot* x);
     void unreg(void*  ){}
+
+    static void assignBinds(void* s, void* st){
+      signal* sg = (signal*)s;
+      sg->reg((slot*)st);
+      }
 
     static void eraseBinds(void* s, void* this_ptr){
       signal* sg = (signal*)s;
@@ -260,10 +285,52 @@ signal<Args...>::~signal() {
   }
 
 template< class ... Args >
+signal<Args...>::signal(const signal<Args...>& other) {
+  v = other.v;
+
+  for( size_t i=0; i<v.size(); ++i){
+    IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
+    if( slot* s = e->toSlot() )
+      reg(s);
+    }
+  }
+
+template< class ... Args >
+signal<Args...> &signal<Args...>::operator =(const signal<Args...> &sg) {
+  for( size_t i=0; i<v.size(); ++i){
+    IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
+
+    if( slot* s = e->toSlot() ){
+      auto& sg = s->sig;
+      size_t size=sg.size();
+      for(size_t r=0; r<size;){
+        if(sg[r].ptr==this){
+          sg[r] = sg.back();
+          --size;
+          } else
+          ++r;
+        }
+      sg.resize(size);
+      }
+    }
+
+  v = sg.v;
+
+  for( size_t i=0; i<v.size(); ++i){
+    IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
+    if( slot* s = e->toSlot() )
+      reg(s);
+    }
+
+  return *this;
+  }
+
+template< class ... Args >
 void signal<Args...>::reg(slot* s){
   slot::SigInfo info;
   info.ptr = this;
   info.del = &signal<Args...>::eraseBinds;
+  info.reg = &signal<Args...>::assignBinds;
   s->sig.push_back(info);
   }
 
