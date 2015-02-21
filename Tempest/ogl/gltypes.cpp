@@ -65,9 +65,11 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
   hasRenderToRGBTexture     =  strstr(ext, "GL_OES_rgb8_rgba8")!=0;
   hasRenderToRGBATexture    = (strstr(ext, "GL_OES_rgb8_rgba8")!=0)||(strstr(ext, "GL_ARM_rgba8")!=0);
 #else
-  hasRenderToRGBTexture      = 1;
-  hasRenderToRGBATexture     = 1;
+  hasRenderToRGBTexture     = 1;
+  hasRenderToRGBATexture    = 1;
 #endif
+  hasTextureFloat           = strstr(ext, "GL_ARB_texture_float")!=0;
+  hasPackedFloat            = strstr(ext, "GL_EXT_packed_float") !=0;
 
   hasQCOMTiles      = strstr(ext, "GL_QCOM_tiled_rendering")!=0;
   hasDiscardBuffers = strstr(ext, "GL_EXT_discard_framebuffer")!=0;

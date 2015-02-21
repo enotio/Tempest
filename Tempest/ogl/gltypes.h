@@ -26,6 +26,15 @@
 #define GLAPIENTRY EGLAPIENTRY
 #endif
 
+#define GL_RGBA16F_ARB        0x881A
+#define GL_RGBA32F_ARB        0x8814
+#define GL_RGB16F_ARB         0x881B
+#define GL_RGB32F_ARB         0x8815
+#define GL_ALPHA16F_ARB       0x881C
+#define GL_ALPHA32F_ARB       0x8816
+#define GL_LUMINANCE16F_ARB   0x881E
+#define GL_R11F_G11F_B10F_EXT 0x8C3A
+
 namespace Tempest{
 
 namespace Detail{
@@ -297,7 +306,7 @@ namespace Detail{
       GL_RGBA8,
       GL_RGB10_A2,
       GL_RGBA12,
-      GL_RGBA16,
+      GL_RGBA16F_ARB,
 
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
       GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
@@ -399,7 +408,6 @@ namespace Detail{
         if( !hasRenderToRGBTexture && !hasAlpha(f) )
           f = AbstractTexture::Format::RGB5;
         }
-
       inBytePkg = GL_UNSIGNED_BYTE;
       if( f==AbstractTexture::Format::RGB16 ||
           f==AbstractTexture::Format::RGBA16 )
@@ -430,6 +438,25 @@ namespace Detail{
   #else
       inFrm = inputFormat[f];
   #endif
+      if(hasTextureFloat){
+        switch( storage ){
+          case GL_RGB16:
+            storage = GL_RGB16F_ARB;
+            break;
+          case GL_RGBA16:
+            storage = GL_RGBA16F_ARB;
+            break;
+          case GL_LUMINANCE16:
+            storage = GL_LUMINANCE16F_ARB;
+            break;
+          default:
+            break;
+          }
+        }
+      if(hasPackedFloat){
+        if(storage==GL_RGB10)
+          storage = GL_R11F_G11F_B10F_EXT;
+        }
       }
 
     static const char* glErrorDesc( GLenum err ){
@@ -462,6 +489,7 @@ namespace Detail{
 
     bool hasTileBasedRender, hasQCOMTiles, hasDiscardBuffers;
     bool hasRenderToRGBTexture, hasRenderToRGBATexture, hasNpotTexture;
+    bool hasTextureFloat, hasPackedFloat;
 
     PFNGLSTARTTILINGQCOMPROC glStartTilingQCOM;
     PFNGLENDTILINGQCOMPROC   glEndTilingQCOM;
