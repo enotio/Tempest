@@ -192,7 +192,7 @@ void Widget::setMinimumSize(const Size &s) {
   if( owner() )
     owner()->layout().applyLayout();
 
-  if( wrect.w > s.w || wrect.h > s.h )
+  if( wrect.w < s.w || wrect.h < s.h )
     setGeometry( wrect.x, wrect.y, std::max(s.w, wrect.w), std::max(s.h, wrect.h) );
   }
 

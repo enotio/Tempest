@@ -146,7 +146,7 @@ void Layout::setMargin(int l, int r, int t, int b) {
 
 const Margin &Layout::margin() const {
   return mmargin;
-}
+  }
 
 void Layout::placeIn(Widget *wx, int x, int y, int w, int h) {
   placeIn(wx, Rect(x,y,w,h) );

@@ -66,7 +66,7 @@ Rect Size::toRect() const {
   }
 
 bool Size::isEmpty() const {
-  return w<=0 && h<=0;
+  return w<=0 || h<=0;
   }
 
 bool Size::operator ==(const Size &other) const {
