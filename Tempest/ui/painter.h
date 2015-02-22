@@ -44,7 +44,7 @@ class PainterDevice {
     virtual void drawRectTailed( int x, int y, int w, int h,
                                  int tx, int ty, int tw, int th );
 
-    virtual void drawLine( int x, int y, int x1, int y1 );
+    virtual void drawLine(int x, int y, int x1, int y1);
 
     virtual void translate( int dx, int dy );
 
@@ -73,7 +73,7 @@ class PainterDevice {
     virtual void triangle( int x1, int y1, int u1, int v1,
                            int x2, int y2, int u2, int v2,
                            int x3, int y3, int u3, int v3 ) = 0;
-    virtual void line( int x, int y, int x2, int y2) = 0;
+    virtual void line( int x, int y, int x2, int y2 ) = 0;
 
     virtual void setBlendMode( BlendMode m );
     virtual BlendMode blendMode() const;

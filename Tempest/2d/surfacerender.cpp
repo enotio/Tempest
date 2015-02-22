@@ -223,9 +223,13 @@ void SurfaceRender::line(int x, int y, int x2, int y2) {
   Vertex v[2];
   v[0].x = x*invW + invW*0.5f;
   v[0].y = y*invH + invH*0.5f;
+  v[0].u = x*invTw;
+  v[0].v = y*invTh;
 
   v[1].x = x2*invW + invW*0.5f;
   v[1].y = y2*invH + invH*0.5f;
+  v[1].u = x2*invTw;
+  v[1].v = y2*invTh;
 
   update(v,2);
 
