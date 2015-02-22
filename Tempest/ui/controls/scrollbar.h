@@ -101,8 +101,8 @@ class ScrollBar : public Tempest::Widget {
     Widget * cenBtn = nullptr;
     int cenBtnSize = 40;
 
-    void buttonscrollStart(bool up);
-    void buttonscrollStop();
+    void buttonScrollStart(bool up);
+    void buttonScrollStop();
 
     Timer timer;
   };

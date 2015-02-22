@@ -212,7 +212,7 @@ void ScrollBar::updateValueFromView(int, int) {
     v = int((range()*cenBtn->y())/(yrange>0 ? yrange : 1)); else
     v = int((range()*cenBtn->x())/(xrange>0 ? xrange : 1));
 
-  const int nvalue = v + rmin;
+  const int nvalue = std::min(rmax,std::max(v,0) + rmin);
   if(nvalue!=mvalue){
     mvalue = nvalue;
     valueChanged(nvalue);
@@ -256,7 +256,7 @@ void ScrollBar::alignCenBtn( int, int ) {
   updateView();
   }
 
-void ScrollBar::buttonscrollStart(bool up) {
+void ScrollBar::buttonScrollStart(bool up) {
   timer.timeout.removeBinds();
   if(up){
     timer.timeout.bind(this,&ScrollBar::inc);
@@ -269,7 +269,7 @@ void ScrollBar::buttonscrollStart(bool up) {
   timer.start(50);
   }
 
-void ScrollBar::buttonscrollStop() {
+void ScrollBar::buttonScrollStop() {
   timer.stop();
   }
 
@@ -328,12 +328,12 @@ void ScrollBar::CentralWidget::mouseUpEvent(Tempest::MouseEvent &e) {
 
 void ScrollBar::MoveBtn::mouseDownEvent(MouseEvent &e) {
   Button::mouseDownEvent(e);
-  owner.buttonscrollStart(dir);
+  owner.buttonScrollStart(dir);
   }
 
 void ScrollBar::MoveBtn::mouseUpEvent(MouseEvent &e) {
   Button::mouseUpEvent(e);
-  owner.buttonscrollStop();
+  owner.buttonScrollStop();
   }
 
 void ScrollBar::MoveBtn::setupIcon(Orientation /*scrollBarOrientation*/) {

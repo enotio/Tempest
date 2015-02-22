@@ -180,17 +180,15 @@ void ScrollWidget::updateScrolls() {
   const int sw = sbV==nullptr ? 0 : sbV->minSize().w;
   const int sh = sbH==nullptr ? 0 : sbH->minSize().h;
 
-  Layout::placeIn(&helper, m.left, m.top, cenW, cenH);
-
   const int dx = max(cen->w()-helper.w(),0);
   const int dy = max(cen->h()-helper.h(),0);
   if(sbH!=nullptr){
     Layout::placeIn(sbH,
                     m.left, m.top+h()-sh-m.yMargin(),
                     w()-m.xMargin()-(hasScV ? sh : 0), sh);
-    sbH->setVisible(hasScH);
+    sbH->setVisible(hasScH && dx>0);
 
-    if(hor==AsNeed && dx<=0)
+    if(hor==AsNeed)
       sbH->setValue(0);
 
     int maxSc = dx, minSc=0;
@@ -205,9 +203,9 @@ void ScrollWidget::updateScrolls() {
     Layout::placeIn(sbV,
                     m.left+w()-sw-m.xMargin(), m.top,
                     sw, h()-m.yMargin()-(hasScH ? sw : 0));
-    sbV->setVisible(hasScV);
+    sbV->setVisible(hasScV && dy>0);
 
-    if(vert==AsNeed && dy<=0)
+    if(vert==AsNeed)
       sbV->setValue(0);
 
     int maxSc = dy, minSc = 0;
@@ -217,6 +215,8 @@ void ScrollWidget::updateScrolls() {
       minSc = max(cen->h()-min(first->h(),helper.h()),0);
     sbV->setRange( minSc, maxSc );
     }
+
+  Layout::placeIn(&helper, m.left, m.top, cenW, cenH);
   }
 
 ScrollWidget::~ScrollWidget() {
