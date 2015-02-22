@@ -39,9 +39,9 @@ class Layout {
     void setMargin( int l, int r, int t, int b );
     const Margin& margin() const;
 
-  protected:
     static void placeIn( Widget *wx, int x, int y, int w, int h );
     static void placeIn( Widget *wx, const Rect & r );
+  protected:
     static Size sizeHint( Widget *wx );
 
   private:

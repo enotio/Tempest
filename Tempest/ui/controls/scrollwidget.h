@@ -37,22 +37,22 @@ class ScrollWidget : public Tempest::Widget {
 
     void setLayout(Tempest::Orientation ori);
 
-    void hidescrollBars();
+    void hideScrollBars();
     void setscrollBarsVisible( bool h, bool v );
     void setVscrollViewMode( scrollViewMode );
     void setHscrollViewMode( scrollViewMode );
 
     void scrollAfterEndH( bool s );
-    bool hasscrollAfterEndH() const;
+    bool hasScrollAfterEndH() const;
 
     void scrollBeforeBeginH( bool s );
-    bool hasscrollBeforeBeginH() const;
+    bool hasScrollBeforeBeginH() const;
 
     void scrollAfterEndV( bool s );
-    bool hasscrollAfterEndV() const;
+    bool hasScrollAfterEndV() const;
 
     void scrollBeforeBeginV( bool s );
-    bool hasscrollBeforeBeginV() const;
+    bool hasScrollBeforeBeginV() const;
 
     void scrollH( int v );
     void scrollV( int v );
@@ -79,6 +79,12 @@ class ScrollWidget : public Tempest::Widget {
     Widget*    cen;
     ListView*  list = nullptr;
 
+    bool scAfterEndH    = false;
+    bool scBeforeBeginH = false;
+
+    bool scAfterEndV    = true;
+    bool scBeforeBeginV = false;
+
     Tempest::Orientation orient = Tempest::Vertical;
     void initializeList();
     void updateScrolls();
@@ -87,13 +93,10 @@ class ScrollWidget : public Tempest::Widget {
       ScrollWidget* owner;
       } box;
 
-    struct ProxyLayout;
-    ProxyLayout *mlay;
-
     struct BoxLayout;
     struct HelperLayout;
 
-    void resizeEv(int w, int h);
+    void   resizeEv(int w, int h);
     static Tempest::Size sizeHint( const Widget *w );
 
     using Tempest::Widget::layout;
