@@ -42,7 +42,7 @@ class Layout {
     static void placeIn( Widget *wx, int x, int y, int w, int h );
     static void placeIn( Widget *wx, const Rect & r );
   protected:
-    static Size sizeHint( Widget *wx );
+    static Size sizeHint(const Widget *wx );
 
   private:
     std::vector<Widget*> w;

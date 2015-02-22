@@ -13,6 +13,7 @@ struct ScrollWidget::BoxLayout: public Tempest::LinearLayout {
     if(widgets().size()==0)
       return;
 
+    const Margin& m = margin();
     Size sz = Size{0,0};
     Widget* helper = owner()->owner();
     if(helper){
@@ -20,15 +21,28 @@ struct ScrollWidget::BoxLayout: public Tempest::LinearLayout {
       sz.h = std::max(helper->h(),sz.h);
       }
 
+    int sw = 0, sh = 0;
+
     for(const Widget* w : widgets()) {
-      sz.w = std::max(sz.w,w->x()+w->w());
-      sz.h = std::max(sz.h,w->y()+w->h());
+      Size s = sizeHint(w);
+      if(orientation()==Horizontal){
+        sw += s.w;
+        sh = std::max(sh,s.h);
+        } else {
+        sw = std::max(sw,s.w);
+        sh += s.h;
+        }
       }
 
-    Widget* w = widgets().back();
+    sw += m.xMargin();
+    sh += m.yMargin();
     if(orientation()==Horizontal)
-      owner()->resize(w->x()+w->w()+margin().xMargin(), sz.h); else
-      owner()->resize(sz.w,w->y()+w->h()+margin().yMargin());
+      sw += spacing()*(std::max<size_t>(widgets().size(),1)-1); else
+      sh += spacing()*(std::max<size_t>(widgets().size(),1)-1);
+
+    sz.w = std::max(sz.w,sw);
+    sz.h = std::max(sz.h,sh);
+    owner()->resize(sz);
 
     sc->updateScrolls();
     LinearLayout::applyLayout();
