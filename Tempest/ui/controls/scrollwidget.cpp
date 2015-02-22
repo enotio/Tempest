@@ -202,7 +202,7 @@ void ScrollWidget::updateScrolls() {
                     w()-m.xMargin()-(hasScV ? sh : 0), sh);
     sbH->setVisible(hasScH && dx>0);
 
-    if(hor==AsNeed)
+    if(hor==AsNeed && dx<0)
       sbH->setValue(0);
 
     int maxSc = dx, minSc=0;
@@ -219,7 +219,7 @@ void ScrollWidget::updateScrolls() {
                     sw, h()-m.yMargin()-(hasScH ? sw : 0));
     sbV->setVisible(hasScV && dy>0);
 
-    if(vert==AsNeed)
+    if(vert==AsNeed && dy<0)
       sbV->setValue(0);
 
     int maxSc = dy, minSc = 0;

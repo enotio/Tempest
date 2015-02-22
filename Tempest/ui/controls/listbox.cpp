@@ -90,14 +90,15 @@ void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
     }
 
   dropListEnabled = false;
-  if( delegate && delegate->size() ){
+  std::shared_ptr<ListDelegate> d = delegate;
+  if( d && d->size() ){
     Layout& l = layout();
     Widget* view = (l.widgets().size()==0 ? nullptr : l.widgets()[0]);
-    if( e.delta < 0 && selected+1<delegate->size() )
-      delegate->onItemViewSelected(selected+1,view);
+    if( e.delta < 0 && selected+1<d->size() )
+      d->onItemViewSelected(selected+1,view);
       else
     if( e.delta > 0 && selected>0 )
-      delegate->onItemViewSelected(selected-1,view);
+      d->onItemViewSelected(selected-1,view);
     }
   dropListEnabled = true;
   }
@@ -113,8 +114,11 @@ void ListBox::setupView(size_t oldSelected) {
     }
 
   if(delegate->size()){
+    selected = std::min(selected,delegate->size()-1);
     view = delegate->createView(selected,ListDelegate::R_ListBoxView);
     layout().add(view);
+    } else {
+    selected = 0;
     }
   }
 
