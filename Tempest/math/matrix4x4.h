@@ -16,15 +16,42 @@ class Matrix4x4{
 
     void identity();
 
-    void translate( const float vec[/*3*/]);
+    void translate( const float v[/*3*/]){
+      translate( v[0], v[1], v[2] );
+      }
 
-    void translate(float x, float y, float z);
+    inline void translate(float x, float y, float z){
+      m[3][0] = m[0][0] * x + m[1][0] * y + m[2][0] * z + m[3][0];
+      m[3][1] = m[0][1] * x + m[1][1] * y + m[2][1] * z + m[3][1];
+      m[3][2] = m[0][2] * x + m[1][2] * y + m[2][2] * z + m[3][2];
+      m[3][3] = m[0][3] * x + m[1][3] * y + m[2][3] * z + m[3][3];
+      }
 
 
-    void scale( float x );
-    void scale(float x, float y, float z);
+    inline void scale( float x ){
+      scale(x,x,x);
+      }
+
+    inline void scale(float x, float y, float z){
+      m[0][0] *= x;
+      m[0][1] *= x;
+      m[0][2] *= x;
+      m[0][3] *= x;
+
+      m[1][0] *= y;
+      m[1][1] *= y;
+      m[1][2] *= y;
+      m[1][3] *= y;
+
+      m[2][0] *= z;
+      m[2][1] *= z;
+      m[2][2] *= z;
+      m[2][3] *= z;
+      }
 
     void rotate(float angle, float x, float y, float z);
+    void rotateOX( float angle );
+    void rotateOY( float angle );
     void rotateOZ( float angle );
 
     const float *data() const;
@@ -55,8 +82,6 @@ class Matrix4x4{
       }
   private:
     float m[4][4];
-
-    void check() const;
   };
 
 }

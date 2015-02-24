@@ -61,36 +61,109 @@ void Matrix4x4::identity(){
            0, 0, 1, 0,
            0, 0, 0, 1 );
   }
-
-void Matrix4x4::translate( const float v[/*3*/]){
+/*
+void Matrix4x4::translate( const float v[]){
   translate( v[0], v[1], v[2] );
   }
 
 void Matrix4x4::translate(float x, float y, float z){
-  NvMultTranslateMatf( m, m, x, y, z );
-
-  check();
-  }
-
+  //NvMultTranslateMatf( m, m, x, y, z );
+  m[3][0] = m[0][0] * x + m[1][0] * y + m[2][0] * z + m[3][0];
+  m[3][1] = m[0][1] * x + m[1][1] * y + m[2][1] * z + m[3][1];
+  m[3][2] = m[0][2] * x + m[1][2] * y + m[2][2] * z + m[3][2];
+  m[3][3] = m[0][3] * x + m[1][3] * y + m[2][3] * z + m[3][3];
+  }*/
+/*
 void Matrix4x4::scale( float x ){
   scale(x, x, x);
   }
 
 void Matrix4x4::scale(float x, float y, float z){
-  NvMultScaleMatf( m, m, x, y, z );
+  //NvMultScaleMatf( m, m, x, y, z );
+  m[0][0] *= x;
+  m[0][1] *= x;
+  m[0][2] *= x;
+  m[0][3] *= x;
 
-  check();
-  }
+  m[1][0] *= y;
+  m[1][1] *= y;
+  m[1][2] *= y;
+  m[1][3] *= y;
+
+  m[2][0] *= z;
+  m[2][1] *= z;
+  m[2][2] *= z;
+  m[2][3] *= z;
+  }*/
 
 void Matrix4x4::rotate(float angle, float x, float y, float z){
   float ax[3] = {x,y,z};
   NvMultRotDegMatf( m, m, ax, angle );
+  }
 
-  check();
+void Matrix4x4::rotateOX( float angle ){
+  //NvMultRotXDegMatf(m,m,angle);
+  angle *= KD_DEG_TO_RAD_F;
+  const GLfloat s = sinf(angle);
+  const GLfloat c = cosf(angle);
+
+  float r[2][4];
+  r[0][0] = m[1][0] *  c + m[2][0] * s;
+  r[0][1] = m[1][1] *  c + m[2][1] * s;
+  r[0][2] = m[1][2] *  c + m[2][2] * s;
+  r[0][3] = m[1][3] *  c + m[2][3] * s;
+
+  r[1][0] = m[1][0] * -s + m[2][0] * c;
+  r[1][1] = m[1][1] * -s + m[2][1] * c;
+  r[1][2] = m[1][2] * -s + m[2][2] * c;
+  r[1][3] = m[1][3] * -s + m[2][3] * c;
+
+  memcpy(m[1],r[0],4*sizeof(float));
+  memcpy(m[2],r[1],4*sizeof(float));
+  }
+
+void Matrix4x4::rotateOY( float angle ){
+  //NvMultRotYDegMatf(m,m,angle);
+  angle *= KD_DEG_TO_RAD_F;
+  const GLfloat s = sinf(angle);
+  const GLfloat c = cosf(angle);
+
+  float r[2][4];
+  r[0][0] = m[0][0] * c + m[2][0] * -s;
+  r[0][1] = m[0][1] * c + m[2][1] * -s;
+  r[0][2] = m[0][2] * c + m[2][2] * -s;
+  r[0][3] = m[0][3] * c + m[2][3] * -s;
+
+  r[1][0] = m[0][0] * s + m[2][0] * c;
+  r[1][1] = m[0][1] * s + m[2][1] * c;
+  r[1][2] = m[0][2] * s + m[2][2] * c;
+  r[1][3] = m[0][3] * s + m[2][3] * c;
+
+  memcpy(m[0],r[0],4*sizeof(float));
+  memcpy(m[2],r[1],4*sizeof(float));
   }
 
 void Matrix4x4::rotateOZ( float angle ){
-  rotate(angle, 0, 0, 1);
+  //NvMultRotZDegMatf(m,m,angle);
+
+  angle *= KD_DEG_TO_RAD_F;
+  const GLfloat s = sinf(angle);
+  const GLfloat c = cosf(angle);
+  //NvMultRotZDegMatf(m,m,angle);
+  //rotate(angle, 0, 0, 1);
+  float r[2][4];
+  r[0][0] = m[0][0] * c + m[1][0] * s;
+  r[0][1] = m[0][1] * c + m[1][1] * s;
+  r[0][2] = m[0][2] * c + m[1][2] * s;
+  r[0][3] = m[0][3] * c + m[1][3] * s;
+
+  r[1][0] = m[0][0] * -s + m[1][0] * c;
+  r[1][1] = m[0][1] * -s + m[1][1] * c;
+  r[1][2] = m[0][2] * -s + m[1][2] * c;
+  r[1][3] = m[0][3] * -s + m[1][3] * c;
+
+  memcpy(m[0],r[0],4*sizeof(float));
+  memcpy(m[1],r[1],4*sizeof(float));
   }
 
 const float* Matrix4x4::data() const{
@@ -103,14 +176,12 @@ float Matrix4x4::at(int x, int y) const {
 
 void Matrix4x4::setData( const float data[/*16*/]){
   memcpy(m, data, 16*sizeof(float) );
-  check();
   }
 
 void Matrix4x4::transpose(){
   for( int i=0; i<4; ++i )
     for( int r=0; r<i; ++r )
       std::swap( m[i][r], m[r][i] );
-  check();
   }
 
 void Matrix4x4::inverse(){
@@ -121,12 +192,10 @@ void Matrix4x4::inverse(){
   for( int i=0; i<4; ++i )
     for( int r=0; r<i; ++r )
       std::swap( m[i][r], m[r][i] );
-  check();
   }
 
 void Matrix4x4::mul( const Matrix4x4& other ){
   NvMultMatf( m, m, other.m );
-  check();
   }
 
 void Matrix4x4::setData( float a11, float a12, float a13, float a14,
@@ -152,8 +221,6 @@ void Matrix4x4::setData( float a11, float a12, float a13, float a14,
   m[1][3] = a42;
   m[2][3] = a43;
   m[3][3] = a44;
-
-  check();
   }
 
 
@@ -188,17 +255,11 @@ void Matrix4x4::perspective(float angle, float aspect, float zNear, float zFar) 
   m[2][3] = 1;
   m[2][2] = zFar/(zFar-zNear);
   m[3][2] = -zNear*zFar/(zFar-zNear);
-
-  check();
   }
 
 void Tempest::Matrix4x4::set(int x, int y, float v) {
-  m[x][y]  = v;
-  check();
+  m[x][y] = v;
   }
-
-void Matrix4x4::check() const {
-}
 
 void Tempest::Matrix4x4::project(float &x, float &y, float &z, float &w) const {
   project( x,y,z,w,
