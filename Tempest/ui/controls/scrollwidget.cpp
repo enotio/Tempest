@@ -23,22 +23,25 @@ struct ScrollWidget::BoxLayout: public Tempest::LinearLayout {
 
     int sw = 0, sh = 0;
 
-    for(const Widget* w : widgets()) {
-      Size s = sizeHint(w);
-      if(orientation()==Horizontal){
-        sw += s.w;
-        sh = std::max(sh,s.h);
-        } else {
-        sw = std::max(sw,s.w);
-        sh += s.h;
+    const Widget* first = widgets().size()>0 ? widgets()[0] : nullptr;
+    for(const Widget* w : widgets())
+      if(w->isVisible()){
+        Size s = sizeHint(w);
+        if(orientation()==Horizontal){
+          sw += s.w;
+          if(w!=first)
+            sw+=spacing();
+          sh = std::max(sh,s.h);
+          } else {
+          sw = std::max(sw,s.w);
+          sh += s.h;
+          if(w!=first)
+            sh+=spacing();
+          }
         }
-      }
 
     sw += m.xMargin();
     sh += m.yMargin();
-    if(orientation()==Horizontal)
-      sw += spacing()*(std::max<size_t>(widgets().size(),1)-1); else
-      sh += spacing()*(std::max<size_t>(widgets().size(),1)-1);
 
     sz.w = std::max(sz.w,sw);
     sz.h = std::max(sz.h,sh);
