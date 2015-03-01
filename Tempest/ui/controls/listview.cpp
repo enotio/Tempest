@@ -71,10 +71,11 @@ void ListView::Layout::applyLayout() {
 
   int w=margin().xMargin(), h=margin().yMargin();
 
-  if(widgets().size()!=delegate.size()){
+  size_t widgetsCount = delegate.size();
+  if(widgets().size()!=widgetsCount){
     removeAll();
     if(orientation()==Horizontal){
-      for(size_t i=0; i<delegate.size(); ++i){
+      for(size_t i=0; i<widgetsCount; ++i){
         Widget*       view=delegate.createView(i);
         const Size    sz  =view->minSize();
         w += sz.w;
@@ -82,7 +83,7 @@ void ListView::Layout::applyLayout() {
         add(view);
         }
       } else {
-      for(size_t i=0; i<delegate.size(); ++i){
+      for(size_t i=0; i<widgetsCount; ++i){
         Widget*       view=delegate.createView(i);
         const Size    sz  =view->minSize();
         w = std::max(w,sz.w);
