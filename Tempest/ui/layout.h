@@ -71,7 +71,7 @@ class LinearLayout : public Layout {
 
       }
 
-    Orientation orientation(){
+    Orientation orientation() const {
       return orient;
       }
 

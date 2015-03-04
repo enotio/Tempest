@@ -94,11 +94,16 @@ void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
   if( d && d->size() ){
     Layout& l = layout();
     Widget* view = (l.widgets().size()==0 ? nullptr : l.widgets()[0]);
-    if( e.delta < 0 && selected+1<d->size() )
-      d->onItemViewSelected(selected+1,view);
+    if( e.delta < 0 ){
+      if( selected+1<d->size() )
+        d->onItemViewSelected(selected+1,view); else
+        e.ignore();
+      }
       else
-    if( e.delta > 0 && selected>0 )
-      d->onItemViewSelected(selected-1,view);
+    if( e.delta > 0 )
+      if( selected>0 )
+        d->onItemViewSelected(selected-1,view); else
+        e.ignore();
     }
   dropListEnabled = true;
   }
