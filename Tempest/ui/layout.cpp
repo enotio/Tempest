@@ -25,8 +25,20 @@ void Layout::add(Widget *widget, size_t pos) {
   if(widget->parentLay==this)
     return;
 
-  if(widget->parentLay)
+  size_t hasReleaseReciver = -1, hasLeavePtr = -1;
+  if(widget->parentLay){
+    Widget* ow = widget->parentLay->owner();
+
+    for(size_t i=0; i<ow->mouseReleseReciver.size(); ++i)
+      if(widget==ow->mouseReleseReciver[i])
+        hasReleaseReciver=i;
+
+    for(size_t i=0; i<ow->mouseLeaveReciver.size(); ++i)
+      if(widget==ow->mouseLeaveReciver[i])
+        hasLeavePtr=i;
+
     widget->parentLay->take(widget);
+    }
 
   if(pos>=w.size())
     pos=w.size();
@@ -36,11 +48,13 @@ void Layout::add(Widget *widget, size_t pos) {
 
   w.insert(w.begin()+pos,widget);
 
-  if( widget->parentLay ){
-    widget->parentLay->take(widget);
-    }
-
   widget->parentLay = this;
+  if( hasReleaseReciver!=size_t(-1) )
+    widget->setupMouseReleasePtr(hasReleaseReciver);
+
+  if( hasLeavePtr!=size_t(-1) )
+    widget->setupMouseReleasePtr(hasLeavePtr);
+
   if( owner() )
     widget->setContext( owner()->context() );
 
@@ -62,21 +76,13 @@ void Layout::del(Widget *widget) {
 
   w.resize( std::remove( w.begin(), w.end(), widget ) - w.begin() );
   widget->deleteLater();
+  widget->detachMouseReleasePtr();
+  widget->detachMouseLeavePtr();
 
   applyLayout();
 
-  if( owner() ){
-    std::vector<Widget*> & mr = owner()->mouseReleseReciver;
-    for( size_t i=0; i<mr.size(); ++i )
-      if( mr[i]==widget )
-        mr[i] = 0;
-
-    std::vector<Widget*> & ml = owner()->mouseLeaveReciver;
-    for( size_t i=0; i<ml.size(); ++i )
-      if( ml[i]==widget )
-        ml[i] = 0;
+  if( owner() )
     owner()->update();
-    }
   }
 
 void Tempest::Layout::removeAll() {
@@ -104,23 +110,14 @@ Widget *Layout::take(Widget *widget) {
   if( widget->hasFocus() )
     widget->setFocus(0);
 
+  widget->detachMouseReleasePtr();
+  widget->detachMouseLeavePtr();
   w.resize( std::remove( w.begin(), w.end(), widget ) - w.begin() );
   widget->parentLay = 0;
 
   applyLayout();
 
   if( owner() ){
-    std::vector<Widget*>& mr = owner()->mouseReleseReciver;
-
-    for( size_t i=0; i<mr.size(); ++i )
-      if( mr[i]==widget )
-        mr[i] = 0;
-    std::vector<Widget*>& ml = owner()->mouseLeaveReciver;
-
-    for( size_t i=0; i<ml.size(); ++i )
-      if( ml[i]==widget )
-        ml[i] = 0;
-
     owner()->update();
     }
 

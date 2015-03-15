@@ -207,6 +207,10 @@ class Widget : public slot {
     void lockDelete();
     void unlockDelete();
 
+    void setupMouseReleasePtr(size_t mouseID);
+    void detachMouseReleasePtr();
+    void detachMouseLeavePtr();
+
     std::vector<Shortcut*> skuts;
 
     static size_t count;

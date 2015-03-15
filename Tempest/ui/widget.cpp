@@ -479,14 +479,9 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
                      e.type() );
       et.ignore();
 
-      Widget* deep = impl_mouseEvent(et, w, focus, mpress);
+      impl_mouseEvent(et, w, focus, mpress);
       if( et.isAccepted() ){
         e.accept();
-        if( mpress ){
-          if( w->mouseReleseReciver.size() < size_t(et.mouseID+1) )
-            w->mouseReleseReciver.resize( et.mouseID+1 );
-          w->mouseReleseReciver[et.mouseID] = deep;
-          }
         if(w->deleteLaterFlag)
           return nullptr; else
           return w;
@@ -499,11 +494,8 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
 
       if( et.isAccepted() ){
         e.accept();
-        if( mpress ){
-          if( root->mouseReleseReciver.size() < size_t(et.mouseID+1) )
-            root->mouseReleseReciver.resize( et.mouseID+1 );
-          root->mouseReleseReciver[et.mouseID] = w;
-          }
+        if( mpress )
+          w->setupMouseReleasePtr(et.mouseID);
 
         if( focus && w->focusPolicy()==ClickFocus )
           w->setFocus(1);
@@ -517,6 +509,55 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
 
   e.ignore();
   return 0;
+  }
+
+void Widget::setupMouseReleasePtr(size_t mouseID) {
+  Widget* w = this;
+  while(w){
+    if(w->deleteLaterFlag)
+      return;
+    Widget* root = w->owner();
+    if(root){
+      if( root->mouseReleseReciver.size() < size_t(mouseID+1) )
+        root->mouseReleseReciver.resize( mouseID+1 );
+      root->mouseReleseReciver[mouseID] = w;
+      }
+    w = root;
+    }
+  }
+
+void Widget::detachMouseReleasePtr() {
+  Widget* widget = this;
+
+  while( widget->owner() ){
+    bool hasNext = false;
+    std::vector<Widget*> & mr = widget->owner()->mouseReleseReciver;
+    for( size_t i=0; i<mr.size(); ++i )
+      if( mr[i]==widget ){
+        mr[i] = nullptr;
+        hasNext = true;
+        }
+    if(!hasNext)
+      return;
+    widget = widget->owner();
+    }
+  }
+
+void Widget::detachMouseLeavePtr() {
+  Widget* widget = this;
+
+  while( widget->owner() ){
+    bool hasNext = false;
+    std::vector<Widget*> & mr = widget->owner()->mouseLeaveReciver;
+    for( size_t i=0; i<mr.size(); ++i )
+      if( mr[i]==widget ){
+        mr[i] = nullptr;
+        hasNext = true;
+        }
+    if(!hasNext)
+      return;
+    widget = widget->owner();
+    }
   }
 
 void Widget::lockDelete() {
