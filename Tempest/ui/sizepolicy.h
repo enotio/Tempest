@@ -13,12 +13,12 @@ enum SizePolicyType{
   };
 
 struct SizePolicy {
-    SizePolicy();
+  SizePolicy();
 
-    Size minSize, maxSize;
-    SizePolicyType typeH, typeV;
+  Size minSize, maxSize;
+  SizePolicyType typeH, typeV;
 
-    static Size maxWidgetSize();
+  static Size maxWidgetSize();
   };
 
 struct Margin{
