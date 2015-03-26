@@ -35,6 +35,7 @@ class slot {
       sig = other.sig;
       for(SigInfo& s : sig)
         (*s.reg)(s.ptr,this);
+      return *this;
       }
 
   private:
