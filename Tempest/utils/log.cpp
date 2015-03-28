@@ -80,7 +80,7 @@ void Log::write(Log::Mode m, char *&out, size_t &count, void *msg) {
   int pos = sizeof(sym)-2;
 
   uintptr_t ptr = uintptr_t(msg);
-  for(int i=0; i<sizeof(void*)*2; ++i){
+  for(size_t i=0; i<sizeof(void*)*2; ++i){
     auto num = ptr%16;
     sym[pos] = num<=9 ? num+'0' : num-10+'a';
     ptr/=16;

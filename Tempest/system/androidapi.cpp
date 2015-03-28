@@ -178,7 +178,7 @@ static struct Android{
     AAsset* asset = AAssetManager_open(mgr, ass.c_str(), AASSET_MODE_BUFFER);
 
     if( !asset ){
-      Log(Log::Error) << "not found: \"" << ass <<'\"';
+      Log::e("not found: \"",ass,'\"');
       return 0;
       }
 
@@ -942,15 +942,14 @@ bool Android::initialize() {
     const EGLint attrib_list[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
     ini_context = eglCreateContext(ini_display, config, EGL_NO_CONTEXT, attrib_list);
     if( ini_context==EGL_NO_CONTEXT )
-      Log(Log::Error) << "Unable to create context";
+      Log::e("Unable to create context");
     } else {
     ini_context = e->context;
     }
 
-  Log(Log::Error) << "Surface=" << ini_surface << " Display=" << ini_display
-                  <<" Context=" << ini_context;
+  Log::e("Surface=", ini_surface, " Display=", ini_display, " Context=", ini_context);
   if( eglMakeCurrent(ini_display, ini_surface, ini_surface, ini_context) == EGL_FALSE ){
-    Log(Log::Error) << "Unable to eglMakeCurrent";
+    Log::e("Unable to eglMakeCurrent");
     return false;
     }
 
@@ -975,7 +974,7 @@ bool Android::initialize() {
   }
 
 void Android::destroy( bool killContext ) {
-  Log(Log::Info) << "Destroying context";
+  Log::e("Destroying context");
 
   if( graphicsState == SystemAPI::DestroyedByAndroid )
     return;
@@ -1016,17 +1015,17 @@ static void JNICALL resize( JNIEnv * , jobject, jobject, jint w, jint h ) {
   }
 
 static void JNICALL start(JNIEnv* /*jenv*/, jobject /*obj*/) {
-  Log(Log::Info) << "nativeOnStart";
+  Log::i("nativeOnStart");
   android.pushMsg(Android::MSG_START);
   }
 
 static void JNICALL stop(JNIEnv* /*jenv*/, jobject /*obj*/) {
-  Log(Log::Info) << "nativeOnStop";
+  Log::i("nativeOnStop");
   android.pushMsg(Android::MSG_STOP);
   }
 
 static void JNICALL resume(JNIEnv* /*jenv*/, jobject /*obj*/) {
-  Log(Log::Info) << "nativeOnResume";
+  Log::i("nativeOnResume");
   SyncMethod wm;
   (void)wm;
 
@@ -1035,7 +1034,7 @@ static void JNICALL resume(JNIEnv* /*jenv*/, jobject /*obj*/) {
   }
 
 static void JNICALL pauseA(JNIEnv* /*jenv*/, jobject /*obj*/) {
-  Log(Log::Info) << "nativeOnPause";
+  Log::i("nativeOnPause");
   SyncMethod wm;
   (void)wm;
 
@@ -1044,7 +1043,7 @@ static void JNICALL pauseA(JNIEnv* /*jenv*/, jobject /*obj*/) {
   }
 
 static void JNICALL setAssets(JNIEnv* jenv, jobject /*obj*/, jobject assets ) {
-  Log(Log::Info) << "setAssets";
+  Log::i("setAssets");
   android.assets = jenv->NewGlobalRef(assets);
   }
 
@@ -1064,7 +1063,7 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject /*obj*/, jobject sur
   if( surface ) {
     android.window = ANativeWindow_fromSurface(jenv, surface);
     android.graphicsState = SystemAPI::Available;
-    Log(Log::Info) << "Got window " << android.window;
+    Log::i("Got window ",android.window);
 
     {
       Guard g( android.appMutex );
@@ -1078,7 +1077,7 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject /*obj*/, jobject sur
       android.thread_create(&android.mainThread, 0, tempestMainFunc, 0);
       }
     } else {
-    Log(Log::Info) << "Releasing window";
+    Log::i("Releasing window");
     {
       Guard g( android.appMutex );
       (void)g;
@@ -1096,7 +1095,7 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject /*obj*/, jobject sur
   }
 
 static void JNICALL onCreate(JNIEnv* , jobject ) {
-  Log(Log::Info) << "nativeOnCreate";
+  Log::i("nativeOnCreate");
   android.mainThread = 0;
   }
 
@@ -1112,11 +1111,11 @@ static void JNICALL onDestroy(JNIEnv* /*jenv*/, jobject /*obj*/) {
 
   android.msg.clear();
 
-  Log(Log::Info) << "nativeOnDestroy";
+  Log::i("nativeOnDestroy");
   }
 
 static void JNICALL onKeyDownEvent(JNIEnv* , jobject, jint key ) {
-  Log(Log::Info) << "onKeyDownEvent";
+  Log::i("onKeyDownEvent");
 
   Guard w( android.waitMutex );
   (void)w;
@@ -1148,7 +1147,7 @@ static void JNICALL onKeyDownEvent(JNIEnv* , jobject, jint key ) {
   }
 
 static void JNICALL onKeyUpEvent(JNIEnv* , jobject, jint key ) {
-  Log(Log::Info) << "onKeyUpEvent";
+  Log::i("onKeyUpEvent");
 
   Guard w( android.waitMutex );
   (void)w;
@@ -1237,7 +1236,7 @@ static void JNICALL setupDpi( JNIEnv* , jobject,
   }
 
 extern "C" jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/){
-  Log(Log::Info) << "Tempest JNI_OnLoad";
+  Log::i("Tempest JNI_OnLoad");
 
   static JNINativeMethod methodTable[] = {
     {"nativeOnCreate",  "()V", (void *) onCreate  },
@@ -1269,14 +1268,14 @@ extern "C" jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/){
 
   JNIEnv* env;
   if( vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK ){
-    Log(Log::Error) << "Failed to get the environment";
+    Log::i("Failed to get the environment");
     return -1;
     }
 
   android.tempestClass = env->FindClass( SystemAPI::androidActivityClass().c_str() );
 
   if (!android.tempestClass) {
-    Log(Log::Error) << "failed to get " << SystemAPI::androidActivityClass().c_str() << " class reference";
+    Log::i("failed to get ",SystemAPI::androidActivityClass().c_str()," class reference");
 
     jthrowable err = env->ExceptionOccurred();
     if( err ) {
@@ -1292,12 +1291,12 @@ extern "C" jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/){
                           sizeof(methodTable) / sizeof(methodTable[0]) );
     }
 
-  Log(Log::Info) << "Tempest ~JNI_OnLoad";
+  Log::i("Tempest ~JNI_OnLoad");
   return JNI_VERSION_1_6;
   }
 
 static void* tempestMainFunc(void*){
-  Log(Log::Info) << "Tempest MainFunc";
+  Log::i("Tempest MainFunc");
   Android &a = android;
 
   a.vm->AttachCurrentThread( &a.env, NULL);
@@ -1306,10 +1305,10 @@ static void* tempestMainFunc(void*){
   jmethodID invokeMain = a.env->GetStaticMethodID( clazz, "invokeMain", "()V");
 
   android.initialize();
-  Log(Log::Info) << "Tempest MainFunc[1]";
+  Log::i("Tempest MainFunc[1]");
   a.env->CallStaticVoidMethod(clazz, invokeMain);
 
-  Log(Log::Info) << "~Tempest MainFunc";
+  Log::i("~Tempest MainFunc");
   android.destroy(true);
 
   a.vm->DetachCurrentThread();

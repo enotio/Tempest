@@ -100,10 +100,11 @@ void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
         e.ignore();
       }
       else
-    if( e.delta > 0 )
+    if( e.delta > 0 ){
       if( selected>0 )
         d->onItemViewSelected(selected-1,view); else
         e.ignore();
+      }
     }
   dropListEnabled = true;
   }

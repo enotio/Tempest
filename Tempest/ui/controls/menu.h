@@ -23,7 +23,7 @@ class Menu : public slot {
     virtual ~Menu();
 
     int  exec(Widget& owner);
-    int  exec(Widget& owner,Point& pos,bool alignWidthToOwner = true);
+    int  exec(Widget& owner, const Point &pos, bool alignWidthToOwner = true);
     void close();
 
     struct Declarator{

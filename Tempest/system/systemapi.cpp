@@ -340,12 +340,13 @@ void SystemAPI::processEvents( Widget *w,
     case Event::NoEvent:
     case Event::Resize:
     case Event::Paint:
+    case Event::MouseEnter:
+    case Event::MouseLeave:
       break;
 
     case Event::Gesture:
       w->rootGestureEvent( (AbstractGestureEvent&)e );
-      break;
-
+      break;      
     case Event::MouseDown:
       w->rootMouseDownEvent( (MouseEvent&)e );
       break;

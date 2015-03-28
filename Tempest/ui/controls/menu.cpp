@@ -39,7 +39,7 @@ void Menu::Overlay::mouseDownEvent(MouseEvent &e) {
     e.accept();
   }
 
-Menu::Menu(const Declarator &decl):decl(decl), overlay(nullptr){
+Menu::Menu(const Declarator &decl): overlay(nullptr), decl(decl){
   }
 
 Menu::~Menu() {
@@ -50,7 +50,7 @@ int Menu::exec(Widget &owner) {
   return exec(owner,Tempest::Point(0,owner.h()));
   }
 
-int Menu::exec(Widget& owner, Point &pos, bool alignWidthToOwner) {
+int Menu::exec(Widget& owner, const Point &pos, bool alignWidthToOwner) {
   if( overlay )
     close();  
 

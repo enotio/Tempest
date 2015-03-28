@@ -115,7 +115,11 @@ class ArrayListDelegate : public AbstractListDelegate<T,std::vector<T>,Ctrl> {
 
     template< class E >
     static std::u16string implTextOf( const E& s ){
+#ifndef __ANDROID__
       return SystemAPI::toUtf16(std::to_string(s));
+#else
+      return "";
+#endif
       }
   };
 }

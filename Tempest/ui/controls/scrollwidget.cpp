@@ -82,7 +82,7 @@ struct ScrollWidget::HelperLayout: public Tempest::Layout {
   };
 
 ScrollWidget::ScrollWidget()
-  : vert(AsNeed), hor(AsNeed), sbH(nullptr), sbV(nullptr) {
+  : sbH(nullptr), sbV(nullptr), vert(AsNeed), hor(AsNeed) {
   helper.setLayout(new HelperLayout());
   helper.onResize.bind(this,&ScrollWidget::resizeEv);
 
@@ -97,12 +97,12 @@ ScrollWidget::ScrollWidget()
                  false );
 
 #ifdef __MOBILE_PLATFORM__
-  hidescrollBars();
+  hideScrollBars();
 #endif
   }
 
 ScrollWidget::ScrollWidget(bool noUi)
-  : vert(AsNeed), hor(AsNeed), sbH(nullptr), sbV(nullptr)  {
+  : sbH(nullptr), sbV(nullptr), vert(AsNeed), hor(AsNeed) {
   helper.setLayout(new HelperLayout());
   helper.onResize.bind(this,&ScrollWidget::resizeEv);
 

@@ -35,6 +35,13 @@
 #define GL_LUMINANCE16F_ARB   0x881E
 #define GL_R11F_G11F_B10F_EXT 0x8C3A
 
+#ifndef GL_RGB16
+#define GL_RGB16                          0x8054
+#define GL_RGBA16                         0x805B
+#define GL_LUMINANCE16                    0x8042
+#define GL_RGB10                          0x8052
+#endif
+
 namespace Tempest{
 
 namespace Detail{
