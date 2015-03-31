@@ -38,7 +38,7 @@ class ScrollWidget : public Tempest::Widget {
     void setLayout(Tempest::Orientation ori);
 
     void hideScrollBars();
-    void setscrollBarsVisible( bool h, bool v );
+    void setScrollBarsVisible( bool h, bool v );
     void setVscrollViewMode( scrollViewMode );
     void setHscrollViewMode( scrollViewMode );
 

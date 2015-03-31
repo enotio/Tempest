@@ -277,10 +277,10 @@ void ScrollWidget::setLayout(Orientation ori) {
   }
 
 void ScrollWidget::hideScrollBars() {
-  setscrollBarsVisible(0,0);
+  setScrollBarsVisible(0,0);
   }
 
-void ScrollWidget::setscrollBarsVisible(bool vh, bool vv) {
+void ScrollWidget::setScrollBarsVisible(bool vh, bool vv) {
   if( sbH==nullptr || sbV==nullptr )
     return;
 
@@ -404,16 +404,19 @@ ScrollBar *ScrollWidget::createScrollBar(Orientation ori) {
   }
 
 void ScrollWidget::scrollH( int v ) {
-  if(sbH!=nullptr)
+  if(sbH!=nullptr){
     sbH->setValue( v );
-  cen->setPosition(-v, cen->y());
-  //mlay->applyLayout();
+    cen->setPosition(-sbH->value(), cen->y());
+    } else
+    cen->setPosition(cen->x(), -v);
   }
 
 void ScrollWidget::scrollV(int v) {
-  if(sbV!=nullptr)
+  if(sbV!=nullptr){
     sbV->setValue( v );
-  cen->setPosition(cen->x(), -v);
+    cen->setPosition(cen->x(), -sbV->value());
+    } else
+    cen->setPosition(cen->x(), -v);
   }
 
 void ScrollWidget::resizeEv(int,int) {

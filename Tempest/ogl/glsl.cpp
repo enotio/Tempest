@@ -23,6 +23,7 @@ using namespace Tempest::GLProc;
 #include <Tempest/Texture3d>
 
 #include <Tempest/SystemAPI>
+#include <Tempest/Log>
 #include "gltypes.h"
 #include "utils/sortedvec.h"
 
@@ -309,7 +310,8 @@ struct GLSL::Data{
       return;
 
     if(!curLinked.linked){
-      curLinked.linked = link( *prog, curLinked.vdecl, 0 );
+      std::string err;
+      curLinked.linked = link( *prog, curLinked.vdecl, &err );
       T_ASSERT( curLinked.linked!=0 );
       }
 

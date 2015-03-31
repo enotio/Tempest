@@ -49,7 +49,7 @@ unix: {
   CONFIG += ogl
   CONFIG -= directx
   SOURCES += system/linuxapi.cpp
-  LIBS += -lrt
+  !android:LIBS += -lrt
   }
 
 win32 {
