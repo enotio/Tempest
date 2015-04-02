@@ -43,6 +43,14 @@ struct Dialog::Overlay : public Tempest::WindowOverlay {
     dlg->paintShadow(e);
     paintNested(e);
     }
+
+  void keyDownEvent(Tempest::KeyEvent& e){
+    dlg->keyDownEvent(e);
+    }
+
+  void keyUpEvent(Tempest::KeyEvent& e){
+    dlg->keyUpEvent(e);
+    }
   };
 
 Dialog::Dialog() : owner_ov(nullptr) {
@@ -97,6 +105,11 @@ bool Dialog::isModal() const {
 void Dialog::closeEvent( CloseEvent & e ) {
   if(!owner_ov)
     e.ignore(); else
+    close();
+  }
+
+void Dialog::keyDownEvent(KeyEvent &e) {
+  if(e.key==KeyEvent::K_ESCAPE)
     close();
   }
 

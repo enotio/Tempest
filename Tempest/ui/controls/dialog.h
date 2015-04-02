@@ -19,6 +19,7 @@ class Dialog : public Panel {
 
   protected:
     void closeEvent(Tempest::CloseEvent& e);
+    void keyDownEvent(Tempest::KeyEvent& e);
     virtual void paintShadow(PaintEvent& e);
 
   private:
