@@ -112,6 +112,15 @@ const Color& Button::fontColor() const {
   return fntColor;
   }
 
+void Button::setButtonType(Button::Type t) {
+  type = t;
+  update();
+  }
+
+Button::Type Button::buttonType() const {
+  return type;
+  }
+
 void Button::mouseDownEvent(Tempest::MouseEvent &) {
   if(!enabled)
     return;
@@ -141,6 +150,16 @@ void Button::mouseDragEvent(Tempest::MouseEvent &e) {
   e.ignore();
   }
 
+void Button::mouseEnterEvent(MouseEvent &) {
+  isMouseOver = true;
+  update();
+  }
+
+void Button::mouseLeaveEvent(MouseEvent &) {
+  isMouseOver = false;
+  update();
+  }
+
 void Button::paintEvent( Tempest::PaintEvent &e ) {
   Tempest::Painter p(e);
   p.setBlendMode( Tempest::alphaBlend );
@@ -150,7 +169,10 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
 
   p.setScissor( r.intersected( vRect ) );
 
-  drawBack(p);
+  const bool drawBackFrame = (buttonType()!=T_ToolButton || isMouseOver) &&
+                             buttonType()!=T_FlatButton;
+  if(drawBackFrame)
+    drawBack(p);
   const Sprite icon = enabled ? icn.normal : icn.disabled;
 
   if( !icon.size().isEmpty() ){
@@ -173,7 +195,8 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
 
   p.setScissor(r);
 
-  drawFrame( p );
+  if(drawBackFrame)
+    drawFrame( p );
 
   p.setFont(fnt);
   p.setColor(fntColor);

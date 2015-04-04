@@ -15,6 +15,12 @@ class Button : public Tempest::Widget {
   public:
     Button();
 
+    enum Type{
+      T_PushButton,
+      T_ToolButton,
+      T_FlatButton
+      };
+
     Tempest::signal<> onClicked;
 
     void  setIcon(const Tempest::Sprite& s);
@@ -41,6 +47,9 @@ class Button : public Tempest::Widget {
     void setFontColor(const Tempest::Color& color);
     const Tempest::Color& fontColor() const;
 
+    void setButtonType(Type t);
+    Type buttonType() const;
+
   protected:
     virtual void drawFrame(Tempest::Painter &p, const Tempest::Rect& r );
     virtual void drawFrame(Tempest::Painter &p);
@@ -54,6 +63,10 @@ class Button : public Tempest::Widget {
     void mouseMoveEvent(Tempest::MouseEvent &e);
     void mouseUpEvent(Tempest::MouseEvent &e);
     void mouseDragEvent(Tempest::MouseEvent &e);
+
+    void mouseEnterEvent(Tempest::MouseEvent& e);
+    void mouseLeaveEvent(Tempest::MouseEvent& e);
+
     void paintEvent( Tempest::PaintEvent &p);
 
     void gestureEvent(Tempest::AbstractGestureEvent &e);
@@ -78,6 +91,9 @@ class Button : public Tempest::Widget {
     Tempest::Color fntColor;
     Tempest::Icon  icn;
     bool           enabled=true;
+
+    Type           type       =T_PushButton;
+    bool           isMouseOver=false;
   };
 }
 
