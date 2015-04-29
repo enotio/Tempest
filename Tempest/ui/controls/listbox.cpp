@@ -58,22 +58,32 @@ ListBox::~ListBox() {
 void ListBox::removeDelegate() {
   if(view){
     layout().take(view);
-    delegate->removeView(view,selected);
+    listDelegate->removeView(view,selected);
     view = 0;
     }
 
-  if(delegate){
-    delegate->onItemViewSelected.ubind(this, &ListBox::onItem);
-    delegate->updateView.ubind(this,&ListBox::updateView);
-    delegate.reset();
+  if(listDelegate){
+    listDelegate->onItemViewSelected.ubind(this, &ListBox::onItem);
+    listDelegate->updateView.ubind(this,&ListBox::updateSelectedView);
+    listDelegate.reset();
     }
   }
 
+void ListBox::invalidateView() {
+  if(listDelegate)
+    listDelegate->invalidateView();
+  }
+
+void ListBox::updateView() {
+  if(listDelegate)
+    listDelegate->updateView();
+  }
+
 void ListBox::setCurrentItem(size_t i) {
-  if( !delegate || delegate->size()==0 )
+  if( !listDelegate || listDelegate->size()==0 )
     return;
 
-  i = std::min( delegate->size()-1, i );
+  i = std::min( listDelegate->size()-1, i );
   if( selected!=i ){
     auto tmp = dropListEnabled;
     dropListEnabled = false;
@@ -90,7 +100,7 @@ void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
     }
 
   dropListEnabled = false;
-  std::shared_ptr<ListDelegate> d = delegate;
+  std::shared_ptr<ListDelegate> d = listDelegate;
   if( d && d->size() ){
     Layout& l = layout();
     Widget* view = (l.widgets().size()==0 ? nullptr : l.widgets()[0]);
@@ -110,30 +120,34 @@ void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
   }
 
 void ListBox::setupView(size_t oldSelected) {
-  if(!delegate)
+  if(!listDelegate)
     return;
 
   if(view){
     layout().take(view);
-    delegate->removeView(view,oldSelected);
+    listDelegate->removeView(view,oldSelected);
     view = 0;
     }
 
-  if(delegate->size()){
-    selected = std::min(selected,delegate->size()-1);
-    view = delegate->createView(selected,ListDelegate::R_ListBoxView);
+  if(listDelegate->size()){
+    selected = std::min(selected,listDelegate->size()-1);
+    view     = listDelegate->createView(selected,ListDelegate::R_ListBoxView);
     layout().add(view);
     } else {
     selected = 0;
     }
   }
 
-void ListBox::updateView() {
+void ListBox::updateSelectedView() {
   setupView(selected);
   }
 
+const std::shared_ptr<ListDelegate> &ListBox::delegate() {
+  return listDelegate;
+  }
+
 Tempest::Widget* ListBox::createDropList() {
-  if(!delegate)
+  if(!listDelegate)
     return nullptr;
 
   Panel *box = new Panel();
@@ -144,7 +158,8 @@ Tempest::Widget* ListBox::createDropList() {
 
   ScrollWidget *sw = new ScrollWidget();
   ListView* list   = new ListView(Vertical);
-  list->setDelegate(ProxyDelegate(delegate));
+  list->setDefaultItemRole(ListDelegate::R_ListBoxItem);
+  list->setDelegate(ProxyDelegate(listDelegate));
 
   sw->centralWidget().layout().add(list);
   int wx = std::max(w(), list->minSize().w+box->margin().xMargin());
@@ -176,8 +191,8 @@ void ListBox::selectItem(size_t id) {
   }
 
 void ListBox::setupDelegateCallback() {
-  delegate->onItemViewSelected.bind(this, &ListBox::onItem);
-  delegate->updateView.bind(this, &ListBox::updateView);
+  listDelegate->onItemViewSelected.bind(this, &ListBox::onItem);
+  listDelegate->updateView.bind(this, &ListBox::updateSelectedView);
   }
 
 size_t Tempest::ListBox::currentItem() const {

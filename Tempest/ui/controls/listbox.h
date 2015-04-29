@@ -19,12 +19,15 @@ class ListBox : public AbstractListBox {
     void setDelegate(const D& d){
       removeDelegate();
 
-      delegate.reset(new D(d));
+      listDelegate.reset(new D(d));
       setupView(size_t(-1));
       setupDelegateCallback();
       }
 
     void removeDelegate();
+
+    void invalidateView();
+    void updateView();
 
     Tempest::signal<size_t> onItemSelected;
 
@@ -36,12 +39,13 @@ class ListBox : public AbstractListBox {
     using AbstractListBox::layout;
 
     void setupView(size_t oldSelected);
-    void updateView();
+    void updateSelectedView();
+    const std::shared_ptr<ListDelegate>& delegate();
 
   private:
     size_t selected;
     bool dropListEnabled;
-    std::shared_ptr<ListDelegate> delegate;
+    std::shared_ptr<ListDelegate> listDelegate;
 
     Tempest::Widget *createDropList();
     Tempest::Widget *view;

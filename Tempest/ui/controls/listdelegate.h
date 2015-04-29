@@ -16,6 +16,7 @@ class ListDelegate : public slot {
     enum Role{
       R_Default,
       R_ListBoxView,
+      R_ListBoxItem,
       R_ListItem,
       R_Count
       };

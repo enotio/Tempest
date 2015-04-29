@@ -42,7 +42,18 @@ void ListView::setOrientation(Orientation ori) {
     setSizePolicy(Preferred,FixedMin);
 
   if(delegate)
-    setLayout(new Layout(*this,*delegate,ori));
+    setLayout(new Layout(*this,*delegate,ori,defaultRole));
+  }
+
+void ListView::setDefaultItemRole(ListDelegate::Role role) {
+  if(defaultRole!=role) {
+    defaultRole=role;
+    invalidateView();
+    }
+  }
+
+ListDelegate::Role ListView::defaultItemRole() const {
+  return defaultRole;
   }
 
 void ListView::removeAll() {
@@ -52,8 +63,13 @@ void ListView::removeAll() {
   }
 
 
-ListView::Layout::Layout(ListView &view, ListDelegate &delegate, Orientation ori)
-  :LinearLayout(ori), view(view), delegate(delegate), busy(false) {
+ListView::Layout::Layout( ListView &view,
+                          ListDelegate &delegate,
+                          Orientation ori,
+                          ListDelegate::Role &defaultRole)
+  :LinearLayout(ori),
+    view(view), delegate(delegate),
+    busy(false), defaultRole(defaultRole) {
   delegate.invalidateView.bind(this,&Layout::invalidate);
   delegate.updateView    .bind(this,&Layout::update    );
   }
@@ -76,7 +92,7 @@ void ListView::Layout::applyLayout() {
     removeAll();
     if(orientation()==Horizontal){
       for(size_t i=0; i<widgetsCount; ++i){
-        Widget*       view=delegate.createView(i);
+        Widget*       view=delegate.createView(i,defaultRole);
         const Size    sz  =view->minSize();
         w += sz.w;
         h = std::max(h,sz.h);
@@ -84,7 +100,7 @@ void ListView::Layout::applyLayout() {
         }
       } else {
       for(size_t i=0; i<widgetsCount; ++i){
-        Widget*       view=delegate.createView(i);
+        Widget*       view=delegate.createView(i,defaultRole);
         const Size    sz  =view->minSize();
         w = std::max(w,sz.w);
         h += sz.h;
