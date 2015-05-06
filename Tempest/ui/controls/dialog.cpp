@@ -35,6 +35,10 @@ struct Dialog::Overlay : public Tempest::WindowOverlay {
     e.accept();
     }
 
+  void mouseMoveEvent(MouseEvent& e){
+    e.accept();
+    }
+
   void mouseWheelEvent(MouseEvent& e){
     e.accept();
     }

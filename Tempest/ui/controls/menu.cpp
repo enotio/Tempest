@@ -136,7 +136,8 @@ void Menu::openSubMenu(const Declarator &decl, Widget &owner) {
     panels.resize(decl.level+1);
 
   for(size_t i=decl.level;i<panels.size(); ++i){
-    delete panels[i];
+    if(panels[i])
+      panels[i]->deleteLater();
     panels[i] = nullptr;
     }
 
