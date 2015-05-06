@@ -32,6 +32,7 @@ class ScrollBar : public Tempest::Widget {
     void setLargeStep(int step);
 
     void setCentralButtonSize( int sz );
+    int  centralAreaSize() const;
 
     Tempest::signal<int> valueChanged;
 

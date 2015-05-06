@@ -125,6 +125,16 @@ void ScrollBar::setCentralButtonSize(int sz) {
   alignCenBtn(0,0);
   }
 
+int ScrollBar::centralAreaSize() const {
+  const Widget* w = cenBtn==nullptr ? nullptr : cenBtn->owner();
+  if(w==nullptr)
+    return 0;
+
+  if(orientation()==Vertical)
+    return w->h(); else
+    return w->w();
+  }
+
 void ScrollBar::resizeEvent(Tempest::SizeEvent &) {
   updateView();
   }
@@ -238,16 +248,20 @@ void ScrollBar::updateView() {
     return;
 
   Tempest::Point p;
+  int cBtnSize=cenBtnSize;
+  if( orient==Tempest::Vertical )
+    cBtnSize=std::min(cBtnSize,cen->h()); else
+    cBtnSize=std::min(cBtnSize,cen->w());
 
   if( orient==Tempest::Vertical )
-    p.y = int(((mvalue-rmin)*(cen->h()-cenBtnSize))/std::max<int64_t>(1, range())); else
-    p.x = int(((mvalue-rmin)*(cen->w()-cenBtnSize))/std::max<int64_t>(1, range()));
+    p.y = int(((mvalue-rmin)*(cen->h()-cBtnSize))/std::max<int64_t>(1, range())); else
+    p.x = int(((mvalue-rmin)*(cen->w()-cBtnSize))/std::max<int64_t>(1, range()));
 
   int w = cen->w(), h = cen->h();
 
   if( orient==Tempest::Vertical )
-    h = cenBtnSize; else
-    w = cenBtnSize;
+    h = cBtnSize; else
+    w = cBtnSize;
 
   cenBtn->setGeometry( p.x, p.y, w,h );
   }
