@@ -34,6 +34,8 @@ class ListBox : public AbstractListBox {
     void   setCurrentItem( size_t i );
     size_t currentItem() const;
 
+    size_t itemsCount() const;
+
   protected:
     void mouseWheelEvent(Tempest::MouseEvent &e);
     using AbstractListBox::layout;

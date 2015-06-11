@@ -140,6 +140,12 @@ void ListView::Layout::invalidate(){
   }
 
 void ListView::Layout::update() {
+  busy = true;
+  for(size_t i=0;i<widgets().size(); ++i){
+    Widget* w = take(widgets()[i]);
+    add(delegate.update(w,i),i);
+    }
+  busy = false;
   applyLayout();
   view.onItemListChanged();
   }

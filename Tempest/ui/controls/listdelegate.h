@@ -29,7 +29,9 @@ class ListDelegate : public slot {
       return createView(position);
       }
     virtual Widget* createView( size_t position            ) = 0;
-    virtual void    removeView( Widget* w, size_t position ) = 0;
+    virtual void    removeView( Widget* w, size_t /*position*/ ){
+      w->deleteLater();
+      }
     virtual Widget* update    ( Widget* w, size_t position ){
       removeView(w,position);
       return createView(position,R_Default);

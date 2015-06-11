@@ -198,3 +198,7 @@ void ListBox::setupDelegateCallback() {
 size_t Tempest::ListBox::currentItem() const {
   return selected;
   }
+
+size_t ListBox::itemsCount() const {
+  return listDelegate==nullptr ? 0 : listDelegate->size();
+  }
