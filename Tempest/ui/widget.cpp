@@ -51,7 +51,7 @@ Widget::Widget(ResourceContext *context):
   }
 
 Widget::~Widget() {
-  T_ASSERT_X( deleteLaterFlagGuard==0, "bad time to delete, use deleteLater");
+  T_ASSERT_X( deleteLaterFlagGuard<=0, "bad time to delete, use deleteLater");
   deleteLaterFlagGuard = -1;
 
   if( parentLayout() )
@@ -561,14 +561,18 @@ void Widget::detachMouseLeavePtr() {
   }
 
 void Widget::lockDelete() {
-  ++deleteLaterFlagGuard;
+  if(deleteLaterFlagGuard>=0)
+    ++deleteLaterFlagGuard;
   }
 
 void Widget::unlockDelete() {
-  --deleteLaterFlagGuard;
+  if(deleteLaterFlagGuard>0)
+    --deleteLaterFlagGuard;
 
-  if( deleteLaterFlagGuard==0 && deleteLaterFlag )
+  if( deleteLaterFlagGuard==0 && deleteLaterFlag ){
+    deleteLaterFlagGuard = -1;
     delete this;
+    }
   }
 
 void Widget::mouseMoveEvent(MouseEvent &e){

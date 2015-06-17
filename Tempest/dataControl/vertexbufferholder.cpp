@@ -139,7 +139,7 @@ char *VertexBufferHolder::bufferData(AbstractAPI::VertexBuffer *t) {
     return 0;
 
   Data::LDData & ld = *data->vbos[t];
-  return &ld.data[0];
+  return ld.data.data();
   }
 
 void VertexBufferHolder::unlockBuffer(AbstractAPI::VertexBuffer *t) {
