@@ -69,7 +69,7 @@ struct RawModel{
     }
 
   static ModelBounds computeBoundRect( const VertexList& vertex ){
-    return computeBoundRect(&vertex[0], vertex.size());
+    return computeBoundRect(vertex.data(), vertex.size());
     }
 
   static ModelBounds computeBoundRect( const Vertex* vertex, size_t vsize ){

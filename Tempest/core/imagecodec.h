@@ -16,7 +16,7 @@ class ImageCodec {
 
     typedef Pixmap::ImgInfo ImgInfo;
 
-    virtual bool canSave(const ImgInfo &) const;
+    virtual bool canSave(const ImgInfo &, const char* ext) const;
     virtual bool canConvertTo(const ImgInfo &, Pixmap::Format fout ) const;
 
     virtual void toRGB( ImgInfo &info,

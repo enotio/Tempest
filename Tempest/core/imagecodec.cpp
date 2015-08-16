@@ -27,8 +27,9 @@ struct PngCodec:ImageCodec {
     rows.reserve(2048);
     }
 
-  bool canSave(const ImgInfo &inf) const{
-    return inf.format == Pixmap::Format_RGB || inf.format==Pixmap::Format_RGBA;
+  bool canSave(const ImgInfo &inf, const char* ext) const{
+    return (inf.format == Pixmap::Format_RGB || inf.format==Pixmap::Format_RGBA) &&
+           (ext==nullptr || strcmp(ext,"PNG")==0);
     }
 
   bool load( IDevice &d,
@@ -209,11 +210,144 @@ struct PngCodec:ImageCodec {
   Detail::Spin spin;
   };
 
+struct TgaCodec:ImageCodec {
+  enum TgaType{
+    RawIndex = 1,
+    RawRGB   = 2,
+    RleIndex = 9,
+    RleRGB   = 10,
+    };
+
+  bool canSave(const ImgInfo &inf, const char* ext) const{
+    return (inf.format == Pixmap::Format_RGB || inf.format==Pixmap::Format_RGBA) &&
+           (ext==nullptr || strcmp(ext,"TGA")==0);
+    }
+
+  bool load( IDevice &d,
+             ImgInfo &info,
+             std::vector<unsigned char> &out ) {
+    Header h;
+    if(d.readData((char*)&h,sizeof(h))!=sizeof(h))
+      return false;
+
+    if(h.bitsPerPel!=24 && h.bitsPerPel!=32)
+      return false;
+
+    d.skip(h.idLeight);
+    info.w   = h.width;
+    info.h   = h.height;
+    info.bpp = h.bitsPerPel/8;
+    info.format = info.bpp==3 ? Pixmap::Format_RGB : Pixmap::Format_RGBA;
+
+    int bpp = h.bitsPerPel/8;
+    if( h.dataType==RawRGB ){
+      out.resize(h.width*h.height*bpp);
+
+      char* p = (char*)out.data();
+      if(d.readData(p,out.size())!=out.size())
+        return false;
+      const char* end = p+out.size();
+      while(p!=end) {
+        char t = p[0];
+        p[0]   = p[2];
+        p[2]   = t;
+        p += bpp;
+        }
+      return true;
+      }
+
+    if( h.dataType==RleRGB ) {
+      unsigned long index=0;
+      uint8_t pCur=0;
+
+      out.resize(h.width*h.height*info.bpp);
+      // Decode
+      while( index<out.size() ) {
+        uint8_t px[4]={};
+
+        if(d.readData((char*)&pCur,1)!=1)
+          return false;
+
+        if( pCur & 0x80 ) { // Run length chunk (High bit = 1)
+          uint8_t length=pCur-127;
+
+          if(d.readData((char*)px,info.bpp)!=info.bpp)
+            return false;
+
+          for(uint8_t i=0; i!=length; ++i, index+=info.bpp)
+            memcpy(&out[index],px,info.bpp);
+          } else { // Raw chunk
+          uint8_t length=pCur+1;
+
+          for(uint8_t i=0; i!=length; ++i, index+=info.bpp)
+            if(d.readData((char*)&out[index],info.bpp)!=info.bpp)
+              return false;
+          }
+        }
+
+      return true;
+      }
+
+    return false;
+    }
+
+  bool save( ODevice & file,
+             const ImgInfo &info,
+             const std::vector<unsigned char> &img){
+    Header h = {};
+    h.bitsPerPel = info.bpp*8;
+    h.dataType   = RawRGB;
+    h.width      = info.w;
+    h.height     = info.h;
+    h.bitsPerPel = info.bpp*8;
+
+    if(file.writeData((char*)&h,sizeof(h))!=sizeof(h))
+      return false;
+
+    const char* s = (char*)img.data();
+    const char* e = s+img.size();
+
+    if(info.bpp==4){
+      for(;s!=e;s+=4){
+        char x[4] = {s[2],s[1],s[0],s[3]};
+        if(file.writeData(x,4)!=4)
+          return false;
+        }
+      return true;
+      }
+
+    if(info.bpp==3){
+      for(;s!=e;s+=3){
+        char x[3] = {s[2],s[1],s[0]};
+        if(file.writeData(x,3)!=3)
+          return false;
+        }
+      return true;
+      }
+
+    return false;
+    }
+
+  struct Header {
+    int8_t  idLeight;
+    int8_t  colorMap;
+    int8_t  dataType;
+    char    colorMapInfo[5];
+    int16_t x;
+    int16_t y;
+    int16_t width;
+    int16_t height;
+    int8_t  bitsPerPel;
+    int8_t  description;
+    };
+  };
+
 struct JpegCodec:ImageCodec {
   JpegCodec(){
     }
 
   struct JpegStream {
+    jmp_buf         jmpErr;
     jpeg_source_mgr pub;
 
     IDevice* stream;
@@ -241,9 +375,9 @@ struct JpegCodec:ImageCodec {
     // Close the stream, can be nop
     }
 
-  static void handleLibJpegFatalError(j_common_ptr /*cinfo*/) {
-    //(*cinfo->err->output_message)(cinfo);
-    throw std::runtime_error("error in libjpeg");
+  static void handleLibJpegFatalError(j_common_ptr cinfo) {
+    JpegStream* src = (JpegStream*)(cinfo->client_data);
+    longjmp(src->jmpErr,1);
     }
 
   void make_stream (jpeg_decompress_struct* cinfo, IDevice* in) {
@@ -254,6 +388,7 @@ struct JpegCodec:ImageCodec {
           (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
                                       sizeof(JpegStream));
       src = reinterpret_cast<JpegStream*> (cinfo->src);
+      cinfo->client_data = src;
       }
 
     src = reinterpret_cast<JpegStream*> (cinfo->src);
@@ -291,44 +426,44 @@ struct JpegCodec:ImageCodec {
     cInfo.start();
     make_stream(&cInfo, &d);
 
-    try{
-      if( jpeg_read_header(&cInfo, TRUE)!=JPEG_HEADER_OK )
-        return false;
-
-      cInfo.out_color_space = JCS_RGB;
-
-      if( !jpeg_start_decompress(&cInfo) )
-        return 0;
-
-      size_t iRowStride = cInfo.output_width * cInfo.output_components;
-      //(*a_pBuffer) = new JSAMPLE[ iRowStride * cInfo.output_height ];
-
-      out.resize( iRowStride * cInfo.output_height  );
-      // Assign row buffers.
-      //
-      JSAMPROW pRows[1];
-
-      // Decoding loop:
-      //
-      size_t i = 0;
-      while (cInfo.output_scanline < cInfo.output_height)
-      {
-        // Decode it !
-        pRows[0] = (JSAMPROW)( out.data() + iRowStride * i);  // set row buffer
-        (void) jpeg_read_scanlines(&cInfo, pRows, 1);  // decode
-        i++;
-      }
-
-      info.w   = cInfo.image_width;
-      info.h   = cInfo.image_height;
-      info.bpp = cInfo.output_components;
-
-      if( !jpeg_finish_decompress(&cInfo) )
-        Log::e("jpeg_finish_decompress error");
-      }
-    catch( const std::runtime_error & ){
+    JpegStream * src = reinterpret_cast<JpegStream*>(cInfo.src);
+    int errorCode = setjmp(src->jmpErr);
+    if(errorCode)
       return false;
-      }
+
+    if( jpeg_read_header(&cInfo, TRUE)!=JPEG_HEADER_OK )
+      return false;
+
+    cInfo.out_color_space = JCS_RGB;
+
+    if( !jpeg_start_decompress(&cInfo) )
+      return 0;
+
+    size_t iRowStride = cInfo.output_width * cInfo.output_components;
+    //(*a_pBuffer) = new JSAMPLE[ iRowStride * cInfo.output_height ];
+
+    out.resize( iRowStride * cInfo.output_height  );
+    // Assign row buffers.
+    //
+    JSAMPROW pRows[1];
+
+    // Decoding loop:
+    //
+    size_t i = 0;
+    while (cInfo.output_scanline < cInfo.output_height)
+    {
+      // Decode it !
+      pRows[0] = (JSAMPROW)( out.data() + iRowStride * i);  // set row buffer
+      (void) jpeg_read_scanlines(&cInfo, pRows, 1);  // decode
+      i++;
+    }
+
+    info.w   = cInfo.image_width;
+    info.h   = cInfo.image_height;
+    info.bpp = cInfo.output_components;
+
+    if( !jpeg_finish_decompress(&cInfo) )
+      Log::e("jpeg_finish_decompress error");
 
     return true;
     }
@@ -506,8 +641,8 @@ struct ETCCodec:ImageCodec{
            ( etcFrm(info.format) && fout==Pixmap::Format_RGB );
     }
 
-  bool canSave(const ImgInfo &inf) const{
-    return etcFrm(inf.format);
+  bool canSave(const ImgInfo &inf, const char* ext) const{
+    return etcFrm(inf.format) && (ext==nullptr || strcmp(ext,"KTX")==0);
     }
 
   void compressLayer( std::vector<unsigned char> &img,
@@ -703,7 +838,7 @@ struct ETCCodec:ImageCodec{
 ImageCodec::~ImageCodec() {
   }
 
-bool ImageCodec::canSave(const ImageCodec::ImgInfo &) const {
+bool ImageCodec::canSave(const ImageCodec::ImgInfo &, const char *) const {
   return 0;
   }
 
@@ -738,6 +873,7 @@ bool ImageCodec::save( ODevice& ,
 
 void ImageCodec::installStdCodecs(SystemAPI &s) {
   s.installImageCodec( new PngCodec()  );
+  s.installImageCodec( new TgaCodec()  );
   s.installImageCodec( new ETCCodec()  );
   s.installImageCodec( new S3TCCodec() );
   s.installImageCodec( new JpegCodec() );

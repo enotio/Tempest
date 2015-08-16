@@ -247,8 +247,9 @@ bool SystemAPI::loadImage( IDevice &file,
 
 bool SystemAPI::saveImage( ODevice& file,
                            const ImageCodec::ImgInfo &info,
+                           const char *ext,
                            const std::vector<unsigned char> &in ) {
-  return instance().saveImageImpl( file, info, in );
+  return instance().saveImageImpl( file, info, ext, in );
   }
 
 struct SystemAPI::GestureDeleter {
@@ -509,9 +510,10 @@ bool SystemAPI::writeBytesImpl( const char16_t *file,
 
 bool SystemAPI::saveImageImpl( ODevice& file,
                                const ImageCodec::ImgInfo &info,
-                               const std::vector<unsigned char> &out) {
+                               const char* ext,
+                               const std::vector<unsigned char> &out ) {
   for( size_t i=0; i<codecs.size(); ++i ){
-    if( codecs[i]->canSave(info) && codecs[i]->save(file, info, out) ){
+    if( codecs[i]->canSave(info,ext) && codecs[i]->save(file, info, out) ){
       return 1;
       }
     }

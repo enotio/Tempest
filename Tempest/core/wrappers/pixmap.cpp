@@ -188,22 +188,22 @@ Pixmap &Pixmap::operator = (const Pixmap &p) {
   return *this;
   }
 
-bool Pixmap::save(const std::string &f)  const {
-  return save(f.data());
+bool Pixmap::save(const std::string &f, const char *ext)  const {
+  return save(f.data(),ext);
   }
 
-bool Pixmap::save(const std::u16string &f)  const {
-  return save(f.data());
+bool Pixmap::save(const std::u16string &f, const char *ext)  const {
+  return save(f.data(),ext);
   }
 
-bool Pixmap::save(const char* f)  const {
+bool Pixmap::save(const char* f, const char *ext)  const {
   WFile fn(f);
-  return save(fn);
+  return save(fn,ext);
   }
 
-bool Pixmap::save(const char16_t* f)  const {
+bool Pixmap::save(const char16_t* f, const char *ext)  const {
   WFile fn(f);
-  return save(fn);
+  return save(fn,ext);
   }
 
 bool Pixmap::load(const std::string &f) {
@@ -224,14 +224,14 @@ bool Pixmap::load(const char *f) {
   return load(file);
   }
 
-bool Pixmap::save( ODevice& f ) const {
+bool Pixmap::save( ODevice& f, const char* ext ) const {
   if( data.const_value()==0 )
     return false;
 
   Tempest::Detail::GuardBase< Detail::Ptr<Data*, DbgManip> > guard( data );
   (void)guard;
 
-  bool ok = SystemAPI::saveImage( f, info,
+  bool ok = SystemAPI::saveImage( f, info, ext,
                                   data.const_value()->bytes );
   return ok;
   }
