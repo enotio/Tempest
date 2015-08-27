@@ -271,7 +271,7 @@ struct TgaCodec:ImageCodec {
         if( pCur & 0x80 ) { // Run length chunk (High bit = 1)
           uint8_t length=pCur-127;
 
-          if(d.readData((char*)px,info.bpp)!=info.bpp)
+          if(int(d.readData((char*)px,info.bpp))!=info.bpp)
             return false;
 
           for(uint8_t i=0; i!=length; ++i, index+=info.bpp)
@@ -280,7 +280,7 @@ struct TgaCodec:ImageCodec {
           uint8_t length=pCur+1;
 
           for(uint8_t i=0; i!=length; ++i, index+=info.bpp)
-            if(d.readData((char*)&out[index],info.bpp)!=info.bpp)
+            if(int(d.readData((char*)&out[index],info.bpp))!=info.bpp)
               return false;
           }
         }
@@ -294,7 +294,8 @@ struct TgaCodec:ImageCodec {
   bool save( ODevice & file,
              const ImgInfo &info,
              const std::vector<unsigned char> &img){
-    Header h = {};
+    Header h;
+    memset(&h,0,sizeof(h));
     h.bitsPerPel = info.bpp*8;
     h.dataType   = RawRGB;
     h.width      = info.w;
@@ -346,11 +347,10 @@ struct JpegCodec:ImageCodec {
   JpegCodec(){
     }
 
-  struct JpegStream {
+  struct JpegStream : jpeg_source_mgr{
     jmp_buf         jmpErr;
-    jpeg_source_mgr pub;
+    IDevice*        stream;
 
-    IDevice* stream;
     static const size_t bufferSize = 4096;
     unsigned char buffer [bufferSize];
     };
@@ -359,11 +359,11 @@ struct JpegCodec:ImageCodec {
 
   static boolean fill_buffer ( j_decompress_ptr cinfo ) {
     JpegStream* src = (JpegStream*)(cinfo->src);
-    src->pub.next_input_byte = src->buffer;
-    src->pub.bytes_in_buffer = src->stream->readData( (char*)src->buffer,
+    src->next_input_byte = src->buffer;
+    src->bytes_in_buffer = src->stream->readData( (char*)src->buffer,
                                                       JpegStream::bufferSize );
 
-    return (/*src->stream->eof() &&*/ src->pub.bytes_in_buffer==0)?FALSE:TRUE;
+    return (/*src->stream->eof() &&*/ src->bytes_in_buffer==0)?FALSE:TRUE;
     }
 
   static void skip (j_decompress_ptr cinfo, long count) {
@@ -392,14 +392,14 @@ struct JpegCodec:ImageCodec {
       }
 
     src = reinterpret_cast<JpegStream*> (cinfo->src);
-    src->pub.init_source       = init_source;
-    src->pub.fill_input_buffer = fill_buffer;
-    src->pub.skip_input_data   = skip;
-    src->pub.resync_to_restart = jpeg_resync_to_restart; /* use default method */
-    src->pub.term_source       = term;
-    src->stream                = in;
-    src->pub.bytes_in_buffer   = 0; /* forces fill_input_buffer on first read */
-    src->pub.next_input_byte   = 0; /* until buffer loaded */
+    src->init_source       = init_source;
+    src->fill_input_buffer = fill_buffer;
+    src->skip_input_data   = skip;
+    src->resync_to_restart = jpeg_resync_to_restart; /* use default method */
+    src->term_source       = term;
+    src->stream            = in;
+    src->bytes_in_buffer   = 0; /* forces fill_input_buffer on first read */
+    src->next_input_byte   = 0; /* until buffer loaded */
     }
 
   struct compress:jpeg_decompress_struct{
