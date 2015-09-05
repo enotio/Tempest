@@ -41,8 +41,10 @@ void ListView::setOrientation(Orientation ori) {
   else
     setSizePolicy(Preferred,FixedMin);
 
-  if(delegate)
-    setLayout(new Layout(*this,*delegate,ori,defaultRole));
+  if(delegate){
+    lay = new Layout(*this,*delegate,orientation,defaultRole);
+    setLayout(lay);
+    }
   }
 
 void ListView::setDefaultItemRole(ListDelegate::Role role) {
