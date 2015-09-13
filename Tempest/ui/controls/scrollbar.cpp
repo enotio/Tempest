@@ -94,7 +94,7 @@ void ScrollBar::setValue(int v) {
 
   if( v!=mvalue ){
     mvalue = v;
-    valueChanged(v);
+    onValueChanged(v);
     updateView();
     }
   }
@@ -225,7 +225,7 @@ void ScrollBar::updateValueFromView(int, int) {
   const int nvalue = std::min(rmax,std::max(v,0) + rmin);
   if(nvalue!=mvalue){
     mvalue = nvalue;
-    valueChanged(nvalue);
+    onValueChanged(nvalue);
     }
   }
 

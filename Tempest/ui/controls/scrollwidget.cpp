@@ -126,9 +126,9 @@ void ScrollWidget::setScrollBars( Tempest::ScrollBar* hor,
                                   Tempest::ScrollBar* vert,
                                   bool deleteOld ) {
   if(sbH!=nullptr)
-    sbH->valueChanged.ubind(this, &ScrollWidget::scrollH);
+    sbH->onValueChanged.ubind(this, &ScrollWidget::scrollH);
   if(sbV!=nullptr)
-    sbV->valueChanged.ubind(this, &ScrollWidget::scrollV);
+    sbV->onValueChanged.ubind(this, &ScrollWidget::scrollV);
 
   if(deleteOld){
     delete sbH;
@@ -141,9 +141,9 @@ void ScrollWidget::setScrollBars( Tempest::ScrollBar* hor,
   layout().add(sbV);
 
   if(sbH!=nullptr)
-    sbH->valueChanged.bind(this, &ScrollWidget::scrollH);
+    sbH->onValueChanged.bind(this, &ScrollWidget::scrollH);
   if(sbV!=nullptr)
-    sbV->valueChanged.bind(this, &ScrollWidget::scrollV);
+    sbV->onValueChanged.bind(this, &ScrollWidget::scrollV);
 
   setHscrollViewMode(this->hor);
   setVscrollViewMode(this->vert);

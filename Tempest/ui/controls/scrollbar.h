@@ -34,7 +34,7 @@ class ScrollBar : public Tempest::Widget {
     void setCentralButtonSize( int sz );
     int  centralAreaSize() const;
 
-    Tempest::signal<int> valueChanged;
+    Tempest::signal<int> onValueChanged;
 
   protected:
     ScrollBar(bool noUi, Tempest::Orientation ori = Tempest::Vertical);
