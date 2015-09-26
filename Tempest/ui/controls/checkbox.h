@@ -9,10 +9,23 @@ class CheckBox: public Button {
   public:
     CheckBox();
 
-    Tempest::signal<bool> onChecked;
+    enum State {
+      Unchecked        = 0,
+      Checked          = 1,
+      PartiallyChecked = 2
+      };
 
-    void setChecked(bool c = true);
-    bool isChecked() const;
+    Tempest::signal<State> onStateChanged;
+    Tempest::signal<bool>  onChecked;
+
+    void  setChecked(bool c = true);
+    bool  isChecked() const;
+
+    State state() const;
+    void  setState(State s);
+
+    void  setTristate(bool y=true);
+    bool  isTristate() const;
 
   protected:
     virtual Tempest::Rect viewRect() const;
@@ -26,7 +39,8 @@ class CheckBox: public Button {
     virtual Size checkIconSize() const;
 
   private:
-    bool state;
+    State st;
+    bool  tristate;
   };
 
 }

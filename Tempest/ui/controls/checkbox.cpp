@@ -8,7 +8,8 @@ using namespace Tempest;
 CheckBox::CheckBox() {
   const UiMetrics& m = Application::uiMetrics();
 
-  state    = false;
+  tristate = false;
+  st       = Unchecked;
   Size sz  = checkIconSize();
 
   setMinimumSize( int(sz.w*m.uiScale),
@@ -18,13 +19,40 @@ CheckBox::CheckBox() {
   }
 
 void CheckBox::setChecked( bool c ) {
-  if( state!=c ){
-    emitClick();
-    }
+  setState(c ? Checked : Unchecked);
   }
 
 bool CheckBox::isChecked() const {
-  return state;
+  return st==Checked;
+  }
+
+CheckBox::State CheckBox::state() const {
+  return st;
+  }
+
+void CheckBox::setState(CheckBox::State s) {
+  bool ck = (st==Checked);
+  if(s==PartiallyChecked && !tristate)
+    s = Unchecked;
+  if(s==st)
+    return;
+
+  st = s;
+  onStateChanged(s);
+  if(ck!=(st==Checked))
+    onChecked(st==Checked);
+  Button::emitClick();
+  update();
+  }
+
+void CheckBox::setTristate(bool y) {
+  tristate = y;
+  if(!tristate && st==PartiallyChecked)
+    setState(st);
+  }
+
+bool CheckBox::isTristate() const {
+  return tristate;
   }
 
 Tempest::Rect CheckBox::viewRect() const {
@@ -53,7 +81,7 @@ void CheckBox::paintEvent( Tempest::PaintEvent &e ) {
   Button::drawBack( p, Tempest::Rect{ds,y+ds, sz.w-ds*2, sz.w-ds*2} );
   Button::drawFrame(p, Tempest::Rect{0,y, sz.w, sz.h} );
 
-  if( state ){
+  if( st==Checked ){
     int x = 0,
         y = (h()- sz.h)/2;
     if( isPressed() ){
@@ -63,16 +91,28 @@ void CheckBox::paintEvent( Tempest::PaintEvent &e ) {
       p.drawLine(x, y, x+sz.w, y+sz.h);
       p.drawLine(x+sz.w, y, x, y+sz.h);
       }
+    } else
+  if( st==PartiallyChecked ){
+    int x = 0,
+        y = (h()- sz.h)/2;
+    int d = isPressed() ? 2 : 4;
+    p.drawLine(x+d, y+d,      x+sz.w-d, y+d);
+    p.drawLine(x+d, y+sz.h+d, x+sz.w-d, y+sz.h+d);
+
+    p.drawLine(x+d, y+d, x+d, y+sz.h-d);
+    p.drawLine(x+sz.w+d, y+d, x+sz.w+d, y+sz.h-d);
     }
+
 
   Button::paintEvent(e);
   }
 
 void CheckBox::emitClick() {
-  state = !state;
-
-  Button::emitClick();
-  onChecked(state);
+  State state = st;
+  if(tristate)
+    state = State((st+1)%3); else
+    state = State((st+1)%2);
+  setState(state);
   }
 
 Size CheckBox::checkIconSize() const {
