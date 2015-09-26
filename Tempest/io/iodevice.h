@@ -41,7 +41,7 @@ class MemReader:public IDevice{
     size_t sz;
   };
 
-class MemWriter:public IDevice{
+class MemWriter:public ODevice{
   public:
     MemWriter( char* vec, size_t sz );
     MemWriter( unsigned char* vec, size_t sz );
