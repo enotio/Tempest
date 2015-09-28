@@ -34,7 +34,8 @@ class MemReader:public IDevice{
     void   skip( size_t count );
 
     size_t peek( size_t skip, char* dest, size_t maxSize ) const;
-    bool eof()  const;
+    bool   eof()  const;
+    size_t size() const;
 
   private:
     const char* vec;

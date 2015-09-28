@@ -67,7 +67,7 @@ struct Tempest::FontElement::FreeTypeLib{
     }
   };
 
-std::vector< std::string > Tempest::FontElement::fnames;
+std::vector< std::u16string >          Tempest::FontElement::fnames;
 std::vector< std::unique_ptr<char[]> > Tempest::FontElement::fdata;
 
 Tempest::FontElement::FreeTypeLib& Tempest::FontElement::ft(){
@@ -76,6 +76,19 @@ Tempest::FontElement::FreeTypeLib& Tempest::FontElement::ft(){
   }
 
 size_t Tempest::FontElement::findFontName(const std::string &n) {
+  std::u16string str;
+  str.assign(std::begin(n),std::end(n));
+
+  for( size_t i=0; i<fnames.size(); ++i )
+    if( fnames[i]==str )
+      return i;
+
+  fnames.push_back(std::move(str));
+  fdata.resize(fnames.size());
+  return fnames.size()-1;
+  }
+
+size_t Tempest::FontElement::findFontName(const std::u16string &n) {
   for( size_t i=0; i<fnames.size(); ++i )
     if( fnames[i]==n )
       return i;
@@ -90,6 +103,23 @@ Tempest::FontElement::FontElement( const std::string &name,
   init(name, sz);
   }
 
+Tempest::FontElement::FontElement(const std::u16string &name, int sz) {
+  init(name, sz);
+  }
+
+Tempest::FontElement::FontElement(Tempest::MemReader &buffer, int sz) {
+  MemFont* fnt = new MemFont();
+  fnt->data    = new char[buffer.size()];
+  buffer.readData(fnt->data,buffer.size());
+
+  memData = std::shared_ptr<MemFont>(fnt);
+  lt = &fnt->leters;
+  key.size = sz;
+  }
+
+Tempest::FontElement::~FontElement() {
+  }
+
 Tempest::FontElement::FontElement() {
 #ifdef __ANDROID__
   init("/system/fonts/DroidSans", 16);
@@ -98,7 +128,8 @@ Tempest::FontElement::FontElement() {
 #endif
   }
 
-void Tempest::FontElement::init( const std::string& name, int sz ) {
+template<class Str>
+void Tempest::FontElement::init(const Str &name, int sz ) {
   key.name = findFontName(name);
   key.size = sz;
 
@@ -122,15 +153,21 @@ const Tempest::FontElement::Letter&
   FT_Vector pen  = {0,0};
   FT_Error  err  = 0;
 
-  if(fdata[key.name]==nullptr){
+  char* data = nullptr;
+  if(memData){
+    data = memData->data;
+    } else
+  if(fdata[key.name]!=nullptr){
+    data = fdata[key.name].get();
+    } else {
     RFile file(fnames[key.name].c_str());
     size_t sz = file.size();
-    char * ch = new char[sz];
-    fdata[key.name].reset(ch);
-    if(file.readData(ch,sz)!=sz)
+    data = new char[sz];
+    fdata[key.name].reset(data);
+    if(file.readData(data,sz)!=sz)
       fdata[key.name].reset();
     }
-  Tempest::MemReader reader(fdata[key.name].get(),-1);
+  Tempest::MemReader reader(data,-1);
   FT_StreamRec stream;
   ft().mkStream(stream,reader);
 
@@ -251,14 +288,24 @@ const Tempest::FontElement::Letter &
   }
 
 void Tempest::FontElement::fetch(const std::u16string &str,
+                                 Tempest::SpritesHolder &sp) const {
+  fetch(str.c_str(),sp);
+  }
+
+void Tempest::FontElement::fetch(const std::string &str,
+                                 Tempest::SpritesHolder &sp) const {
+  fetch(str.c_str(),sp);
+  }
+
+void Tempest::FontElement::fetch(const char16_t* str,
                                  Tempest::SpritesHolder & sp  ) const {
-  for( size_t i=0; i<str.size(); ++i )
+  for( size_t i=0; str[i]; ++i )
     fetchLeter( str[i], sp );
   }
 
-void Tempest::FontElement::fetch( const std::string &str,
+void Tempest::FontElement::fetch(const char *str,
                                   Tempest::SpritesHolder & sp ) const {
-  for( size_t i=0; i<str.size(); ++i )
+  for( size_t i=0; str[i]; ++i )
     fetchLeter( str[i], sp );
   }
 
@@ -444,6 +491,21 @@ Tempest::Font::Font(const std::string &name, int sz) {
   ttf[1][1] = FontElement(name + "bi.ttf", sz);
   }
 
+Tempest::Font::Font(const std::u16string &name, int sz) {
+  std::u16string n0 = name;
+  n0.append(".ttf",".ttf"+4);
+  ttf[0][0] = FontElement(n0, sz);
+  n0 = name;
+  n0.append("i.ttf","i.ttf"+5);
+  ttf[0][1] = FontElement(n0, sz);
+  n0 = name;
+  n0.append("b.ttf","b.ttf"+5);
+  ttf[1][0] = FontElement(n0, sz);
+  n0 = name;
+  n0.append("i.ttf","i.ttf"+5);
+  ttf[1][1] = FontElement(n0, sz);
+  }
+
 Tempest::Font::Font( const Tempest::FontElement &n,
                      const Tempest::FontElement &b,
                      const Tempest::FontElement &i,
@@ -461,6 +523,14 @@ void Tempest::Font::fetch( const std::u16string &str,
 
 void Tempest::Font::fetch( const std::string &str,
                            Tempest::SpritesHolder &sp ) const {
+  ttf[bold][italic].fetch(str, sp);
+  }
+
+void Tempest::Font::fetch(const char16_t *str, Tempest::SpritesHolder &sp) const {
+  ttf[bold][italic].fetch(str, sp);
+  }
+
+void Tempest::Font::fetch(const char *str, Tempest::SpritesHolder &sp) const {
   ttf[bold][italic].fetch(str, sp);
   }
 
@@ -523,4 +593,8 @@ void Tempest::Font::setSize(int s) {
       ttf[i][r].key.size = s;
       ttf[i][r].update();
       }
+  }
+
+Tempest::FontElement::MemFont::~MemFont() {
+  delete[] data;
   }

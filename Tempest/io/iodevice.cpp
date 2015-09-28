@@ -42,6 +42,10 @@ bool MemReader::eof() const {
   return sz==0;
   }
 
+size_t MemReader::size() const {
+  return sz;
+  }
+
 MemWriter::MemWriter(char *vec, size_t sz):vec(vec), sz(sz){
   }
 

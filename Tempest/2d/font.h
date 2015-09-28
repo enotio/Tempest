@@ -13,6 +13,9 @@ namespace Tempest {
 class FontElement{
   public:
     FontElement( const std::string& name, int sz );
+    FontElement( const std::u16string& name, int sz );
+    FontElement( MemReader& buffer, int sz );
+    ~FontElement();
 
     struct LetterGeometry{
       Tempest::Size    size;
@@ -26,7 +29,9 @@ class FontElement{
       };
 
     void fetch(const std::u16string& str, SpritesHolder &sp) const;
-    void fetch(const std::string& str, SpritesHolder &sp) const;
+    void fetch(const std::string&    str, SpritesHolder &sp) const;
+    void fetch(const char16_t *      str, SpritesHolder &sp) const;
+    void fetch(const char*           str, SpritesHolder &sp) const;
 
     const Letter& letter(char16_t ch, SpritesHolder &sp) const;
     LetterGeometry letterGeometry( char16_t ch ) const;
@@ -42,7 +47,8 @@ class FontElement{
 
   private:
     FontElement();
-    void init(const std::string &name, int sz);
+    template<class Str>
+    void init(const Str &name, int sz);
 
     struct LMap{
       LMap();
@@ -64,14 +70,22 @@ class FontElement{
 
     typedef LMap Leters;
     Leters * lt;
-    Key key;
+    Key      key;
+
+    struct MemFont{
+      char*   data;
+      Leters leters;
+      ~MemFont();
+      };
+    std::shared_ptr<MemFont> memData;
 
     struct FreeTypeLib;
     static FreeTypeLib& ft();
 
-    static std::vector< std::string > fnames;
+    static std::vector< std::u16string > fnames;
     static std::vector< std::unique_ptr<char[]> > fdata;
-    size_t findFontName( const std::string& n );
+    size_t findFontName(const std::u16string &n );
+    size_t findFontName(const std::string &n );
 
     const Letter& fetchLeter(char16_t ch, SpritesHolder &sp) const;
     const Letter& nullLeter (char16_t ch ) const;
@@ -85,6 +99,7 @@ class Font{
   public:
     Font();
     Font( const std::string& name, int sz );
+    Font( const std::u16string& name, int sz );
     Font( const FontElement& n,
           const FontElement& b,
           const FontElement& i,
@@ -103,7 +118,9 @@ class Font{
     bool isItalic() const;
 
     void fetch(const std::u16string& str, SpritesHolder &sp) const;
-    void fetch(const std::string& str, SpritesHolder &sp) const;
+    void fetch(const std::string&    str, SpritesHolder &sp) const;
+    void fetch(const char16_t *      str, SpritesHolder &sp) const;
+    void fetch(const char*           str, SpritesHolder &sp) const;
 
     const Letter& letter(char16_t ch, SpritesHolder &sp) const;
     LetterGeometry letterGeometry( char16_t ch ) const;
