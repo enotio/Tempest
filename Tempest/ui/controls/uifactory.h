@@ -10,6 +10,7 @@ class Widget;
 class Button;
 class Panel;
 class LineEdit;
+class Label;
 class ListBox;
 class ListView;
 class StackedWidget;
@@ -29,6 +30,7 @@ class UiFactory {
     virtual Panel*         panel();
     virtual LineEdit*      lineEdit();
     virtual ListBox*       listBox();
+    virtual Label*         label();
     virtual ListView*      listView();
     virtual StackedWidget* stackedWidget();
     virtual ScrollBar*     scrollBar(Tempest::Orientation ori);

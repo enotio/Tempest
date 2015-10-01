@@ -3,6 +3,7 @@
 #include <Tempest/Button>
 #include <Tempest/Panel>
 #include <Tempest/LineEdit>
+#include <Tempest/Label>
 #include <Tempest/ListBox>
 #include <Tempest/ListView>
 #include <Tempest/StackedWidget>
@@ -38,6 +39,10 @@ LineEdit *UiFactory::lineEdit() {
 
 ListBox *UiFactory::listBox() {
   return new ListBox();
+  }
+
+Label *UiFactory::label() {
+  return new Label();
   }
 
 ListView *UiFactory::listView() {

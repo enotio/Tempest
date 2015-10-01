@@ -205,7 +205,8 @@ SOURCES += \
     ui/controls/stackedwidget.cpp \
     2d/icon.cpp \
     ui/controls/scrollbar.cpp \
-    ui/controls/scrollwidget.cpp
+    ui/controls/scrollwidget.cpp \
+    ui/controls/label.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -304,7 +305,8 @@ HEADERS += \
     ui/controls/stackedwidget.h \
     2d/icon.h \
     ui/controls/scrollbar.h \
-    ui/controls/scrollwidget.h
+    ui/controls/scrollwidget.h \
+    ui/controls/label.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -365,12 +367,11 @@ OTHER_FILES += \
     include/Tempest/AbstractListBox \
     include/Tempest/ListBox \
     include/Tempest/ScrollBar \
-    include/Tempest/ScrollWidget
-
-DISTFILES += \
+    include/Tempest/ScrollWidget \
     include/Tempest/UiFactory \
     include/Tempest/Dialog \
     include/Tempest/CheckBox \
     include/Tempest/Menu \
     include/Tempest/StackedWidget \
-    include/Tempest/Icon
+    include/Tempest/Icon \
+    include/Tempest/Label
