@@ -479,6 +479,8 @@ template< class T >
 void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
                                        const T* str,
                                        int flg ) {
+  if(!str)
+    return;
   fnt.fetch( str, p.sp );
 
   Tempest::Rect oldScissor = p.scissor();

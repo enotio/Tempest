@@ -299,12 +299,16 @@ void Tempest::FontElement::fetch(const std::string &str,
 
 void Tempest::FontElement::fetch(const char16_t* str,
                                  Tempest::SpritesHolder & sp  ) const {
+  if(!str)
+    return;
   for( size_t i=0; str[i]; ++i )
     fetchLeter( str[i], sp );
   }
 
 void Tempest::FontElement::fetch(const char *str,
                                   Tempest::SpritesHolder & sp ) const {
+  if(!str)
+    return;
   for( size_t i=0; str[i]; ++i )
     fetchLeter( str[i], sp );
   }
