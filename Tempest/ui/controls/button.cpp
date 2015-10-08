@@ -69,7 +69,7 @@ void Button::setShortcut(const Tempest::Shortcut &sc) {
   hotKey.activated.bind(this, &Button::onShortcut);
   }
 
-const std::u16string Button::text() const {
+const std::u16string &Button::text() const {
   return txt;
   }
 

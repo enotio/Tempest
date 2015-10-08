@@ -33,7 +33,7 @@ class Button : public Tempest::Widget {
     const Tempest::Shortcut& shortcut() const;
     void  setShortcut( const Tempest::Shortcut & sc );
 
-    const std::u16string text() const;
+    const std::u16string& text() const;
     void  setText(const std::u16string &t );
     void  setText( const std::string& t   );
 
