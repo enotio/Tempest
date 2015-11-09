@@ -485,7 +485,8 @@ void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
 
   Tempest::Rect oldScissor = p.scissor();
   p.setScissor( oldScissor.intersected( Tempest::Rect(x,y,w,h) ) );
-  p.setBlendMode( Tempest::alphaBlend );
+  p.pushState();
+  p.setBlendMode(alphaBlend);
 
   int tx = 0, ty = 0, lx=0, ly=0, tw = 0, th = 0;
   if(*str){
@@ -534,6 +535,7 @@ void SurfaceRender::TextEngine::dText( int x, int y, int w, int h,
     }
 
   p.setScissor(oldScissor);
+  p.popState();
   }
 
 void SurfaceRender::TextEngine::drawText(int x, int y, int w, int h,

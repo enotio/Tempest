@@ -927,7 +927,7 @@ void Widget::impl_mouseUpEvent( Widget* w, Tempest::MouseEvent & e ){
 
   if( rec ){
     Widget * r = rec;
-    Tempest::MouseEvent ex( e.x - r->x(), e.y - r->y(), e.button, e.delta, e.mouseID );
+    Tempest::MouseEvent ex( e.x - r->x(), e.y - r->y(), e.button, e.delta, e.mouseID, e.type() );
 
     impl_mouseUpEvent( r, ex );
 
