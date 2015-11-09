@@ -13,6 +13,15 @@ class LineEdit : public Tempest::Widget {
     LineEdit();
     ~LineEdit();
 
+    enum EchoMode {
+      Normal,
+      NoEcho,
+      Password
+      };
+
+    void setEchoMode(EchoMode m);
+    EchoMode echoMode() const;
+
     void setFont(const Font& f);
     const Font& font() const;
 
@@ -79,6 +88,8 @@ class LineEdit : public Tempest::Widget {
 
     bool editable;
     bool anim;
+    EchoMode emode=Normal;
+
     unsigned ctrlPressed;
 
     size_t sedit, eedit;
@@ -96,6 +107,8 @@ class LineEdit : public Tempest::Widget {
     void setupTimer(bool);
 
     void animation();
+
+    static const char16_t passChar;
   };
 
 }

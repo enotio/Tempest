@@ -5,6 +5,8 @@
 
 using namespace Tempest;
 
+const char16_t LineEdit::passChar='*';
+
 LineEdit::LineEdit(): anim(0), ctrlPressed(0) {
   sedit    = 0;
   eedit    = 0;
@@ -42,6 +44,15 @@ LineEdit::~LineEdit() {
   onFocusChange.ubind( this, &LineEdit::setupTimer );
   onFocusChange.ubind( this, &LineEdit::storeText );
   storeText(false);
+  }
+
+void LineEdit::setEchoMode(LineEdit::EchoMode m) {
+  emode = m;
+  update();
+  }
+
+LineEdit::EchoMode LineEdit::echoMode() const {
+  return emode;
   }
 
 void LineEdit::setFont(const Font &f) {
@@ -167,6 +178,8 @@ void LineEdit::mouseDragEvent(MouseEvent &e) {
   }
 
 void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
+  if(emode==NoEcho)
+    return;
   Painter p(pe);
 
   p.setFont( fnt );
@@ -178,7 +191,7 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
   size_t e = std::max( sedit, eedit );
 
   for( size_t i=0; i<s && i<txt.size(); ++i ){
-    Font::Letter l = p.letter(fnt, txt[i]);
+    const Font::Letter& l = emode==Normal ? p.letter(fnt, txt[i]) : p.letter(fnt,passChar);
     x+= l.advance.x;
     y+= l.advance.y;
     }
@@ -186,7 +199,7 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
   int sx = x;
 
   for( size_t i=s; i<e && i<txt.size(); ++i ){
-    Font::Letter l = p.letter(fnt, txt[i]);
+    const Font::Letter& l = emode==Normal ? p.letter(fnt, txt[i]) : p.letter(fnt,passChar);
     x+= l.advance.x;
     y+= l.advance.y;
     }
@@ -222,8 +235,19 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
   int dY = (h()-fnt.size()-m.yMargin())/2;
   Rect sc = p.scissor();
   p.setScissor(sc.intersected(Rect(m.left, 0, w()-m.xMargin(), h())));
-  p.drawText( scroll+m.left, m.top+dY, w()-m.xMargin()-scroll, fnt.size(),
-              txt, AlignBottom );
+  if(emode==Normal){
+    p.drawText( scroll+m.left, m.top+dY, w()-m.xMargin()-scroll, fnt.size(),
+                txt, AlignBottom );
+    } else {
+    const Font::Letter& l = p.letter(fnt,passChar);
+    int x=scroll+m.left, y = m.top+dY;
+    char16_t ch[2]={passChar,'\0'};
+    for(size_t i=0;i<txt.size();++i){
+      p.drawText(x,y,ch);
+      x+= l.advance.x;
+      y+= l.advance.y;
+      }
+    }
   }
 
 void LineEdit::storeOldText(){
@@ -354,6 +378,12 @@ void LineEdit::keyUpEvent(KeyEvent &e) {
   }
 
 void LineEdit::updateSel() {
+  if(emode==NoEcho){
+    sedit = txt.size();
+    eedit = sedit;
+    return;
+    }
+
   Tempest::Point a = sp, b = ep;
 
   if( a.x > b.x )
@@ -364,7 +394,7 @@ void LineEdit::updateSel() {
   b.x = std::max(b.x,x);
 
   for( size_t i=0; i<txt.size(); ++i ){
-    Font::LetterGeometry l = fnt.letterGeometry(txt[i]);
+    const Font::LetterGeometry& l = fnt.letterGeometry(emode==Normal ? txt[i] : passChar);
 
     if( Tempest::Rect( x, 0,
                        l.advance.x, h() ).contains(a,true) ){
@@ -397,7 +427,7 @@ void LineEdit::updateSel() {
 
   eedit = sedit;
   for( size_t i=0; i<txt.size(); ++i ){
-    Font::LetterGeometry l = fnt.letterGeometry(txt[i]);
+    const Font::LetterGeometry& l = fnt.letterGeometry(emode==Normal ? txt[i] : passChar);
 
     if( Rect( x, 0,
               l.advance.x, h() ).contains(b,true) ){
