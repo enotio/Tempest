@@ -170,6 +170,28 @@ void PainterDevice::drawRectTailed( int x, int y, int w, int h,
   }
 
 void PainterDevice::drawLine( int x, int y, int x1, int y1 ) {
+  if( cropLine(x,y,x1,y1,x,y,x1,y1) )
+    line(x,y,x1,y1);
+  }
+
+void PainterDevice::translate(int dx, int dy) {
+  rstate.orign += Point(dx,dy);
+  }
+
+void PainterDevice::setBlendMode(BlendMode ) {  
+  }
+
+BlendMode PainterDevice::blendMode() const {
+  return noBlend;
+  }
+
+void PainterDevice::setState(const PainterDevice::State &s) {
+  rstate = s;
+  }
+
+bool PainterDevice::cropLine(int x, int y, int x1, int y1,
+                             int &nx, int &ny, int &nx1, int &ny1) {
+
   State::ScissorRect & m_scissor = rstate.scissor;
   Point & orign = rstate.orign;
 
@@ -188,24 +210,24 @@ void PainterDevice::drawLine( int x, int y, int x1, int y1 ) {
       m_scissor.y <= m_scissor.y1 ){
     if( x  > m_scissor.x1 &&
         x1 > m_scissor.x1 )
-      return;
+      return false;
 
     if( x  < m_scissor.x &&
         x1 < m_scissor.x )
-      return;
+      return false;
 
     if( y  > m_scissor.y1 &&
         y1 > m_scissor.y1 )
-      return;
+      return false;
 
     if( y  < m_scissor.y &&
         y1 < m_scissor.y )
-      return;
+      return false;
 
     if( x<m_scissor.x ){
       if( x!=x1 )
         y += (m_scissor.x-x)*(y1-y)/(x1-x); else
-        return;
+        return false;
 
       x = m_scissor.x;
       }
@@ -213,7 +235,7 @@ void PainterDevice::drawLine( int x, int y, int x1, int y1 ) {
     if( x1 > m_scissor.x1 ){
       if( x!=x1 )
         y1 += (m_scissor.x1-x1)*(y1-y)/(x1-x); else
-        return;
+        return false;
 
       x1 = m_scissor.x1;
       }
@@ -221,7 +243,7 @@ void PainterDevice::drawLine( int x, int y, int x1, int y1 ) {
     if( y<m_scissor.y ){
       if( y!=y1 )
         x += (m_scissor.y-y)*(x1-x)/(y1-y); else
-        return;
+        return false;
 
       y = m_scissor.y;
       }
@@ -229,7 +251,7 @@ void PainterDevice::drawLine( int x, int y, int x1, int y1 ) {
     if( y1<m_scissor.y ){
       if( y!=y1 )
         x1 += (m_scissor.y-y1)*(x1-x)/(y1-y); else
-        return;
+        return false;
 
       y1 = m_scissor.y;
       }
@@ -237,7 +259,7 @@ void PainterDevice::drawLine( int x, int y, int x1, int y1 ) {
     if( y > m_scissor.y1 ){
       if( y!=y1 )
         x += (m_scissor.y1-y)*(x1-x)/(y1-y); else
-        return;
+        return false;
 
       y = m_scissor.y1;
       }
@@ -245,29 +267,17 @@ void PainterDevice::drawLine( int x, int y, int x1, int y1 ) {
     if( y1 > m_scissor.y1 ){
       if( y!=y1 )
         x1 += (m_scissor.y1-y1)*(x1-x)/(y1-y); else
-        return;
+        return false;
 
       y1 = m_scissor.y1;
       }
     }
 
-  if( !(x==x1 && y==y1) )
-    line(x,y,x1,y1);
-  }
-
-void PainterDevice::translate(int dx, int dy) {
-  rstate.orign += Point(dx,dy);
-  }
-
-void PainterDevice::setBlendMode(BlendMode ) {  
-  }
-
-BlendMode PainterDevice::blendMode() const {
-  return noBlend;
-  }
-
-void PainterDevice::setState(const PainterDevice::State &s) {
-  rstate = s;
+  nx  = x;
+  ny  = y;
+  nx1 = x1;
+  ny1 = y1;
+  return !(x==x1 && y==y1);
   }
 
 

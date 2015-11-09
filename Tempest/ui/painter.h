@@ -83,6 +83,7 @@ class PainterDevice {
     virtual void setNullState(){}
     virtual void pushState(){}
     virtual void popState(){}
+
   private:
     struct State {
       struct ScissorRect{
@@ -96,6 +97,9 @@ class PainterDevice {
 
     friend class Painter;
     friend class Widget;
+
+    bool cropLine(int x, int y, int x1, int y1,
+                  int& nx, int& ny, int& nx1, int& ny1);
   };
 
 class Painter {
