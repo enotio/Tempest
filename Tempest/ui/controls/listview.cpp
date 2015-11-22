@@ -115,7 +115,7 @@ void ListView::Layout::applyLayout() {
       for(size_t i=0; i<wx.size(); ++i){
         const Size sz = wx[i]->minSize();
         w += sz.w;
-        h = std::max(w,sz.h);
+        h = std::max(h,sz.h);
         }
       } else {
       for(size_t i=0; i<wx.size(); ++i){
