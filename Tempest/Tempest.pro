@@ -1,6 +1,7 @@
 QT     -= core gui
 CONFIG -= app_bundle
 CONFIG -= qt
+CONFIG += c++11
 
 CONFIG += ogl directx
 
@@ -23,7 +24,7 @@ android:{
   DESTDIR = ../lib
   }
 
-gcc:QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
+gcc:QMAKE_CXXFLAGS += -Wall -Wextra
 #QMAKE_LFLAGS += /IMPLIB:Tempest.lib
 
 INCLUDEPATH += \
