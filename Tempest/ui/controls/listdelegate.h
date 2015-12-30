@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <vector>
+#include <sstream>
 
 #include <Tempest/Button>
 #include <Tempest/Application>
@@ -121,7 +122,9 @@ class ArrayListDelegate : public AbstractListDelegate<T,std::vector<T>,Ctrl> {
 #ifndef __ANDROID__
       return SystemAPI::toUtf16(std::to_string(s));
 #else
-      return "";
+	  std::stringstream ss;
+	  ss << s;
+      return SystemAPI::toUtf16(ss.str());
 #endif
       }
   };

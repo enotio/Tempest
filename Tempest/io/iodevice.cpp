@@ -52,7 +52,7 @@ MemWriter::MemWriter(char *vec, size_t sz):vec(vec), sz(sz){
 MemWriter::MemWriter(unsigned char *vec, size_t sz):vec((char*)vec), sz(sz) {
   }
 
-size_t MemWriter::writeData(char *src, size_t count) {
+size_t MemWriter::writeData(const char *src, size_t count) {
   size_t c = std::min(count, sz);
 
   memcpy(vec, src, c);

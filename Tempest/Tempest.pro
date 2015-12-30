@@ -52,7 +52,7 @@ unix: {
   !android:LIBS += -lrt
   }
 
-win32 {
+win32: {
   DEFINES += _CRT_SECURE_NO_WARNINGS
   DEFINES += NOMINMAX
   }
@@ -217,7 +217,7 @@ HEADERS += \
     ui/widget.h \
     utils/utility.h \
     ui/sizepolicy.h \
-    ui/signal.h \
+    ui/signal_slot.h \
     ui/shortcut.h \
     ui/painttextengine.h \
     ui/painter.h \

@@ -20,6 +20,9 @@ ShaderProgram &ShaderProgram::operator =(const ShaderProgram & p) {
   return *this;
   }
 
+ShaderProgram::~ShaderProgram() {
+  }
+
 ShaderProgram::ShaderProgram(AbstractHolder< ShaderProgram,
                                               GraphicsSubsystem::ProgramObject> &h)
   :data( h.makeManip() ) {

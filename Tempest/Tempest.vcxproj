@@ -1,0 +1,497 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="2d\font.cpp" />
+    <ClCompile Include="2d\icon.cpp" />
+    <ClCompile Include="2d\sprite.cpp" />
+    <ClCompile Include="2d\spritesholder.cpp" />
+    <ClCompile Include="2d\surface.cpp" />
+    <ClCompile Include="2d\surfacerender.cpp" />
+    <ClCompile Include="application.cpp" />
+    <ClCompile Include="core\abstractapi.cpp" />
+    <ClCompile Include="core\assert.cpp" />
+    <ClCompile Include="core\device.cpp" />
+    <ClCompile Include="core\graphicssubsystem.cpp" />
+    <ClCompile Include="core\imagecodec.cpp" />
+    <ClCompile Include="core\renderstate.cpp" />
+    <ClCompile Include="core\wrappers\atomic.cpp" />
+    <ClCompile Include="core\wrappers\displaysettings.cpp" />
+    <ClCompile Include="core\wrappers\pixmap.cpp" />
+    <ClCompile Include="core\wrappers\texture2d.cpp" />
+    <ClCompile Include="core\wrappers\texture3d.cpp" />
+    <ClCompile Include="core\wrappers\vertexdeclaration.cpp" />
+    <ClCompile Include="dataControl\abstractholder.cpp" />
+    <ClCompile Include="dataControl\indexbufferholder.cpp" />
+    <ClCompile Include="dataControl\localtexturesholder.cpp" />
+    <ClCompile Include="dataControl\resourcecontext.cpp" />
+    <ClCompile Include="dataControl\shaderprogramholder.cpp" />
+    <ClCompile Include="dataControl\textureholder.cpp" />
+    <ClCompile Include="dataControl\vertexbufferholder.cpp" />
+    <ClCompile Include="dataControl\volumeholder.cpp" />
+    <ClCompile Include="io\buffer.cpp" />
+    <ClCompile Include="io\file.cpp" />
+    <ClCompile Include="io\iodevice.cpp" />
+    <ClCompile Include="math\matrix4x4.cpp" />
+    <ClCompile Include="ogl\glfn.cpp" />
+    <ClCompile Include="ogl\glsl.cpp" />
+    <ClCompile Include="ogl\gltypes.cpp" />
+    <ClCompile Include="ogl\opengl2x.cpp" />
+    <ClCompile Include="ogl\opengl4x.cpp" />
+    <ClCompile Include="ogl\openglbase.cpp" />
+    <ClCompile Include="scene\abstractcamera.cpp" />
+    <ClCompile Include="scene\abstractlightcollection.cpp" />
+    <ClCompile Include="scene\camera.cpp" />
+    <ClCompile Include="scene\light.cpp" />
+    <ClCompile Include="scene\lightcollection.cpp" />
+    <ClCompile Include="scene\model.cpp" />
+    <ClCompile Include="scene\viewtester.cpp" />
+    <ClCompile Include="shading\abstractshadinglang.cpp" />
+    <ClCompile Include="shading\shaderprogram.cpp" />
+    <ClCompile Include="system\androidapi.cpp" />
+    <ClCompile Include="system\linuxapi.cpp" />
+    <ClCompile Include="system\systemapi.cpp" />
+    <ClCompile Include="system\windowsapi.cpp" />
+    <ClCompile Include="system\winphoneapi.cpp" />
+    <ClCompile Include="thirdparty\freetype\src\autofit\autofit.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\basepic.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\ftapi.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\ftbase.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\ftbbox.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\ftbitmap.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\ftdbgmem.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\ftdebug.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\ftglyph.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\ftinit.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\ftpic.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\ftstroke.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\ftsynth.c" />
+    <ClCompile Include="thirdparty\freetype\src\base\ftsystem.c" />
+    <ClCompile Include="thirdparty\freetype\src\cff\cff.c" />
+    <ClCompile Include="thirdparty\freetype\src\pshinter\pshinter.c" />
+    <ClCompile Include="thirdparty\freetype\src\psnames\psnames.c" />
+    <ClCompile Include="thirdparty\freetype\src\raster\raster.c" />
+    <ClCompile Include="thirdparty\freetype\src\sfnt\sfnt.c" />
+    <ClCompile Include="thirdparty\freetype\src\smooth\smooth.c" />
+    <ClCompile Include="thirdparty\freetype\src\truetype\truetype.c" />
+    <ClCompile Include="thirdparty\ktx\etc_dec.cpp" />
+    <ClCompile Include="thirdparty\libjpeg\jaricom.c" />
+    <ClCompile Include="thirdparty\libjpeg\jcomapi.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdapimin.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdapistd.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdarith.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdatadst.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdatasrc.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdcoefct.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdcolor.c" />
+    <ClCompile Include="thirdparty\libjpeg\jddctmgr.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdhuff.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdinput.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdmainct.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdmarker.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdmaster.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdmerge.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdpostct.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdsample.c" />
+    <ClCompile Include="thirdparty\libjpeg\jdtrans.c" />
+    <ClCompile Include="thirdparty\libjpeg\jerror.c" />
+    <ClCompile Include="thirdparty\libjpeg\jidctflt.c" />
+    <ClCompile Include="thirdparty\libjpeg\jidctfst.c" />
+    <ClCompile Include="thirdparty\libjpeg\jidctint.c" />
+    <ClCompile Include="thirdparty\libjpeg\jmemmgr.c" />
+    <ClCompile Include="thirdparty\libjpeg\jmemnobs.c" />
+    <ClCompile Include="thirdparty\libjpeg\jquant1.c" />
+    <ClCompile Include="thirdparty\libjpeg\jquant2.c" />
+    <ClCompile Include="thirdparty\libjpeg\jutils.c" />
+    <ClCompile Include="thirdparty\libpng\png.c" />
+    <ClCompile Include="thirdparty\libpng\pngerror.c" />
+    <ClCompile Include="thirdparty\libpng\pngget.c" />
+    <ClCompile Include="thirdparty\libpng\pngmem.c" />
+    <ClCompile Include="thirdparty\libpng\pngpread.c" />
+    <ClCompile Include="thirdparty\libpng\pngread.c" />
+    <ClCompile Include="thirdparty\libpng\pngrio.c" />
+    <ClCompile Include="thirdparty\libpng\pngrtran.c" />
+    <ClCompile Include="thirdparty\libpng\pngrutil.c" />
+    <ClCompile Include="thirdparty\libpng\pngset.c" />
+    <ClCompile Include="thirdparty\libpng\pngtrans.c" />
+    <ClCompile Include="thirdparty\libpng\pngwio.c" />
+    <ClCompile Include="thirdparty\libpng\pngwrite.c" />
+    <ClCompile Include="thirdparty\libpng\pngwtran.c" />
+    <ClCompile Include="thirdparty\libpng\pngwutil.c" />
+    <ClCompile Include="thirdparty\nv_math\nv_math.cpp" />
+    <ClCompile Include="thirdparty\nv_math\nv_matrix.cpp" />
+    <ClCompile Include="thirdparty\nv_math\nv_quat.cpp" />
+    <ClCompile Include="thirdparty\squish\alpha.cpp" />
+    <ClCompile Include="thirdparty\squish\clusterfit.cpp" />
+    <ClCompile Include="thirdparty\squish\colourblock.cpp" />
+    <ClCompile Include="thirdparty\squish\colourfit.cpp" />
+    <ClCompile Include="thirdparty\squish\colourset.cpp" />
+    <ClCompile Include="thirdparty\squish\maths.cpp" />
+    <ClCompile Include="thirdparty\squish\rangefit.cpp" />
+    <ClCompile Include="thirdparty\squish\singlecolourfit.cpp" />
+    <ClCompile Include="thirdparty\squish\squish.cpp" />
+    <ClCompile Include="thirdparty\zlib\adler32.c" />
+    <ClCompile Include="thirdparty\zlib\compress.c" />
+    <ClCompile Include="thirdparty\zlib\crc32.c" />
+    <ClCompile Include="thirdparty\zlib\deflate.c" />
+    <ClCompile Include="thirdparty\zlib\gzclose.c" />
+    <ClCompile Include="thirdparty\zlib\gzlib.c" />
+    <ClCompile Include="thirdparty\zlib\gzread.c" />
+    <ClCompile Include="thirdparty\zlib\gzwrite.c" />
+    <ClCompile Include="thirdparty\zlib\infback.c" />
+    <ClCompile Include="thirdparty\zlib\inffast.c" />
+    <ClCompile Include="thirdparty\zlib\inflate.c" />
+    <ClCompile Include="thirdparty\zlib\inftrees.c" />
+    <ClCompile Include="thirdparty\zlib\trees.c" />
+    <ClCompile Include="thirdparty\zlib\uncompr.c" />
+    <ClCompile Include="thirdparty\zlib\zutil.c" />
+    <ClCompile Include="timer.cpp" />
+    <ClCompile Include="ui\controls\abstractlistbox.cpp" />
+    <ClCompile Include="ui\controls\button.cpp" />
+    <ClCompile Include="ui\controls\checkbox.cpp" />
+    <ClCompile Include="ui\controls\dialog.cpp" />
+    <ClCompile Include="ui\controls\label.cpp" />
+    <ClCompile Include="ui\controls\lineedit.cpp" />
+    <ClCompile Include="ui\controls\listbox.cpp" />
+    <ClCompile Include="ui\controls\listview.cpp" />
+    <ClCompile Include="ui\controls\menu.cpp" />
+    <ClCompile Include="ui\controls\panel.cpp" />
+    <ClCompile Include="ui\controls\scrollbar.cpp" />
+    <ClCompile Include="ui\controls\scrollwidget.cpp" />
+    <ClCompile Include="ui\controls\stackedwidget.cpp" />
+    <ClCompile Include="ui\controls\uifactory.cpp" />
+    <ClCompile Include="ui\controls\uimetrics.cpp" />
+    <ClCompile Include="ui\event.cpp" />
+    <ClCompile Include="ui\gesturerecognizer.cpp" />
+    <ClCompile Include="ui\layout.cpp" />
+    <ClCompile Include="ui\painter.cpp" />
+    <ClCompile Include="ui\shortcut.cpp" />
+    <ClCompile Include="ui\sizepolicy.cpp" />
+    <ClCompile Include="ui\widget.cpp" />
+    <ClCompile Include="ui\window.cpp" />
+    <ClCompile Include="utils\color.cpp" />
+    <ClCompile Include="utils\log.cpp" />
+    <ClCompile Include="utils\tessobject.cpp" />
+    <ClCompile Include="utils\utility.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="2d\font.h" />
+    <ClInclude Include="2d\icon.h" />
+    <ClInclude Include="2d\sprite.h" />
+    <ClInclude Include="2d\spritesholder.h" />
+    <ClInclude Include="2d\surface.h" />
+    <ClInclude Include="2d\surfacerender.h" />
+    <ClInclude Include="application.h" />
+    <ClInclude Include="core\abstractapi.h" />
+    <ClInclude Include="core\assert.h" />
+    <ClInclude Include="core\device.h" />
+    <ClInclude Include="core\graphicssubsystem.h" />
+    <ClInclude Include="core\imagecodec.h" />
+    <ClInclude Include="core\platform.h" />
+    <ClInclude Include="core\renderstate.h" />
+    <ClInclude Include="core\wrappers\abstracttexture.h" />
+    <ClInclude Include="core\wrappers\atomic.h" />
+    <ClInclude Include="core\wrappers\displaysettings.h" />
+    <ClInclude Include="core\wrappers\half.h" />
+    <ClInclude Include="core\wrappers\indexbuffer.h" />
+    <ClInclude Include="core\wrappers\pixmap.h" />
+    <ClInclude Include="core\wrappers\texture2d.h" />
+    <ClInclude Include="core\wrappers\texture3d.h" />
+    <ClInclude Include="core\wrappers\uniformdeclaration.h" />
+    <ClInclude Include="core\wrappers\vertexbuffer.h" />
+    <ClInclude Include="core\wrappers\vertexdeclaration.h" />
+    <ClInclude Include="dataControl\abstractholder.h" />
+    <ClInclude Include="dataControl\indexbufferholder.h" />
+    <ClInclude Include="dataControl\localobjectpool.h" />
+    <ClInclude Include="dataControl\localtexturesholder.h" />
+    <ClInclude Include="dataControl\localvertexbufferholder.h" />
+    <ClInclude Include="dataControl\resourcecontext.h" />
+    <ClInclude Include="dataControl\shaderprogramholder.h" />
+    <ClInclude Include="dataControl\textureholder.h" />
+    <ClInclude Include="dataControl\vertexbufferholder.h" />
+    <ClInclude Include="dataControl\volumeholder.h" />
+    <ClInclude Include="io\buffer.h" />
+    <ClInclude Include="io\file.h" />
+    <ClInclude Include="io\iodevice.h" />
+    <ClInclude Include="math\matrix4x4.h" />
+    <ClInclude Include="ogl\glcorearb.h" />
+    <ClInclude Include="ogl\glfn.h" />
+    <ClInclude Include="ogl\glsl.h" />
+    <ClInclude Include="ogl\gltypes.h" />
+    <ClInclude Include="ogl\opengl2x.h" />
+    <ClInclude Include="ogl\opengl4x.h" />
+    <ClInclude Include="ogl\openglbase.h" />
+    <ClInclude Include="scene\abstractcamera.h" />
+    <ClInclude Include="scene\abstractgraphicobject.h" />
+    <ClInclude Include="scene\abstractlightcollection.h" />
+    <ClInclude Include="scene\abstractscene.h" />
+    <ClInclude Include="scene\camera.h" />
+    <ClInclude Include="scene\graphicobject.h" />
+    <ClInclude Include="scene\light.h" />
+    <ClInclude Include="scene\lightcollection.h" />
+    <ClInclude Include="scene\model.h" />
+    <ClInclude Include="scene\viewtester.h" />
+    <ClInclude Include="shading\abstractshadinglang.h" />
+    <ClInclude Include="shading\evalshader.h" />
+    <ClInclude Include="shading\fragmentshader.h" />
+    <ClInclude Include="shading\shaderprogram.h" />
+    <ClInclude Include="shading\tessshader.h" />
+    <ClInclude Include="signal_slot.h" />
+    <ClInclude Include="system\androidapi.h" />
+    <ClInclude Include="system\ddsdef.h" />
+    <ClInclude Include="system\linuxapi.h" />
+    <ClInclude Include="system\systemapi.h" />
+    <ClInclude Include="system\windowsapi.h" />
+    <ClInclude Include="system\winphoneapi.h" />
+    <ClInclude Include="thirdparty\freetype\src\base\basepic.h" />
+    <ClInclude Include="thirdparty\freetype\src\base\ftbase.h" />
+    <ClInclude Include="thirdparty\ktx\etc_dec.h" />
+    <ClInclude Include="thirdparty\libjpeg\jconfig.h" />
+    <ClInclude Include="thirdparty\libjpeg\jdct.h" />
+    <ClInclude Include="thirdparty\libjpeg\jerror.h" />
+    <ClInclude Include="thirdparty\libjpeg\jinclude.h" />
+    <ClInclude Include="thirdparty\libjpeg\jmemsys.h" />
+    <ClInclude Include="thirdparty\libjpeg\jmorecfg.h" />
+    <ClInclude Include="thirdparty\libjpeg\jpegint.h" />
+    <ClInclude Include="thirdparty\libjpeg\jpeglib.h" />
+    <ClInclude Include="thirdparty\libjpeg\jversion.h" />
+    <ClInclude Include="thirdparty\libpng\config.h" />
+    <ClInclude Include="thirdparty\libpng\png.h" />
+    <ClInclude Include="thirdparty\libpng\pngconf.h" />
+    <ClInclude Include="thirdparty\libpng\pngpriv.h" />
+    <ClInclude Include="thirdparty\nv_math\misc.h" />
+    <ClInclude Include="thirdparty\nv_math\NvVec.h" />
+    <ClInclude Include="thirdparty\nv_math\nv_math.h" />
+    <ClInclude Include="thirdparty\nv_math\nv_matrix.h" />
+    <ClInclude Include="thirdparty\nv_math\nv_quat.h" />
+    <ClInclude Include="thirdparty\squish\alpha.h" />
+    <ClInclude Include="thirdparty\squish\clusterfit.h" />
+    <ClInclude Include="thirdparty\squish\colourblock.h" />
+    <ClInclude Include="thirdparty\squish\colourfit.h" />
+    <ClInclude Include="thirdparty\squish\colourset.h" />
+    <ClInclude Include="thirdparty\squish\config.h" />
+    <ClInclude Include="thirdparty\squish\maths.h" />
+    <ClInclude Include="thirdparty\squish\rangefit.h" />
+    <ClInclude Include="thirdparty\squish\simd.h" />
+    <ClInclude Include="thirdparty\squish\simd_float.h" />
+    <ClInclude Include="thirdparty\squish\simd_sse.h" />
+    <ClInclude Include="thirdparty\squish\simd_ve.h" />
+    <ClInclude Include="thirdparty\squish\singlecolourfit.h" />
+    <ClInclude Include="thirdparty\squish\squish.h" />
+    <ClInclude Include="thirdparty\utf8cpp\utf8.h" />
+    <ClInclude Include="thirdparty\utf8cpp\utf8\checked.h" />
+    <ClInclude Include="thirdparty\utf8cpp\utf8\core.h" />
+    <ClInclude Include="thirdparty\utf8cpp\utf8\unchecked.h" />
+    <ClInclude Include="thirdparty\zlib\crc32.h" />
+    <ClInclude Include="thirdparty\zlib\deflate.h" />
+    <ClInclude Include="thirdparty\zlib\gzguts.h" />
+    <ClInclude Include="thirdparty\zlib\inffast.h" />
+    <ClInclude Include="thirdparty\zlib\inffixed.h" />
+    <ClInclude Include="thirdparty\zlib\inflate.h" />
+    <ClInclude Include="thirdparty\zlib\inftrees.h" />
+    <ClInclude Include="thirdparty\zlib\trees.h" />
+    <ClInclude Include="thirdparty\zlib\zconf.h" />
+    <ClInclude Include="thirdparty\zlib\zlib.h" />
+    <ClInclude Include="thirdparty\zlib\zutil.h" />
+    <ClInclude Include="timer.h" />
+    <ClInclude Include="ui\controls\abstractlistbox.h" />
+    <ClInclude Include="ui\controls\button.h" />
+    <ClInclude Include="ui\controls\checkbox.h" />
+    <ClInclude Include="ui\controls\dialog.h" />
+    <ClInclude Include="ui\controls\label.h" />
+    <ClInclude Include="ui\controls\lineedit.h" />
+    <ClInclude Include="ui\controls\listbox.h" />
+    <ClInclude Include="ui\controls\listdelegate.h" />
+    <ClInclude Include="ui\controls\listview.h" />
+    <ClInclude Include="ui\controls\menu.h" />
+    <ClInclude Include="ui\controls\panel.h" />
+    <ClInclude Include="ui\controls\scrollbar.h" />
+    <ClInclude Include="ui\controls\scrollwidget.h" />
+    <ClInclude Include="ui\controls\stackedwidget.h" />
+    <ClInclude Include="ui\controls\uifactory.h" />
+    <ClInclude Include="ui\controls\uimetrics.h" />
+    <ClInclude Include="ui\event.h" />
+    <ClInclude Include="ui\gesturerecognizer.h" />
+    <ClInclude Include="ui\image.h" />
+    <ClInclude Include="ui\layout.h" />
+    <ClInclude Include="ui\painter.h" />
+    <ClInclude Include="ui\painttextengine.h" />
+    <ClInclude Include="ui\shortcut.h" />
+    <ClInclude Include="ui\sizepolicy.h" />
+    <ClInclude Include="ui\widget.h" />
+    <ClInclude Include="ui\window.h" />
+    <ClInclude Include="utils\color.h" />
+    <ClInclude Include="utils\cwnptr.h" />
+    <ClInclude Include="utils\log.h" />
+    <ClInclude Include="utils\mempool.h" />
+    <ClInclude Include="utils\sortedvec.h" />
+    <ClInclude Include="utils\tessobject.h" />
+    <ClInclude Include="utils\utility.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="thirdparty\libjpeg\libjpeg.pri" />
+    <None Include="thirdparty\squish\singlecolourlookup.inl" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{b054c66e-8fc0-4fd0-8d96-a16a58953ab3}</ProjectGuid>
+    <Keyword>Android</Keyword>
+    <RootNamespace>Tempest</RootNamespace>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <ApplicationType>Android</ApplicationType>
+    <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>Clang_3_6</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Clang_3_6</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>Clang_3_6</PlatformToolset>
+    <AndroidAPILevel>android-9</AndroidAPILevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Clang_3_6</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>Clang_3_6</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Clang_3_6</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>Clang_3_6</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Clang_3_6</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;$(ProjectDir)thirdparty;$(ProjectDir)thirdparty\squish;$(ProjectDir)thirdparty\freetype\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CppLanguageStandard>c++11</CppLanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PreprocessorDefinitions>FT2_BUILD_LIBRARY=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Enabled</ExceptionHandling>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>-lm;-llog;-landroid;-lEGL;-lGLESv1_CM;-lGLESv2;-ljnigraphics;-lz;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

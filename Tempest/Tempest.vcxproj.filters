@@ -1,0 +1,1042 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="2d">
+      <UniqueIdentifier>{4e668d0b-43d3-4f42-8dce-a5cc0ac72ea9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{f82f4ae9-372c-4fa1-bd3d-a0adca704efc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\wrappers">
+      <UniqueIdentifier>{61d3ab9b-91f8-467d-a996-ef253dd2e93f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dataControl">
+      <UniqueIdentifier>{a7551fde-df7e-45ec-97b4-fc8158152d5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io">
+      <UniqueIdentifier>{9892cc07-f84e-44ea-b38f-61696425deff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{84b69e63-cd29-43b6-9a5e-8b0a8872ee16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ogl">
+      <UniqueIdentifier>{e9c4f784-8187-4846-b6e8-c3cab4ecd691}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scene">
+      <UniqueIdentifier>{069f8e41-5e39-49d4-849d-eb2801cdc948}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shading">
+      <UniqueIdentifier>{2f918cd2-ba12-408b-b49a-0b4ba3c1843a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system">
+      <UniqueIdentifier>{f1e7c0a8-48a3-4201-a85f-7ee7b02f41d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{533b529e-869e-4e31-93f1-5d0f156dbf4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\controls">
+      <UniqueIdentifier>{0c76ffe4-167b-4781-814c-15e24c7df760}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{a057f017-73a3-4e84-a410-52536cdd76ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{e3bf399c-b670-40e5-913e-c70f78d77999}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\freetype">
+      <UniqueIdentifier>{60647018-c03d-4c62-84f1-361dc4d2ec0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\ktx">
+      <UniqueIdentifier>{43327a5c-d230-49d3-87b5-0c72183c41e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\libjpeg">
+      <UniqueIdentifier>{6f25d1f1-478f-499d-99cf-3c910539585b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\libpng">
+      <UniqueIdentifier>{bcd8f005-5942-4c2d-a4b4-665f931b83a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\nv_math">
+      <UniqueIdentifier>{e8ae30bb-fd69-4662-89fd-3b9b13bc170b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\squish">
+      <UniqueIdentifier>{512c540e-387e-4302-963e-80c9e79be846}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\utf8cpp">
+      <UniqueIdentifier>{0afe5cba-9cf0-4e0b-9bf1-88c7879e449c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\zlib">
+      <UniqueIdentifier>{bab5be11-7d0e-4b5b-a628-52377da15bfe}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="application.cpp" />
+    <ClCompile Include="timer.cpp" />
+    <ClCompile Include="2d\font.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="2d\icon.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="2d\sprite.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="2d\spritesholder.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="2d\surface.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="2d\surfacerender.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="core\abstractapi.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\assert.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\device.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\graphicssubsystem.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\imagecodec.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\renderstate.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\wrappers\displaysettings.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="core\wrappers\pixmap.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="core\wrappers\texture2d.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="core\wrappers\texture3d.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="core\wrappers\vertexdeclaration.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="core\wrappers\atomic.cpp">
+      <Filter>core\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="dataControl\abstractholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="dataControl\indexbufferholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="dataControl\localtexturesholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="dataControl\resourcecontext.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="dataControl\shaderprogramholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="dataControl\textureholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="dataControl\vertexbufferholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="dataControl\volumeholder.cpp">
+      <Filter>dataControl</Filter>
+    </ClCompile>
+    <ClCompile Include="io\buffer.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="io\file.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="io\iodevice.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="math\matrix4x4.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="ogl\glfn.cpp">
+      <Filter>ogl</Filter>
+    </ClCompile>
+    <ClCompile Include="ogl\glsl.cpp">
+      <Filter>ogl</Filter>
+    </ClCompile>
+    <ClCompile Include="ogl\gltypes.cpp">
+      <Filter>ogl</Filter>
+    </ClCompile>
+    <ClCompile Include="ogl\opengl2x.cpp">
+      <Filter>ogl</Filter>
+    </ClCompile>
+    <ClCompile Include="ogl\opengl4x.cpp">
+      <Filter>ogl</Filter>
+    </ClCompile>
+    <ClCompile Include="ogl\openglbase.cpp">
+      <Filter>ogl</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\abstractcamera.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\abstractlightcollection.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\camera.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\light.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\lightcollection.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\model.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\viewtester.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="shading\abstractshadinglang.cpp">
+      <Filter>shading</Filter>
+    </ClCompile>
+    <ClCompile Include="shading\shaderprogram.cpp">
+      <Filter>shading</Filter>
+    </ClCompile>
+    <ClCompile Include="system\androidapi.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\linuxapi.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\systemapi.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\windowsapi.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\winphoneapi.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\event.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\gesturerecognizer.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\layout.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\painter.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\shortcut.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\sizepolicy.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\widget.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\window.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\dialog.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\label.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\lineedit.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\listbox.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\listview.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\menu.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\panel.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\scrollbar.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\scrollwidget.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\stackedwidget.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\uifactory.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\uimetrics.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\abstractlistbox.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\button.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\controls\checkbox.cpp">
+      <Filter>ui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\log.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\tessobject.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\utility.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\color.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\ktx\etc_dec.cpp">
+      <Filter>thirdparty\ktx</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdatasrc.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdcoefct.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdcolor.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jddctmgr.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdhuff.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdinput.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdmainct.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdmarker.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdmaster.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdmerge.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdpostct.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdsample.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdtrans.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jerror.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jidctflt.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jidctfst.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jidctint.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jmemmgr.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jmemnobs.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jquant1.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jquant2.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jutils.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jaricom.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jcomapi.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdapimin.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdapistd.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdarith.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libjpeg\jdatadst.c">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngget.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngmem.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngpread.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngread.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngrio.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngrtran.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngrutil.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngset.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngtrans.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngwio.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngwrite.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngwtran.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngwutil.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\png.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\libpng\pngerror.c">
+      <Filter>thirdparty\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\nv_math\nv_quat.cpp">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\nv_math\nv_math.cpp">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\nv_math\nv_matrix.cpp">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\squish\alpha.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\squish\clusterfit.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\squish\colourblock.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\squish\colourfit.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\squish\colourset.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\squish\maths.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\squish\rangefit.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\squish\singlecolourfit.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\squish\squish.cpp">
+      <Filter>thirdparty\squish</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\adler32.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\compress.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\crc32.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\deflate.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\gzclose.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\gzlib.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\gzread.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\gzwrite.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\infback.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\inffast.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\inflate.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\inftrees.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\trees.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\uncompr.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\zlib\zutil.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\autofit\autofit.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\ftglyph.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\ftinit.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\ftpic.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\ftstroke.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\ftsynth.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\ftsystem.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\basepic.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\ftapi.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\ftbase.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\ftbbox.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\ftbitmap.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\ftdbgmem.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\base\ftdebug.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\cff\cff.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\pshinter\pshinter.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\psnames\psnames.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\raster\raster.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\sfnt\sfnt.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\smooth\smooth.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\freetype\src\truetype\truetype.c">
+      <Filter>thirdparty\freetype</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="application.h" />
+    <ClInclude Include="timer.h" />
+    <ClInclude Include="2d\font.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="2d\icon.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="2d\sprite.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="2d\spritesholder.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="2d\surface.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="2d\surfacerender.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="core\abstractapi.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\assert.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\device.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\graphicssubsystem.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\imagecodec.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\platform.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\renderstate.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\wrappers\displaysettings.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="core\wrappers\half.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="core\wrappers\indexbuffer.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="core\wrappers\pixmap.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="core\wrappers\texture2d.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="core\wrappers\texture3d.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="core\wrappers\uniformdeclaration.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="core\wrappers\vertexbuffer.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="core\wrappers\vertexdeclaration.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="core\wrappers\abstracttexture.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="core\wrappers\atomic.h">
+      <Filter>core\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="dataControl\abstractholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="dataControl\indexbufferholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="dataControl\localobjectpool.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="dataControl\localtexturesholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="dataControl\localvertexbufferholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="dataControl\resourcecontext.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="dataControl\shaderprogramholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="dataControl\textureholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="dataControl\vertexbufferholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="dataControl\volumeholder.h">
+      <Filter>dataControl</Filter>
+    </ClInclude>
+    <ClInclude Include="io\buffer.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="io\file.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="io\iodevice.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="math\matrix4x4.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="ogl\glcorearb.h">
+      <Filter>ogl</Filter>
+    </ClInclude>
+    <ClInclude Include="ogl\glfn.h">
+      <Filter>ogl</Filter>
+    </ClInclude>
+    <ClInclude Include="ogl\glsl.h">
+      <Filter>ogl</Filter>
+    </ClInclude>
+    <ClInclude Include="ogl\gltypes.h">
+      <Filter>ogl</Filter>
+    </ClInclude>
+    <ClInclude Include="ogl\opengl2x.h">
+      <Filter>ogl</Filter>
+    </ClInclude>
+    <ClInclude Include="ogl\opengl4x.h">
+      <Filter>ogl</Filter>
+    </ClInclude>
+    <ClInclude Include="ogl\openglbase.h">
+      <Filter>ogl</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\abstractcamera.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\abstractgraphicobject.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\abstractlightcollection.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\abstractscene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\camera.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\graphicobject.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\light.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\lightcollection.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\model.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\viewtester.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="shading\abstractshadinglang.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="shading\evalshader.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="shading\fragmentshader.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="shading\shaderprogram.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="shading\tessshader.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="system\androidapi.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="system\ddsdef.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="system\linuxapi.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="system\systemapi.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="system\windowsapi.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="system\winphoneapi.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\event.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\gesturerecognizer.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\image.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\layout.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\painter.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\painttextengine.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\shortcut.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\sizepolicy.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\widget.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\window.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\checkbox.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\dialog.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\label.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\lineedit.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\listbox.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\listdelegate.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\listview.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\menu.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\panel.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\scrollbar.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\scrollwidget.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\stackedwidget.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\uifactory.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\uimetrics.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\abstractlistbox.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\controls\button.h">
+      <Filter>ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\color.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\cwnptr.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\log.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\mempool.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\sortedvec.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\tessobject.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\utility.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\ktx\etc_dec.h">
+      <Filter>thirdparty\ktx</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libjpeg\jdct.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libjpeg\jerror.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libjpeg\jinclude.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libjpeg\jmemsys.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libjpeg\jmorecfg.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libjpeg\jpegint.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libjpeg\jpeglib.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libjpeg\jversion.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libjpeg\jconfig.h">
+      <Filter>thirdparty\libjpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libpng\pngpriv.h">
+      <Filter>thirdparty\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libpng\config.h">
+      <Filter>thirdparty\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libpng\png.h">
+      <Filter>thirdparty\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\libpng\pngconf.h">
+      <Filter>thirdparty\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\nv_math\nv_matrix.h">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\nv_math\nv_quat.h">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\nv_math\NvVec.h">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\nv_math\misc.h">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\nv_math\nv_math.h">
+      <Filter>thirdparty\nv_math</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\alpha.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\clusterfit.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\colourblock.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\colourfit.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\colourset.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\config.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\maths.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\rangefit.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\simd.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\simd_float.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\simd_sse.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\simd_ve.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\singlecolourfit.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\squish\squish.h">
+      <Filter>thirdparty\squish</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\utf8cpp\utf8\checked.h">
+      <Filter>thirdparty\utf8cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\utf8cpp\utf8\core.h">
+      <Filter>thirdparty\utf8cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\utf8cpp\utf8\unchecked.h">
+      <Filter>thirdparty\utf8cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\utf8cpp\utf8.h">
+      <Filter>thirdparty\utf8cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\zlib\crc32.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\zlib\deflate.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\zlib\gzguts.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\zlib\inffast.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\zlib\inffixed.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\zlib\inflate.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\zlib\inftrees.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\zlib\trees.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\zlib\zconf.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\zlib\zlib.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\zlib\zutil.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\freetype\src\base\basepic.h">
+      <Filter>thirdparty\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\freetype\src\base\ftbase.h">
+      <Filter>thirdparty\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="signal_slot.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="thirdparty\libjpeg\libjpeg.pri">
+      <Filter>thirdparty\libjpeg</Filter>
+    </None>
+    <None Include="thirdparty\squish\singlecolourlookup.inl">
+      <Filter>thirdparty\squish</Filter>
+    </None>
+  </ItemGroup>
+</Project>

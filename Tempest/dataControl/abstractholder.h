@@ -41,7 +41,13 @@ class AbstractHolder : public AbstractHolderBase {
     AbstractHolder( Device & d ):AbstractHolderBase(d){
       references.reserve(4096);
       }
+    virtual void deleteObject( APIDescriptor* t ) = 0;
 
+    virtual void reset( APIDescriptor* ) = 0;
+    virtual APIDescriptor* restore( APIDescriptor* ) = 0;
+    virtual APIDescriptor* copy( APIDescriptor* ) = 0;
+
+  public:    
     struct ImplManip{
       struct Ref{
         Ref( APIDescriptor* t ):data(t),  count(1) {}
@@ -84,13 +90,6 @@ class AbstractHolder : public AbstractHolderBase {
 
       };
 
-    virtual void deleteObject( APIDescriptor* t ) = 0;
-
-    virtual void reset( APIDescriptor* ) = 0;
-    virtual APIDescriptor* restore( APIDescriptor* ) = 0;
-    virtual APIDescriptor* copy( APIDescriptor* ) = 0;
-
-  public:
     ImplManip makeManip() {
       return ImplManip( this );
       }

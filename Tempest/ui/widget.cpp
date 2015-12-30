@@ -372,8 +372,9 @@ Widget* Widget::impl_mouseMoveEvent(Widget *root, MouseEvent &e) {
           DeleteGuard g(deep);
           (void)g;
           impl_leaveEvent(leave,e);
-          leave = deep;
+          leave = nullptr;
           impl_enterEvent(deep,e,true);
+          leave = deep;
           if(leave->deleteLaterFlag)
             leave = nullptr;
           } else {

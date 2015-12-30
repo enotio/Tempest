@@ -64,6 +64,7 @@ static struct Android{
   JNIEnv  *env;
   jobject assets;
   jclass  tempestClass;
+  jobject activity;
 
   ANativeWindow   * volatile window;
   pthread_mutex_t appMutex, waitMutex, assetsPreloadedMutex;
@@ -224,9 +225,10 @@ static struct Android{
     }
 
   Android(){
-    display = EGL_NO_DISPLAY;
-    surface = 0;
-    context = 0;
+    display  = EGL_NO_DISPLAY;
+    surface  = 0;
+    context  = 0;
+    activity = 0;
 
     msg.reserve(256);
 
@@ -314,6 +316,10 @@ JNIEnv *AndroidAPI::jenvi() {
 
 jclass AndroidAPI::appClass() {
   return android.tempestClass;
+  }
+
+jobject AndroidAPI::activity() {
+  return android.activity;
   }
 
 const char *AndroidAPI::internalStorage() {
@@ -1094,9 +1100,10 @@ static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject /*obj*/, jobject sur
   return;
   }
 
-static void JNICALL onCreate(JNIEnv* , jobject ) {
+static void JNICALL onCreate(JNIEnv* , jobject activity ) {
   Log::i("nativeOnCreate");
   android.mainThread = 0;
+  android.activity   = activity;
   }
 
 static void JNICALL onDestroy(JNIEnv* /*jenv*/, jobject /*obj*/) {

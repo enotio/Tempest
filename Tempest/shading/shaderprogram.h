@@ -11,6 +11,7 @@ class ShaderProgram {
     ShaderProgram();
     ShaderProgram( const ShaderProgram& p );
     ShaderProgram& operator = (const ShaderProgram&);
+    ~ShaderProgram();
 
     bool isValid() const;
     const std::string& log() const;

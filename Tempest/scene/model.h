@@ -121,7 +121,7 @@ class Model {
     typedef RawModel<Vertex> Raw;
 
     static Raw  loadRawData( const std::string& fname  ){
-      RFile fin( fname );
+      RFile fin( fname.c_str() );
 
       char magic[6] = {};
       fin.readData( magic, 5 );

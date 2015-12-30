@@ -16,6 +16,7 @@ class AndroidAPI:public SystemAPI {
     static JavaVM *jvm();
     static JNIEnv *jenvi();
     static jclass appClass();
+    static jobject activity();
 
     static const char* internalStorage();
     static const char* externalStorage();
