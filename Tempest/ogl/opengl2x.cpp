@@ -20,7 +20,13 @@
 #include <windows.h>
 #endif
 #include "glfn.h"
+
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#include "system/osxapi.h"
+#else
 #include <GL/gl.h>
+#endif
 
 using namespace Tempest::GLProc;
 #endif
@@ -102,8 +108,12 @@ Opengl2x::Caps Opengl2x::caps( AbstractAPI::Device* d ) const {
   }
 
 bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
-                              void *hwnd, const Options & ) const {
-  (void)hwnd;
+                              void *hwnd, const Options& /*opt*/) const {
+#ifdef __APPLE__
+  dev->window  = hwnd;
+  dev->context = OsxAPI::initializeOpengl(hwnd);
+  return dev->context!=nullptr && OsxAPI::glMakeCurrent(dev->context);
+#endif
 
 #ifdef __WINDOWS__
   GLuint PixelFormat;
@@ -756,7 +766,7 @@ void Opengl2x::setDSSurfaceTaget( AbstractAPI::Device *d,
 //#endif
   }
 
-bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
+bool Opengl2x::startRender( AbstractAPI::Device* ,bool   ) const {
 #ifdef  __ANDROID__
   return AndroidAPI::startRender(0);
 #endif
@@ -765,6 +775,9 @@ bool Opengl2x::startRender( AbstractAPI::Device *,bool   ) const {
 #endif
 #ifdef __WINDOWS__
   wglMakeCurrent( dev->hDC, dev->hRC );
+#endif
+#ifdef __APPLE__
+  return OsxAPI::glMakeCurrent(dev->context);
 #endif
   //glViewport(0,0, dev->scrW, dev->scrH);
   return 1;
@@ -778,6 +791,7 @@ bool Opengl2x::present(AbstractAPI::Device *d, SwapBehavior b) const {
 #endif
 
 #ifdef __LINUX__
+  (void)b;
   glXSwapBuffers( dev->dpy, dev->window );
 #endif
 
@@ -792,6 +806,10 @@ bool Opengl2x::present(AbstractAPI::Device *d, SwapBehavior b) const {
   eglSwapBuffers( dev->disp, dev->s );
   return AndroidAPI::present(0);
 #endif
+#ifdef __APPLE__
+  (void)b;
+  OsxAPI::glSwapBuffers(dev->context);
+#endif
   return 0;
   }
 
@@ -799,6 +817,17 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
                       void* hwnd,
                       const Options &opt ) const {
   if( !setDevice(d) ) return 0;
+
+#ifdef __APPLE__
+  Size sz   = SystemAPI::instance().windowClientRect((SystemAPI::Window*)hwnd);
+  dev->scrW = sz.w;
+  dev->scrH = sz.h;
+
+  AbstractAPI::setDisplaySettings( hwnd, opt.displaySettings );
+
+  OsxAPI::glMakeCurrent( dev->context );
+  glViewport(0,0, dev->scrW, dev->scrH);
+#endif
 
 #ifdef __LINUX__
   ::Window* w = (::Window*)hwnd;

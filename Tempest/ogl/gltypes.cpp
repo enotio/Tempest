@@ -1,5 +1,9 @@
 #include "gltypes.h"
 
+#ifdef __APPLE__
+#define GL_MAX_VARYING_COMPONENTS GL_MAX_VARYING_COMPONENTS_EXT
+#endif
+
 Tempest::Detail::GLTexture::GLTexture() {
   id = 0;
   depthId = 0;

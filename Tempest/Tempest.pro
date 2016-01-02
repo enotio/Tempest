@@ -50,7 +50,7 @@ unix: {
   CONFIG += ogl
   CONFIG -= directx
   SOURCES += system/linuxapi.cpp
-  !android:LIBS += -lrt
+  !android:!mac:LIBS += -lrt
   }
 
 win32 {
@@ -58,10 +58,15 @@ win32 {
   DEFINES += NOMINMAX
   }
 
+mac:{
+  LIBS += -framework AppKit
+  LIBS += -framework OpenGL
+  }
+
 ogl:{
-  win32:          LIBS += -l"opengl32"
-  unix: !android: LIBS += -lX11 -lGL
-  android:        LIBS += -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics -lz
+  win32:                 LIBS += -l"opengl32"
+  unix: !android: !mac: LIBS += -lX11 -lGL
+  android:               LIBS += -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics -lz
 
   HEADERS +=\
     ogl/opengl2x.h \
@@ -218,7 +223,7 @@ HEADERS += \
     ui/widget.h \
     utils/utility.h \
     ui/sizepolicy.h \
-    ui/signal.h \
+    ui/signal_slot.h \
     ui/shortcut.h \
     ui/painttextengine.h \
     ui/painter.h \
@@ -307,7 +312,8 @@ HEADERS += \
     2d/icon.h \
     ui/controls/scrollbar.h \
     ui/controls/scrollwidget.h \
-    ui/controls/label.h
+    ui/controls/label.h \
+    system/osxapi.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -376,3 +382,6 @@ OTHER_FILES += \
     include/Tempest/StackedWidget \
     include/Tempest/Icon \
     include/Tempest/Label
+
+OBJECTIVE_SOURCES += \
+    system/osxapi.mm

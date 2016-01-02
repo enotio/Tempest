@@ -46,7 +46,7 @@ class MemWriter:public ODevice{
   public:
     MemWriter( char* vec, size_t sz );
     MemWriter( unsigned char* vec, size_t sz );
-    size_t writeData( char* src, size_t count );
+    size_t writeData( const char* src, size_t count );
 
   private:
     char* vec;

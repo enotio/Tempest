@@ -45,6 +45,13 @@ static inline void inc(X& ptr, int count=1){
   ptr += sizeof(T)*count;
   }
 
+template< class T >
+static inline void align(size_t& offset,const char*& ptr){
+  size_t dpt = alignof(T)-offset%alignof(T);
+  offset += dpt;
+  ptr    += dpt;
+  }
+
 void AbstractShadingLang::assignUniformBuffer( UBO& ux,
                                                const char *ubo,
                                                const UniformDeclaration &u ) {
@@ -70,7 +77,7 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   ux.names = u.name;
   ux.desc  = u.type;
   if(bufsz>0)
-    ux.data  .resize( std::max<size_t>( (bufsz/16)*16, 32) );
+    ux.data.resize( std::max<size_t>( (bufsz/16+15)*16, 32) );
   ux.smp[0].resize(sampSz[0]);
   ux.smp[1].resize(sampSz[1]);
   ux.fields.resize(ux.desc.size());
@@ -99,6 +106,7 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
       void* t=0;
       switch (type) {
         case Decl::Texture2d:
+          align<Texture2d>(bufsz,addr);
           t = (void*)get(*(Texture2d*)addr);
           *tx = t;
           ++tx;
@@ -107,6 +115,7 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
           inc<Texture2d>(bufsz);
           break;
         case Decl::Texture3d:
+          align<Texture3d>(bufsz,addr);
           t = (void*)get(*(Texture3d*)addr);
           *tx = t;
           ++tx;

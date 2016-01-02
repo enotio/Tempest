@@ -21,7 +21,7 @@
 #define CLOCK_MONOTONIC 1
 #endif
 
-#if !defined(_INC_TYPES)&&!defined(_LINUX_TIME_H)&&!defined(_TIME_H)
+#if !defined(_INC_TYPES)&&!defined(_LINUX_TIME_H)&&!defined(_TIME_H) && !defined(__APPLE__)
 struct timespec {
   long tv_sec;
   long tv_nsec;
@@ -178,8 +178,11 @@ uint64_t Application::tickCount() {
   return GetTickCount();
 #else
   timespec now;
+#ifdef __APPLE__
+  T_ASSERT(0);
+#else
   clock_gettime(CLOCK_MONOTONIC_RAW, &now);
-
+#endif
   uint64_t t = (uint8_t)now.tv_sec;
   t *= 1000;
   t += now.tv_nsec/1000000;
