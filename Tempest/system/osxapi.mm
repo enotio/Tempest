@@ -174,6 +174,18 @@ static bool processEvent(NSEvent* event){
       }
       break;
 
+    case NSScrollWheel:{
+      float ticks = [event deltaY];
+      Tempest::MouseEvent e( event.locationInWindow.x,
+                             w->h() - event.locationInWindow.y,
+                             Tempest::Event::ButtonNone,
+                             ticks>0 ? 100 : -100,
+                             0,
+                             Event::MouseWheel );
+      SystemAPI::emitEvent(w, e);
+      }
+      break;
+
     default:
       [NSApp sendEvent:event];
     }
