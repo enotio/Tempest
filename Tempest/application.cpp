@@ -17,6 +17,11 @@
 #include <pthread.h>
 #endif
 
+#ifdef __APPLE__
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#endif
+
 #ifndef CLOCK_MONOTONIC
 #define CLOCK_MONOTONIC 1
 #endif
@@ -176,13 +181,20 @@ uint64_t Application::tickCount() {
   return GetTickCount64();
 #elif defined(__WINDOWS__)
   return GetTickCount();
+#elif defined(__APPLE__)
+  static mach_timebase_info_data_t timeInfo;
+  uint64_t machTime = mach_absolute_time();
+
+  // Convert to nanoseconds - if this is the first time we've run, get the timebase.
+  if( timeInfo.denom == 0 )
+    mach_timebase_info(&timeInfo);
+
+  // Convert the mach time to milliseconds
+  uint64_t millis = ((machTime / 1000000) * timeInfo.numer) / timeInfo.denom;
+  return millis;
 #else
   timespec now;
-#ifdef __APPLE__
-  T_ASSERT(0);
-#else
   clock_gettime(CLOCK_MONOTONIC_RAW, &now);
-#endif
   uint64_t t = (uint8_t)now.tv_sec;
   t *= 1000;
   t += now.tv_nsec/1000000;

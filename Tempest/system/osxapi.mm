@@ -26,11 +26,10 @@ static id createWindow(int w,int h,unsigned flags){
   [appMenu addItem:quitMenuItem];
   [appMenuItem setSubmenu:appMenu];
 
-  id wnd = [[[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, w, h)
+  id wnd = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, w, h)
                  styleMask:NSTitledWindowMask
                  backing:NSBackingStoreBuffered
-                 defer:NO]
-               autorelease];
+                 defer:NO];
   [wnd cascadeTopLeftFromPoint:NSMakePoint(20,20)];
   [wnd setTitle:appName];
   [wnd makeKeyAndOrderFront:nil];
@@ -137,7 +136,7 @@ static bool processEvent(NSEvent* event){
     case NSRightMouseDown:
     case NSOtherMouseDown:{
       MouseEvent e( event.locationInWindow.x,
-                    event.locationInWindow.y,
+                    w->h() - event.locationInWindow.y,
                     toButton( type ),
                     0,
                     0,
@@ -151,7 +150,7 @@ static bool processEvent(NSEvent* event){
     case NSRightMouseUp:
     case NSOtherMouseUp:{
       MouseEvent e( event.locationInWindow.x,
-                    event.locationInWindow.y,
+                    w->h() - event.locationInWindow.y,
                     toButton( type ),
                     0,
                     0,
@@ -166,7 +165,7 @@ static bool processEvent(NSEvent* event){
     case NSOtherMouseDragged:
     case NSMouseMoved: {
       MouseEvent e( event.locationInWindow.x,
-                    event.locationInWindow.y,
+                    w->h() - event.locationInWindow.y,
                     Event::ButtonNone,
                     0,
                     0,
@@ -293,6 +292,7 @@ void* OsxAPI::initializeOpengl(void* wnd) {
     NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersionLegacy,
     NSOpenGLPFAColorSize,     24,
     NSOpenGLPFAAlphaSize,     8,
+    NSOpenGLPFADepthSize,     32,
     NSOpenGLPFAAccelerated,
     NSOpenGLPFADoubleBuffer,
     0
