@@ -5,6 +5,8 @@
 #include <vector>
 #include <cstddef>
 
+#include <Tempest/Assert>
+
 namespace Tempest{
 
 template< class ... Args >
@@ -188,6 +190,7 @@ class signal : Detail::signalBase {
     template< class T, class Ret, class TBase, class ... FuncArgs >
     struct Emit : public IEmit {
       Emit( T & t, Ret (TBase::*f)( FuncArgs... ) ):obj(&t), func(f) {
+        T_ASSERT(sizeof(*this)<sizeof(Impl));
         }
 
       void exec( Args& ... args ){
@@ -227,7 +230,9 @@ class signal : Detail::signalBase {
 
     template< class Ret, class ... FuncArgs >
     struct EmitFunc : public IEmit {
-      EmitFunc( Ret (&f)( FuncArgs... ) ): func(f) {}
+      EmitFunc( Ret (&f)( FuncArgs... ) ): func(f) {
+        T_ASSERT(sizeof(*this)<sizeof(Impl));
+        }
 
       void exec( Args& ... args ){
         func( args... );
@@ -258,8 +263,13 @@ class signal : Detail::signalBase {
       };
 
     struct Impl{
+#if _WIN64 || __x86_64
+      char impl[StaticMax< sizeof(void*)+40,
+                           sizeof( EmitFunc<void,Args...>)>::value ];
+#else
       char impl[StaticMax< sizeof(void*)+20/*hack! intel italium, max fptr size = 20 bytes*/,
                            sizeof( EmitFunc<void,Args...>)>::value ];
+#endif
       };
 
     std::vector<Impl> v;
