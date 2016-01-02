@@ -96,7 +96,27 @@ void OsxAPI::endApplication() {
   //NOPE
   }
 
+static Event::MouseButton toButton( uint type ){
+  if( type==NSLeftMouseDown || type==NSLeftMouseUp )
+    return Event::ButtonLeft;
+
+  if( type==NSRightMouseDown || type==NSRightMouseUp )
+    return Event::ButtonRight;
+
+  if( type==NSOtherMouseDown || type==NSOtherMouseUp )
+    return Event::ButtonMid;
+
+  return Event::ButtonNone;
+  }
+
 static bool processEvent(NSEvent* event){
+  if(!event){
+    [NSApp sendEvent:event];
+    for(auto i:wndWx)
+      render(i.second);
+    return false;
+    }
+
   uint type = [event type];
   id window = [event window];
 
@@ -106,17 +126,59 @@ static bool processEvent(NSEvent* event){
     return false;
     }
 
+  Tempest::Window* w = it->second;
   switch(type){
     case 0:
       render(it->second);
       [NSApp sendEvent:event];
       return false;
+
     case NSLeftMouseDown:
+    case NSRightMouseDown:
+    case NSOtherMouseDown:{
+      MouseEvent e( event.locationInWindow.x,
+                    event.locationInWindow.y,
+                    toButton( type ),
+                    0,
+                    0,
+                    Event::MouseDown
+                    );
+      SystemAPI::emitEvent(w, e);
+      }
+      break;
+
+    case NSLeftMouseUp:
+    case NSRightMouseUp:
+    case NSOtherMouseUp:{
+      MouseEvent e( event.locationInWindow.x,
+                    event.locationInWindow.y,
+                    toButton( type ),
+                    0,
+                    0,
+                    Event::MouseUp
+                    );
+      SystemAPI::emitEvent(w, e);
+      }
+      break;
+
+    case NSLeftMouseDragged:
+    case NSRightMouseDragged:
+    case NSOtherMouseDragged:
+    case NSMouseMoved: {
+      MouseEvent e( event.locationInWindow.x,
+                    event.locationInWindow.y,
+                    Event::ButtonNone,
+                    0,
+                    0,
+                    Event::MouseMove  );
+      SystemAPI::emitEvent(w, e);
+      }
       break;
 
     default:
       [NSApp sendEvent:event];
     }
+
   return true;
   }
 
@@ -221,7 +283,7 @@ SystemAPI::File *OsxAPI::fopenImpl(const char *fname, const char *mode) {
   }
 
 SystemAPI::File *OsxAPI::fopenImpl(const char16_t *fname, const char *mode) {
-    return SystemAPI::fopenImpl( fname, mode );
+  return SystemAPI::fopenImpl( fname, mode );
   }
 
 void* OsxAPI::initializeOpengl(void* wnd) {
