@@ -47,7 +47,9 @@ static inline void inc(X& ptr, int count=1){
 
 template< class T >
 static inline void align(size_t& offset,const char*& ptr){
-  size_t dpt = alignof(T)-offset%alignof(T);
+  size_t dpt = offset%alignof(T);
+  if(dpt)
+    dpt=alignof(T)-dpt;
   offset += dpt;
   ptr    += dpt;
   }
