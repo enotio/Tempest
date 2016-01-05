@@ -2,6 +2,7 @@
 #define OSXAPI_H
 
 #include <Tempest/SystemAPI>
+#include <csetjmp>
 
 namespace Tempest{
 
@@ -13,6 +14,8 @@ class OsxAPI:public SystemAPI {
     static void* initializeOpengl(void* window);
     static bool  glMakeCurrent(void* ctx);
     static void  glSwapBuffers(void* ctx);
+    static void  swapContext();
+    static void  finish();
 
   protected:
     OsxAPI();

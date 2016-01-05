@@ -82,7 +82,7 @@ void MainWindow::render() {
     return;
 
   device.beginPaint();
-  device.clear( Tempest::Color(0,1,0), 1.0 );
+  device.clear( Tempest::Color(0), 1.0 );
 
   setShaderConstants( float(spin.x), float(spin.y), texture, normal, height );
 

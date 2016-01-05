@@ -313,7 +313,8 @@ HEADERS += \
     ui/controls/scrollbar.h \
     ui/controls/scrollwidget.h \
     ui/controls/label.h \
-    system/osxapi.h
+    system/osxapi.h \
+    system/appdelegate.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -384,4 +385,5 @@ OTHER_FILES += \
     include/Tempest/Label
 
 OBJECTIVE_SOURCES += \
-    system/osxapi.mm
+    system/osxapi.mm \
+    system/appdelegate.mm

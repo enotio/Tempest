@@ -1,14 +1,25 @@
 #ifdef __APPLE__
 
+#define _XOPEN_SOURCE
+
 #include <Cocoa/Cocoa.h>
 #include <unordered_map>
 #include <Tempest/Window>
 #include "osxapi.h"
+#include "appdelegate.h"
 #include <OpenGL/gl.h>
+#include <pthread.h>
+
+#include <ucontext.h>
+#include <unistd.h>
 
 using namespace Tempest;
 
 static std::unordered_map<id, Tempest::Window*> wndWx;
+
+volatile bool appQuit = false;
+ucontext_t    mainContext1, mainContext2, appleContext;
+static char   appleStack[8*1024*1024];
 
 static id createWindow(int w,int h,unsigned flags){
   id menubar     = [[NSMenu new] autorelease];
@@ -43,7 +54,7 @@ static void render( Tempest::Window* w ){
     w->render();
   }
 
-OsxAPI::OsxAPI() {
+OsxAPI::OsxAPI(){
     /*
   TranslateKeyPair k[] = {
     { XK_KP_Left,   Event::K_Left   },
@@ -83,16 +94,37 @@ bool OsxAPI::setDisplaySettings(SystemAPI::Window *, const DisplaySettings &) {
   }
 
 Tempest::Size OsxAPI::implScreenSize() {
-  return Size(14440,980);
+  return Size(1440,980);
+  }
+
+static void appleMain(){
+  [NSAutoreleasePool new];
+  [NSApplication sharedApplication];
+  [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+  [NSApp activateIgnoringOtherApps:YES];
+
+  id delegate=[AppDelegate new];
+  [NSApp setDelegate:delegate];
+  [NSApp run];
   }
 
 void OsxAPI::startApplication(SystemAPI::ApplicationInitArgs *) {
-  [NSApplication sharedApplication];
-  [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+  getcontext(&appleContext);
+  appleContext.uc_link          = nullptr;//&main_context1;
+  appleContext.uc_stack.ss_sp   = appleStack;
+  appleContext.uc_stack.ss_size = sizeof(appleStack);
+
+  T_WARNING(mainContext1.uc_link==nullptr);
+  mainContext1.uc_link=&appleContext;
+
+  makecontext(&appleContext, appleMain, 0);
+  getcontext(&mainContext1);
+
+  swapcontext(&mainContext2,&appleContext);
   }
 
 void OsxAPI::endApplication() {
-  //NOPE
+  //swapcontext(&main_context2,&appleContext);
   }
 
 static Event::MouseButton toButton( uint type ){
@@ -194,30 +226,23 @@ static bool processEvent(NSEvent* event){
   }
 
 int OsxAPI::nextEvent(bool &quit) {
-  NSEvent* event =
-  [NSApp nextEventMatchingMask: NSAnyEventMask
-                                untilDate:[NSDate distantPast]
-                                inMode:NSDefaultRunLoopMode
-                                dequeue:YES ];
-  processEvent(event);
-  quit = false;
+  swapcontext(&mainContext2,&appleContext);
+
+  for(auto i:wndWx)
+    render(i.second);
+
+  quit = appQuit;
   return 0;
   }
 
 int OsxAPI::nextEvents(bool &quit) {
-  quit = false;
-  bool hasEvents = true;
+  //bool hasEvents = true;
 
-  while(hasEvents){
-    NSEvent* event =
-    [NSApp nextEventMatchingMask: NSAnyEventMask
-                                  untilDate:[NSDate distantPast]
-                                  inMode:NSDefaultRunLoopMode
-                                  dequeue:YES ];
-    if(!processEvent(event))
-      break;
-    }
+  swapcontext(&mainContext2,&appleContext);
+  for(auto i:wndWx)
+    render(i.second);
 
+  quit = appQuit;
   return 0;
   }
 
@@ -255,17 +280,17 @@ Tempest::Point OsxAPI::windowClientPos(SystemAPI::Window *w) {
 
 Tempest::Size OsxAPI::windowClientRect(SystemAPI::Window *w) {
   NSRect frame = [(id)w frame];
+  frame = [(id)w contentRectForFrameRect:frame];
   return Size(frame.size.width,frame.size.height);
   }
 
 void OsxAPI::deleteWindow(SystemAPI::Window *w) {
   id wnd = (id)w;
   wndWx.erase(wnd);
-  [wnd release];
+  //[wnd release];
   }
 
 void OsxAPI::show(SystemAPI::Window *) {
-
   }
 
 void OsxAPI::setGeometry(SystemAPI::Window *wx, int x, int y, int w, int h){
@@ -282,10 +307,17 @@ void OsxAPI::bind(SystemAPI::Window *i, Tempest::Window *w) {
   }
 
 SystemAPI::CpuInfo OsxAPI::cpuInfoImpl() {
+  host_basic_info_data_t hostInfo;
+  mach_msg_type_number_t infoCount;
+
+  infoCount = HOST_BASIC_INFO_COUNT;
+  host_info( mach_host_self(), HOST_BASIC_INFO, (host_info_t)&hostInfo, &infoCount );
+
+
   CpuInfo info;
   memset(&info, 0, sizeof(info));
 
-  info.cpuCount = 1;
+  info.cpuCount = hostInfo.max_cpus;
   return info;
   }
 
@@ -323,6 +355,15 @@ bool OsxAPI::glMakeCurrent(void *ctx) {
 
 void OsxAPI::glSwapBuffers(void *ctx) {
   [(id)ctx flushBuffer];
+  }
+
+void OsxAPI::swapContext() {
+  swapcontext(&appleContext,&mainContext2);
+  }
+
+void OsxAPI::finish() {
+  appQuit = true;
+  swapcontext(&appleContext,&mainContext2);
   }
 
 #endif
