@@ -826,6 +826,7 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   AbstractAPI::setDisplaySettings( hwnd, opt.displaySettings );
 
   OsxAPI::glMakeCurrent( dev->context );
+  OsxAPI::glUpdateContext(dev->context,dev->window);
   glViewport(0,0, dev->scrW, dev->scrH);
 #endif
 

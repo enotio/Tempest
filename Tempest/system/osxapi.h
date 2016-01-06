@@ -13,6 +13,7 @@ class OsxAPI:public SystemAPI {
   public:
     static void* initializeOpengl(void* window);
     static bool  glMakeCurrent(void* ctx);
+    static bool  glUpdateContext(void* ctx,void* window);
     static void  glSwapBuffers(void* ctx);
     static void  swapContext();
     static void  finish();
