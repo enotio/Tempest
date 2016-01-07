@@ -18,6 +18,10 @@ class OsxAPI:public SystemAPI {
     static void  swapContext();
     static void  finish();
 
+    struct Fiber;
+    struct FiberCtx;
+    struct PBox;
+
   protected:
     OsxAPI();
     ~OsxAPI();

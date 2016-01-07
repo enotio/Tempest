@@ -23,8 +23,31 @@ using namespace Tempest;
 
 static std::unordered_map<id, Tempest::Window*> wndWx;
 
+struct OsxAPI::Fiber  {
+  ucontext_t  fib;
+  jmp_buf     jmp;
+  };
+
+struct OsxAPI::FiberCtx  {
+  void(*      fnc)(void*);
+  void*       ctx;
+  jmp_buf*    cur;
+  ucontext_t* prv;
+  };
+
+struct OsxAPI::PBox {
+  enum {
+    sz = (sizeof(void*)+sizeof(int)-1)/sizeof(int)
+    };
+  int val[sz];
+
+  void set(void* v){
+    memcpy(val,&v,sizeof(v));
+    }
+  };
+
 volatile bool appQuit = false;
-ucontext_t    mainContext1, mainContext2, appleContext;
+OsxAPI::Fiber mainContext, appleContext;
 static char   appleStack[1*1024*1024];
 
 static struct State{
@@ -40,6 +63,46 @@ static struct State{
   volatile Event::Type eventType=Event::NoEvent;
   volatile void*       window   =nullptr;
   } state;
+
+static void fiberStartFnc(int v0,int v1)  {
+  OsxAPI::PBox ptr;
+  ptr.val[0] = v0;
+  ptr.val[1] = v1;
+
+  OsxAPI::FiberCtx* ctx;
+  memcpy(&ctx,&ptr.val,sizeof(void*));
+
+  void (*ufnc)(void*) = ctx->fnc;
+  void* uctx = ctx->ctx;
+  if(_setjmp(*ctx->cur) == 0)  {
+    ucontext_t tmp;
+    swapcontext(&tmp, ctx->prv);
+    }
+  ufnc(uctx);
+  }
+
+inline static void createFiber(OsxAPI::Fiber& fib, void(*ufnc)(void*), void* uctx, char* stk, size_t ssize)  {
+  getcontext(&fib.fib);
+
+  fib.fib.uc_stack.ss_sp   = stk;
+  fib.fib.uc_stack.ss_size = ssize;
+  fib.fib.uc_link = 0;
+
+  ucontext_t tmp;
+  OsxAPI::FiberCtx ctx = {ufnc, uctx, &fib.jmp, &tmp};
+
+  T_ASSERT_X(OsxAPI::PBox::sz<=2,"x86;x64 code");
+  OsxAPI::PBox ptr;
+  ptr.set(&ctx);
+
+  makecontext(&fib.fib, (void(*)())fiberStartFnc, 2, ptr.val[0], ptr.val[1]);
+  swapcontext(&tmp, &fib.fib);
+  }
+
+inline static void switch2Fiber(OsxAPI::Fiber& fib, OsxAPI::Fiber& prv) {
+  if(_setjmp(prv.jmp) == 0)
+    _longjmp(fib.jmp, 1);
+  }
 
 static Event::MouseButton toButton( uint type ){
   if( type==NSLeftMouseDown || type==NSLeftMouseUp )
@@ -329,7 +392,7 @@ Tempest::Size OsxAPI::implScreenSize() {
   return Size(1440,980);
   }
 
-static void appleMain(){
+static void appleMain(void*){
   [NSAutoreleasePool new];
   [NSApplication sharedApplication];
   [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
@@ -341,18 +404,8 @@ static void appleMain(){
   }
 
 void OsxAPI::startApplication(SystemAPI::ApplicationInitArgs *) {
-  getcontext(&appleContext);
-  appleContext.uc_link          = nullptr;//&main_context1;
-  appleContext.uc_stack.ss_sp   = appleStack;
-  appleContext.uc_stack.ss_size = sizeof(appleStack);
-
-  T_WARNING(mainContext1.uc_link==nullptr);
-  mainContext1.uc_link=&appleContext;
-
-  makecontext(&appleContext, appleMain, 0);
-  getcontext(&mainContext1);
-
-  swapcontext(&mainContext2,&appleContext);
+  createFiber(appleContext,appleMain,nullptr,appleStack,sizeof(appleStack));
+  switch2Fiber(appleContext,mainContext);
   }
 
 void OsxAPI::endApplication() {
@@ -397,7 +450,7 @@ static bool processEvent(){
   }
 
 int OsxAPI::nextEvent(bool &quit) {
-  swapcontext(&mainContext2,&appleContext);
+  switch2Fiber(appleContext,mainContext);
 
   if(!processEvent()){
     for(auto i:wndWx)
@@ -409,7 +462,7 @@ int OsxAPI::nextEvent(bool &quit) {
   }
 
 int OsxAPI::nextEvents(bool &quit) {
-  swapcontext(&mainContext2,&appleContext);
+  switch2Fiber(appleContext,mainContext);
 
   //bool hasEvents = true;
   if(!processEvent()){
@@ -475,7 +528,8 @@ void OsxAPI::setGeometry(SystemAPI::Window *wx, int x, int y, int w, int h){
   frame.origin.y    = y;
   frame.size.width  = w;
   frame.size.height = h;
-  //[(id)wx setFrame: frame];
+  frame = [(id)wx frameRectForContentRect:frame];
+  //[(id)wx setFrame: frame display:YES];
   }
 
 void OsxAPI::bind(SystemAPI::Window *i, Tempest::Window *w) {
@@ -504,6 +558,16 @@ SystemAPI::File *OsxAPI::fopenImpl(const char *fname, const char *mode) {
 SystemAPI::File *OsxAPI::fopenImpl(const char16_t *fname, const char *mode) {
   return SystemAPI::fopenImpl( fname, mode );
   }
+/*
+static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
+                                      const CVTimeStamp* now,
+                                      const CVTimeStamp* outputTime,
+                                      CVOptionFlags flagsIn,
+                                      CVOptionFlags* flagsOut,
+                                      void* displayLinkContext) {
+  //OsxAPI::swapContext();
+  return kCVReturnSuccess;
+  }*/
 
 void* OsxAPI::initializeOpengl(void* wnd) {
   id window = (id)wnd;
@@ -521,6 +585,26 @@ void* OsxAPI::initializeOpengl(void* wnd) {
   NSOpenGLPixelFormat* pixelFormat   = [[NSOpenGLPixelFormat alloc] initWithAttributes:glAttributes];
   NSOpenGLContext*     openGLContext = [[NSOpenGLContext alloc]initWithFormat:pixelFormat shareContext:nil];
   [openGLContext setView:[window contentView]];
+
+  /*
+  //TODO: CoreVide support
+
+  CVDisplayLinkRef displayLink;
+  // Create a display link capable of being used with all active displays
+  CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
+
+  // Set the renderer output callback function
+  CVDisplayLinkSetOutputCallback(displayLink, &MyDisplayLinkCallback, nullptr);
+
+  // Set the display link for the current renderer
+  CGLContextObj cglContext = [openGLContext CGLContextObj];
+  CGLPixelFormatObj cglPixelFormat = [pixelFormat CGLPixelFormatObj];
+  CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(displayLink, cglContext, cglPixelFormat);
+
+  // Activate the display link
+  CVDisplayLinkStart(displayLink);
+  */
+
   return openGLContext;
   }
 
@@ -538,12 +622,12 @@ void OsxAPI::glSwapBuffers(void *ctx) {
   }
 
 void OsxAPI::swapContext() {
-  swapcontext(&appleContext,&mainContext2);
+  switch2Fiber(mainContext,appleContext);
   }
 
 void OsxAPI::finish() {
   appQuit = true;
-  swapcontext(&appleContext,&mainContext2);
+  swapContext();
   }
 
 #endif

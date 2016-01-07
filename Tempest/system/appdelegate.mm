@@ -41,7 +41,6 @@ static NSOpenGLPixelFormatAttribute glAttributes[] = {
                autorelease];
   [wnd cascadeTopLeftFromPoint:NSMakePoint(20,20)];
   [wnd setTitle:appName];
-  [wnd makeKeyAndOrderFront:nil];
   [wnd setStyleMask:[wnd styleMask] | NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask];
 
   return wnd;
@@ -50,7 +49,7 @@ static NSOpenGLPixelFormatAttribute glAttributes[] = {
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
   (void)aNotification;
   [NSTimer
-      scheduledTimerWithTimeInterval:.1
+      scheduledTimerWithTimeInterval:0.001
       target:self
       selector:@selector(draw)
       userInfo:nil
