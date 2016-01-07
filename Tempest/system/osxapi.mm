@@ -58,6 +58,7 @@ static struct State{
     SizeEvent  size;
     MouseEvent mouse;
     KeyEvent   key;
+    CloseEvent close;
     } event = {Event()};
 
   volatile Event::Type eventType=Event::NoEvent;
@@ -292,12 +293,25 @@ static Event::MouseButton toButton( uint type ){
   [self processEvent:event];
   }
 
+- (void)performMiniaturize:(id)sender {
+
+  }
+
 @end
 
 @interface WindowController : NSWindowController <NSWindowDelegate> {}
 @end
 
 @implementation WindowController
+
+- (BOOL)windowShouldClose:(id)sender {
+  (void)sender;
+
+  state.eventType = Event::Close;
+  new (&state.event.close) Tempest::CloseEvent();
+  OsxAPI::swapContext();
+  return state.event.close.isAccepted() ? NO : YES;
+  }
 
 - (void)windowDidResize:(NSNotification *)notification {
   NSWindow* window = [notification object];
@@ -311,7 +325,7 @@ static Event::MouseButton toButton( uint type ){
 
 @end
 
-static id createWindow(int w,int h,unsigned flags){
+static id createWindow(int w,int h,unsigned flags,Window::ShowMode mode){
   id menubar     = [[NSMenu new] autorelease];
   id appMenuItem = [[NSMenuItem new] autorelease];
 
@@ -336,6 +350,19 @@ static id createWindow(int w,int h,unsigned flags){
   [wnd makeKeyAndOrderFront:nil];
   [wnd setStyleMask:[wnd styleMask] | flags];
   [wnd setAcceptsMouseMovedEvents: YES];
+
+  switch (mode) {
+    case Window::Normal: break;
+    case Window::Minimized:
+      //[wnd miniaturize:wnd]; BUG:opengl not initizlized
+      break;
+    case Window::Maximized:
+      [wnd setFrame:[[NSScreen mainScreen] visibleFrame] display:YES];
+      break;
+    case Window::FullScreen:
+      [wnd toggleFullScreen:wnd];
+      break;
+    }
 
   id winController = [[WindowController alloc] init];
 
@@ -442,6 +469,9 @@ static bool processEvent(){
     case Event::Resize:
       SystemAPI::sizeEvent( w, state.event.size.w, state.event.size.h );
       break;
+    case Event::Close:
+      SystemAPI::emitEvent( w, state.event.close );
+      break;
     default:
       return false;
       break;
@@ -457,37 +487,39 @@ int OsxAPI::nextEvent(bool &quit) {
       render(i.second);
     }
 
-  quit = appQuit;
+  quit |= appQuit;
   return 0;
   }
 
 int OsxAPI::nextEvents(bool &quit) {
+  // no queue
   switch2Fiber(appleContext,mainContext);
 
-  //bool hasEvents = true;
   if(!processEvent()){
     for(auto i:wndWx)
       render(i.second);
     }
 
-  quit = appQuit;
+  quit |= appQuit;
   return 0;
   }
 
 SystemAPI::Window* OsxAPI::createWindow(int w, int h) {
-  return (SystemAPI::Window*)(::createWindow(w,h,NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask));
+  return (SystemAPI::Window*)(::createWindow(w,h,NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask, Tempest::Window::Normal));
   }
 
 SystemAPI::Window *OsxAPI::createWindowMaximized() {
-  return (SystemAPI::Window*)(::createWindow(800,600,NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask));
+  id w = ::createWindow(800,600,NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask, Tempest::Window::Maximized);
+  return (SystemAPI::Window*)w;
   }
 
 SystemAPI::Window *OsxAPI::createWindowMinimized() {
-  return (SystemAPI::Window*)(::createWindow(800,600,NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask));
+  return (SystemAPI::Window*)(::createWindow(800,600,NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask, Tempest::Window::Minimized));
   }
 
 SystemAPI::Window *OsxAPI::createWindowFullScr() {
-  return (SystemAPI::Window*)(::createWindow(800,600,NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask));
+  id w = ::createWindow(800,600,NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask, Tempest::Window::FullScreen);
+  return (SystemAPI::Window*)w;
   }
 
 Widget *OsxAPI::addOverlay(WindowOverlay *ov) {
@@ -515,7 +547,6 @@ Tempest::Size OsxAPI::windowClientRect(SystemAPI::Window *w) {
 void OsxAPI::deleteWindow(SystemAPI::Window *w) {
   id wnd = (id)w;
   wndWx.erase(wnd);
-  //[wnd release];
   }
 
 void OsxAPI::show(SystemAPI::Window *w) {
