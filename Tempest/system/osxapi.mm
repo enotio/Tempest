@@ -50,7 +50,7 @@ volatile bool appQuit = false;
 OsxAPI::Fiber mainContext, appleContext;
 static char   appleStack[1*1024*1024];
 
-static struct State{
+static struct State {
   union Ev{
     ~Ev(){}
 
@@ -192,9 +192,9 @@ static Event::MouseButton toButton( uint type ){
     case NSKeyUp: {
       Event::Type eType = type==NSKeyDown ? Event::KeyDown : Event::KeyUp;
       state.eventType = eType;
-      unsigned short key = [event keyCode];
-      NSString* text = [event characters];
-      const char *utf8text=[text UTF8String];
+      unsigned short key   = [event keyCode];
+      NSString* text       = [event characters];
+      const char *utf8text = [text UTF8String];
 
       Tempest::KeyEvent::KeyType kt;
       switch(key){
@@ -210,10 +210,12 @@ static Event::MouseButton toButton( uint type ){
         case kVK_ANSI_9: kt = KeyEvent::K_9; break;
         default: kt = SystemAPI::translateKey(key);
         }
-      new (&state.event.key) Tempest::KeyEvent( kt,state.eventType );
-      OsxAPI::swapContext();
+      if(kt!=Event::K_NoKey){
+        new (&state.event.key) Tempest::KeyEvent( kt,state.eventType );
+        OsxAPI::swapContext();
+        }
 
-      if(type==NSKeyUp && utf8text!=nullptr){
+      if(type==NSKeyUp && utf8text!=nullptr && (kt>=Event::K_A || kt==Event::K_NoKey)){
         char16_t txt16[10] = {};
         utf8::unchecked::utf8to16(utf8text, utf8text+std::max<int>(10,strlen(utf8text)), txt16 );
 
@@ -227,7 +229,6 @@ static Event::MouseButton toButton( uint type ){
           OsxAPI::swapContext();
           }
         }
-      [text release];
       }
       break;
     }
@@ -293,13 +294,10 @@ static Event::MouseButton toButton( uint type ){
   [self processEvent:event];
   }
 
-- (void)performMiniaturize:(id)sender {
-
-  }
-
 @end
 
 @interface WindowController : NSWindowController <NSWindowDelegate> {}
+  @property (nonatomic) BOOL closeEventResult;
 @end
 
 @implementation WindowController
@@ -311,6 +309,10 @@ static Event::MouseButton toButton( uint type ){
   new (&state.event.close) Tempest::CloseEvent();
   OsxAPI::swapContext();
   return state.event.close.isAccepted() ? NO : YES;
+  }
+
+- (void)windowDidMove:(NSNotification *)notification {
+  //SystemAPI::moveEvent( w, rpos.left, rpos.top );
   }
 
 - (void)windowDidResize:(NSNotification *)notification {
@@ -385,8 +387,8 @@ OsxAPI::OsxAPI(){
     { kVK_DownArrow,   Event::K_Down   },
 
     { kVK_Escape,        Event::K_ESCAPE },
-    { kVK_ForwardDelete, Event::K_Back   },
-    { kVK_Delete,        Event::K_Delete },
+    { kVK_Delete,        Event::K_Back   },
+    { kVK_ForwardDelete, Event::K_Delete },
     //{ kVK_Insert,        Event::K_Insert },
     { kVK_Home,          Event::K_Home   },
     { kVK_End,           Event::K_End    },
@@ -443,9 +445,12 @@ static bool processEvent(){
   if(wndWx.size()==0)
     return false;
 
-  Tempest::Window* w = wndWx.begin()->second;
+  Tempest::Window* w  = wndWx.begin()->second;
+  id               wi = wndWx.begin()->first;
+
   auto type = state.eventType;
   state.eventType = Event::NoEvent;
+
   switch( type ) {
     case Event::MouseDown:
     case Event::MouseMove:
@@ -644,8 +649,9 @@ bool OsxAPI::glMakeCurrent(void *ctx) {
   return true;
   }
 
-bool OsxAPI::glUpdateContext(void *ctx, void *window) {
+bool OsxAPI::glUpdateContext(void* ctx, void* /*window*/) {
   [(id)ctx update];
+  return true;
   }
 
 void OsxAPI::glSwapBuffers(void *ctx) {
