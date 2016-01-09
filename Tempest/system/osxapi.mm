@@ -119,6 +119,7 @@ static Event::MouseButton toButton( uint type ){
   }
 
 @interface TempestWindow : NSWindow <NSWindowDelegate> {}
+  @property (nonatomic) BOOL closeEventResult;
 @end
 
 @implementation TempestWindow
@@ -297,18 +298,19 @@ static Event::MouseButton toButton( uint type ){
 @end
 
 @interface WindowController : NSWindowController <NSWindowDelegate> {}
-  @property (nonatomic) BOOL closeEventResult;
 @end
 
 @implementation WindowController
 
 - (BOOL)windowShouldClose:(id)sender {
-  (void)sender;
+  TempestWindow* w = (TempestWindow*)sender;
+  if(w.closeEventResult==YES)
+    return YES;
 
   state.eventType = Event::Close;
   new (&state.event.close) Tempest::CloseEvent();
   OsxAPI::swapContext();
-  return state.event.close.isAccepted() ? NO : YES;
+  return w.closeEventResult;
   }
 
 - (void)windowDidMove:(NSNotification *)notification {
@@ -343,7 +345,8 @@ static id createWindow(int w,int h,unsigned flags,Window::ShowMode mode){
   [appMenu addItem:quitMenuItem];
   [appMenuItem setSubmenu:appMenu];
 
-  id wnd = [[TempestWindow alloc] initWithContentRect:NSMakeRect(0, 0, w, h)
+  TempestWindow* wnd = [[TempestWindow alloc] initWithContentRect:
+                 NSMakeRect(0, 0, w, h)
                  styleMask:NSTitledWindowMask
                  backing:NSBackingStoreBuffered
                  defer:NO];
@@ -352,6 +355,7 @@ static id createWindow(int w,int h,unsigned flags,Window::ShowMode mode){
   [wnd makeKeyAndOrderFront:nil];
   [wnd setStyleMask:[wnd styleMask] | flags];
   [wnd setAcceptsMouseMovedEvents: YES];
+  wnd.closeEventResult=NO;
 
   switch (mode) {
     case Window::Normal: break;
@@ -474,8 +478,13 @@ static bool processEvent(){
     case Event::Resize:
       SystemAPI::sizeEvent( w, state.event.size.w, state.event.size.h );
       break;
-    case Event::Close:
-      SystemAPI::emitEvent( w, state.event.close );
+    case Event::Close: {
+      CloseEvent ev = state.event.close;
+      SystemAPI::emitEvent( w, ev );
+      ((TempestWindow*)wi).closeEventResult = ev.isAccepted() ? NO : YES;
+      if(!ev.isAccepted())
+        [wi close];
+      }
       break;
     default:
       return false;
