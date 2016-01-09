@@ -50,15 +50,22 @@ volatile bool appQuit = false;
 OsxAPI::Fiber mainContext, appleContext;
 static char   appleStack[1*1024*1024];
 
+enum MacEvent {
+  EventMove = Event::Custom+1,
+  EventMinimize,
+  EventDeMinimize
+  };
+
 static struct State {
   union Ev{
     ~Ev(){}
 
-    Event      noEvent;
-    SizeEvent  size;
-    MouseEvent mouse;
-    KeyEvent   key;
-    CloseEvent close;
+    Event          noEvent;
+    SizeEvent      size;
+    MouseEvent     mouse;
+    KeyEvent       key;
+    CloseEvent     close;
+    Tempest::Point move;
     } event = {Event()};
 
   volatile Event::Type eventType=Event::NoEvent;
@@ -314,16 +321,40 @@ static Event::MouseButton toButton( uint type ){
   }
 
 - (void)windowDidMove:(NSNotification *)notification {
-  //SystemAPI::moveEvent( w, rpos.left, rpos.top );
+  NSWindow *win = [notification object];
+
+  state.eventType = Event::Type(EventMove);
+  new (&state.event.move) Tempest::Point(win.frame.origin.x,win.frame.origin.y);
+  OsxAPI::swapContext();
   }
 
 - (void)windowDidResize:(NSNotification *)notification {
   NSWindow* window = [notification object];
-  CGSize sz = window.frame.size;
+  NSRect sz = window.frame;
+  sz = [window contentRectForFrameRect:sz];
 
   state.eventType = Event::Resize;
   state.window    = (void*)window;
-  new (&state.event.size) SizeEvent(sz.width,sz.height);
+  new (&state.event.size) SizeEvent(sz.size.width,sz.size.height);
+  OsxAPI::swapContext();
+  }
+
+- (void)windowDidMiniaturize:(NSNotification *)notification {
+  NSWindow* window = [notification object];
+  state.eventType = Event::Type(EventMinimize);
+  state.window    = (void*)window;
+  OsxAPI::swapContext();
+  }
+
+-(void) windowDidDeminiaturize:(NSNotification *)notification {
+  NSWindow* window = [notification object];
+  NSRect sz = window.frame;
+  sz = [window contentRectForFrameRect:sz];
+
+  state.eventType = Event::Type(EventDeMinimize);
+
+  new (&state.event.size) SizeEvent(sz.size.width,sz.size.height);
+  state.window    = (void*)window;
   OsxAPI::swapContext();
   }
 
@@ -360,7 +391,7 @@ static id createWindow(int w,int h,unsigned flags,Window::ShowMode mode){
   switch (mode) {
     case Window::Normal: break;
     case Window::Minimized:
-      //[wnd miniaturize:wnd]; BUG:opengl not initizlized
+      [wnd miniaturize:wnd];
       break;
     case Window::Maximized:
       [wnd setFrame:[[NSScreen mainScreen] visibleFrame] display:YES];
@@ -445,14 +476,14 @@ void OsxAPI::endApplication() {
   //swapcontext(&main_context2,&appleContext);
   }
 
-static bool processEvent(){
+bool OsxAPI::processEvent(){
   if(wndWx.size()==0)
     return false;
 
   Tempest::Window* w  = wndWx.begin()->second;
   id               wi = wndWx.begin()->first;
 
-  auto type = state.eventType;
+  uint type = state.eventType;
   state.eventType = Event::NoEvent;
 
   switch( type ) {
@@ -484,6 +515,36 @@ static bool processEvent(){
       ((TempestWindow*)wi).closeEventResult = ev.isAccepted() ? NO : YES;
       if(!ev.isAccepted())
         [wi close];
+      }
+      break;
+    case EventMove:{
+      SystemAPI::moveEvent(w,state.event.move.x,state.event.move.y);
+      }
+      break;
+    case EventMinimize:{
+      SystemAPI::setShowMode( w, Tempest::Window::Minimized);
+      SystemAPI::activateEvent(w,false);
+      }
+      break;
+    case EventDeMinimize:{
+      uint mask = [wi styleMask];
+
+      Tempest::Window::ShowMode mode=Tempest::Window::Normal;
+      if(mask & NSFullScreenWindowMask){
+        mode=Tempest::Window::FullScreen;
+        } else {
+        NSRect visibleFr=[[NSScreen mainScreen] visibleFrame];
+        NSRect wFr=[wi frame];
+        if(visibleFr.origin.x==wFr.origin.x &&
+           visibleFr.origin.y==wFr.origin.y &&
+           visibleFr.size.width==wFr.size.width &&
+           visibleFr.size.height==wFr.size.height)
+          mode=Tempest::Window::Maximized;
+        }
+
+      SystemAPI::sizeEvent( w, state.event.size.w, state.event.size.h );
+      SystemAPI::setShowMode( w, mode);
+      SystemAPI::activateEvent(w,true);
       }
       break;
     default:
@@ -549,7 +610,7 @@ Widget *OsxAPI::addOverlay(WindowOverlay *ov) {
 
 Tempest::Point OsxAPI::windowClientPos(SystemAPI::Window *w) {
   NSRect frame = [(id)w frame];
-  return Point(frame.origin.x,frame.origin.y);
+  return Tempest::Point(frame.origin.x,frame.origin.y);
   }
 
 Tempest::Size OsxAPI::windowClientRect(SystemAPI::Window *w) {
@@ -564,17 +625,28 @@ void OsxAPI::deleteWindow(SystemAPI::Window *w) {
   }
 
 void OsxAPI::show(SystemAPI::Window *w) {
-  [(id)w orderFrontRegardless];
+  NSWindow* wx = (NSWindow*)w;
+  if( !wx.miniaturized )
+    [(id)w orderFrontRegardless];
   }
 
 void OsxAPI::setGeometry(SystemAPI::Window *wx, int x, int y, int w, int h){
   NSRect frame = [(id)wx frame];
+  if(frame.origin.x==x && frame.origin.y==y &&
+     frame.size.width==w && frame.size.height==h )
+    return;
   frame.origin.x    = x;
   frame.origin.y    = y;
   frame.size.width  = w;
   frame.size.height = h;
   frame = [(id)wx frameRectForContentRect:frame];
-  //[(id)wx setFrame: frame display:YES];
+
+  //state.eventType = Event::Type(EventWindowGeometry);
+  //new (&state.event.setGeometry) Tempest::Rect(x,y,w,h);
+
+  NSWindow* wnd = (NSWindow*)wx;
+  //[wnd setFrame: frame display:YES];
+  //OsxAPI::swapContext();
   }
 
 void OsxAPI::bind(SystemAPI::Window *i, Tempest::Window *w) {
@@ -654,6 +726,7 @@ void* OsxAPI::initializeOpengl(void* wnd) {
   }
 
 bool OsxAPI::glMakeCurrent(void *ctx) {
+  [(id)ctx update];
   [(id)ctx makeCurrentContext];
   return true;
   }

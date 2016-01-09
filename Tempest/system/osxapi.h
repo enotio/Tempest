@@ -58,6 +58,7 @@ class OsxAPI:public SystemAPI {
 
   private:
     struct Wnd;
+    static bool processEvent();
 
   friend class SystemAPI;
   };
