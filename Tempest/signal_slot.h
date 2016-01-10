@@ -85,13 +85,33 @@ class signal : Detail::signalBase {
     signal& operator = (const signal& sg);
 
     inline void exec( Args ... args ){
-      for(IEmit* v=st.begin(); v<st.end(); v=v->next())
+      size_t i=0;
+      IEmit* bg=st.begin();
+      for(IEmit* v=bg; v<st.end(); ++i){
         v->exec(args...);
+        if(bg==st.begin()){
+          v = v->next();
+          } else {
+          //realloc happend
+          v = at(i);
+          bg = st.begin();
+          }
+        }
       }
 
     void operator()( Args ... args ){
-      for(IEmit* v=st.begin(); v<st.end(); v=v->next())
+      size_t i=0;
+      IEmit* bg=st.begin();
+      for(IEmit* v=bg; v<st.end(); ++i){
         v->exec(args...);
+        if(bg==st.begin()){
+          v = v->next();
+          } else {
+          //realloc happend
+          v = at(i);
+          bg = st.begin();
+          }
+        }
       }
 
     template< class ... FuncArgs >
@@ -107,6 +127,7 @@ class signal : Detail::signalBase {
     template< class T, class Ret, class TBase, class ... FuncArgs >
     void bind( T &t, Ret (TBase::*f)( FuncArgs... ) ){
       st.add(Emit<T, Ret, TBase, FuncArgs...>(t,f));
+      size++;
       reg(&t);
       }
 
@@ -118,6 +139,7 @@ class signal : Detail::signalBase {
     template< class Ret, class ... FuncArgs >
     void bind( Ret (&f)( FuncArgs... ) ){
       st.add(EmitFunc<Ret, FuncArgs...>(f));
+      size++;
       }
 
     template< class T, class TBase >
@@ -278,6 +300,13 @@ class signal : Detail::signalBase {
 
       Ret (&func)( FuncArgs... );
     };
+
+    IEmit* at(size_t pos){
+      for(IEmit* v=st.begin(); ; v=v->next()){
+        if(pos==0) return v;
+        --pos;
+        }
+      }
 
     struct Storage {
       Storage():data(nullptr),size(0){}
