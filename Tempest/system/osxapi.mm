@@ -18,9 +18,38 @@
 
 #include <ucontext.h>
 #include <unistd.h>
+#include <atomic>
 
 using namespace Tempest;
 
+static const uint keyTable[26]={
+  kVK_ANSI_A,
+  kVK_ANSI_B,
+  kVK_ANSI_C,
+  kVK_ANSI_D,
+  kVK_ANSI_E,
+  kVK_ANSI_F,
+  kVK_ANSI_G,
+  kVK_ANSI_H,
+  kVK_ANSI_I,
+  kVK_ANSI_J,
+  kVK_ANSI_K,
+  kVK_ANSI_L,
+  kVK_ANSI_M,
+  kVK_ANSI_N,
+  kVK_ANSI_O,
+  kVK_ANSI_P,
+  kVK_ANSI_Q,
+  kVK_ANSI_R,
+  kVK_ANSI_S,
+  kVK_ANSI_T,
+  kVK_ANSI_U,
+  kVK_ANSI_V,
+  kVK_ANSI_W,
+  kVK_ANSI_X,
+  kVK_ANSI_Y,
+  kVK_ANSI_Z
+  };
 static std::unordered_map<id, Tempest::Window*> wndWx;
 
 struct OsxAPI::Fiber  {
@@ -61,7 +90,7 @@ static struct State {
     ~Ev(){}
 
     Event          noEvent;
-    SizeEvent      size;
+    SizeEvent      size;// = SizeEvent(0,0);
     MouseEvent     mouse;
     KeyEvent       key;
     CloseEvent     close;
@@ -199,7 +228,6 @@ static Event::MouseButton toButton( uint type ){
     case NSKeyDown:
     case NSKeyUp: {
       Event::Type eType = type==NSKeyDown ? Event::KeyDown : Event::KeyUp;
-      state.eventType = eType;
       unsigned short key   = [event keyCode];
       NSString* text       = [event characters];
       const char *utf8text = [text UTF8String];
@@ -216,27 +244,55 @@ static Event::MouseButton toButton( uint type ){
         case kVK_ANSI_7: kt = KeyEvent::K_7; break;
         case kVK_ANSI_8: kt = KeyEvent::K_8; break;
         case kVK_ANSI_9: kt = KeyEvent::K_9; break;
+        case kVK_F1:     kt = KeyEvent::K_F1; break;
+        case kVK_F2:     kt = KeyEvent::K_F2; break;
+        case kVK_F3:     kt = KeyEvent::K_F3; break;
+        case kVK_F4:     kt = KeyEvent::K_F4; break;
+        case kVK_F5:     kt = KeyEvent::K_F5; break;
+        case kVK_F6:     kt = KeyEvent::K_F6; break;
+        case kVK_F7:     kt = KeyEvent::K_F7; break;
+        case kVK_F8:     kt = KeyEvent::K_F8; break;
+        case kVK_F9:     kt = KeyEvent::K_F9; break;
+        case kVK_F10:    kt = KeyEvent::K_F10; break;
+        case kVK_F11:    kt = KeyEvent::K_F11; break;
+        case kVK_F12:    kt = KeyEvent::K_F12; break;
+        case kVK_F13:    kt = KeyEvent::K_F13; break;
+        case kVK_F14:    kt = KeyEvent::K_F14; break;
+        case kVK_F15:    kt = KeyEvent::K_F15; break;
+        case kVK_F16:    kt = KeyEvent::K_F16; break;
+        case kVK_F17:    kt = KeyEvent::K_F17; break;
+        case kVK_F18:    kt = KeyEvent::K_F18; break;
+        case kVK_F19:    kt = KeyEvent::K_F19; break;
+        case kVK_F20:    kt = KeyEvent::K_F20; break;
         default: kt = SystemAPI::translateKey(key);
         }
-      if(kt!=Event::K_NoKey){
-        new (&state.event.key) Tempest::KeyEvent( kt,state.eventType );
+
+      char16_t txt16[10] = {};
+      if(utf8text)
+        utf8::unchecked::utf8to16(utf8text, utf8text+std::max<int>(10,strlen(utf8text)), txt16 );
+
+      for(const uint& k:keyTable)
+        if(k==key)
+          kt = Event::KeyType(Event::K_A+(&k-keyTable));
+
+      if(kt!=Event::K_NoKey || txt16[0]!='\0'){
+        state.eventType = eType;
+        new (&state.event.key) Tempest::KeyEvent( kt, txt16[0], state.eventType );
         OsxAPI::swapContext();
         }
 
+      /*
       if(type==NSKeyUp && utf8text!=nullptr && (kt>=Event::K_A || kt==Event::K_NoKey)){
-        char16_t txt16[10] = {};
-        utf8::unchecked::utf8to16(utf8text, utf8text+std::max<int>(10,strlen(utf8text)), txt16 );
-
         if(txt16[0]){
-          state.eventType = eType;
-          new (&state.event.key) Tempest::KeyEvent( txt16[0],Event::KeyDown );
+          state.eventType = Event::KeyDown;
+          new (&state.event.key) Tempest::KeyEvent( Event::K_NoKey, txt16[0],Event::KeyDown );
           OsxAPI::swapContext();
 
-          state.eventType = eType;
-          new (&state.event.key) Tempest::KeyEvent( txt16[0],Event::KeyUp );
+          state.eventType = Event::KeyUp;
+          new (&state.event.key) Tempest::KeyEvent( kt, txt16[0],Event::KeyUp );
           OsxAPI::swapContext();
           }
-        }
+        }*/
       }
       break;
     }
@@ -430,7 +486,7 @@ OsxAPI::OsxAPI(){
     //{ kVK_Pause,         Event::K_Pause  },
     { kVK_Return,        Event::K_Return },
 
-    { kVK_F1,     Event::K_F1 },
+    //{ kVK_F1,     Event::K_F1 },
     //{ kVK_ANSI_0, Event::K_0  },
     //{ kVK_ANSI_A, Event::K_A  },
 
@@ -438,7 +494,7 @@ OsxAPI::OsxAPI(){
     };
 
   setupKeyTranslate(k);
-  setFuncKeysCount(24);
+  setFuncKeysCount(20);
   }
 
 OsxAPI::~OsxAPI() {
@@ -497,14 +553,37 @@ bool OsxAPI::processEvent(){
                      e.button,
                      e.delta,
                      e.mouseID,
-                     e.type()
+                     Event::Type(type)
                      );
       SystemAPI::emitEvent( w, ex );
       }
       break;
-    case Event::KeyDown:
-    case Event::KeyUp:
-      SystemAPI::emitEvent( w, state.event.key );
+    case Event::KeyDown:{
+      Tempest::KeyEvent k = state.event.key;
+      SystemAPI::emitEvent( w,k,k,Event::Type(type) );
+      }
+      break;
+    case Event::KeyUp:{
+      Tempest::KeyEvent k = state.event.key;
+      SystemAPI::emitEvent( w,k,k,Event::Type(type) );
+
+      //WM_CHAR
+      Tempest::KeyEvent e = Tempest::KeyEvent( k.u16 );
+      uint16_t wrd[4] = {
+        Event::K_Return,
+        Event::K_Back,
+        Event::K_Control,
+        0
+        };
+
+      if( 0 == *std::find( wrd, wrd+3, k.key) ){
+        Tempest::KeyEvent ed( Event::K_NoKey, e.u16, Event::KeyDown );
+        SystemAPI::emitEvent(w, ed);
+
+        Tempest::KeyEvent eu( Event::K_NoKey, e.u16, Event::KeyUp );
+        SystemAPI::emitEvent(w, eu);
+        }
+      }
       break;
     case Event::Resize:
       SystemAPI::sizeEvent( w, state.event.size.w, state.event.size.h );
@@ -741,6 +820,7 @@ void OsxAPI::glSwapBuffers(void *ctx) {
   }
 
 void OsxAPI::swapContext() {
+  std::atomic_thread_fence(std::memory_order_acquire);
   switch2Fiber(mainContext,appleContext);
   }
 
