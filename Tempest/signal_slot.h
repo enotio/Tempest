@@ -93,7 +93,7 @@ class signal : Detail::signalBase {
           v = v->next();
           } else {
           //realloc happend
-          v = at(i);
+          v = at(i)->next();
           bg = st.begin();
           }
         }
@@ -108,7 +108,7 @@ class signal : Detail::signalBase {
           v = v->next();
           } else {
           //realloc happend
-          v = at(i);
+          v = at(i)->next();
           bg = st.begin();
           }
         }
