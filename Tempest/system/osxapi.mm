@@ -268,7 +268,11 @@ static Event::MouseButton toButton( uint type ){
         }
 
       char16_t txt16[10] = {};
-      if(utf8text)
+      if(utf8text &&
+         key!=kVK_LeftArrow &&
+         key!=kVK_RightArrow &&
+         key!=kVK_UpArrow &&
+         key!=kVK_DownArrow )
         utf8::unchecked::utf8to16(utf8text, utf8text+std::max<int>(10,strlen(utf8text)), txt16 );
 
       for(const uint& k:keyTable)
@@ -280,19 +284,6 @@ static Event::MouseButton toButton( uint type ){
         new (&state.event.key) Tempest::KeyEvent( kt, txt16[0], state.eventType );
         OsxAPI::swapContext();
         }
-
-      /*
-      if(type==NSKeyUp && utf8text!=nullptr && (kt>=Event::K_A || kt==Event::K_NoKey)){
-        if(txt16[0]){
-          state.eventType = Event::KeyDown;
-          new (&state.event.key) Tempest::KeyEvent( Event::K_NoKey, txt16[0],Event::KeyDown );
-          OsxAPI::swapContext();
-
-          state.eventType = Event::KeyUp;
-          new (&state.event.key) Tempest::KeyEvent( kt, txt16[0],Event::KeyUp );
-          OsxAPI::swapContext();
-          }
-        }*/
       }
       break;
     }
@@ -559,16 +550,17 @@ bool OsxAPI::processEvent(){
       }
       break;
     case Event::KeyDown:{
-      Tempest::KeyEvent k = state.event.key;
+      Tempest::KeyEvent k = KeyEvent(state.event.key.key,Event::Type(type));
       SystemAPI::emitEvent( w,k,k,Event::Type(type) );
       }
       break;
     case Event::KeyUp:{
-      Tempest::KeyEvent k = state.event.key;
+    Tempest::KeyEvent k = KeyEvent(state.event.key.key,Event::Type(type));
+      uint32_t key = state.event.key.u16;
       SystemAPI::emitEvent( w,k,k,Event::Type(type) );
 
       //WM_CHAR
-      Tempest::KeyEvent e = Tempest::KeyEvent( k.u16 );
+      Tempest::KeyEvent e = Tempest::KeyEvent( key );
       uint16_t wrd[4] = {
         Event::K_Return,
         Event::K_Back,
