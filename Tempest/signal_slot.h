@@ -287,8 +287,8 @@ class signal : Detail::signalBase {
         }
 
       Storage(const Storage& other){
-        data = (char*)malloc(other.size);
         size = other.size;
+        data = size==0 ? nullptr : (char*)malloc(other.size);
         if(!data && size>0)
           T_ASSERT_X(0,"out of memory");
         memcpy(data,other.data,size);
@@ -296,10 +296,12 @@ class signal : Detail::signalBase {
 
       Storage& operator = (const Storage& other){
         data = (char*)realloc(data,other.size);
-        if(!data)
+        if(!data && other.size>0)
           T_ASSERT_X(0,"out of memory");
         size = other.size;
-        memcpy(data,other.data,size);
+        if(size==0)
+          data=nullptr; else
+          memcpy(data,other.data,size);
         return *this;
         }
 
@@ -329,14 +331,17 @@ class signal : Detail::signalBase {
           data[at+i] = data[at+i+sz];
         size -= sz;
         char* c = (char*)realloc(data,size);
-        if(c || size==0)
+        if( c )
           data = c;
+        if(size==0)
+          data=nullptr;
         return reinterpret_cast<IEmit*>(data+at);
         }
 
       void clear(){
         if(data)
           free(data);
+        data=nullptr;
         size=0;
         }
 

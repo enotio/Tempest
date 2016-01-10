@@ -61,6 +61,7 @@ win32 {
 mac:{
   LIBS += -framework AppKit
   LIBS += -framework OpenGL
+  LIBS += -framework CoreVideo
   }
 
 ogl:{
