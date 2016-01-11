@@ -85,33 +85,13 @@ class signal : Detail::signalBase {
     signal& operator = (const signal& sg);
 
     inline void exec( Args ... args ){
-      size_t i=0;
-      IEmit* bg=st.begin();
-      for(IEmit* v=bg; v<st.end(); ++i){
-        v->exec(args...);
-        if(bg==st.begin()){
-          v = v->next();
-          } else {
-          //realloc happend
-          v = at(i)->next();
-          bg = st.begin();
-          }
-        }
+      for(size_t i=0;i<size;++i)
+        at(i)->exec(args...);
       }
 
-    void operator()( Args ... args ){
-      size_t i=0;
-      IEmit* bg=st.begin();
-      for(IEmit* v=bg; v<st.end(); ++i){
-        v->exec(args...);
-        if(bg==st.begin()){
-          v = v->next();
-          } else {
-          //realloc happend
-          v = at(i)->next();
-          bg = st.begin();
-          }
-        }
+    inline void operator()( Args ... args ){
+      for(size_t i=0;i<size;++i)
+        at(i)->exec(args...);
       }
 
     template< class ... FuncArgs >
