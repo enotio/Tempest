@@ -588,7 +588,7 @@ bool OsxAPI::processEvent(){
       }
       break;
     case Event::KeyUp:{
-    Tempest::KeyEvent k = KeyEvent(state.event.key.key,Event::Type(type));
+      Tempest::KeyEvent k = KeyEvent(state.event.key.key,Event::Type(type));
       uint32_t key = state.event.key.u16;
       SystemAPI::emitEvent( w,k,k,Event::Type(type) );
 
@@ -601,7 +601,7 @@ bool OsxAPI::processEvent(){
         0
         };
 
-      if( 0 == *std::find( wrd, wrd+3, k.key) ){
+      if( 0 == *std::find( wrd, wrd+3, k.key) && e.u16 ){
         Tempest::KeyEvent ed( Event::K_NoKey, e.u16, Event::KeyDown );
         SystemAPI::emitEvent(w, ed);
 
