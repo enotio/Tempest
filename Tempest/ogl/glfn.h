@@ -15,6 +15,10 @@
 #undef PSize
 #endif
 
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#endif
+
 #if defined(__WINDOWS__) || defined(__LINUX__)
 #ifdef __WINDOWS__
 #include <windows.h>
@@ -104,6 +108,10 @@ typedef GLXContext GLContext;
 #endif
 
 #ifdef __WINDOWS_PHONE__
+typedef void* GLContext;
+#endif
+
+#ifdef __APPLE__
 typedef void* GLContext;
 #endif
 

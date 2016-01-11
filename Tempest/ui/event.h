@@ -1,5 +1,5 @@
-#ifndef EVENT_H
-#define EVENT_H
+#ifndef TEMPEST_EVENT_H
+#define TEMPEST_EVENT_H
 
 #include <Tempest/Utility>
 #include <cstdint>
@@ -52,6 +52,7 @@ class Event {
       K_ESCAPE,
 
       K_Control,
+      K_Command, // APPLE command key
 
       K_Left,
       K_Up,
@@ -267,4 +268,4 @@ class DragGesture: public AbstractGestureEvent {
   };
 }
 
-#endif // EVENT_H
+#endif // TEMPEST_EVENT_H

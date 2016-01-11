@@ -24,4 +24,5 @@ SOURCES += \
   $$PWD/src/raster/raster.c \
   $$PWD/src/sfnt/sfnt.c \
   $$PWD/src/smooth/smooth.c \
-  $$PWD/src/truetype/truetype.c
+  $$PWD/src/truetype/truetype.c \
+    $$PWD/src/base/ftmac.c

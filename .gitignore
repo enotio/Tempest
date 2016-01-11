@@ -58,11 +58,13 @@ local.properties
 ## Binary
 #################
 *.dll
+*.dylib
 *.so
 *.so.*
 *.exe
 *.a
 *.lib
+*.app.dSYM
 *.exe.embed.manifest
 
 

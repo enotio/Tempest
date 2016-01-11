@@ -28,6 +28,8 @@ namespace Tempest{
     __debugbreak();
 #elif defined(__WINDOWS__)
     __asm__("int $3");
+#elif defined(__APPLE__)
+    __builtin_trap();
 #endif
     (void)file;
     (void)line;

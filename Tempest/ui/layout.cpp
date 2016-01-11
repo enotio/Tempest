@@ -190,7 +190,8 @@ void Layout::rebind( Widget* wx) {
 
 void Layout::swap(Layout *other){
   if( other==0 ){
-    std::for_each( w.begin(), w.end(), free );
+    for(Widget* wx:w)
+      wx->deleteLater();
     w.clear();
     return;
     }

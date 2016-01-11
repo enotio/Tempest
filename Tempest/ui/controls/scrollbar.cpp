@@ -11,6 +11,7 @@ ScrollBar::ScrollBar(Tempest::Orientation ori) {
   mlargeStep = 20;
 
   setRange(0, 100);  
+  orient = Tempest::Orientation(-1);
   setOrientation( ori );
 
   setupUi();
@@ -25,6 +26,7 @@ ScrollBar::ScrollBar(bool noUi, Tempest::Orientation ori) {
   mlargeStep = 20;
 
   setRange(0, 100);
+  orient = Tempest::Orientation(-1);
   setOrientation( ori );
 
   if(!noUi)
