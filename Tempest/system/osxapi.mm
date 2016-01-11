@@ -99,6 +99,8 @@ static struct State {
 
   volatile Event::Type eventType=Event::NoEvent;
   volatile void*       window   =nullptr;
+  volatile bool        ctrl=false;
+  volatile bool        command=false;
   } state;
 
 static void fiberStartFnc(int v0,int v1)  {
@@ -272,7 +274,8 @@ static Event::MouseButton toButton( uint type ){
          key!=kVK_LeftArrow &&
          key!=kVK_RightArrow &&
          key!=kVK_UpArrow &&
-         key!=kVK_DownArrow )
+         key!=kVK_DownArrow &&
+         !(Event::K_F1<=kt && kt<=Event::K_F24) )
         utf8::unchecked::utf8to16(utf8text, utf8text+std::max<int>(10,strlen(utf8text)), txt16 );
 
       for(const uint& k:keyTable)
@@ -347,6 +350,35 @@ static Event::MouseButton toButton( uint type ){
 
 -(void) keyUp:(NSEvent *)event {
   [self processEvent:event];
+  }
+
+- (void) flagsChanged: (NSEvent *)event {
+  NSUInteger flags = [[NSApp currentEvent] modifierFlags];
+  int flg = (flags & NSCommandKeyMask);
+
+  if( (flg&NSControlKeyMask )!=state.ctrl ){
+    state.ctrl = (flg&NSCommandKeyMask);
+
+    state.eventType = Tempest::KeyEvent::KeyDown;
+    new (&state.event.key) Tempest::KeyEvent( KeyEvent::K_Control, state.eventType );
+    OsxAPI::swapContext();
+
+    state.eventType = Tempest::KeyEvent::KeyUp;
+    new (&state.event.key) Tempest::KeyEvent( KeyEvent::K_Control, state.eventType );
+    OsxAPI::swapContext();
+    }
+
+  if( (flg&NSCommandKeyMask )!=state.command ){
+    state.command = (flg&NSCommandKeyMask);
+
+    state.eventType = Tempest::KeyEvent::KeyDown;
+    new (&state.event.key) Tempest::KeyEvent( KeyEvent::K_Command, state.eventType );
+    OsxAPI::swapContext();
+
+    state.eventType = Tempest::KeyEvent::KeyUp;
+    new (&state.event.key) Tempest::KeyEvent( KeyEvent::K_Command, state.eventType );
+    OsxAPI::swapContext();
+    }
   }
 
 @end
@@ -471,6 +503,7 @@ OsxAPI::OsxAPI(){
     { kVK_Escape,        Event::K_ESCAPE },
     { kVK_Delete,        Event::K_Back   },
     { kVK_ForwardDelete, Event::K_Delete },
+    { kVK_Control,       Event::K_Control },
     //{ kVK_Insert,        Event::K_Insert },
     { kVK_Home,          Event::K_Home   },
     { kVK_End,           Event::K_End    },

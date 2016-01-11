@@ -52,6 +52,7 @@ class Event {
       K_ESCAPE,
 
       K_Control,
+      K_Command, // APPLE command key
 
       K_Left,
       K_Up,
