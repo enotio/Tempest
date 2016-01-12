@@ -1,6 +1,7 @@
 QT     -= core gui
 CONFIG -= app_bundle
 CONFIG -= qt
+CONFIG += c++11
 
 CONFIG += ogl directx
 
@@ -23,7 +24,7 @@ android:{
   DESTDIR = ../lib
   }
 
-gcc:QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
+gcc:QMAKE_CXXFLAGS += -Wall -Wextra
 #QMAKE_LFLAGS += /IMPLIB:Tempest.lib
 
 INCLUDEPATH += \
@@ -49,7 +50,7 @@ unix: {
   CONFIG += ogl
   CONFIG -= directx
   SOURCES += system/linuxapi.cpp
-  !android:LIBS += -lrt
+  !android:!mac:LIBS += -lrt
   }
 
 win32: {
@@ -57,10 +58,16 @@ win32: {
   DEFINES += NOMINMAX
   }
 
+mac:{
+  LIBS += -framework AppKit
+  LIBS += -framework OpenGL
+  LIBS += -framework CoreVideo
+  }
+
 ogl:{
-  win32:          LIBS += -l"opengl32"
-  unix: !android: LIBS += -lX11 -lGL
-  android:        LIBS += -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics -lz
+  win32:                 LIBS += -l"opengl32"
+  unix: !android: !mac: LIBS += -lX11 -lGL
+  android:               LIBS += -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics -lz
 
   HEADERS +=\
     ogl/opengl2x.h \
@@ -306,7 +313,9 @@ HEADERS += \
     2d/icon.h \
     ui/controls/scrollbar.h \
     ui/controls/scrollwidget.h \
-    ui/controls/label.h
+    ui/controls/label.h \
+    system/osxapi.h \
+    system/appdelegate.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -375,3 +384,7 @@ OTHER_FILES += \
     include/Tempest/StackedWidget \
     include/Tempest/Icon \
     include/Tempest/Label
+
+OBJECTIVE_SOURCES += \
+    system/osxapi.mm \
+    system/appdelegate.mm

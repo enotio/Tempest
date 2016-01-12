@@ -47,7 +47,7 @@ class AbstractHolder : public AbstractHolderBase {
     virtual APIDescriptor* restore( APIDescriptor* ) = 0;
     virtual APIDescriptor* copy( APIDescriptor* ) = 0;
 
-  public:    
+  public:
     struct ImplManip{
       struct Ref{
         Ref( APIDescriptor* t ):data(t),  count(1) {}

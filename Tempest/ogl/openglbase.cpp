@@ -19,7 +19,11 @@
 #include <windows.h>
 #endif
 #include "glfn.h"
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
 #endif
 
 static const GLubyte* vstr( const GLubyte* v ){

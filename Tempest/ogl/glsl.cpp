@@ -11,8 +11,12 @@
 #include <GLES2/gl2.h>
 #else
 #include "glfn.h"
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
 #include "glcorearb.h"
+#endif
 using namespace Tempest::GLProc;
 #endif
 

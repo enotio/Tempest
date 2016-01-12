@@ -8,7 +8,7 @@
 
 namespace Tempest {
 namespace GLProc {
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__APPLE__)
 void ( GLAPIENTRY *glGenFramebuffers)(GLsizei n, const GLuint* framebuffers) = 0;
 void ( GLAPIENTRY *glDeleteFramebuffers)(GLsizei n, const GLuint* framebuffers) = 0;
 
@@ -113,7 +113,7 @@ static bool getP( T& t, const char* name ){
 
 bool Detail::initGLProc() {
   bool ok =
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__APPLE__)
       get(glGenFramebuffers) &
       get(glDeleteFramebuffers) &
       get(glGenRenderbuffers) &

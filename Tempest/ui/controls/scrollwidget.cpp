@@ -212,8 +212,11 @@ void ScrollWidget::updateScrolls() {
       maxSc = max(cen->w()-min(last->w(),helper.w()),0);
     if(scBeforeBeginH && first!=nullptr)
       minSc = max(cen->w()-min(first->w(),helper.w()),0);
-    if(cen && cen->w()>0)
-      sbH->setCentralButtonSize((sbH->centralAreaSize()*helper.w())/cen->w());
+
+    if(cen && cen->w()>0){
+      const int rgn = std::max(1,cen->w());
+      sbH->setCentralButtonSize((sbV->centralAreaSize()*cenW)/rgn);
+      }
     sbH->setRange( minSc,maxSc );
     }
 
@@ -230,8 +233,10 @@ void ScrollWidget::updateScrolls() {
       maxSc = max(cen->h()-min(last->h(),helper.h()),0);
     if(scBeforeBeginV && first!=nullptr)
       minSc = max(cen->h()-min(first->h(),helper.h()),0);
-    if(cen && cen->h()>0)
-      sbV->setCentralButtonSize((sbV->centralAreaSize()*helper.h())/cen->h());
+    if(cen && cen->h()>0){
+      const int rgn = std::max(1,cen->h());
+      sbV->setCentralButtonSize((sbV->centralAreaSize()*cenH)/rgn);
+      }
     sbV->setRange( minSc, maxSc );
     }
 

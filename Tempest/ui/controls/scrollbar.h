@@ -95,7 +95,7 @@ class ScrollBar : public Tempest::Widget {
     int rmin, rmax, msmallStep, mlargeStep;
     int mvalue;
 
-    Tempest::Orientation orient;
+    Tempest::Orientation orient=Tempest::Vertical;
 
     void alignCenBtn(int, int);
 

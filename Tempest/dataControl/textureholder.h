@@ -41,7 +41,7 @@ class TextureHolder : public AbstractHolderWithLoad
     Tempest::Texture2d load( IDevice &file );
 
   protected:
-    virtual void createObject(AbstractAPI::Texture*& t,
+    virtual void createObject( AbstractAPI::Texture*& t,
                                IDevice& file );
 
     virtual void createObject( AbstractAPI::Texture*& t,
@@ -51,6 +51,36 @@ class TextureHolder : public AbstractHolderWithLoad
 
     virtual void createObject( AbstractAPI::Texture*& t,
                                const Pixmap & p, bool mips, bool compress);
+
+    virtual void createObject( Tempest::Texture2d & /*object*/,
+                               AbstractAPI::Texture*& t,
+                               const std::string & fname ){
+      this->createObject(t, fname);
+      }
+
+    virtual void createObject( Tempest::Texture2d & /*object*/,
+                               AbstractAPI::Texture*& t,
+                               const std::u16string & fname ){
+      this->createObject(t, fname);
+      }
+
+    virtual void createObject( Tempest::Texture2d & /*object*/,
+                               AbstractAPI::Texture*& t,
+                               IDevice & file ){
+      this->createObject(t, file);
+      }
+
+    virtual void createObject( AbstractAPI::Texture*& t,
+                               const std::string & fname ){
+      RFile file(fname.c_str());
+      this->createObject(t, file);
+      }
+
+    virtual void createObject( AbstractAPI::Texture*& t,
+                               const std::u16string & fname ){
+      RFile file(fname.c_str());
+      this->createObject(t, file);
+      }
 
     virtual void recreateObject( AbstractAPI::Texture*& t, AbstractAPI::Texture *old,
                                  const Pixmap & p, bool mips, bool compress);

@@ -289,7 +289,7 @@ Device::Device( const AbstractAPI & dx,
 void Device::init( const AbstractAPI &,
                    const Device::Options &opt,
                    void *windowHwnd ) {
-  impl   = api.createDevice( windowHwnd, opt );
+  impl = api.createDevice( windowHwnd, opt );
 
   if( !impl )
     throw std::runtime_error("unable to init device");

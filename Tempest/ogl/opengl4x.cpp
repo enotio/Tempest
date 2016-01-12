@@ -7,8 +7,12 @@
 #endif
 
 #ifndef __ANDROID__
+#ifdef __APPLE__
+#include <OpenGL/gl3.h>
+#else
 #include <GL/gl.h>
 #include "ogl/glcorearb.h"
+#endif
 #ifdef __WINDOWS__
 #include "glfn.h"
 #endif

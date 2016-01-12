@@ -238,7 +238,7 @@ bool vertexCast( V1& v1,
     const VertexDeclaration::Declarator::Element & e2 = v2d[i];
 
     size_t rsz = sz[ e1.component ];
-    for( int r=0; r<rsz; ++r ){
+    for( size_t r=0; r<rsz; ++r ){
       Detail::assign(b1, b2, e1.component, e2.component);
       b1 += sz[e1.component];
       b2 += sz[e2.component];

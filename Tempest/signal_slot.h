@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <vector>
 #include <cstddef>
+#include <cstdlib>
+
+#include <Tempest/Assert>
 
 namespace Tempest{
 
@@ -76,23 +79,19 @@ class signalBase : public slot {
 template< class ... Args >
 class signal : Detail::signalBase {
   public:
-    signal(){}
+    signal():size(0){}
     signal(const signal& other);
     ~signal();
     signal& operator = (const signal& sg);
 
     inline void exec( Args ... args ){
-      for( size_t i=0; i<v.size(); ++i ){
-        IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
-        e->exec(args...);
-        }
+      for(size_t i=0;i<size;++i)
+        at(i)->exec(args...);
       }
 
-    void operator()( Args ... args ){
-      for( size_t i=0; i<v.size(); ++i ){
-        IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
-        e->exec(args...);
-        }
+    inline void operator()( Args ... args ){
+      for(size_t i=0;i<size;++i)
+        at(i)->exec(args...);
       }
 
     template< class ... FuncArgs >
@@ -107,8 +106,8 @@ class signal : Detail::signalBase {
 
     template< class T, class Ret, class TBase, class ... FuncArgs >
     void bind( T &t, Ret (TBase::*f)( FuncArgs... ) ){
-      v.push_back( Impl() );
-      new (v.back().impl) Emit<T, Ret, TBase, FuncArgs...>(t,f);
+      st.add(Emit<T, Ret, TBase, FuncArgs...>(t,f));
+      size++;
       reg(&t);
       }
 
@@ -119,27 +118,23 @@ class signal : Detail::signalBase {
 
     template< class Ret, class ... FuncArgs >
     void bind( Ret (&f)( FuncArgs... ) ){
-      v.push_back( Impl() );
-      new (v.back().impl) EmitFunc<Ret, FuncArgs...>(f);
+      st.add(EmitFunc<Ret, FuncArgs...>(f));
+      size++;
       }
 
     template< class T, class TBase >
     void ubind( T &t, void (TBase::*f)( Args... ) ){
-      for( size_t i=0; i<v.size(); ){
-        IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
-        char * x = (char*)(void*)(&f);
+      char * x = (char*)(void*)(&f);
+      char ch[ sizeof(f) ];
+      std::copy( x, x+sizeof(f), ch );
 
-        char ch[ sizeof(f) ];
-        std::copy( x, x+sizeof(f), ch );
-
-        if( e->isEq( &t, ch, sizeof(f) ) ){
-          v[i] = v.back();
-          v.pop_back();
+      for(IEmit* v=st.begin(); v<st.end();)
+        if( v->isEq(&t,ch,sizeof(f)) ){
+          v = st.remove(v);
+          size--;
           unreg(&t);
-          } else {
-          ++i;
-          }
-        }      
+          }else
+          v = v->next();
       }
 
     template< class T, class TBase >
@@ -148,11 +143,25 @@ class signal : Detail::signalBase {
       }
 
     size_t bindsCount() const{
-      return v.size();
+      return size;
       }
 
     void removeBinds(){
-      v.clear();
+      for(IEmit* v=st.begin(); v<st.end(); v=v->next())
+        if( slot* s = v->toSlot() ){
+          auto& sg = s->sig;
+          size_t size=sg.size();
+          for(size_t r=0; r<size;){
+            if(sg[r].ptr==this){
+              sg[r] = sg.back();
+              --size;
+              } else
+              ++r;
+            }
+          sg.resize(size);
+          }
+      size=0;
+      st.clear();
       }
 
   private:
@@ -169,24 +178,26 @@ class signal : Detail::signalBase {
 
     static void eraseBinds(void* s, void* this_ptr){
       signal* sg = (signal*)s;
-      for( size_t i=0; i<sg->v.size(); ){
-        IEmit * e = reinterpret_cast<IEmit*>(sg->v[i].impl);
-
-        if( e->toSlot()==this_ptr ){
-          sg->v[i] = sg->v.back();
-          sg->v.pop_back();
-          } else {
-          ++i;
-          }
-        }
+      for(IEmit* v=sg->st.begin(); v<sg->st.end();)
+        if( v->toSlot()==this_ptr ){
+          v = sg->st.remove(v);
+          sg->size--;
+          } else
+          v = v->next();
       }
 
     struct IEmit : Detail::signalBase::IEmit {
-      virtual void exec( Args& ... args )   = 0;
+      virtual void   exec( Args& ... args ) = 0;
+      virtual IEmit* next()                 = 0;
+      virtual size_t size() const           = 0;
       };
 
     template< class T, class Ret, class TBase, class ... FuncArgs >
     struct Emit : public IEmit {
+      enum {
+        align = alignof(std::max_align_t)
+        };
+
       Emit( T & t, Ret (TBase::*f)( FuncArgs... ) ):obj(&t), func(f) {
         }
 
@@ -221,13 +232,26 @@ class signal : Detail::signalBase {
         return nullptr;
         }
 
+      IEmit* next(){
+        return reinterpret_cast<IEmit*>((char*)this+size());
+        }
+
+      virtual size_t size() const {
+        return ((sizeof(*this)+align-1)/align)*align;
+        }
+
       T * obj;
       Ret (TBase::*func)( FuncArgs... );
       };
 
     template< class Ret, class ... FuncArgs >
     struct EmitFunc : public IEmit {
-      EmitFunc( Ret (&f)( FuncArgs... ) ): func(f) {}
+      enum {
+        align = alignof(std::max_align_t)
+        };
+
+      EmitFunc( Ret (&f)( FuncArgs... ) ): func(f) {
+        }
 
       void exec( Args& ... args ){
         func( args... );
@@ -246,31 +270,105 @@ class signal : Detail::signalBase {
 
       slot* toSlot(){ return nullptr; }
 
-    Ret (&func)( FuncArgs... );
+      IEmit* next(){
+        return reinterpret_cast<IEmit*>((char*)this+size());
+        }
+
+      virtual size_t size() const {
+        return ((sizeof(*this)+align-1)/align)*align;
+        }
+
+      Ret (&func)( FuncArgs... );
     };
 
-    // gcc 4.4 dont undestand const_expr keyword :(
-    template< size_t a, size_t b >
-    struct StaticMax{
-      enum {
-        value = a>b ? a : b
-        };
+    IEmit* at(size_t pos){
+      for(IEmit* v=st.begin(); ; v=v->next()){
+        if(pos==0) return v;
+        --pos;
+        }
+      }
+
+    struct Storage {
+      Storage():data(nullptr),size(0){}
+      ~Storage(){
+        if(data)
+          std::free(data);
+        }
+
+      Storage(const Storage& other){
+        size = other.size;
+        data = size==0 ? nullptr : (char*)malloc(other.size);
+        if(!data && size>0)
+          T_ASSERT_X(0,"out of memory");
+        memcpy(data,other.data,size);
+        }
+
+      Storage& operator = (const Storage& other){
+        data = (char*)realloc(data,other.size);
+        if(!data && other.size>0)
+          T_ASSERT_X(0,"out of memory");
+        size = other.size;
+        if(size==0)
+          data=nullptr; else
+          memcpy(data,other.data,size);
+        return *this;
+        }
+
+      void expand(size_t sz){
+        size += sz;
+        char* c = (char*)realloc(data,size);
+        if(!c && size>0)
+          T_ASSERT_X(0,"out of memory") else
+          data = c;
+        }
+
+      template<class T>
+      T* add(const T& t){
+        expand(t.size());
+        char* ch = data+size-t.size();
+        return new (ch) T(t);
+        }
+
+      IEmit* remove(IEmit* e){
+        char* ep = (char*)e->next();
+        char* sp = (char*)e;
+        return remove(sp-data,ep-sp);
+        }
+
+      IEmit* remove(size_t at,size_t sz){
+        for(size_t i=0;i<sz;++i)
+          data[at+i] = data[at+i+sz];
+        size -= sz;
+        char* c = (char*)realloc(data,size);
+        if( c )
+          data = c;
+        if(size==0)
+          data=nullptr;
+        return reinterpret_cast<IEmit*>(data+at);
+        }
+
+      void clear(){
+        if(data)
+          free(data);
+        data=nullptr;
+        size=0;
+        }
+
+      IEmit* begin(){return reinterpret_cast<IEmit*>(data);}
+      void*  end()  {return data+size;}
+
+      char*  data;
+      size_t size;
       };
 
-    struct Impl{
-      char impl[StaticMax< sizeof(void*)+20/*hack! intel italium, max fptr size = 20 bytes*/,
-                           sizeof( EmitFunc<void,Args...>)>::value ];
-      };
-
-    std::vector<Impl> v;
+    Storage st;
+    size_t  size;
   };
 
 template< class ... Args >
 signal<Args...>::~signal() {
-  for( size_t i=0; i<v.size(); ++i){
-    IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
-
-    if( slot* s = e->toSlot() ){
+  for(IEmit* v=st.begin(); v<st.end(); v=v->next())
+    if( slot* s = v->toSlot() ){
       auto& sg = s->sig;
       size_t size=sg.size();
       for(size_t r=0; r<size;){
@@ -282,26 +380,19 @@ signal<Args...>::~signal() {
         }
       sg.resize(size);
       }
-    }
   }
 
 template< class ... Args >
-signal<Args...>::signal(const signal<Args...>& other) {
-  v = other.v;
-
-  for( size_t i=0; i<v.size(); ++i){
-    IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
-    if( slot* s = e->toSlot() )
+signal<Args...>::signal(const signal<Args...>& other):st(other.st),size(other.size){
+  for(IEmit* v=st.begin(); v<st.end(); v=v->next())
+    if( slot* s = v->toSlot() )
       reg(s);
-    }
   }
 
 template< class ... Args >
 signal<Args...> &signal<Args...>::operator =(const signal<Args...> &sg) {
-  for( size_t i=0; i<v.size(); ++i){
-    IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
-
-    if( slot* s = e->toSlot() ){
+  for(IEmit* v=st.begin(); v<st.end(); v=v->next()){
+    if( slot* s = v->toSlot() ){
       auto& sg = s->sig;
       size_t size=sg.size();
       for(size_t r=0; r<size;){
@@ -315,13 +406,12 @@ signal<Args...> &signal<Args...>::operator =(const signal<Args...> &sg) {
       }
     }
 
-  v = sg.v;
+  st   = sg.st;
+  size = sg.size;
 
-  for( size_t i=0; i<v.size(); ++i){
-    IEmit * e = reinterpret_cast<IEmit*>(v[i].impl);
-    if( slot* s = e->toSlot() )
+  for(IEmit* v=st.begin(); v<st.end(); v=v->next())
+    if( slot* s = v->toSlot() )
       reg(s);
-    }
 
   return *this;
   }

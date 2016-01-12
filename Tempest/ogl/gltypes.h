@@ -14,7 +14,11 @@
 #else
 //#include <GL/glew.h>
 #include "glfn.h"
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
 #endif
 
 #include <vector>
@@ -24,6 +28,10 @@
 
 #ifdef __ANDROID__
 #define GLAPIENTRY EGLAPIENTRY
+#endif
+
+#ifdef __APPLE__
+#define GLAPIENTRY
 #endif
 
 #define GL_RGBA16F_ARB        0x881A
@@ -113,6 +121,11 @@ namespace Detail{
     GLXContext   glc;
     Display*     dpy;
     XID          window;
+  #endif
+
+  #ifdef __APPLE__
+    void*        context;
+    void*        window;
   #endif
 
     bool hasS3tcTextures,

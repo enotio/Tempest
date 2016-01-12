@@ -104,8 +104,8 @@ Window::Window( Window::ShowMode sm ) {
     winW = s.w;
     winH = s.h;
 
-    setPosition( SystemAPI::instance().windowClientPos(wnd) );
-    resize( s.w, s.h );
+    Point pos = SystemAPI::instance().windowClientPos(wnd);
+    setGeometry(pos.x,pos.y,s.w,s.h);
     }
 
   if( sm==Minimized ){
@@ -118,8 +118,8 @@ Window::Window( Window::ShowMode sm ) {
     winW = s.w;
     winH = s.h;
 
-    setPosition( SystemAPI::instance().windowClientPos(wnd) );
-    resize( s.w, s.h );
+    Point pos = SystemAPI::instance().windowClientPos(wnd);
+    setGeometry(pos.x,pos.y,s.w,s.h);
     }
 
   SystemAPI::instance().bind(wnd, this);

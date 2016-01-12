@@ -65,12 +65,14 @@ class Window : public Widget {
 
     template< class  G >
     void removeGestureRecognizer(){
-      for( size_t i=0; i<recognizers.size(); ++i )
-        if( typeid(*recognizers[i].get())==typeid(G) ){
+      for( size_t i=0; i<recognizers.size(); ++i ){
+        GestureRecognizer& g=*recognizers[i].get();
+        if( typeid(g)==typeid(G) ){
           recognizers[i] = std::move(recognizers.back());
           recognizers.pop_back();
           return;
           }
+        }
       }
 
     bool isActive() const;
