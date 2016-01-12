@@ -1,6 +1,7 @@
 #ifndef OSXAPI_H
 #define OSXAPI_H
 
+#ifdef __APPLE__
 #include <Tempest/SystemAPI>
 #include <csetjmp>
 
@@ -8,7 +9,6 @@ namespace Tempest{
 
 class Window;
 
-#ifdef __APPLE__
 class OsxAPI:public SystemAPI {
   public:
     static void* initializeOpengl(void* window);
