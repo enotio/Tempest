@@ -62,6 +62,7 @@ local.properties
 *.so
 *.so.*
 *.exe
+*.app
 *.a
 *.lib
 *.app.dSYM
