@@ -1,9 +1,9 @@
-#ifndef OSXAPI_H
-#define OSXAPI_H
+#ifndef IOSAPI_H
+#define IOSAPI_H
 
 #include <Tempest/Platform>
 
-#ifdef __OSX__
+#ifdef __IOS__
 #include <Tempest/SystemAPI>
 #include <csetjmp>
 
@@ -11,7 +11,7 @@ namespace Tempest{
 
 class Window;
 
-class OsxAPI:public SystemAPI {
+class iOSAPI:public SystemAPI {
   public:
     static void* initializeOpengl(void* window);
     static bool  glMakeCurrent(void* ctx);
@@ -25,8 +25,8 @@ class OsxAPI:public SystemAPI {
     struct PBox;
 
   protected:
-    OsxAPI();
-    ~OsxAPI();
+    iOSAPI();
+    ~iOSAPI();
 
     bool testDisplaySettings( Window* w, const DisplaySettings& );
     bool setDisplaySettings( Window* w, const DisplaySettings& );
@@ -66,6 +66,6 @@ class OsxAPI:public SystemAPI {
   };
 
 }
-#endif
 
-#endif // OSXAPI_H
+#endif
+#endif // IOSAPI_H

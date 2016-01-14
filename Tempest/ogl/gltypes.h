@@ -15,7 +15,11 @@
 //#include <GL/glew.h>
 #include "glfn.h"
 #ifdef __APPLE__
+#ifdef __MOBILE_PLATFORM__
+#include <OpenGLES/ES2/gl.h>
+#else
 #include <OpenGL/gl.h>
+#endif
 #else
 #include <GL/gl.h>
 #endif
@@ -307,7 +311,7 @@ namespace Detail{
                     GLenum& inBytePkg,
                     bool renderable ){
 
-  #ifndef __ANDROID__
+  #ifndef __MOBILE_PLATFORM__
     static const GLenum format[] = {
       GL_LUMINANCE16,
       GL_LUMINANCE4_ALPHA4,
@@ -383,7 +387,7 @@ namespace Detail{
       };
   #endif
 
-  #ifndef __ANDROID__
+#ifndef __MOBILE_PLATFORM__
       static const GLenum inputFormat[] = {
       GL_LUMINANCE,
       GL_LUMINANCE_ALPHA,
@@ -433,7 +437,7 @@ namespace Detail{
           f==AbstractTexture::Format::RGBA16 )
         inBytePkg = GL_UNSIGNED_SHORT;
 
-  #ifdef __ANDROID__
+  #ifdef __MOBILE_PLATFORM__
       if( f==AbstractTexture::Format::RGB ||
           f==AbstractTexture::Format::RGB4 )
         inBytePkg = GL_UNSIGNED_SHORT_5_6_5;
@@ -453,7 +457,7 @@ namespace Detail{
   #endif
 
       storage = format[f];
-  #ifdef __ANDROID__
+  #ifdef __MOBILE_PLATFORM__
       inFrm = storage;
   #else
       inFrm = inputFormat[f];
@@ -489,8 +493,10 @@ namespace Detail{
         {"GL_INVALID_ENUM",      GL_INVALID_ENUM},
         {"GL_INVALID_VALUE",     GL_INVALID_VALUE},
         {"GL_INVALID_OPERATION", GL_INVALID_OPERATION},
+  #ifndef __IOS__
         {"GL_STACK_OVERFLOW",    GL_STACK_OVERFLOW},
         {"GL_STACK_UNDERFLOW",   GL_STACK_UNDERFLOW},
+  #endif
         {"GL_OUT_OF_MEMORY",     GL_OUT_OF_MEMORY},
         {"GL_INVALID_FRAMEBUFFER_OPERATION", GL_INVALID_FRAMEBUFFER_OPERATION},
         {"", GL_NO_ERROR},

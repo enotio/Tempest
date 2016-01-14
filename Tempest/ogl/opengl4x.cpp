@@ -8,7 +8,11 @@
 
 #ifndef __ANDROID__
 #ifdef __APPLE__
+#ifdef __MOBILE_PLATFORM__
+#include <OpenGLES/ES3/gl.h>
+#else
 #include <OpenGL/gl3.h>
+#endif
 #else
 #include <GL/gl.h>
 #include "ogl/glcorearb.h"
@@ -41,6 +45,11 @@ static void* getAddr( const char* name ){
   return (void*)eglGetProcAddress( name );
 #endif
 
+#ifdef __IOS__
+  T_ASSERT(0);
+  return 0;
+#endif
+
 #ifdef __LINUX__
   return (void*)glXGetProcAddress( (const GLubyte*)name );
 #endif
@@ -58,6 +67,12 @@ static void* getAddr( const char* name ){
 
 #define WGL_CONTEXT_CORE_PROFILE_BIT_ARB          0x00000001
 #define WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
+
+#ifdef __IOS__
+typedef void (GL_APIENTRY *PFNGLGENVERTEXARRAYSPROC   ) (GLsizei n, GLuint *arrays);
+typedef void (GL_APIENTRY *PFNGLBINDVERTEXARRAYPROC   ) (GLuint array);
+typedef void (GL_APIENTRY *PFNGLDELETEVERTEXARRAYSPROC) (GLsizei n, const GLuint *arrays);
+#endif
 
 struct Opengl4x::ImplDevice: Detail::ImplDeviceBase {
   PFNGLGENVERTEXARRAYSPROC    glGenVertexArrays;
@@ -85,9 +100,15 @@ AbstractAPI::Device *Opengl4x::createDevice( void *hwnd,
   dev->initExt();
   T_ASSERT_X( errCk(), "OpenGL error" );
 
+#ifndef __IOS__
   dev->glGenVertexArrays    = (PFNGLGENVERTEXARRAYSPROC)getAddr("glGenVertexArrays");
   dev->glBindVertexArray    = (PFNGLBINDVERTEXARRAYPROC)getAddr("glBindVertexArray");
   dev->glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)getAddr("glDeleteVertexArrays");
+#else
+  dev->glGenVertexArrays    = glGenVertexArrays;
+  dev->glBindVertexArray    = glBindVertexArray;
+  dev->glDeleteVertexArrays = glDeleteVertexArrays;
+#endif
 
   glEnable( GL_DEPTH_TEST );
   glFrontFace( GL_CW );

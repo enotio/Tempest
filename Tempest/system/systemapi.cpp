@@ -6,6 +6,7 @@
 #include "system/linuxapi.h"
 #include "system/winphoneapi.h"
 #include "system/osxapi.h"
+#include "system/iosapi.h"
 
 #include <Tempest/Window>
 #include <cstring>
@@ -36,8 +37,12 @@ SystemAPI &SystemAPI::instance() {
   static WinPhoneAPI api;
 #endif
 
-#ifdef __APPLE__
+#ifdef __OSX__
   static OsxAPI api;
+#endif
+
+#ifdef __IOS__
+  static iOSAPI api;
 #endif
 
   return api;

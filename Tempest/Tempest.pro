@@ -58,15 +58,23 @@ win32: {
   DEFINES += NOMINMAX
   }
 
-mac:{
+mac!ios:{
   LIBS += -framework AppKit
   LIBS += -framework OpenGL
   LIBS += -framework CoreVideo
   }
 
+ios:{
+  LIBS += -framework Foundation
+  LIBS += -framework UiKit
+  LIBS += -framework GLKit
+  LIBS += -framework OpenGLES
+  QMAKE_IOS_DEPLOYMENT_TARGET = 5.0
+  }
+
 ogl:{
   win32:                 LIBS += -l"opengl32"
-  unix: !android: !mac: LIBS += -lX11 -lGL
+  unix: !android: !mac:  LIBS += -lX11 -lGL
   android:               LIBS += -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics -lz
 
   HEADERS +=\
@@ -315,7 +323,8 @@ HEADERS += \
     ui/controls/scrollwidget.h \
     ui/controls/label.h \
     system/osxapi.h \
-    system/appdelegate.h
+    system/appdelegate.h \
+    system/iosapi.h
 
 OTHER_FILES += \
     ../.gitignore \
@@ -387,4 +396,5 @@ OTHER_FILES += \
 
 OBJECTIVE_SOURCES += \
     system/osxapi.mm \
-    system/appdelegate.mm
+    system/appdelegate.mm \
+    system/iosapi.mm

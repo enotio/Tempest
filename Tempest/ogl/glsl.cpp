@@ -12,7 +12,11 @@
 #else
 #include "glfn.h"
 #ifdef __APPLE__
+#if __MOBILE_PLATFORM__
+#include <OpenGLES/ES2/gl.h>
+#else
 #include <OpenGL/gl.h>
+#endif
 #else
 #include <GL/gl.h>
 #include "glcorearb.h"
@@ -37,7 +41,7 @@ using namespace Tempest::GLProc;
 #include <tuple>
 #include <algorithm>
 
-#ifdef __ANDROID__
+#ifdef __MOBILE_PLATFORM__
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
 #endif
@@ -667,7 +671,7 @@ void GLSL::Data::setupSampler( GLenum texClass,
     };
 
   static const GLenum clamp[6] = {
-#ifndef __ANDROID__
+#ifndef __MOBILE_PLATFORM__
     GL_CLAMP_TO_EDGE,
     GL_CLAMP_TO_BORDER,
 #else
@@ -688,7 +692,7 @@ void GLSL::Data::setupSampler( GLenum texClass,
   glBindTexture( texClass, tx->id );
 
   bool setupClampAnyway = true;
-#ifdef __ANDROID__
+#ifdef __MOBILE_PLATFORM__
    setupClampAnyway = false;
 #endif
   if( isPot || setupClampAnyway ){
@@ -701,7 +705,7 @@ void GLSL::Data::setupSampler( GLenum texClass,
       glTexParameteri( texClass, GL_TEXTURE_WRAP_T, tx->clampV );
       }
 
-#ifndef __ANDROID__
+#ifndef __MOBILE_PLATFORM__
     if( tx->z>0 ){
       if( tx->clampW!=clamp[ clampW(s) ] ){
         tx->clampW = clamp[ clampW(s) ];
