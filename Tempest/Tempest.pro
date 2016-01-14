@@ -58,7 +58,7 @@ win32: {
   DEFINES += NOMINMAX
   }
 
-mac!ios:{
+mac:!ios:{
   LIBS += -framework AppKit
   LIBS += -framework OpenGL
   LIBS += -framework CoreVideo
