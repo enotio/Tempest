@@ -41,36 +41,6 @@
 
 using namespace Tempest;
 
-static const uint keyTable[26]={
-  0/*
-  kVK_ANSI_A,
-  kVK_ANSI_B,
-  kVK_ANSI_C,
-  kVK_ANSI_D,
-  kVK_ANSI_E,
-  kVK_ANSI_F,
-  kVK_ANSI_G,
-  kVK_ANSI_H,
-  kVK_ANSI_I,
-  kVK_ANSI_J,
-  kVK_ANSI_K,
-  kVK_ANSI_L,
-  kVK_ANSI_M,
-  kVK_ANSI_N,
-  kVK_ANSI_O,
-  kVK_ANSI_P,
-  kVK_ANSI_Q,
-  kVK_ANSI_R,
-  kVK_ANSI_S,
-  kVK_ANSI_T,
-  kVK_ANSI_U,
-  kVK_ANSI_V,
-  kVK_ANSI_W,
-  kVK_ANSI_X,
-  kVK_ANSI_Y,
-  kVK_ANSI_Z
-  */
-  };
 static std::unordered_map<id, Tempest::Window*> wndWx;
 
 struct iOSAPI::Fiber  {
@@ -125,23 +95,6 @@ static struct State {
   volatile bool        command=false;
   } state;
 
-static void fiberStartFnc(int v0,int v1)  {
-  iOSAPI::PBox ptr;
-  ptr.val[0] = v0;
-  ptr.val[1] = v1;
-
-  iOSAPI::FiberCtx* ctx;
-  memcpy(&ctx,&ptr.val,sizeof(void*));
-
-  void (*ufnc)(void*) = ctx->fnc;
-  void* uctx = ctx->ctx;
-  if(_setjmp(*ctx->cur) == 0)  {
-    ucontext_t tmp;
-    swapcontext(&tmp, ctx->prv);
-    }
-  ufnc(uctx);
-  }
-
 inline static void createAppleSubContext()  {
   if(_setjmp(mainContext.jmp) == 0) {
     // replace stack
@@ -175,98 +128,169 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   //[self.window makeKeyAndVisible];
   //[(EAGLView*)self.window.rootViewController.view startAnimation];
+  (void)application;
+  (void)launchOptions;
   Tempest::iOSAPI::swapContext();
   return YES;
   }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
+  (void)application;
   //[(EAGLView*)self.window.rootViewController.view stopAnimation];
   }
 
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
+  (void)application;
   //[(EAGLView*)self.window.rootViewController.view stopAnimation];
   }
 
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
+  (void)application;
   //[(EAGLView*)self.window.rootViewController.view startAnimation];
   }
 
 
 - (void)applicationDidBecomeActive:(UIApplication *)application  {
+  (void)application;
   //[(EAGLView*)self.window.rootViewController.view startAnimation];
   }
 
 
 - (void)applicationWillTerminate:(UIApplication *)application {
+  (void)application;
   //[(EAGLView*)self.window.rootViewController.view stopAnimation];
   }
 
 @end
 
-@interface EAGLView : UIView
-  @property (nonatomic) BOOL closeEventResult;
+@interface GLView : UIView {
+  CADisplayLink* displayLink;
+  }
+  @property (nonatomic)         BOOL         closeEventResult;
+  @property (nonatomic, retain) CAEAGLLayer* egLayer;
 @end
 
-@implementation EAGLView
+@implementation GLView
 
--(void) processEvent:(UIEvent *)event {
-  uint type = [event type];
-  int x=0,y=0;//TODO
-  switch(type){
-    case UIEventTypeTouches:{
-      state.eventType = Event::MouseDown;
-      new (&state.event.mouse)
-        MouseEvent ( x,
-                     y,
-                     Event::ButtonLeft,
-                     0,
-                     0,
-                     Event::MouseDown
-                     );
-      iOSAPI::swapContext();
-      }
-      break;
+// We have to implement this method
++ (Class)layerClass {
+  return [CAEAGLLayer class];
+  }
 
-    case UIEventTypeMotion: {
-      state.eventType = Event::MouseMove;
-      new (&state.event.mouse)
-        MouseEvent( x,
-                    y,
-                    Event::ButtonNone,
-                    0,
-                    0,
-                    Event::MouseMove  );
-      iOSAPI::swapContext();
+-(id) initWithFrame: (CGRect) frame {
+  if( self = [super initWithFrame:frame] ) {
+    self.egLayer = (CAEAGLLayer*) super.layer;
+    self.egLayer.opaque = YES;
+    //here we configure the properties of our canvas, most important is the color depth RGBA8 !
+    self.egLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+                                    [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
+                                    kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
+                                    nil];
+    /*
+    m_context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+
+    if( !m_context || ![EAGLContext setCurrentContext:m_context] ){
+      [self release];
+      return nil;
       }
-      break;
+
+    [m_context renderbufferStorage:GL_RENDERBUFFER fromDrawable: eaglLayer];
+    [self drawView: nil];
+
+    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                                      selector:@selector(didRotate:)
+                                                      name:UIDeviceOrientationDidChangeNotification
+                                                      object:nil];
+                                                      */
+
+    displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawFrame)];
+    //by adding the display link to the run loop our draw method will be called 60 times per second
+    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    }
+  return self;
+  }
+
+- (void)drawFrame {
+  iOSAPI::swapContext();
+  }
+
+-(void) processEvent:(UIEvent *)event point:(CGPoint) p type:(Event::Type) type {
+  (void)event;
+  int x=p.x,y=p.y;
+  state.eventType = type;
+
+  if(type!=Event::NoEvent){
+    new (&state.event.mouse)
+      MouseEvent ( x,
+                   y,
+                   Event::ButtonLeft,
+                   0,
+                   0,
+                   type
+                   );
+    iOSAPI::swapContext();
     }
   }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-  [self processEvent:event];
+  if( [touches count]>0 ){
+    UITouch *touch = (UITouch *)[touches anyObject];
+    CGPoint point = [touch locationInView:nil];
+    [self processEvent:event point:point type:Event::MouseDown];
+    }
   }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-  [self processEvent:event];
+  if( [touches count]>0 ){
+    UITouch *touch = (UITouch *)[touches anyObject];
+    CGPoint point = [touch locationInView:nil];
+    [self processEvent:event point:point type:Event::MouseMove];
+    }
   }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-  [self processEvent:event];
+  if( [touches count]>0 ){
+    UITouch *touch = (UITouch *)[touches anyObject];
+    CGPoint point = [touch locationInView:nil];
+    [self processEvent:event point:point type:Event::MouseUp];
+    }
   }
 
 @end
 
+@interface TempestWindow : UIWindow {
+  }
+@property (nonatomic)         GLuint renderBuffer;
+@property (nonatomic, retain) GLView *glView;
+@end
+
+@implementation TempestWindow
+
+@end
+
 static id createWindow(Window::ShowMode mode){
-  UIWindow *window = [[ UIWindow alloc ] initWithFrame: [ [ UIScreen mainScreen ] bounds ] ];
-  window.backgroundColor = [ UIColor whiteColor ];
+  (void)mode;
+  TempestWindow *window = [[ TempestWindow alloc ] initWithFrame: [ [ UIScreen mainScreen ] bounds ] ];
+  @try{
+  window.backgroundColor = [ UIColor blackColor ];
   [ window makeKeyAndVisible ];
+
+  CGRect frame = window.frame;
 
   UIViewController* vc = [[UIViewController alloc]initWithNibName:nil bundle:nil];
   window.rootViewController = vc;
 
-  //[winController release];
+  window.glView=[[GLView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)];
+  [ window addSubview: window.glView];
+  }
+  @catch (NSException * e) {
+     NSLog(@"Exception: %@", e);
+  }
+
   return window;
   }
 
@@ -316,7 +340,8 @@ bool iOSAPI::setDisplaySettings(SystemAPI::Window *, const DisplaySettings &) {
   }
 
 Tempest::Size iOSAPI::implScreenSize() {
-  return Size(1440,980);
+  CGRect rect=[ [ UIScreen mainScreen ] bounds ];
+  return Size(rect.size.width,rect.size.height);
   }
 
 static void appleMain(void*){
@@ -448,7 +473,7 @@ int iOSAPI::nextEvents(bool &quit) {
   return 0;
   }
 
-SystemAPI::Window* iOSAPI::createWindow(int w, int h) {
+SystemAPI::Window* iOSAPI::createWindow(int /*w*/, int /*h*/) {
   return (SystemAPI::Window*)(::createWindow(Tempest::Window::Normal));
   }
 
@@ -477,15 +502,18 @@ Widget *iOSAPI::addOverlay(WindowOverlay *ov) {
   return ov;
   }
 
-Tempest::Point iOSAPI::windowClientPos(SystemAPI::Window *) {
-  return Tempest::Point(0,0);
+Tempest::Point iOSAPI::windowClientPos(SystemAPI::Window* w) {
+  TempestWindow* window = (TempestWindow*)w;
+  UIView*        view   = window.glView;
+  CGRect         frame  = view.frame;
+  return Point(frame.origin.x,frame.origin.y);
   }
 
-Tempest::Size iOSAPI::windowClientRect(SystemAPI::Window *w) {
-  //NSRect frame = [(id)w frame];
-  //frame = [(id)w contentRectForFrameRect:frame];
-  //return Size(frame.size.width,frame.size.height);
-  return Size(480,800);
+Tempest::Size iOSAPI::windowClientRect(SystemAPI::Window* w) {
+  TempestWindow* window = (TempestWindow*)w;
+  UIView*        view   = window.glView;
+  CGRect         frame  = view.frame;
+  return Size(frame.size.width,frame.size.height);
   }
 
 void iOSAPI::deleteWindow(SystemAPI::Window *w) {
@@ -521,7 +549,11 @@ SystemAPI::CpuInfo iOSAPI::cpuInfoImpl() {
   }
 
 SystemAPI::File *iOSAPI::fopenImpl(const char *fname, const char *mode) {
-  return SystemAPI::fopenImpl( fname, mode );
+  NSString *dir = [[NSBundle mainBundle] resourcePath];
+  std::string full = [dir UTF8String];
+  full += "/";
+  full += fname;
+  return SystemAPI::fopenImpl( full.c_str(), mode );
   }
 
 SystemAPI::File *iOSAPI::fopenImpl(const char16_t *fname, const char *mode) {
@@ -539,10 +571,28 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
   }*/
 
 void* iOSAPI::initializeOpengl(void* wnd) {
-  id window = (id)wnd;
+  TempestWindow* window = (TempestWindow*)wnd;
 
-  EAGLContext*     openGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-  //[openGLContext setView:[window contentView]];
+  GLuint renderBuffer=0;
+  EAGLContext* openGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+
+  // Make the context the current context.
+  if(![EAGLContext setCurrentContext:openGLContext])
+    return nullptr;
+
+  id layer=window.glView.egLayer;
+  glGenRenderbuffers(1, &renderBuffer);
+  glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
+  [openGLContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:layer];
+
+  GLuint framebuffer;
+  glGenFramebuffers(1, &framebuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, renderBuffer);
+
+  //TODO: cleanup
+  window.renderBuffer=renderBuffer;
+
   return openGLContext;
   }
 
@@ -552,7 +602,7 @@ bool iOSAPI::glMakeCurrent(void *ctx) {
   return true;
   }
 
-bool iOSAPI::glUpdateContext(void* ctx, void* /*window*/) {
+bool iOSAPI::glUpdateContext(void* /*ctx*/, void* /*window*/) {
   //[(id)ctx update];
   return true;
   }

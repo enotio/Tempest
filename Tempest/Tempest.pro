@@ -23,7 +23,15 @@ INCLUDEPATH += "./include"
 android:{
   DESTDIR = ../lib/$$ANDROID_TARGET_ARCH
   } else {
-  DESTDIR = ../lib
+  ios:{
+    if(contains(CONFIG,iphonesimulator)){
+      DESTDIR = ../lib/simulator
+      } else {
+      DESTDIR = ../lib/ios
+      }
+    } else {
+    DESTDIR = ../lib
+    }
   }
 
 gcc:QMAKE_CXXFLAGS += -Wall -Wextra
@@ -71,6 +79,7 @@ ios:{
   LIBS += -framework UiKit
   LIBS += -framework GLKit
   LIBS += -framework OpenGLES
+  LIBS += -framework QuartzCore
   QMAKE_IOS_DEPLOYMENT_TARGET = 5.0
   }
 
