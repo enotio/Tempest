@@ -10,8 +10,8 @@
 
 #include <Tempest/Window>
 #include <Tempest/Event>
+#include <Tempest/Platform>
 
-#include "appdelegate.h"
 #include "thirdparty/utf8cpp/utf8.h"
 #include <OpenGLES/EAGL.h>
 #include <OpenGLES/ES2/gl.h>
@@ -21,6 +21,23 @@
 #include <unistd.h>
 #include <mach/mach_host.h>
 #include <atomic>
+
+#if TARGET_OS_SIMULATOR
+#  define FUNCTION_CALL_ALIGNMENT 16
+#  if TARGET_CPU_X86_64
+#    define SET_STACK_POINTER "movq %0, %%rsp"
+#  elif TARGET_CPU_X86
+#    define SET_STACK_POINTER "mov %0, %%esp"
+#  endif
+#elif TARGET_OS_IOS && !TARGET_OS_SIMULATOR
+#  // Valid for both 32 and 64-bit ARM
+#  define FUNCTION_CALL_ALIGNMENT 4
+#  define SET_STACK_POINTER "mov sp, %0"
+#else
+#  error "Unknown processor family"
+#endif
+
+#define alignDown(val, align) val & ~(align - 1)
 
 using namespace Tempest;
 
@@ -82,6 +99,7 @@ struct iOSAPI::PBox {
 volatile bool appQuit = false;
 iOSAPI::Fiber mainContext, appleContext;
 static char   appleStack[1*1024*1024];
+static void   appleMain(void*);
 
 enum MacEvent {
   EventMove = Event::Custom+1,
@@ -124,22 +142,25 @@ static void fiberStartFnc(int v0,int v1)  {
   ufnc(uctx);
   }
 
-inline static void createFiber(iOSAPI::Fiber& fib, void(*ufnc)(void*), void* uctx, char* stk, size_t ssize)  {
-  getcontext(&fib.fib);
+inline static void createAppleSubContext()  {
+  if(_setjmp(mainContext.jmp) == 0) {
+    // replace stack
+    static const long kPageSize = sysconf(_SC_PAGESIZE);
 
-  fib.fib.uc_stack.ss_sp   = stk;
-  fib.fib.uc_stack.ss_size = ssize;
-  fib.fib.uc_link = 0;
+    uintptr_t ptr  = reinterpret_cast<uintptr_t>(appleStack);
+    uintptr_t base = alignDown(ptr + sizeof(appleStack), kPageSize);
+    /*
+    __asm__ __volatile__("mov lr, %0"
+      :
+      : "r" (alignDown(ptr, FUNCTION_CALL_ALIGNMENT)));*/
 
-  ucontext_t tmp;
-  iOSAPI::FiberCtx ctx = {ufnc, uctx, &fib.jmp, &tmp};
-
-  T_ASSERT_X(iOSAPI::PBox::sz<=2,"x86;x64 code");
-  iOSAPI::PBox ptr;
-  ptr.set(&ctx);
-
-  makecontext(&fib.fib, (void(*)())fiberStartFnc, 2, ptr.val[0], ptr.val[1]);
-  swapcontext(&tmp, &fib.fib);
+    __asm__ __volatile__(
+                SET_STACK_POINTER
+                : // no outputs
+                : "r" (alignDown(base, FUNCTION_CALL_ALIGNMENT))
+            );
+    appleMain(nullptr);
+    }
   }
 
 inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
@@ -152,8 +173,9 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-  [self.window makeKeyAndVisible];
+  //[self.window makeKeyAndVisible];
   //[(EAGLView*)self.window.rootViewController.view startAnimation];
+  Tempest::iOSAPI::swapContext();
   return YES;
   }
 
@@ -306,8 +328,7 @@ static void appleMain(void*){
   }
 
 void iOSAPI::startApplication(SystemAPI::ApplicationInitArgs *) {
-  createFiber(appleContext,appleMain,nullptr,appleStack,sizeof(appleStack));
-  switch2Fiber(appleContext,mainContext);
+  createAppleSubContext();
   }
 
 void iOSAPI::endApplication() {
@@ -526,13 +547,13 @@ void* iOSAPI::initializeOpengl(void* wnd) {
   }
 
 bool iOSAPI::glMakeCurrent(void *ctx) {
-  [(id)ctx update];
+  //[(id)ctx update];
   [EAGLContext setCurrentContext:(id)ctx];
   return true;
   }
 
 bool iOSAPI::glUpdateContext(void* ctx, void* /*window*/) {
-  [(id)ctx update];
+  //[(id)ctx update];
   return true;
   }
 

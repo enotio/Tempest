@@ -13,6 +13,8 @@ msvc_static: {
   CONFIG   += dll
   }
 
+ios:CONFIG   += staticlib
+
 DEFINES += TEMPEST_LIBRARY_BUILD
 DEFINES += TEMPEST_M_TREADS
 
@@ -180,7 +182,6 @@ SOURCES += \
     scene/lightcollection.cpp \
     scene/light.cpp \
     scene/camera.cpp \
-    scene/abstractlightcollection.cpp \
     scene/abstractcamera.cpp \
     shading/abstractshadinglang.cpp \
     utils/tessobject.cpp \
