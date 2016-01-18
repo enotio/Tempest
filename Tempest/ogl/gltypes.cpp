@@ -96,6 +96,17 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
     glDiscardFrameBuffer = (Detail::PFNGLDISCARDFRAMEBUFFERPROC)eglGetProcAddress("glDiscardFramebufferEXT");
     }
 #endif
+#ifdef __IOS__
+  if( hasQCOMTiles ){
+    glStartTilingQCOM = 0;
+    glEndTilingQCOM   = 0;
+    }
+
+  if( hasDiscardBuffers ){
+    this->glDiscardFrameBuffer = 0;
+    hasDiscardBuffers=false;//TODO
+    }
+#endif
 
   caps.hasHalf2 = hasHalfSupport;
   caps.hasHalf4 = hasHalfSupport;

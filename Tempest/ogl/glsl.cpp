@@ -475,7 +475,7 @@ std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
         "}";
 
   static const std::string fs_src =
-#ifdef __ANDROID__
+#ifdef __MOBILE_PLATFORM__
       "precision mediump float;"
 #endif
       "varying vec2 tc;"
@@ -499,7 +499,7 @@ std::string GLSL::surfaceShader( AbstractShadingLang::ShaderType t,
         "}";
 
   static const std::string fs_src_nt =
-#ifdef __ANDROID__
+#ifdef __MOBILE_PLATFORM__
       "precision mediump float;"
 #endif
       "varying vec4 cl;"
