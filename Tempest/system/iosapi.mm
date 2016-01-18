@@ -260,15 +260,32 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
     }
   }
 
+- (void)layoutSubviews {
+  NSLog(@"");
+  //[self deleteFramebuffer];
+  }
+
 @end
 
 @interface TempestWindow : UIWindow {
   }
-@property (nonatomic)         GLuint renderBuffer;
+@property (nonatomic)         GLuint renderBuffer, frameBuffer;
 @property (nonatomic, retain) GLView *glView;
 @end
 
 @implementation TempestWindow
+
+
+- (void)layoutSubviews {
+  CGRect frame = self.frame;
+  [self.glView setFrame: frame];
+
+  state.eventType = Event::Resize;
+  state.window    = (void*)self;
+  new (&state.event.size) SizeEvent(frame.size.width,frame.size.height);
+  iOSAPI::swapContext();
+  //[self deleteFramebuffer];
+  }
 
 @end
 
@@ -553,11 +570,11 @@ SystemAPI::File *iOSAPI::fopenImpl(const char *fname, const char *mode) {
   std::string full = [dir UTF8String];
   full += "/";
   full += fname;
-  return SystemAPI::fopenImpl( full.c_str(), mode );
+  return SystemAPI::fopenImpl( full.c_str(), mode ); //TODO
   }
 
 SystemAPI::File *iOSAPI::fopenImpl(const char16_t *fname, const char *mode) {
-  return SystemAPI::fopenImpl( fname, mode );
+  return SystemAPI::fopenImpl( fname, mode );//TODO
   }
 /*
 static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
@@ -570,28 +587,36 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
   return kCVReturnSuccess;
   }*/
 
-void* iOSAPI::initializeOpengl(void* wnd) {
+void iOSAPI::createFramebuffers(void* wnd, void* ctx) {
   TempestWindow* window = (TempestWindow*)wnd;
+  EAGLContext* openGLContext = (EAGLContext*)ctx;
 
   GLuint renderBuffer=0;
-  EAGLContext* openGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-
-  // Make the context the current context.
-  if(![EAGLContext setCurrentContext:openGLContext])
-    return nullptr;
 
   id layer=window.glView.egLayer;
   glGenRenderbuffers(1, &renderBuffer);
   glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
   [openGLContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:layer];
 
-  GLuint framebuffer;
+  GLuint framebuffer=0;
   glGenFramebuffers(1, &framebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, renderBuffer);
 
   //TODO: cleanup
-  window.renderBuffer=renderBuffer;
+  window.renderBuffer = renderBuffer;
+  window.frameBuffer  = framebuffer;
+  }
+
+void* iOSAPI::initializeOpengl(void* wnd) {
+  TempestWindow* window = (TempestWindow*)wnd;
+
+  EAGLContext* openGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+
+  // Make the context the current context.
+  if(![EAGLContext setCurrentContext:openGLContext])
+    return nullptr;
+  createFramebuffers(window,openGLContext);
 
   return openGLContext;
   }
@@ -602,9 +627,30 @@ bool iOSAPI::glMakeCurrent(void *ctx) {
   return true;
   }
 
-bool iOSAPI::glUpdateContext(void* /*ctx*/, void* /*window*/) {
-  //[(id)ctx update];
+bool iOSAPI::glUpdateContext(void* ctx, void* wnd) {
+  TempestWindow* window = (TempestWindow*)wnd;
+  if(![EAGLContext setCurrentContext:(id)ctx])
+    return false;
+
+  if(window.frameBuffer){
+    GLuint buffer=window.frameBuffer;
+    glDeleteFramebuffers(1, &buffer);
+    window.frameBuffer=0;
+    }
+
+  if(window.renderBuffer){
+    GLuint buffer=window.renderBuffer;
+    glDeleteRenderbuffers(1, &buffer);
+    window.renderBuffer=0;
+    }
+
+  createFramebuffers(window,ctx);
   return true;
+  }
+
+void iOSAPI::glBindZeroFramebuffer(void* wnd) {
+  TempestWindow* window = (TempestWindow*)wnd;
+  glBindFramebuffer(GL_FRAMEBUFFER, window.frameBuffer);
   }
 
 void iOSAPI::glSwapBuffers(void *ctx) {

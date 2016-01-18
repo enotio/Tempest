@@ -16,6 +16,7 @@ class iOSAPI:public SystemAPI {
     static void* initializeOpengl(void* window);
     static bool  glMakeCurrent(void* ctx);
     static bool  glUpdateContext(void* ctx,void* window);
+    static void  glBindZeroFramebuffer(void* window);
     static void  glSwapBuffers(void* ctx);
     static void  swapContext();
     static void  finish();
@@ -61,6 +62,7 @@ class iOSAPI:public SystemAPI {
   private:
     struct Wnd;
     static bool processEvent();
+    static void createFramebuffers(void* wnd, void* ctx);
 
   friend class SystemAPI;
   };

@@ -619,7 +619,11 @@ void Opengl2x::unsetRenderTagets( AbstractAPI::Device *d,
   if( !setDevice(d) ) return;
   endTiledRender();
 
+#ifdef __IOS__
+  iOSAPI::glBindZeroFramebuffer(dev->window);
+#else
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
   /*
   glReadBuffer(GL_BACK);
   glDrawBuffer(GL_BACK);

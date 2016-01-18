@@ -534,7 +534,7 @@ bool OsxAPI::setDisplaySettings(SystemAPI::Window *, const DisplaySettings &) {
   }
 
 Tempest::Size OsxAPI::implScreenSize() {
-  return Size(1440,980);
+  return Size(1440,980);//TODO
   }
 
 static void appleMain(void*){
