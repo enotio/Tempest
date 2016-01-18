@@ -188,24 +188,6 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
                                     [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
                                     kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
                                     nil];
-    /*
-    m_context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-
-    if( !m_context || ![EAGLContext setCurrentContext:m_context] ){
-      [self release];
-      return nil;
-      }
-
-    [m_context renderbufferStorage:GL_RENDERBUFFER fromDrawable: eaglLayer];
-    [self drawView: nil];
-
-    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                                      selector:@selector(didRotate:)
-                                                      name:UIDeviceOrientationDidChangeNotification
-                                                      object:nil];
-                                                      */
 
     displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawFrame)];
     //by adding the display link to the run loop our draw method will be called 60 times per second
@@ -221,12 +203,13 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 -(void) processEvent:(UIEvent *)event point:(CGPoint) p type:(Event::Type) type {
   (void)event;
   int x=p.x,y=p.y;
+  CGRect frame = [self frame];
   state.eventType = type;
 
   if(type!=Event::NoEvent){
     new (&state.event.mouse)
       MouseEvent ( x,
-                   y,
+                   frame.size.height-y,
                    Event::ButtonLeft,
                    0,
                    0,
@@ -260,11 +243,6 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
     }
   }
 
-- (void)layoutSubviews {
-  NSLog(@"");
-  //[self deleteFramebuffer];
-  }
-
 @end
 
 @interface TempestWindow : UIWindow {
@@ -277,6 +255,8 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 
 
 - (void)layoutSubviews {
+  [super layoutSubviews];
+
   CGRect frame = self.frame;
   [self.glView setFrame: frame];
 
@@ -566,6 +546,9 @@ SystemAPI::CpuInfo iOSAPI::cpuInfoImpl() {
   }
 
 SystemAPI::File *iOSAPI::fopenImpl(const char *fname, const char *mode) {
+  if(fname && fname[0]=='/')
+    return SystemAPI::fopenImpl( fname, mode );
+
   NSString *dir = [[NSBundle mainBundle] resourcePath];
   std::string full = [dir UTF8String];
   full += "/";
@@ -574,18 +557,8 @@ SystemAPI::File *iOSAPI::fopenImpl(const char *fname, const char *mode) {
   }
 
 SystemAPI::File *iOSAPI::fopenImpl(const char16_t *fname, const char *mode) {
-  return SystemAPI::fopenImpl( fname, mode );//TODO
+  return fopenImpl( SystemAPI::toUtf8(fname).c_str(), mode );
   }
-/*
-static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
-                                      const CVTimeStamp* now,
-                                      const CVTimeStamp* outputTime,
-                                      CVOptionFlags flagsIn,
-                                      CVOptionFlags* flagsOut,
-                                      void* displayLinkContext) {
-  //iOSAPI::swapContext();
-  return kCVReturnSuccess;
-  }*/
 
 void iOSAPI::createFramebuffers(void* wnd, void* ctx) {
   TempestWindow* window = (TempestWindow*)wnd;
