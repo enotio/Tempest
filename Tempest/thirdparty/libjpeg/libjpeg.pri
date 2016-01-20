@@ -9,7 +9,6 @@ HEADERS += \
   $$PWD/jpeglib.h \
   $$PWD/jversion.h
 
-
 SOURCES += \
   $$PWD/jaricom.c \
   $$PWD/jcomapi.c \
@@ -26,16 +25,19 @@ SOURCES += \
   $$PWD/jdmainct.c \
   $$PWD/jdmarker.c \
   $$PWD/jdmaster.c \
-  $$PWD/jdmerge.c \
   $$PWD/jdpostct.c \
   $$PWD/jdsample.c \
   $$PWD/jdtrans.c \
   $$PWD/jerror.c \
-  $$PWD/jidctflt.c \
   $$PWD/jidctfst.c \
-  $$PWD/jidctint.c \
   $$PWD/jmemmgr.c \
   $$PWD/jmemnobs.c \
   $$PWD/jquant1.c \
   $$PWD/jquant2.c \
   $$PWD/jutils.c
+
+!mac:SOURCES += \
+  $$PWD/jdmerge.c \
+  $$PWD/jidctflt.c \
+  $$PWD/jidctint.c \
+
