@@ -830,7 +830,7 @@ bool Opengl2x::present(AbstractAPI::Device *d, SwapBehavior b) const {
 #ifdef __APPLE__
   (void)b;
 #ifdef __MOBILE_PLATFORM__
-  iOSAPI::glSwapBuffers(dev->context);
+  iOSAPI::glSwapBuffers(dev->window,dev->context);
 #else
   OsxAPI::glSwapBuffers(dev->context);
 #endif

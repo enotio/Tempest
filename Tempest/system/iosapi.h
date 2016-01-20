@@ -17,9 +17,12 @@ class iOSAPI:public SystemAPI {
     static bool  glMakeCurrent(void* ctx);
     static bool  glUpdateContext(void* ctx,void* window);
     static void  glBindZeroFramebuffer(void* window);
-    static void  glSwapBuffers(void* ctx);
+    static void  glSwapBuffers(void* wnd, void* ctx);
     static void  swapContext();
     static void  finish();
+
+    static int                densityDpi();
+    static const std::string& iso3Locale();
 
     struct Fiber;
     struct FiberCtx;

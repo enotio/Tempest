@@ -1,8 +1,6 @@
 #include <Tempest/Platform>
 #ifdef __IOS__
 
-#define _XOPEN_SOURCE
-
 #include "iosapi.h"
 #import  <UIKit/UIKit.h>
 #include <unordered_map>
@@ -17,10 +15,10 @@
 #include <OpenGLES/ES2/gl.h>
 #include <pthread.h>
 
-#include <ucontext.h>
 #include <unistd.h>
 #include <mach/mach_host.h>
 #include <atomic>
+#include <sys/utsname.h>
 
 #if TARGET_OS_SIMULATOR
 #  define FUNCTION_CALL_ALIGNMENT 16
@@ -77,6 +75,11 @@ enum MacEvent {
   EventDeMinimize
   };
 
+struct Touch {
+  void*   id;
+  CGPoint pos;
+  };
+
 static struct State {
   union Ev{
     ~Ev(){}
@@ -93,6 +96,54 @@ static struct State {
   volatile void*       window   =nullptr;
   volatile bool        ctrl=false;
   volatile bool        command=false;
+
+  std::vector<Touch>   touch;
+
+  size_t addTouch(void* id,const CGPoint& pos){
+    for(Touch& t:touch)
+      if(t.id==id)
+        return -1;
+
+    Touch tx;
+    tx.id  = id;
+    tx.pos = pos;
+
+    for(size_t i=0;i<touch.size();++i)
+      if(touch[i].id==nullptr){
+        touch[i] = tx;
+        return i;
+        }
+
+    touch.push_back(tx);
+    return touch.size()-1;
+    }
+
+  size_t delTouch(void* id){
+    size_t res=-1;
+    for(size_t i=0;i<touch.size();++i)
+      if(touch[i].id==id){
+        touch[i].id = nullptr;
+        if(res==size_t(-1))
+          res = i;
+        }
+
+    while(touch.size() && touch.back().id==nullptr)
+      touch.pop_back();
+
+    return res;
+    }
+
+  size_t moveTouch(void* id,const CGPoint& pos){
+    for(size_t i=0;i<touch.size();++i)
+      if(touch[i].id==id){
+        if(touch[i].pos.x==pos.x && touch[i].pos.y==pos.y)
+          return -1;
+        touch[i].pos = pos;
+        return i;
+        }
+
+    return -1;
+    }
   } state;
 
 inline static void createAppleSubContext()  {
@@ -130,6 +181,7 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
   //[(EAGLView*)self.window.rootViewController.view startAnimation];
   (void)application;
   (void)launchOptions;
+  [[UIApplication sharedApplication] setStatusBarHidden:YES animated:NO];
   Tempest::iOSAPI::swapContext();
   return YES;
   }
@@ -181,6 +233,7 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 
 -(id) initWithFrame: (CGRect) frame {
   if( self = [super initWithFrame:frame] ) {
+    self.multipleTouchEnabled = YES;
     self.egLayer = (CAEAGLLayer*) super.layer;
     self.egLayer.opaque = YES;
     //here we configure the properties of our canvas, most important is the color depth RGBA8 !
@@ -200,7 +253,7 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
   iOSAPI::swapContext();
   }
 
--(void) processEvent:(UIEvent *)event point:(CGPoint) p type:(Event::Type) type {
+-(void) processEvent:(UIEvent *)event point:(CGPoint) p type:(Event::Type) type id:(size_t) id  {
   (void)event;
   int x=p.x,y=p.y;
   CGRect frame = [self frame];
@@ -212,7 +265,7 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
                    frame.size.height-y,
                    Event::ButtonLeft,
                    0,
-                   0,
+                   id,
                    type
                    );
     iOSAPI::swapContext();
@@ -220,26 +273,32 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
   }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-  if( [touches count]>0 ){
-    UITouch *touch = (UITouch *)[touches anyObject];
+  for( UITouch *touch in touches ){
     CGPoint point = [touch locationInView:nil];
-    [self processEvent:event point:point type:Event::MouseDown];
+
+    size_t id = state.addTouch(touch,point);
+    if(id<state.touch.size())
+      [self processEvent:event point:point type:Event::MouseDown id:id];
     }
   }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-  if( [touches count]>0 ){
-    UITouch *touch = (UITouch *)[touches anyObject];
+  for( UITouch *touch in touches ){
     CGPoint point = [touch locationInView:nil];
-    [self processEvent:event point:point type:Event::MouseMove];
+
+    size_t id = state.moveTouch(touch,point);
+    if(id<state.touch.size())
+      [self processEvent:event point:point type:Event::MouseMove id:id];
     }
   }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-  if( [touches count]>0 ){
-    UITouch *touch = (UITouch *)[touches anyObject];
+  for( UITouch *touch in touches ){
     CGPoint point = [touch locationInView:nil];
-    [self processEvent:event point:point type:Event::MouseUp];
+
+    size_t id = state.delTouch(touch);
+    if(id!=size_t(-1))
+      [self processEvent:event point:point type:Event::MouseUp id:id];
     }
   }
 
@@ -247,7 +306,7 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 
 @interface TempestWindow : UIWindow {
   }
-@property (nonatomic)         GLuint renderBuffer, frameBuffer;
+@property (nonatomic)         GLuint renderBuffer, depthBuffer, frameBuffer;
 @property (nonatomic, retain) GLView *glView;
 @end
 
@@ -342,6 +401,8 @@ Tempest::Size iOSAPI::implScreenSize() {
   }
 
 static void appleMain(void*){
+  state.touch.reserve(16);
+
   static std::string app="application";
   char * argv[2] = {
     &app[0],nullptr
@@ -553,7 +614,7 @@ SystemAPI::File *iOSAPI::fopenImpl(const char *fname, const char *mode) {
   std::string full = [dir UTF8String];
   full += "/";
   full += fname;
-  return SystemAPI::fopenImpl( full.c_str(), mode ); //TODO
+  return SystemAPI::fopenImpl( full.c_str(), mode );
   }
 
 SystemAPI::File *iOSAPI::fopenImpl(const char16_t *fname, const char *mode) {
@@ -564,20 +625,38 @@ void iOSAPI::createFramebuffers(void* wnd, void* ctx) {
   TempestWindow* window = (TempestWindow*)wnd;
   EAGLContext* openGLContext = (EAGLContext*)ctx;
 
-  GLuint renderBuffer=0;
+  const bool useDepthBuffer=true;
+
+  GLint  framebufferWidth=1, framebufferHeight=1;
+  GLuint renderBuffer=0, depthBuffer=0;
 
   id layer=window.glView.egLayer;
   glGenRenderbuffers(1, &renderBuffer);
   glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
   [openGLContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:layer];
 
+  glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &framebufferWidth);
+  glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &framebufferHeight);
+
   GLuint framebuffer=0;
   glGenFramebuffers(1, &framebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, renderBuffer);
 
+  if(useDepthBuffer) {
+    //create a depth renderbuffer
+    glGenRenderbuffers(1, &depthBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+    //create the storage for the buffer, optimized for depth values, same size as the colorRenderbuffer
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, framebufferWidth, framebufferHeight);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+    }
+  T_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
   //TODO: cleanup
   window.renderBuffer = renderBuffer;
+  window.depthBuffer  = depthBuffer;
   window.frameBuffer  = framebuffer;
   }
 
@@ -617,6 +696,12 @@ bool iOSAPI::glUpdateContext(void* ctx, void* wnd) {
     window.renderBuffer=0;
     }
 
+  if(window.depthBuffer){
+    GLuint buffer=window.depthBuffer;
+    glDeleteRenderbuffers(1, &buffer);
+    window.depthBuffer=0;
+    }
+
   createFramebuffers(window,ctx);
   return true;
   }
@@ -626,7 +711,10 @@ void iOSAPI::glBindZeroFramebuffer(void* wnd) {
   glBindFramebuffer(GL_FRAMEBUFFER, window.frameBuffer);
   }
 
-void iOSAPI::glSwapBuffers(void *ctx) {
+void iOSAPI::glSwapBuffers(void* wnd, void *ctx) {
+  TempestWindow* window = (TempestWindow*)wnd;
+  GLuint buffer=window.renderBuffer;
+  glBindRenderbuffer(GL_RENDERBUFFER,buffer);
   [(id)ctx presentRenderbuffer:GL_RENDERBUFFER];
   }
 
@@ -638,6 +726,39 @@ void iOSAPI::swapContext() {
 void iOSAPI::finish() {
   appQuit = true;
   swapContext();
+  }
+
+static bool isIpadMini() {
+  utsname systemInfo={};
+  if( uname(&systemInfo)<0 )
+    return false; // no idea what is it
+
+  if ( strcmp(systemInfo.machine,"iPad2,5")==0
+       || strcmp(systemInfo.machine,"iPad2,6")==0
+       || strcmp(systemInfo.machine,"iPad2,7")==0 )
+    return true;
+  return false;
+  }
+
+int iOSAPI::densityDpi() {
+  float scale = 1;
+
+  if( [[UIScreen mainScreen] respondsToSelector:@selector(scale)] )
+    scale = [[UIScreen mainScreen] scale];
+
+  float dpi;
+  if( UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPad )
+    dpi = isIpadMini() ? 163*scale : 132 * scale;
+  else if( UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPhone )
+    dpi = 163 * scale;
+  else
+    dpi = 160 * scale;
+
+  return int(dpi);
+  }
+
+const std::string& iOSAPI::iso3Locale() {
+  return "eng";
   }
 
 #endif
