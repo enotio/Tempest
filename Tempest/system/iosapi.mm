@@ -11,6 +11,8 @@
 #include <Tempest/Platform>
 
 #include "thirdparty/utf8cpp/utf8.h"
+#include "core/langcodes.h"
+
 #include <OpenGLES/EAGL.h>
 #include <OpenGLES/ES2/gl.h>
 #include <pthread.h>
@@ -97,6 +99,7 @@ static struct State {
   volatile bool        ctrl=false;
   volatile bool        command=false;
 
+  std::string          locale;
   std::vector<Touch>   touch;
 
   size_t addTouch(void* id,const CGPoint& pos){
@@ -177,8 +180,6 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-  //[self.window makeKeyAndVisible];
-  //[(EAGLView*)self.window.rootViewController.view startAnimation];
   (void)application;
   (void)launchOptions;
   [[UIApplication sharedApplication] setStatusBarHidden:YES animated:NO];
@@ -194,7 +195,9 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
   (void)application;
-  //[(EAGLView*)self.window.rootViewController.view stopAnimation];
+  state.eventType = Event::Type(EventMinimize);
+  state.window    = nullptr;
+  iOSAPI::swapContext();
   }
 
 
@@ -206,6 +209,9 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 
 - (void)applicationDidBecomeActive:(UIApplication *)application  {
   (void)application;
+  state.eventType = Event::Type(EventDeMinimize);
+  state.window    = nullptr;
+  iOSAPI::swapContext();
   //[(EAGLView*)self.window.rootViewController.view startAnimation];
   }
 
@@ -217,10 +223,11 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 
 @end
 
-@interface GLView : UIView {
+@interface GLView : UIView<UIKeyInput> {
   CADisplayLink* displayLink;
   }
   @property (nonatomic)         BOOL         closeEventResult;
+  @property (nonatomic)         BOOL         canBecomeFirstResponderFlag;
   @property (nonatomic, retain) CAEAGLLayer* egLayer;
 @end
 
@@ -233,6 +240,8 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 
 -(id) initWithFrame: (CGRect) frame {
   if( self = [super initWithFrame:frame] ) {
+    self.closeEventResult = NO;
+    self.canBecomeFirstResponderFlag = NO;
     self.multipleTouchEnabled = YES;
     self.egLayer = (CAEAGLLayer*) super.layer;
     self.egLayer.opaque = YES;
@@ -300,6 +309,52 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
     if(id!=size_t(-1))
       [self processEvent:event point:point type:Event::MouseUp id:id];
     }
+  }
+
+- (void)insertText:(NSString *)text {
+  const char *utf8text = [text UTF8String];
+
+  char16_t txt16[32] = {};
+  if( utf8text )
+    utf8::unchecked::utf8to16(utf8text, utf8text+std::max<int>(32,strlen(utf8text)), txt16 );
+
+  for(char16_t ch:txt16){
+    if(ch=='\0')
+      break;
+
+    Event::KeyType kt = Event::K_NoKey;
+    if(ch=='\n'){
+      kt = Event::K_Return;
+      ch = '\0';
+      }
+
+    state.eventType = Event::KeyDown;
+    new (&state.event.key) Tempest::KeyEvent( kt, ch, state.eventType );
+    iOSAPI::swapContext();
+
+    state.eventType = Event::KeyUp;
+    new (&state.event.key) Tempest::KeyEvent( kt, ch, state.eventType );
+    iOSAPI::swapContext();
+    }
+  }
+
+- (void)deleteBackward {
+  state.eventType = Event::KeyDown;
+  new (&state.event.key) Tempest::KeyEvent( Event::K_Back, 0, state.eventType );
+  iOSAPI::swapContext();
+
+  state.eventType = Event::KeyUp;
+  new (&state.event.key) Tempest::KeyEvent( Event::K_Back, 0, state.eventType );
+  iOSAPI::swapContext();
+  }
+
+- (BOOL)hasText {
+  // Return whether there's any text present
+  return YES;
+  }
+
+- (BOOL)canBecomeFirstResponder {
+  return self.canBecomeFirstResponderFlag;
   }
 
 @end
@@ -382,6 +437,26 @@ iOSAPI::iOSAPI(){
 
   //setupKeyTranslate(k);
   //setFuncKeysCount(20);
+/*
+  NSString* locale=[[NSLocale currentLocale] ISO639_2LanguageIdentifier];
+  if(locale!=nil){
+    const char *utf8text = [locale UTF8String];
+    if(utf8text!=nullptr)
+      state.locale = utf8text;
+    }
+*/
+  NSString *ISO639_1LanguageCode = [[NSLocale currentLocale] objectForKey:NSLocaleLanguageCode];
+  if(ISO639_1LanguageCode!=nil){
+    const char *utf8 = [ISO639_1LanguageCode UTF8String];
+    if(utf8){
+      for(auto& l:lng){
+        if(strcmp(l.first,utf8)==0)
+          state.locale = l.second;
+        }
+      }
+    }
+  if(state.locale.size()==0)
+    state.locale="eng";
   }
 
 iOSAPI::~iOSAPI() {
@@ -733,9 +808,9 @@ static bool isIpadMini() {
   if( uname(&systemInfo)<0 )
     return false; // no idea what is it
 
-  if ( strcmp(systemInfo.machine,"iPad2,5")==0
-       || strcmp(systemInfo.machine,"iPad2,6")==0
-       || strcmp(systemInfo.machine,"iPad2,7")==0 )
+  if(   strcmp(systemInfo.machine,"iPad2,5")==0
+     || strcmp(systemInfo.machine,"iPad2,6")==0
+     || strcmp(systemInfo.machine,"iPad2,7")==0 )
     return true;
   return false;
   }
@@ -758,7 +833,42 @@ int iOSAPI::densityDpi() {
   }
 
 const std::string& iOSAPI::iso3Locale() {
-  return "eng";
+  return state.locale;
+  }
+
+void iOSAPI::showSoftInput() {
+  if(wndWx.size()==0)
+    return;
+
+  id wi = wndWx.begin()->first;
+
+  TempestWindow* window = (TempestWindow*)wi;
+  window.glView.canBecomeFirstResponderFlag = YES;
+  [window.glView becomeFirstResponder];
+  }
+
+void iOSAPI::hideSoftInput() {
+  if(wndWx.size()==0)
+    return;
+
+  id wi = wndWx.begin()->first;
+
+  TempestWindow* window = (TempestWindow*)wi;
+  window.glView.canBecomeFirstResponderFlag = NO;
+  [window.glView resignFirstResponder];
+  }
+
+void iOSAPI::toggleSoftInput() {
+  if(wndWx.size()==0)
+    return;
+
+  id wi = wndWx.begin()->first;
+
+  TempestWindow* window = (TempestWindow*)wi;
+
+  if(window.glView.canBecomeFirstResponderFlag==YES)
+    hideSoftInput(); else
+    showSoftInput();
   }
 
 #endif

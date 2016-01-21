@@ -83,10 +83,6 @@ ios:{
   QMAKE_IOS_DEPLOYMENT_TARGET = 5.0
   }
 
-mac:{
-  QMAKE_RANLIB += "-no_warning_for_no_symbols"
-  }
-
 ogl:{
   win32:                 LIBS += -l"opengl32"
   unix: !android: !mac:  LIBS += -lX11 -lGL
@@ -340,7 +336,8 @@ HEADERS += \
     ui/controls/label.h \
     system/osxapi.h \
     system/appdelegate.h \
-    system/iosapi.h
+    system/iosapi.h \
+    core/langcodes.h
 
 mac:!ios: OBJECTIVE_SOURCES += \
     system/osxapi.mm \

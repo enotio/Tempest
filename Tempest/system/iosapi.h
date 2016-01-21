@@ -24,6 +24,10 @@ class iOSAPI:public SystemAPI {
     static int                densityDpi();
     static const std::string& iso3Locale();
 
+    static void showSoftInput();
+    static void hideSoftInput();
+    static void toggleSoftInput();
+
     struct Fiber;
     struct FiberCtx;
     struct PBox;
