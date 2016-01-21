@@ -182,7 +182,6 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   (void)application;
   (void)launchOptions;
-  [[UIApplication sharedApplication] setStatusBarHidden:YES animated:NO];
   Tempest::iOSAPI::swapContext();
   return YES;
   }
@@ -383,6 +382,26 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 
 @end
 
+@interface ViewController:UIViewController{}
+@end
+
+@implementation ViewController
+- (void)viewDidLoad {
+  if( [self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)] ) {
+    // iOS 7
+    [self performSelector:@selector(setNeedsStatusBarAppearanceUpdate)];
+    } else {
+    // iOS 6
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationSlide];
+    }
+  }
+
+- (BOOL)prefersStatusBarHidden {
+  return YES;
+  }
+
+@end
+
 static id createWindow(Window::ShowMode mode){
   (void)mode;
   TempestWindow *window = [[ TempestWindow alloc ] initWithFrame: [ [ UIScreen mainScreen ] bounds ] ];
@@ -392,7 +411,7 @@ static id createWindow(Window::ShowMode mode){
 
   CGRect frame = window.frame;
 
-  UIViewController* vc = [[UIViewController alloc]initWithNibName:nil bundle:nil];
+  UIViewController* vc = [[ViewController alloc]initWithNibName:nil bundle:nil];
   window.rootViewController = vc;
 
   window.glView=[[GLView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)];
