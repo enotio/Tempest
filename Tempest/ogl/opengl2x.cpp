@@ -582,9 +582,8 @@ bool Opengl2x::setupFBO() const {
     for( int i=0; err[i].desc; ++i )
       if( err[i].err==status )
         desc = err[i].desc;
-    void* ierr = (void*)status;
 #ifndef __ANDROID__
-    printf("OpenGL : fbo error %s %p", desc, ierr);
+    printf("OpenGL : fbo error %s 0x%X", desc, int(status));
 #else
     __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "fbo error %s %p", desc, ierr);
 #endif
