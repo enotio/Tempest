@@ -432,7 +432,7 @@ static id createWindow(Window::ShowMode mode){
   (void)mode;
   TempestWindow* window = (TempestWindow*)state.rootWindow;
   @try{
-  window.backgroundColor = [ UIColor redColor ];
+  window.backgroundColor = [ UIColor blackColor ];
   CGRect frame = window.frame;
 
   window.glView=[[GLView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)];
