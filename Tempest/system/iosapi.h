@@ -21,16 +21,22 @@ class iOSAPI:public SystemAPI {
     static void  swapContext();
     static void  finish();
 
+    enum InterfaceIdiom {
+      InterfaceIdiomPhone,
+      InterfaceIdiomPad,
+      InterfaceIdiomTV
+      };
+
     static int                densityDpi();
     static const std::string& iso3Locale();
 
     static void showSoftInput();
     static void hideSoftInput();
     static void toggleSoftInput();
+    static InterfaceIdiom interfaceIdiom();
 
     struct Fiber;
     struct FiberCtx;
-    struct PBox;
 
   protected:
     iOSAPI();

@@ -16,6 +16,8 @@
 #include <OpenGLES/EAGL.h>
 #include <OpenGLES/ES2/gl.h>
 #include <pthread.h>
+#include <mach/machine/thread_status.h>
+#include <mach/thread_state.h>
 
 #include <unistd.h>
 #include <mach/mach_host.h>
@@ -55,21 +57,10 @@ struct iOSAPI::FiberCtx  {
   ucontext_t* prv;
   };
 
-struct iOSAPI::PBox {
-  enum {
-    sz = (sizeof(void*)+sizeof(int)-1)/sizeof(int)
-    };
-  int val[2];
-
-  void set(void* v){
-    memcpy(val,&v,sizeof(v));
-    }
-  };
-
-volatile bool appQuit = false;
-iOSAPI::Fiber mainContext, appleContext;
-static char   appleStack[1*1024*1024];
-static void   appleMain(void*);
+volatile           bool appQuit = false;
+iOSAPI::Fiber           mainContext, appleContext;
+alignas(16) static char appleStack[1*1024*1024]={};
+static             void appleMain(void*);
 
 enum MacEvent {
   EventMove = Event::Custom+1,
@@ -98,6 +89,7 @@ static struct State {
   volatile void*       window   =nullptr;
   volatile bool        ctrl=false;
   volatile bool        command=false;
+  volatile id          rootWindow = nullptr;
 
   std::string          locale;
   std::vector<Touch>   touch;
@@ -152,20 +144,24 @@ static struct State {
 inline static void createAppleSubContext()  {
   if(_setjmp(mainContext.jmp) == 0) {
     // replace stack
-    static const long kPageSize = sysconf(_SC_PAGESIZE);
+    //static const long kPageSize = sysconf(_SC_PAGESIZE);
 
-    uintptr_t ptr  = reinterpret_cast<uintptr_t>(appleStack);
-    uintptr_t base = alignDown(ptr + sizeof(appleStack), kPageSize);
+    __volatile__ uintptr_t ptr  = reinterpret_cast<uintptr_t>(appleStack);
+    __volatile__ uintptr_t base = alignDown(ptr + sizeof(appleStack), FUNCTION_CALL_ALIGNMENT);
+
     /*
     __asm__ __volatile__("mov lr, %0"
       :
-      : "r" (alignDown(ptr, FUNCTION_CALL_ALIGNMENT)));*/
+      : "r" (alignDown(0llu, FUNCTION_CALL_ALIGNMENT)));*/
 
     __asm__ __volatile__(
                 SET_STACK_POINTER
                 : // no outputs
                 : "r" (alignDown(base, FUNCTION_CALL_ALIGNMENT))
             );
+
+    //thread_state_t state;
+    //thread_get_state();
     appleMain(nullptr);
     }
   }
@@ -175,52 +171,6 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
     _longjmp(fib.jmp, 1);
   }
 
-@interface AppDelegate : NSObject <UIApplicationDelegate> {}
-@end
-@implementation AppDelegate
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-  (void)application;
-  (void)launchOptions;
-  Tempest::iOSAPI::swapContext();
-  return YES;
-  }
-
-- (void)applicationWillResignActive:(UIApplication *)application {
-  (void)application;
-  //[(EAGLView*)self.window.rootViewController.view stopAnimation];
-  }
-
-
-- (void)applicationDidEnterBackground:(UIApplication *)application {
-  (void)application;
-  state.eventType = Event::Type(EventMinimize);
-  state.window    = nullptr;
-  iOSAPI::swapContext();
-  }
-
-
-- (void)applicationWillEnterForeground:(UIApplication *)application {
-  (void)application;
-  //[(EAGLView*)self.window.rootViewController.view startAnimation];
-  }
-
-
-- (void)applicationDidBecomeActive:(UIApplication *)application  {
-  (void)application;
-  state.eventType = Event::Type(EventDeMinimize);
-  state.window    = nullptr;
-  iOSAPI::swapContext();
-  //[(EAGLView*)self.window.rootViewController.view startAnimation];
-  }
-
-
-- (void)applicationWillTerminate:(UIApplication *)application {
-  (void)application;
-  //[(EAGLView*)self.window.rootViewController.view stopAnimation];
-  }
-
-@end
 
 @interface GLView : UIView<UIKeyInput> {
   CADisplayLink* displayLink;
@@ -264,6 +214,7 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 -(void) processEvent:(UIEvent *)event point:(CGPoint) p type:(Event::Type) type id:(size_t) id  {
   (void)event;
   int x=p.x,y=p.y;
+
   CGRect frame = [self frame];
   state.eventType = type;
 
@@ -282,7 +233,7 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
   for( UITouch *touch in touches ){
-    CGPoint point = [touch locationInView:nil];
+    CGPoint point = [touch locationInView:self];
 
     size_t id = state.addTouch(touch,point);
     if(id<state.touch.size())
@@ -292,7 +243,7 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
   for( UITouch *touch in touches ){
-    CGPoint point = [touch locationInView:nil];
+    CGPoint point = [touch locationInView:self];
 
     size_t id = state.moveTouch(touch,point);
     if(id<state.touch.size())
@@ -302,7 +253,7 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
   for( UITouch *touch in touches ){
-    CGPoint point = [touch locationInView:nil];
+    CGPoint point = [touch locationInView:self];
 
     size_t id = state.delTouch(touch);
     if(id!=size_t(-1))
@@ -370,14 +321,16 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 - (void)layoutSubviews {
   [super layoutSubviews];
 
-  CGRect frame = self.frame;
+  CGRect frame  = self.rootViewController.view.bounds;
+  frame.origin.x = 0;
+  frame.origin.y = 0;
   [self.glView setFrame: frame];
 
   state.eventType = Event::Resize;
   state.window    = (void*)self;
-  new (&state.event.size) SizeEvent(frame.size.width,frame.size.height);
+
+  new (&state.event.size) SizeEvent( frame.size.width, frame.size.height );
   iOSAPI::swapContext();
-  //[self deleteFramebuffer];
   }
 
 @end
@@ -400,22 +353,90 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
   return YES;
   }
 
+- (BOOL) shouldAutorotate {
+  return YES;
+  }
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+  (void)interfaceOrientation;
+  return YES;
+  }
+
+-(UIInterfaceOrientationMask)supportedInterfaceOrientations {
+  return  UIInterfaceOrientationMaskAll;
+  }
+@end
+
+@interface AppDelegate : NSObject <UIApplicationDelegate> {}
+  @property (strong, nonatomic) UIWindow *window;
+@end
+@implementation AppDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+  (void)application;
+  (void)launchOptions;
+
+  TempestWindow *window = [ [ TempestWindow alloc ] initWithFrame: [ [ UIScreen mainScreen ] bounds ] ];
+  window.rootViewController = [ViewController new];
+
+  window.backgroundColor = [ UIColor blackColor ];
+
+  self.window      = window;
+  state.rootWindow = window;
+
+  [ window makeKeyAndVisible ]; // possible switch here
+  Tempest::iOSAPI::swapContext();
+  return YES;
+  }
+
+- (UIInterfaceOrientationMask)application:(UIApplication *)application
+  supportedInterfaceOrientationsForWindow:(UIWindow *)window {
+  (void)application;
+  (void)window;
+  return UIInterfaceOrientationMaskAll;
+  }
+
+- (void)applicationWillResignActive:(UIApplication *)application {
+  (void)application;
+  }
+
+
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+  (void)application;
+  state.eventType = Event::Type(EventMinimize);
+  state.window    = nullptr;
+  iOSAPI::swapContext();
+  }
+
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+  (void)application;
+  }
+
+
+- (void)applicationDidBecomeActive:(UIApplication *)application  {
+  (void)application;
+  state.eventType = Event::Type(EventDeMinimize);
+  state.window    = nullptr;
+  iOSAPI::swapContext();
+  }
+
+
+- (void)applicationWillTerminate:(UIApplication *)application {
+  (void)application;
+  }
+
 @end
 
 static id createWindow(Window::ShowMode mode){
   (void)mode;
-  TempestWindow *window = [[ TempestWindow alloc ] initWithFrame: [ [ UIScreen mainScreen ] bounds ] ];
+  TempestWindow* window = (TempestWindow*)state.rootWindow;
   @try{
-  window.backgroundColor = [ UIColor blackColor ];
-  [ window makeKeyAndVisible ];
-
+  window.backgroundColor = [ UIColor redColor ];
   CGRect frame = window.frame;
 
-  UIViewController* vc = [[ViewController alloc]initWithNibName:nil bundle:nil];
-  window.rootViewController = vc;
-
   window.glView=[[GLView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)];
-  [ window addSubview: window.glView];
+  [ window.rootViewController.view addSubview: window.glView];
   }
   @catch (NSException * e) {
      NSLog(@"Exception: %@", e);
@@ -430,41 +451,10 @@ static void render( Tempest::Window* w ){
   }
 
 iOSAPI::iOSAPI(){
-  /*
-  TranslateKeyPair k[] = {
-    { kVK_LeftArrow,   Event::K_Left   },
-    { kVK_RightArrow,  Event::K_Right  },
-    { kVK_UpArrow,     Event::K_Up     },
-    { kVK_DownArrow,   Event::K_Down   },
-
-    { kVK_Escape,        Event::K_ESCAPE },
-    { kVK_Delete,        Event::K_Back   },
-    { kVK_ForwardDelete, Event::K_Delete },
-    { kVK_Control,       Event::K_Control },
-    //{ kVK_Insert,        Event::K_Insert },
-    { kVK_Home,          Event::K_Home   },
-    { kVK_End,           Event::K_End    },
-    //{ kVK_Pause,         Event::K_Pause  },
-    { kVK_Return,        Event::K_Return },
-
-    //{ kVK_F1,     Event::K_F1 },
-    //{ kVK_ANSI_0, Event::K_0  },
-    //{ kVK_ANSI_A, Event::K_A  },
-
-    { 0,          Event::K_NoKey }
-    };*/
-
-  //setupKeyTranslate(k);
-  //setFuncKeysCount(20);
-/*
-  NSString* locale=[[NSLocale currentLocale] ISO639_2LanguageIdentifier];
-  if(locale!=nil){
-    const char *utf8text = [locale UTF8String];
-    if(utf8text!=nullptr)
-      state.locale = utf8text;
-    }
-*/
   NSString *ISO639_1LanguageCode = [[NSLocale currentLocale] objectForKey:NSLocaleLanguageCode];
+  if( [[NSLocale preferredLanguages] count]>0 ) {
+    ISO639_1LanguageCode = [[NSLocale preferredLanguages] objectAtIndex:0];
+    }
   if(ISO639_1LanguageCode!=nil){
     const char *utf8 = [ISO639_1LanguageCode UTF8String];
     if(utf8){
@@ -588,9 +578,9 @@ bool iOSAPI::processEvent(){
       break;
     case EventDeMinimize:{
       Tempest::Window::ShowMode mode=Tempest::Window::FullScreen;
-      SystemAPI::sizeEvent( w, state.event.size.w, state.event.size.h );
       SystemAPI::setShowMode( w, mode);
       SystemAPI::activateEvent(w,true);
+      SystemAPI::sizeEvent( w, w->w(), w->h() );
       }
       break;
     default:
@@ -888,6 +878,17 @@ void iOSAPI::toggleSoftInput() {
   if(window.glView.canBecomeFirstResponderFlag==YES)
     hideSoftInput(); else
     showSoftInput();
+  }
+
+iOSAPI::InterfaceIdiom iOSAPI::interfaceIdiom() {
+  if( UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPhone )
+    return InterfaceIdiomPhone;
+  if( UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPad )
+    return InterfaceIdiomPad;
+  if( UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomTV )
+    return InterfaceIdiomTV;
+
+  return InterfaceIdiomPad; // ???
   }
 
 #endif

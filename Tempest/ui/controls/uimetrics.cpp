@@ -1,5 +1,7 @@
 #include "uimetrics.h"
 
+#include <Tempest/Platform>
+
 using namespace Tempest;
 
 UiMetrics::UiMetrics() {
