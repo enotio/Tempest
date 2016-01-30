@@ -8,7 +8,7 @@ LIBS        += -l"gdi32" -l"user32" -l"opengl32"
 
 DESTDIR = ../bin
 
-QMAKE_CXXFLAGS += -std=c++11
+CONFIG += c++11
 
 win32:{
   #msvc static build
