@@ -96,6 +96,17 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
     glDiscardFrameBuffer = (Detail::PFNGLDISCARDFRAMEBUFFERPROC)eglGetProcAddress("glDiscardFramebufferEXT");
     }
 #endif
+#ifdef __IOS__
+  if( hasQCOMTiles ){
+    glStartTilingQCOM = 0;
+    glEndTilingQCOM   = 0;
+    }
+
+  if( hasDiscardBuffers ){
+    this->glDiscardFrameBuffer = 0;
+    hasDiscardBuffers=false;//TODO
+    }
+#endif
 
   caps.hasHalf2 = hasHalfSupport;
   caps.hasHalf4 = hasHalfSupport;
@@ -106,7 +117,7 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
   caps.hasNativeRGBA=hasRenderToRGBATexture;
 
   glGetIntegerv( GL_MAX_TEXTURE_SIZE,         &caps.maxTextureSize );
-#ifdef __ANDROID__
+#ifdef __MOBILE_PLATFORM__
   glGetIntegerv( GL_MAX_VARYING_VECTORS,      &caps.maxVaryingVectors );
   caps.maxVaryingComponents = caps.maxVaryingVectors*4;
 #else
@@ -115,7 +126,7 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
 #endif
   //T_ASSERT_X( errCk(), "OpenGL error" );
 
-#ifdef __ANDROID__
+#ifdef __MOBILE_PLATFORM__
   caps.maxRTCount = 1;
 #else
   glGetIntegerv( GL_MAX_COLOR_ATTACHMENTS, &caps.maxRTCount );

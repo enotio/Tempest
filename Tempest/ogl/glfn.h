@@ -16,7 +16,11 @@
 #endif
 
 #ifdef __APPLE__
+#ifdef __MOBILE_PLATFORM__
+#include <OpenGLES/ES2/gl.h>
+#else
 #include <OpenGL/gl.h>
+#endif
 #endif
 
 #if defined(__WINDOWS__) || defined(__LINUX__)

@@ -55,7 +55,8 @@ class SurfaceRender {
                    bool clrVbo   = true,
                    bool flushVbo = true,
                    int pass      = 0 ){
-      surf.nToUpdate = false;
+      if(pass==0)
+        surf.nToUpdate = false;
 
       PaintDev p(*this, sstk, sp, 0, 0, w,h);
       PaintEvent e(p,pass);

@@ -1,4 +1,6 @@
 #include "appdelegate.h"
+
+#ifdef __OSX__
 #include <OpenGL/gl.h>
 
 #include "osxapi.h"
@@ -64,3 +66,4 @@ static NSOpenGLPixelFormatAttribute glAttributes[] = {
   }
 
 @end
+#endif

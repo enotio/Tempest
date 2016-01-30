@@ -5,7 +5,9 @@ Crossplatform 3d engine.
 
 ## Supported platforms and API:
 
-* Windows: OpenGL2/GLSL, DirectX9/HLSL, DirectX9/Cg
+* Windows: OpenGL4/GLSL, OpenGL2/GLSL, DirectX11/HLSL, DirectX9/HLSL, DirectX9/Cg
+
+* OSX: OpenGL2/GLSL
 
 * Android: OpenGLES2/GLSL
 

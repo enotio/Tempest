@@ -19,8 +19,10 @@
 #include <windows.h>
 #endif
 #include "glfn.h"
-#ifdef __APPLE__
+#ifdef __OSX__
 #include <OpenGL/gl.h>
+#elif defined(__IOS__)
+#include <OpenGLES/ES2/gl.h>
 #else
 #include <GL/gl.h>
 #endif
@@ -54,7 +56,7 @@ bool OpenGLBase::errCk() const {
   }
 
 void OpenGLBase::setClearDepth(float z) const {
-#ifdef __ANDROID__
+#ifdef __MOBILE_PLATFORM__
   glClearDepthf( z );
 #else
   glClearDepth( z );

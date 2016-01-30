@@ -1,9 +1,9 @@
-#ifndef OSXAPI_H
-#define OSXAPI_H
+#ifndef IOSAPI_H
+#define IOSAPI_H
 
 #include <Tempest/Platform>
 
-#ifdef __OSX__
+#ifdef __IOS__
 #include <Tempest/SystemAPI>
 #include <csetjmp>
 
@@ -11,22 +11,36 @@ namespace Tempest{
 
 class Window;
 
-class OsxAPI:public SystemAPI {
+class iOSAPI:public SystemAPI {
   public:
     static void* initializeOpengl(void* window);
     static bool  glMakeCurrent(void* ctx);
     static bool  glUpdateContext(void* ctx,void* window);
-    static void  glSwapBuffers(void* ctx);
+    static void  glBindZeroFramebuffer(void* window);
+    static void  glSwapBuffers(void* wnd, void* ctx);
     static void  swapContext();
     static void  finish();
 
+    enum InterfaceIdiom {
+      InterfaceIdiomPhone,
+      InterfaceIdiomPad,
+      InterfaceIdiomTV
+      };
+
+    static int                densityDpi();
+    static const std::string& iso3Locale();
+
+    static void showSoftInput();
+    static void hideSoftInput();
+    static void toggleSoftInput();
+    static InterfaceIdiom interfaceIdiom();
+
     struct Fiber;
     struct FiberCtx;
-    struct PBox;
 
   protected:
-    OsxAPI();
-    ~OsxAPI();
+    iOSAPI();
+    ~iOSAPI();
 
     bool testDisplaySettings( Window* w, const DisplaySettings& );
     bool setDisplaySettings( Window* w, const DisplaySettings& );
@@ -61,11 +75,12 @@ class OsxAPI:public SystemAPI {
   private:
     struct Wnd;
     static bool processEvent();
+    static void createFramebuffers(void* wnd, void* ctx);
 
   friend class SystemAPI;
   };
 
 }
-#endif
 
-#endif // OSXAPI_H
+#endif
+#endif // IOSAPI_H

@@ -1,4 +1,5 @@
-#ifdef __APPLE__
+#include <Tempest/Platform>
+#ifdef __OSX__
 
 #define _XOPEN_SOURCE
 
@@ -68,7 +69,7 @@ struct OsxAPI::PBox {
   enum {
     sz = (sizeof(void*)+sizeof(int)-1)/sizeof(int)
     };
-  int val[sz];
+  int val[2];
 
   void set(void* v){
     memcpy(val,&v,sizeof(v));
@@ -533,7 +534,7 @@ bool OsxAPI::setDisplaySettings(SystemAPI::Window *, const DisplaySettings &) {
   }
 
 Tempest::Size OsxAPI::implScreenSize() {
-  return Size(1440,980);
+  return Size(1440,980);//TODO
   }
 
 static void appleMain(void*){

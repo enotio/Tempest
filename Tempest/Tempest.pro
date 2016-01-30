@@ -13,6 +13,8 @@ msvc_static: {
   CONFIG   += dll
   }
 
+ios:CONFIG   += staticlib
+
 DEFINES += TEMPEST_LIBRARY_BUILD
 DEFINES += TEMPEST_M_TREADS
 
@@ -21,7 +23,15 @@ INCLUDEPATH += "./include"
 android:{
   DESTDIR = ../lib/$$ANDROID_TARGET_ARCH
   } else {
-  DESTDIR = ../lib
+  ios:{
+    if(contains(CONFIG,iphonesimulator)){
+      DESTDIR = ../lib/simulator
+      } else {
+      DESTDIR = ../lib/ios
+      }
+    } else {
+    DESTDIR = ../lib
+    }
   }
 
 gcc:QMAKE_CXXFLAGS += -Wall -Wextra
@@ -49,7 +59,7 @@ unix: {
   DEFINES -= TEMPEST_M_TREADS
   CONFIG += ogl
   CONFIG -= directx
-  SOURCES += system/linuxapi.cpp
+  !android:!mac:SOURCES += system/linuxapi.cpp
   !android:!mac:LIBS += -lrt
   }
 
@@ -58,15 +68,24 @@ win32: {
   DEFINES += NOMINMAX
   }
 
-mac:{
+mac:!ios:{
   LIBS += -framework AppKit
   LIBS += -framework OpenGL
   LIBS += -framework CoreVideo
   }
 
+ios:{
+  LIBS += -framework Foundation
+  LIBS += -framework UiKit
+  LIBS += -framework GLKit
+  LIBS += -framework OpenGLES
+  LIBS += -framework QuartzCore
+  QMAKE_IOS_DEPLOYMENT_TARGET = 5.0
+  }
+
 ogl:{
   win32:                 LIBS += -l"opengl32"
-  unix: !android: !mac: LIBS += -lX11 -lGL
+  unix: !android: !mac:  LIBS += -lX11 -lGL
   android:               LIBS += -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics -lz
 
   HEADERS +=\
@@ -140,10 +159,12 @@ include( thirdparty/ktx/ktx.pri )
 !android:include( thirdparty/zlib/zlib.pri )
 include( thirdparty/fakeGL/GLES2/gles.pri )
 
+win32:SOURCES += \
+  system/windowsapi.cpp \
+  system/winphoneapi.cpp
+
 SOURCES += \
-    system/windowsapi.cpp \
     system/systemapi.cpp \
-    system/winphoneapi.cpp \
     core/graphicssubsystem.cpp \
     ui/window.cpp \
     ui/widget.cpp \
@@ -172,7 +193,6 @@ SOURCES += \
     scene/lightcollection.cpp \
     scene/light.cpp \
     scene/camera.cpp \
-    scene/abstractlightcollection.cpp \
     scene/abstractcamera.cpp \
     shading/abstractshadinglang.cpp \
     utils/tessobject.cpp \
@@ -315,7 +335,16 @@ HEADERS += \
     ui/controls/scrollwidget.h \
     ui/controls/label.h \
     system/osxapi.h \
-    system/appdelegate.h
+    system/appdelegate.h \
+    system/iosapi.h \
+    core/langcodes.h
+
+mac:!ios: OBJECTIVE_SOURCES += \
+    system/osxapi.mm \
+    system/appdelegate.mm
+
+OBJECTIVE_SOURCES += \
+    system/iosapi.mm
 
 OTHER_FILES += \
     ../.gitignore \
@@ -383,8 +412,6 @@ OTHER_FILES += \
     include/Tempest/Menu \
     include/Tempest/StackedWidget \
     include/Tempest/Icon \
-    include/Tempest/Label
-
-OBJECTIVE_SOURCES += \
-    system/osxapi.mm \
-    system/appdelegate.mm
+    include/Tempest/Label \
+    include/Tempest/IOS \
+    include/Tempest/OSX

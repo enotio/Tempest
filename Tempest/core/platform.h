@@ -21,9 +21,22 @@
   #endif
 #endif
 
-#if defined(__WINDOWS_PHONE__) || defined(__ANDROID__)
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
+#if defined(__WINDOWS_PHONE__) || defined(__ANDROID__) || (defined(TARGET_OS_IOS) && TARGET_OS_IOS)
 #undef  __MOBILE_PLATFORM__
 #define __MOBILE_PLATFORM__ 1
+#endif
+
+#if defined(__APPLE__)
+#ifdef __MOBILE_PLATFORM__
+#define __IOS__
+#else
+#undef  __OSX__
+#define __OSX__ 1
+#endif
 #endif
 
 #endif // PLATFORM_H

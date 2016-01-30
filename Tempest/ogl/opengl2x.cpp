@@ -6,9 +6,12 @@
 #include "system/linuxapi.h"
 #endif
 
-#ifdef __ANDROID__
+#ifdef __MOBILE_PLATFORM__
 //GL_HALF_FLOAT -> GL_HALF_FLOAT_OES -> 0x8D61
 #define GL_HALF_FLOAT 0x8D61
+#endif
+
+#ifdef __ANDROID__
 
 //#define GL_UNSIGNED_SHORT_4_4_4_4 0x8033
 #include <EGL/egl.h>
@@ -22,8 +25,13 @@
 #include "glfn.h"
 
 #ifdef __APPLE__
+#ifdef __MOBILE_PLATFORM__
+#include <OpenGLES/ES2/gl.h>
+#else
 #include <OpenGL/gl.h>
+#endif
 #include "system/osxapi.h"
+#include "system/iosapi.h"
 #else
 #include <GL/gl.h>
 #endif
@@ -111,8 +119,13 @@ bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
                               void *hwnd, const Options& /*opt*/) const {
 #ifdef __APPLE__
   dev->window  = hwnd;
+#ifdef __MOBILE_PLATFORM__
+  dev->context = iOSAPI::initializeOpengl(hwnd);
+  return dev->context!=nullptr && iOSAPI::glMakeCurrent(dev->context);
+#else
   dev->context = OsxAPI::initializeOpengl(hwnd);
   return dev->context!=nullptr && OsxAPI::glMakeCurrent(dev->context);
+#endif
 #endif
 
 #ifdef __WINDOWS__
@@ -347,7 +360,7 @@ void Opengl2x::clear(AbstractAPI::Device *d, const Color& cl, float z ) const{
 
   if( dev->clearDepth!=z ){
     dev->clearDepth = z;
-  #ifdef __ANDROID__
+  #ifdef __MOBILE_PLATFORM__
     glClearDepthf( z );
   #else
     glClearDepth( z );
@@ -412,7 +425,7 @@ AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
     h = Device::nextPot(h);
     }*/
 
-#ifdef __ANDROID__
+#ifdef __MOBILE_PLATFORM__
   GLenum format[] = {
     GL_DEPTH_COMPONENT16,
     GL_DEPTH_COMPONENT16,
@@ -537,10 +550,10 @@ bool Opengl2x::setupFBO() const {
                                  0 );
       }
 
-#ifndef __ANDROID__
+#ifndef __MOBILE_PLATFORM__
     {
       GLenum buf[32];
-      for( int i=0; i<mrtSize; ++i )
+      for( int i=0; i<mrtSize && i<32; ++i )
         buf[i] = GL_COLOR_ATTACHMENT0+i;
       glDrawBuffers(mrtSize, buf);
     }
@@ -569,9 +582,8 @@ bool Opengl2x::setupFBO() const {
     for( int i=0; err[i].desc; ++i )
       if( err[i].err==status )
         desc = err[i].desc;
-    void* ierr = (void*)status;
 #ifndef __ANDROID__
-    printf("OpenGL : fbo error %s %p", desc, ierr);
+    printf("OpenGL : fbo error %s 0x%X", desc, int(status));
 #else
     __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "fbo error %s %p", desc, ierr);
 #endif
@@ -606,7 +618,11 @@ void Opengl2x::unsetRenderTagets( AbstractAPI::Device *d,
   if( !setDevice(d) ) return;
   endTiledRender();
 
+#ifdef __IOS__
+  iOSAPI::glBindZeroFramebuffer(dev->window);
+#else
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
   /*
   glReadBuffer(GL_BACK);
   glDrawBuffer(GL_BACK);
@@ -777,7 +793,11 @@ bool Opengl2x::startRender( AbstractAPI::Device* ,bool   ) const {
   wglMakeCurrent( dev->hDC, dev->hRC );
 #endif
 #ifdef __APPLE__
+#ifdef __MOBILE_PLATFORM__
+  return iOSAPI::glMakeCurrent(dev->context);
+#else
   return OsxAPI::glMakeCurrent(dev->context);
+#endif
 #endif
   //glViewport(0,0, dev->scrW, dev->scrH);
   return 1;
@@ -808,7 +828,11 @@ bool Opengl2x::present(AbstractAPI::Device *d, SwapBehavior b) const {
 #endif
 #ifdef __APPLE__
   (void)b;
+#ifdef __MOBILE_PLATFORM__
+  iOSAPI::glSwapBuffers(dev->window,dev->context);
+#else
   OsxAPI::glSwapBuffers(dev->context);
+#endif
 #endif
   return 0;
   }
@@ -825,9 +849,15 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
 
   AbstractAPI::setDisplaySettings( hwnd, opt.displaySettings );
 
+#ifdef __MOBILE_PLATFORM__
+  iOSAPI::glMakeCurrent( dev->context );
+  iOSAPI::glUpdateContext(dev->context,dev->window);
+  glViewport(0,0, dev->scrW, dev->scrH);
+#else
   OsxAPI::glMakeCurrent( dev->context );
   OsxAPI::glUpdateContext(dev->context,dev->window);
   glViewport(0,0, dev->scrW, dev->scrH);
+#endif
 #endif
 
 #ifdef __LINUX__
@@ -1206,7 +1236,7 @@ void Opengl2x::generateMipmaps(AbstractAPI::Device *d, AbstractAPI::Texture *t) 
 
   GLenum texClass = GL_TEXTURE_2D;
   if( tex->z ){
-#ifndef __ANDROID__
+#ifndef __MOBILE_PLATFORM__
     texClass = GL_TEXTURE_3D;
 #else
     return;
@@ -1234,7 +1264,7 @@ AbstractAPI::Texture *Opengl2x::createTexture3d(AbstractAPI::Device *d,
   (void)u;
   (void)data;
 
-#ifdef __ANDROID__
+#ifdef __MOBILE_PLATFORM__
   return 0;
 #else
   if( x==0 || y==0 || z==0 )
@@ -1869,8 +1899,8 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
     glDisable(GL_DEPTH_TEST); else
     glEnable(GL_DEPTH_TEST);
   */
-  
-#ifdef __ANDROID__
+
+#ifdef __MOBILE_PLATFORM__
   //a-test not supported
   //glEnable( GL_BLEND );
 #else
@@ -1897,7 +1927,7 @@ void Opengl2x::setRenderState( AbstractAPI::Device *d,
     GL_ZERO
     };
 
-#ifndef __ANDROID__
+#ifndef __MOBILE_PLATFORM__
   GLenum rmode[] = {
     GL_FILL,
     GL_LINE,
