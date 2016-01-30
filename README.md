@@ -11,6 +11,8 @@ Crossplatform 3d engine.
 
 * Android: OpenGLES2/GLSL
 
+* iOS: OpenGLES2/GLSL
+
 ## How to build
 
 ### 1. Install dependencies:
