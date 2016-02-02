@@ -451,8 +451,8 @@ static id createWindow(int w,int h,unsigned flags,Window::ShowMode mode){
   id appName      = [[NSProcessInfo processInfo] processName];
   id quitTitle    = [@"Quit " stringByAppendingString:appName];
   id quitMenuItem = [[[NSMenuItem alloc] initWithTitle:quitTitle
-
-  action:@selector(terminate:) keyEquivalent:@"q"] autorelease];
+                                         action:@selector(stop:)
+                                         keyEquivalent:@"q"] autorelease];
   [appMenu addItem:quitMenuItem];
   [appMenuItem setSubmenu:appMenu];
 
