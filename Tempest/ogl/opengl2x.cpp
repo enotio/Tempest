@@ -1508,6 +1508,7 @@ void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
 
   if( !dev->lbUseed ){
     dev->lbUseed = true;
+    dev->tmpLockBuffer.reserve(4*1024);
     dev->tmpLockBuffer.resize( size );
     vbo->mappedData = &dev->tmpLockBuffer[0];
     } else {
