@@ -572,14 +572,14 @@ bool iOSAPI::processEvent(){
       }
       break;
     case EventMinimize:{
-      SystemAPI::setShowMode( w, Tempest::Window::Minimized);
       SystemAPI::activateEvent(w,false);
+      SystemAPI::setShowMode( w, Tempest::Window::Minimized);
       }
       break;
     case EventDeMinimize:{
       Tempest::Window::ShowMode mode=Tempest::Window::FullScreen;
-      SystemAPI::setShowMode( w, mode);
       SystemAPI::activateEvent(w,true);
+      SystemAPI::setShowMode( w, mode);
       SystemAPI::sizeEvent( w, w->w(), w->h() );
       }
       break;

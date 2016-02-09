@@ -627,8 +627,8 @@ bool OsxAPI::processEvent(){
       }
       break;
     case EventMinimize:{
-      SystemAPI::setShowMode( w, Tempest::Window::Minimized);
       SystemAPI::activateEvent(w,false);
+      SystemAPI::setShowMode( w, Tempest::Window::Minimized);
       }
       break;
     case EventDeMinimize:{
