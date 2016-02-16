@@ -85,6 +85,7 @@ local.properties
 [Dd]ebug/
 [Rr]elease/
 *-build
+*-build-*
 *_i.c
 *_p.c
 *.ilk
