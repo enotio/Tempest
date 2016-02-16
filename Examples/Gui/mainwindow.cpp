@@ -11,7 +11,7 @@
 #include <Tempest/Panel>
 #include <Tempest/ListView>
 #include <Tempest/ListBox>
-#include <Tempest/ScroolWidget>
+#include <Tempest/ScrollWidget>
 
 using namespace Tempest;
 
@@ -58,7 +58,7 @@ void MainWindow::setupUi() {
   listBox->setDelegate(listBoxDelegate);
   panel->layout().add(listBox);
 
-  ScroolWidget* sc = new ScroolWidget();
+  ScrollWidget* sc = new ScrollWidget();
 
   ListView* list = new ListView();
   list->setDelegate(listViewDelegate);
