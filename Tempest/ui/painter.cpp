@@ -174,6 +174,55 @@ void PainterDevice::drawLine( int x, int y, int x1, int y1 ) {
     line(x,y,x1,y1);
   }
 
+void PainterDevice::drawTriangle( int x0, int y0, int u0, int v0,
+                                  int x1, int y1, int u1, int v1,
+                                  int x2, int y2, int u2, int v2 ) {
+  State::ScissorRect& s     = rstate.scissor;
+  Point             & orign = rstate.orign;
+
+  Point ret[6], *r = ret;
+  int x[4] = {x0,x1,x2,x0};
+  int y[4] = {y0,y1,y2,x0};
+
+  for(int i=0;i<4;++i){
+    x[i] += orign.x;
+    y[i] += orign.y;
+    }
+
+  int mid=0;
+  for(int i=0;i<3;++i){
+    int dx = (x[i+1]-x[i]);
+    int dy = (y[i+1]-y[i]);
+
+    bool cs = x[i]>=s.x;
+    bool ns = x[i+1]>=s.x;
+    if(cs==ns){
+      if( cs ){
+        *r = Point(x[i+1],y[i+1]); ++r;
+        }
+      } else {
+      if( ns ){
+        mid=y[i] + (dy*(s.x-x[i]))/dx;
+        *r = Point(s.x,mid);       ++r;
+        *r = Point(x[i+1],y[i+1]); ++r;
+        } else {
+        mid=y[i] + (dy*(s.x-x[i]))/dx;
+        *r = Point(s.x,mid);       ++r;
+        }
+      }
+    cs = ns;
+    }
+
+  int count = r-ret;
+  count-=3;
+  for(int i=0;i<=count;++i){
+    triangle(ret[  0].x,ret[  0].y,0,0,
+             ret[i+1].x,ret[i+1].y,0,0,
+             ret[i+2].x,ret[i+2].y,0,0 );
+    }
+  //triangle(x[0],y0,u0,v0,x1,y1,u1,v1,x2,y2,u2,v2);
+  }
+
 void PainterDevice::translate(int dx, int dy) {
   rstate.orign += Point(dx,dy);
   }
@@ -438,6 +487,16 @@ void Painter::drawText(int x, int y, const std::u16string &str, int flg ) {
 
 void Painter::drawLine(const Point &p, const Point &p1) {
   drawLine( p.x, p.y, p1.x, p1.y );
+  }
+
+void Painter::drawTriangle( int x0, int y0, int u0, int v0,
+                            int x1, int y1, int u1, int v1,
+                            int x2, int y2, int u2, int v2 ) {
+  dev.drawTriangle(x0,y0,u0,v0,x1,y1,u1,v1,x2,y2,u2,v2);
+  }
+
+void Painter::drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2) {
+  dev.drawTriangle(x0,y0,0,0,x1,y1,x1-x0,y1-y0,x2,y2,x2-x0,y2-y0);
   }
 
 void Painter::translate( int px, int py ) {

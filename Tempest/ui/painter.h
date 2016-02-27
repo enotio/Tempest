@@ -45,6 +45,9 @@ class PainterDevice {
                                  int tx, int ty, int tw, int th );
 
     virtual void drawLine(int x, int y, int x1, int y1);
+    virtual void drawTriangle( int x1, int y1, int u1, int v1,
+                               int x2, int y2, int u2, int v2,
+                               int x3, int y3, int u3, int v3 );
 
     virtual void translate( int dx, int dy );
 
@@ -127,6 +130,13 @@ class Painter {
 
     void drawLine( int x, int y, int x1, int y1 );
     void drawLine( const Point &p, const Point &p1 );
+
+    void drawTriangle( int x0, int y0, int u0, int v0,
+                       int x1, int y1, int u1, int v1,
+                       int x2, int y2, int u2, int v2);
+    void drawTriangle( int x0, int y0,
+                       int x1, int y1,
+                       int x2, int y2);
 
     void translate( int dx, int dy );
     void translate( const Point &p  );

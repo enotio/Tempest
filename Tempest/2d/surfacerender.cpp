@@ -411,6 +411,17 @@ void SurfaceRender::PaintDev::pushState() {
 void SurfaceRender::PaintDev::popState() {
   textEngine().popState();
   surf.state = sstk.back();
+
+  if( surf.state.curTex2d ){
+    auto& t = *surf.state.curTex2d;
+    surf.invTw = 1.0f/t.width();
+    surf.invTh = 1.0f/t.height();
+    } else {
+    auto& t = surf.state.curTex;
+    surf.invTw = 1.0f/t.w();
+    surf.invTh = 1.0f/t.h();
+    }
+
   surf.sstk.pop_back();
   }
 
