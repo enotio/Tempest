@@ -73,9 +73,9 @@ class PainterDevice {
 
     virtual void quad( int x, int y, int  w, int  h,
                        int tx, int ty, int tw, int th ) = 0;
-    virtual void triangle( int x1, int y1, int u1, int v1,
-                           int x2, int y2, int u2, int v2,
-                           int x3, int y3, int u3, int v3 ) = 0;
+    virtual void triangle( float x1, float y1, float u1, float v1,
+                           float x2, float y2, float u2, float v2,
+                           float x3, float y3, float u3, float v3 ) = 0;
     virtual void line( int x, int y, int x2, int y2 ) = 0;
 
     virtual void setBlendMode( BlendMode m );
@@ -95,6 +95,19 @@ class PainterDevice {
 
       Point orign;
       } rstate;
+
+    struct FPoint{
+      float x,y;
+      float u,v;
+      };
+
+    FPoint trigBuf[4+4+4+4];
+
+    void drawTrigImpl( float x0, float y0, float u0, float v0,
+                       float x1, float y1, float u1, float v1,
+                       float x2, float y2, float u2, float v2,
+                       FPoint* out, int stage);
+
     void setState( const State & s );
     //PaintTextEngine tengine;
 

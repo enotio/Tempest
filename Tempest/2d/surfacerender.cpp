@@ -191,9 +191,9 @@ void SurfaceRender::quad( int  x, int  y, int  w, int  h,
   updateBackBlock(false);
   }
 
-void SurfaceRender::triangle (int x1, int y1, int u1, int v1,
-                              int x2, int y2, int u2, int v2,
-                              int x3, int y3, int u3, int v3) {
+void SurfaceRender::triangle (float x1, float y1, float u1, float v1,
+                              float x2, float y2, float u2, float v2,
+                              float x3, float y3, float u3, float v3) {
   Vertex v[3];
   v[0].x = x1*invW;
   v[0].y = y1*invH;
@@ -344,9 +344,9 @@ void SurfaceRender::PaintDev::quad( int x, int y, int w, int h,
   surf.quad(x,y,w,h, tx,ty,tw,th);
   }
 
-void SurfaceRender::PaintDev::triangle( int x1, int y1, int u1, int v1,
-                                        int x2, int y2, int u2, int v2,
-                                        int x3, int y3, int u3, int v3) {
+void SurfaceRender::PaintDev::triangle( float x1, float y1, float u1, float v1,
+                                        float x2, float y2, float u2, float v2,
+                                        float x3, float y3, float u3, float v3 ) {
   surf.triangle(x1,y1,u1,v1, x2,y2,u2,v2, x3,y3,u3,v3);
   }
 

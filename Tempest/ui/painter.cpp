@@ -177,50 +177,123 @@ void PainterDevice::drawLine( int x, int y, int x1, int y1 ) {
 void PainterDevice::drawTriangle( int x0, int y0, int u0, int v0,
                                   int x1, int y1, int u1, int v1,
                                   int x2, int y2, int u2, int v2 ) {
-  State::ScissorRect& s     = rstate.scissor;
-  Point             & orign = rstate.orign;
+  drawTrigImpl( x0, y0, u0, v0,
+                x1, y1, u1, v1,
+                x2, y2, u2, v2,
+                trigBuf, 0 );
+  }
 
-  Point ret[6], *r = ret;
-  int x[4] = {x0,x1,x2,x0};
-  int y[4] = {y0,y1,y2,x0};
+void PainterDevice::drawTrigImpl( float x0, float y0, float u0, float v0,
+                                  float x1, float y1, float u1, float v1,
+                                  float x2, float y2, float u2, float v2,
+                                  FPoint* out,
+                                  int stage ) {
+  State::ScissorRect& s = rstate.scissor;
+  FPoint*             r = out;
 
-  for(int i=0;i<4;++i){
-    x[i] += orign.x;
-    y[i] += orign.y;
+  float x[4] = {x0,x1,x2,x0};
+  float y[4] = {y0,y1,y2,y0};
+  float u[4] = {u0,u1,u2,u0};
+  float v[4] = {v0,v1,v2,v0};
+
+  float mid;
+  float sx;
+  bool  cs, ns;
+
+  switch( stage ) {
+    case 0: {
+      Point& orign = rstate.orign;
+      sx = s.x;
+      for(int i=0;i<4;++i){
+        x[i] += orign.x;
+        y[i] += orign.y;
+        }
+      }
+      break;
+    case 1: sx = s.y;  break;
+    case 2: sx = s.x1; break;
+    case 3: sx = s.y1; break;
     }
 
-  int mid=0;
   for(int i=0;i<3;++i){
-    int dx = (x[i+1]-x[i]);
-    int dy = (y[i+1]-y[i]);
+    switch( stage ){
+      case 0:
+        cs = x[i]  >=sx;
+        ns = x[i+1]>=sx;
+        break;
+      case 1:
+        cs = y[i]  >=sx;
+        ns = y[i+1]>=sx;
+        break;
+      case 2:
+        cs = x[i]  <sx;
+        ns = x[i+1]<sx;
+        break;
+      case 3:
+        cs = y[i]  <sx;
+        ns = y[i+1]<sx;
+        break;
+      }
 
-    bool cs = x[i]>=s.x;
-    bool ns = x[i+1]>=s.x;
     if(cs==ns){
       if( cs ){
-        *r = Point(x[i+1],y[i+1]); ++r;
+        *out = FPoint{float(x[i+1]),float(y[i+1]),float(u[i+1]),float(v[i+1])}; ++out;
         }
       } else {
+      float dx = (x[i+1]-x[i]);
+      float dy = (y[i+1]-y[i]);
+      float du = (u[i+1]-u[i]);
+      float dv = (v[i+1]-v[i]);
       if( ns ){
-        mid=y[i] + (dy*(s.x-x[i]))/dx;
-        *r = Point(s.x,mid);       ++r;
-        *r = Point(x[i+1],y[i+1]); ++r;
+        if(stage%2==0){
+          mid = y[i] + (dy*(sx-x[i]))/dx;
+          *out = FPoint{sx, mid,
+                        u[i] + (du*(sx-x[i]))/dx,
+                        v[i] + (dv*(sx-x[i]))/dx};   ++out;
+
+          *out = FPoint{float(x[i+1]),float(y[i+1]),float(u[i+1]),float(v[i+1])}; ++out;
+          } else {
+          mid = x[i] + (dx*(sx-y[i]))/dy;
+          *out = FPoint{mid, sx,
+                        u[i] + (du*(sx-y[i]))/dy,
+                        v[i] + (dv*(sx-y[i]))/dy};   ++out;
+
+          *out = FPoint{float(x[i+1]),float(y[i+1]),float(u[i+1]),float(v[i+1])}; ++out;
+          }
         } else {
-        mid=y[i] + (dy*(s.x-x[i]))/dx;
-        *r = Point(s.x,mid);       ++r;
+        if(stage%2==0){
+          mid = y[i] + (dy*(sx-x[i]))/dx;
+          *out = FPoint{sx, mid,
+                        u[i] + (du*(sx-x[i]))/dx,
+                        v[i] + (dv*(sx-x[i]))/dx};   ++out;
+          } else {
+          mid = x[i] + (dx*(sx-y[i]))/dy;
+          *out = FPoint{mid, sx,
+                        u[i] + (du*(sx-y[i]))/dy,
+                        v[i] + (dv*(sx-y[i]))/dy};   ++out;
+          }
         }
       }
     cs = ns;
     }
 
-  int count = r-ret;
+  int count = out-r;
   count-=3;
-  for(int i=0;i<=count;++i){
-    triangle(ret[  0].x,ret[  0].y,0,0,
-             ret[i+1].x,ret[i+1].y,0,0,
-             ret[i+2].x,ret[i+2].y,0,0 );
+
+  if( stage<3 ){
+    for(int i=0;i<=count;++i){
+      drawTrigImpl( r[  0].x, r[  0].y, r[  0].u, r[  0].v,
+                    r[i+1].x, r[i+1].y, r[i+1].u, r[i+1].v,
+                    r[i+2].x, r[i+2].y, r[i+2].u, r[i+2].v,
+                    out, stage+1 );
+      }
+    } else {
+    for(int i=0;i<=count;++i){
+      triangle( r[  0].x, r[  0].y, r[  0].u, r[  0].v,
+                r[i+1].x, r[i+1].y, r[i+1].u, r[i+1].v,
+                r[i+2].x, r[i+2].y, r[i+2].u, r[i+2].v );
+      }
     }
-  //triangle(x[0],y0,u0,v0,x1,y1,u1,v1,x2,y2,u2,v2);
   }
 
 void PainterDevice::translate(int dx, int dy) {
