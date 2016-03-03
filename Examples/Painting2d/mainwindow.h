@@ -17,6 +17,8 @@
 #include <Tempest/SurfaceRender>
 #include <Tempest/SpritesHolder>
 
+#include <Tempest/SvgImage>
+
 class MainWindow:public Tempest::Window {
   public:
     MainWindow( Tempest::AbstractAPI& api );
@@ -34,10 +36,17 @@ class MainWindow:public Tempest::Window {
     Tempest::SpritesHolder         spHolder;
     Tempest::SurfaceRender         uiRender;
 
+    Tempest::Rect                  scissor;
+    Tempest::SvgImage              image;
+
     void paintEvent( Tempest::PaintEvent& e );
 
     void render();
     void resizeEvent( Tempest::SizeEvent& e );
+
+    void mouseDownEvent( Tempest::MouseEvent& e );
+    void mouseDragEvent( Tempest::MouseEvent& e );
+
   };
 
 #endif // MAINWINDOW_H

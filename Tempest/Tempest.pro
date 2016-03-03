@@ -158,6 +158,7 @@ include( thirdparty/utf8cpp/utf8cpp.pri )
 include( thirdparty/ktx/ktx.pri )
 !android:include( thirdparty/zlib/zlib.pri )
 include( thirdparty/fakeGL/GLES2/gles.pri )
+include( thirdparty/nanosvg/nanosvg.pri )
 
 win32:SOURCES += \
   system/windowsapi.cpp \
@@ -233,7 +234,8 @@ SOURCES += \
     2d/icon.cpp \
     ui/controls/scrollbar.cpp \
     ui/controls/scrollwidget.cpp \
-    ui/controls/label.cpp
+    ui/controls/label.cpp \
+    2d/svgimage.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -337,7 +339,8 @@ HEADERS += \
     system/osxapi.h \
     system/appdelegate.h \
     system/iosapi.h \
-    core/langcodes.h
+    core/langcodes.h \
+    2d/svgimage.h
 
 mac:!ios: OBJECTIVE_SOURCES += \
     system/osxapi.mm \
@@ -414,4 +417,5 @@ OTHER_FILES += \
     include/Tempest/Icon \
     include/Tempest/Label \
     include/Tempest/IOS \
-    include/Tempest/OSX
+    include/Tempest/OSX \
+    include/Tempest/SvgImage
