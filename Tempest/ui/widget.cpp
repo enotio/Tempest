@@ -961,7 +961,7 @@ void Widget::setVisible(bool v) {
 
   if( owner() ){
     owner()->layout().applyLayout();
-    update();
+    owner()->update();
     }
   }
 
