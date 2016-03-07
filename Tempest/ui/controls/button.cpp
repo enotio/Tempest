@@ -30,7 +30,7 @@ Button::Button()
   presAnim = false;
 
   onFocusChange.bind( *this, &Button::focusChange );
-  timePressed = clock();
+  timePressed = Application::tickCount();
 
   setFontColor(Color(1));
   }
@@ -126,7 +126,7 @@ void Button::mouseDownEvent(Tempest::MouseEvent &) {
     return;
   pressed     = true;
   presAnim    = true;
-  timePressed = clock();
+  timePressed = Application::tickCount();
 
   update();
   }
@@ -270,8 +270,8 @@ void Button::keyUpEvent(Tempest::KeyEvent &e) {
   if( hasFocus() &&
       (e.key==Tempest::KeyEvent::K_Return || e.u16==32) ){
     emitClick();
-    presAnim = true;
-    timePressed = clock();
+    presAnim    = true;
+    timePressed = Application::tickCount();
     update();
     } else
     e.ignore();
@@ -282,8 +282,8 @@ void Button::focusChange( bool ) {
   }
 
 void Button::onShortcut() {
-  presAnim = true;
-  timePressed = clock();
+  presAnim    = true;
+  timePressed = Application::tickCount();
   update();
   }
 
@@ -297,7 +297,7 @@ bool Button::isPressed() const {
 
 void Button::finishPaint() {
   if( presAnim != pressed ){
-    if( clock() > timePressed+CLOCKS_PER_SEC/8 )
+    if( Application::tickCount() > timePressed+1000/8 )
       presAnim = pressed;
 
     update();

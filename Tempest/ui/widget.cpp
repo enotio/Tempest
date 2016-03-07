@@ -959,10 +959,10 @@ void Widget::setVisible(bool v) {
   if( !wvisible )
     nToUpdate = false;
 
-  if( owner() )
+  if( owner() ){
     owner()->layout().applyLayout();
-
-  update();
+    update();
+    }
   }
 
 ResourceContext *Widget::context() const {

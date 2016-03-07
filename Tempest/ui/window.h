@@ -14,9 +14,10 @@ class SurfaceRender;
 
 class WindowOverlay:public Widget{
   public:
-  WindowOverlay();
-  ~WindowOverlay();
+    WindowOverlay();
+    ~WindowOverlay();
 
+    Window* window() const;
   private:
     Window * owner;
 

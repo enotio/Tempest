@@ -264,3 +264,7 @@ WindowOverlay::~WindowOverlay() {
   if( owner )
     owner->removeOverlay(this);
   }
+
+Window* WindowOverlay::window() const {
+  return owner;
+  }
