@@ -5,7 +5,10 @@
 #include <vector>
 #include <cstddef>
 #include <cstdlib>
+
+#ifdef __MINGW32__
 #include <stdalign.h>
+#endif
 
 #include <Tempest/Assert>
 
@@ -23,8 +26,8 @@ class slot {
     slot(){}
 
     slot(const slot& other){
-      sig = other.sig;
-      for(SigInfo& s : sig)
+      //sig = other.sig;
+      for(const SigInfo& s : other.sig)
         (*s.reg)(s.ptr,this);
       }
 

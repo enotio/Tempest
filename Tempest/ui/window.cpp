@@ -264,3 +264,7 @@ WindowOverlay::~WindowOverlay() {
   if( owner )
     owner->removeOverlay(this);
   }
+
+Tempest::Window *Tempest::WindowOverlay::window() const {
+  return owner;
+  }

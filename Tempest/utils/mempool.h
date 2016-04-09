@@ -87,9 +87,9 @@ class MemPool {
       };
 
     struct Block{
-      TX data[256];
-      unsigned char freed[256];
-      int freedCount;
+      TX      data[256];
+      uint8_t freed[256];
+      int     freedCount;
 
       Block(){
         freedCount = 256;
@@ -112,7 +112,7 @@ class MemPool {
 
         size_t pos = t - ((T*)data);
         if( pos < 256 ){
-          freed[ freedCount ] = pos;
+          freed[ freedCount ] = uint8_t(pos);
           ++freedCount;
 
           data[pos].destruct();
