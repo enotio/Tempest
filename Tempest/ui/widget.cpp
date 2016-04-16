@@ -405,6 +405,9 @@ void Widget::impl_enterLeaveEvent(Widget *w, MouseEvent &et) {
       r = r->mouseLeaveReciver[id];
       }
 
+    if( w==r )
+      return;
+
     Point proot = r->mapToRoot(Point());
 
     // leave event
