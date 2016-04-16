@@ -378,7 +378,7 @@ Widget* Widget::impl_mouseMoveEvent(Widget *root, MouseEvent &e) {
 
       if( et.isAccepted() ){
         e.accept();
-        impl_enterLeaveEvent(w,et);
+        impl_enterLeaveEvent(w,et,true);
 
         if(w->deleteLaterFlag)
           return nullptr; else
@@ -391,7 +391,7 @@ Widget* Widget::impl_mouseMoveEvent(Widget *root, MouseEvent &e) {
   return 0;
   }
 
-void Widget::impl_enterLeaveEvent(Widget *w, MouseEvent &et) {
+void Widget::impl_enterLeaveEvent(Widget *w, MouseEvent &et, bool enter) {
   if( !w )
     return;
 
@@ -428,7 +428,7 @@ void Widget::impl_enterLeaveEvent(Widget *w, MouseEvent &et) {
     }
 
   // enter event
-  if( !w->deleteLaterFlag ){
+  if( !w->deleteLaterFlag && enter ){
     MouseEvent e(et.x,
                  et.y,
                  et.button,
@@ -832,6 +832,7 @@ void Widget::rootMouseMoveEvent(MouseEvent &e) {
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
     this->event(e);
+    impl_enterLeaveEvent(this,e,e.isAccepted());
     }
   }
 

@@ -99,8 +99,11 @@ void Tempest::Layout::removeAll() {
     std::vector<Widget*> lv = w->mouseLeaveReciver;
     for(size_t i=0;i<lv.size();++i){
       Widget*& wx = lv[i];
-      while( wx && i<wx->mouseLeaveReciver.size() && wx->mouseLeaveReciver[i]!=nullptr )
-        wx = wx->mouseLeaveReciver[i];
+      while( wx && i<wx->mouseLeaveReciver.size() && wx->mouseLeaveReciver[i]!=nullptr ){
+        Widget* l = wx->mouseLeaveReciver[i];
+        wx->mouseLeaveReciver[i] = nullptr;
+        wx = l;
+        }
       }
 
     for(size_t i=0;i<lv.size();++i){
