@@ -88,6 +88,47 @@ void Layout::del(Widget *widget) {
 void Tempest::Layout::removeAll() {
   std::vector<Widget*> wx;
   std::swap(wx,w);
+
+  if( owner() ){
+    Widget* w = owner();
+
+    w->lockDelete();
+    w->mouseReleseReciver.clear();
+    w->update();
+
+    std::vector<Widget*> lv = w->mouseLeaveReciver;
+    for(size_t i=0;i<lv.size();++i){
+      Widget*& wx = lv[i];
+      while( wx && i<wx->mouseLeaveReciver.size() && wx->mouseLeaveReciver[i]!=nullptr ){
+        Widget* l = wx->mouseLeaveReciver[i];
+        wx->mouseLeaveReciver[i] = nullptr;
+        wx = l;
+        }
+      }
+
+    for(size_t i=0;i<lv.size();++i){
+      Widget* wx = lv[i];
+      if( wx )
+        wx->lockDelete();
+      }
+
+    for(size_t i=0;i<lv.size();++i){
+      Widget* wx = lv[i];
+      MouseEvent e(0,0,Event::ButtonNone,0,i,Event::MouseLeave);
+      if( wx )
+        wx->event(e);
+      }
+
+    for(size_t i=0;i<lv.size();++i){
+      Widget* wx = lv[i];
+      if( wx )
+        wx->unlockDelete();
+      }
+
+    w->mouseLeaveReciver.clear();
+    w->unlockDelete();
+    }
+
   for( size_t i=0; i<wx.size(); ++i ){
     wx[i]->parentLay = 0;
     wx[i]->deleteLater();
@@ -95,12 +136,6 @@ void Tempest::Layout::removeAll() {
   wx.clear();
 
   applyLayout();
-
-  if( owner() ){
-    owner()->mouseReleseReciver.clear();
-    owner()->mouseLeaveReciver.clear();
-    owner()->update();
-    }
   }
 
 Widget *Layout::take(Widget *widget) {

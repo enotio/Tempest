@@ -182,8 +182,7 @@ class Widget : public slot {
     static void    impl_customEvent(Widget *w, Tempest::CustomEvent & e );
     static void    impl_closeEvent (Widget *w, Tempest::CloseEvent & e );
 
-    static void    impl_leaveEvent(Widget *w, MouseEvent &e);
-    static void    impl_enterEvent(Widget *w, MouseEvent &e, bool emitEv);
+    static void    impl_enterLeaveEvent(Widget *w, MouseEvent &e, bool enter);
 
     static void    impl_gestureEvent( Widget *w, Tempest::AbstractGestureEvent & e );
 

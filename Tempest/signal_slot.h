@@ -6,6 +6,10 @@
 #include <cstddef>
 #include <cstdlib>
 
+#ifdef __MINGW32__
+#include <stdalign.h>
+#endif
+
 #include <Tempest/Assert>
 
 namespace Tempest{
@@ -22,8 +26,8 @@ class slot {
     slot(){}
 
     slot(const slot& other){
-      sig = other.sig;
-      for(SigInfo& s : sig)
+      //sig = other.sig;
+      for(const SigInfo& s : other.sig)
         (*s.reg)(s.ptr,this);
       }
 
@@ -198,7 +202,7 @@ class signal : Detail::signalBase {
 #ifdef _MSC_VER
         align = __alignof(std::max_align_t)
 #else
-        align = alignof(std::max_align_t)
+        align = alignof(max_align_t)
 #endif
         };
 
@@ -251,7 +255,7 @@ class signal : Detail::signalBase {
     template< class Ret, class ... FuncArgs >
     struct EmitFunc : public IEmit {
       enum {
-        align = alignof(std::max_align_t)
+        align = alignof(max_align_t)
         };
 
       EmitFunc( Ret (&f)( FuncArgs... ) ): func(f) {
