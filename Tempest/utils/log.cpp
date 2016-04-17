@@ -43,8 +43,10 @@ void Log::flush(Mode m, char *&out, size_t &count) {
   OutputDebugStringA(buffer);
   OutputDebugStringA("\r\n");
 #else
-  if( m==Error )
+  if( m==Error ){
     std::cerr << buffer << std::endl;
+    std::cerr.flush();
+    }
     else
     std::cout << buffer << std::endl;
 #endif

@@ -10,15 +10,6 @@
 @synthesize window;
 @synthesize openGLContext;
 
-static NSOpenGLPixelFormatAttribute glAttributes[] = {
-  NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersionLegacy,
-  NSOpenGLPFAColorSize,     24,
-  NSOpenGLPFAAlphaSize,     8,
-  NSOpenGLPFAAccelerated,
-  NSOpenGLPFADoubleBuffer,
-  0
-  };
-
 - (void) draw {
   Tempest::OsxAPI::swapContext();
   }
