@@ -171,7 +171,7 @@ class Pixmap {
 
       Ref * newRef();
       Ref * newRef( const Ref * base );
-      void delRef( Ref * r );
+      void  delRef( Ref * r );
 
       bool isValid() const {
         return true;

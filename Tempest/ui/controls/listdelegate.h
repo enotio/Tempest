@@ -122,8 +122,8 @@ class ArrayListDelegate : public AbstractListDelegate<T,std::vector<T>,Ctrl> {
 #ifndef __ANDROID__
       return SystemAPI::toUtf16(std::to_string(s));
 #else
-	  std::stringstream ss;
-	  ss << s;
+      std::stringstream ss;
+      ss << s;
       return SystemAPI::toUtf16(ss.str());
 #endif
       }

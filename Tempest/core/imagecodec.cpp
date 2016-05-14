@@ -39,7 +39,7 @@ struct PngCodec:ImageCodec {
     if( d.readData( head, 8 )!=8 )
       return false;
 
-    if (png_sig_cmp( (unsigned char*)head, 0, 8))
+    if(png_sig_cmp( (unsigned char*)head, 0, 8))
       return false;
 
     png_structp png_ptr;
@@ -47,11 +47,11 @@ struct PngCodec:ImageCodec {
     /* initialize stuff */
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
-    if (!png_ptr)
+    if(!png_ptr)
       return 0;
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr)
+    if(!info_ptr)
       return 0;
 
     if( setjmp(png_jmpbuf(png_ptr)) )
@@ -108,24 +108,38 @@ struct PngCodec:ImageCodec {
       info.bpp=4;
       info.format = Pixmap::Format_RGBA;
       }
+
+    if( color_type==PNG_COLOR_TYPE_GRAY ){
+      png_set_gray_to_rgb(png_ptr);
+      info.bpp=3;
+      info.format = Pixmap::Format_RGB;
+      }
+
+    if( color_type==PNG_COLOR_TYPE_GRAY_ALPHA ){
+      png_set_gray_to_rgb(png_ptr);
+      info.bpp=4;
+      info.format = Pixmap::Format_RGBA;
+      }
+
     info.alpha  = (info.format == Pixmap::Format_RGBA);
 
     if( ( color_type==PNG_COLOR_TYPE_RGB ||
-          color_type==PNG_COLOR_TYPE_RGB_ALPHA ) &&
+          color_type==PNG_COLOR_TYPE_RGB_ALPHA ||
+          color_type==PNG_COLOR_TYPE_GRAY ||
+          color_type==PNG_COLOR_TYPE_GRAY_ALPHA ) &&
         bit_depth==8 ){
       out.resize( info.w*info.h*info.bpp );
-      //int number_of_passes =
-          png_set_interlace_handling(png_ptr);
+      png_set_interlace_handling(png_ptr);
       png_read_update_info(png_ptr, info_ptr);
 
-      if (setjmp(png_jmpbuf(png_ptr)))
+      Detail::Guard guard(spin);
+      (void)guard;
+
+      if(setjmp(png_jmpbuf(png_ptr)))
         return false;
 
       if( !(info.bpp==3 || info.bpp==4 ) )
         return false;
-
-      Detail::Guard guard(spin);
-      (void)guard;
 
       rows.resize( info.h );
 
