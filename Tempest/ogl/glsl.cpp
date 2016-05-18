@@ -91,7 +91,6 @@ struct GLSL::Data{
         if (infoLen) {
           glGetShaderInfoLog(shader, infoLen, NULL, &log[0]);
           glDeleteShader(shader);
-          shader = 0;
           }
 
         return 0;

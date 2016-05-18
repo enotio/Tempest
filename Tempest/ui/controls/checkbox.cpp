@@ -108,7 +108,7 @@ void CheckBox::paintEvent( Tempest::PaintEvent &e ) {
   }
 
 void CheckBox::emitClick() {
-  State state = st;
+  State state;
   if(tristate)
     state = State((st+1)%3); else
     state = State((st+1)%2);
