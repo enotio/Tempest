@@ -7,10 +7,10 @@
 using namespace Tempest;
 
 Shortcut::Shortcut() {
-  m.lkey    = 0;
-  m.key     = KeyEvent::K_NoKey;
-  m.modyfer = KeyEvent::K_NoKey;
-  m.owner   = 0;
+  m.lkey     = 0;
+  m.key      = KeyEvent::K_NoKey;
+  m.modifier = KeyEvent::K_NoKey;
+  m.owner    = 0;
   }
 
 Shortcut::Shortcut( Widget *w,
@@ -18,10 +18,10 @@ Shortcut::Shortcut( Widget *w,
                     Event::KeyType md ) {
   T_ASSERT(w!=0);
 
-  m.lkey    = 0;
-  m.key     = k;
-  m.modyfer = md;
-  m.owner   = w;
+  m.lkey     = 0;
+  m.key      = k;
+  m.modifier = md;
+  m.owner    = w;
 
   w->skuts.push_back(this);
   }
@@ -56,8 +56,16 @@ void Shortcut::setKey( uint32_t k ) {
   m.lkey = k;
   }
 
+void Shortcut::setModifier(Event::KeyType key) {
+  m.modifier = key;
+  }
+
 uint32_t Shortcut::lkey() const {
   return m.lkey;
+  }
+
+Event::KeyType Shortcut::modifier() const {
+  return m.modifier;
   }
 
 void Shortcut::setKey( Event::KeyType k ) {

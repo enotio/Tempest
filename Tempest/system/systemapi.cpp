@@ -57,27 +57,27 @@ Size SystemAPI::screenSize() {
   }
 
 std::string SystemAPI::loadText(const std::string &file) {
-  return std::move( instance().loadText( file.data() ));
+  return instance().loadText( file.data() );
   }
 
 std::string SystemAPI::loadText(const std::u16string &file) {
-  return std::move( instance().loadText( file.data() ));
+  return instance().loadText( file.data() );
   }
 
 std::string SystemAPI::loadText(const char *file) {
-  return std::move( instance().loadTextImpl(file) );
+  return instance().loadTextImpl(file);
   }
 
 std::string SystemAPI::loadText(const char16_t *file) {
-  return std::move( instance().loadTextImpl(file) );
+  return instance().loadTextImpl(file);
   }
 
 std::vector<char> SystemAPI::loadBytes(const char *file) {
-  return std::move( instance().loadBytesImpl(file) );
+  return instance().loadBytesImpl(file);
   }
 
 std::vector<char> SystemAPI::loadBytes(const char16_t *file) {
-  return std::move( instance().loadBytesImpl(file) );
+  return instance().loadBytesImpl(file);
   }
 
 bool SystemAPI::writeBytes( const char *file,
@@ -214,7 +214,7 @@ std::string SystemAPI::loadTextImpl(const char *file) {
   str.resize(sz);
   f.readData( &str[0], sz );
 
-  return std::move(str);
+  return str;
   }
 
 std::string SystemAPI::loadTextImpl(const char16_t *file) {
@@ -225,7 +225,7 @@ std::string SystemAPI::loadTextImpl(const char16_t *file) {
   str.resize(sz);
   f.readData( &str[0], sz );
 
-  return std::move(str);
+  return str;
   }
 
 std::vector<char> SystemAPI::loadBytesImpl(const char *file) {
@@ -236,7 +236,7 @@ std::vector<char> SystemAPI::loadBytesImpl(const char *file) {
   str.resize(sz);
   f.readData( &str[0], sz );
 
-  return std::move(str);
+  return str;
   }
 
 std::vector<char> SystemAPI::loadBytesImpl(const char16_t *file) {
@@ -247,7 +247,7 @@ std::vector<char> SystemAPI::loadBytesImpl(const char16_t *file) {
   str.resize(sz);
   f.readData( &str[0], sz );
 
-  return std::move(str);
+  return str;
   }
 
 bool SystemAPI::loadImage( IDevice &file,
@@ -331,6 +331,12 @@ void SystemAPI::emitEvent( Tempest::Window *w,
                            const KeyEvent &scut,
                            Event::Type type ) {
   bool scAcepted = false;
+
+  if( type==Event::KeyDown )
+    instance().pressedKeys.insert(ebase.key);
+  else if( type==Event::KeyUp )
+    instance().pressedKeys.erase(ebase.key);
+
   if( type==Event::KeyDown ){
     Tempest::KeyEvent sc( scut.key, scut.u16, Event::Shortcut );
     SystemAPI::emitEvent(w, sc);
@@ -435,7 +441,7 @@ std::string SystemAPI::toUtf8(const std::u16string &str) {
   std::string r;
   utf16to8( str.begin(), str.end(), std::back_inserter(r) );
 
-  return std::move(r);
+  return r;
   }
 
 std::string SystemAPI::toUtf8(const char16_t* b, const char16_t* e) {
@@ -444,7 +450,7 @@ std::string SystemAPI::toUtf8(const char16_t* b, const char16_t* e) {
   std::string r;
   utf16to8( b,e, std::back_inserter(r) );
 
-  return std::move(r);
+  return r;
   }
 
 
@@ -454,7 +460,7 @@ std::u16string SystemAPI::toUtf16(const std::string &str) {
   std::u16string r;
   utf8to16( str.begin(), str.end(), std::back_inserter(r) );
 
-  return std::move(r);
+  return r;
   }
 
 std::u16string SystemAPI::toUtf16(const char *b, const char *e) {
@@ -463,7 +469,7 @@ std::u16string SystemAPI::toUtf16(const char *b, const char *e) {
   std::u16string r;
   utf8to16( b, e, std::back_inserter(r) );
 
-  return std::move(r);
+  return r;
   }
 
 const std::string &SystemAPI::androidActivityClass() {
@@ -579,6 +585,11 @@ void SystemAPI::setupKeyTranslate( const SystemAPI::TranslateKeyPair k[] ) {
 
 void SystemAPI::setFuncKeysCount(int c) {
   ki.fkeysCount = c;
+  }
+
+bool SystemAPI::isKeyPressed(Event::KeyType t) {
+  const auto& k = instance().pressedKeys;
+  return k.find(t)!=k.end();
   }
 
 size_t SystemAPI::imageCodecCount() const {

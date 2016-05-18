@@ -10,6 +10,7 @@
 #include <Tempest/Event>
 #include <Tempest/ImageCodec>
 #include <Tempest/Platform>
+#include <unordered_set>
 
 namespace Tempest{
 
@@ -85,7 +86,7 @@ class SystemAPI{
 
     static void emitEvent( Tempest::Window *w,
                            Event& e );
-    static void emitEvent(Tempest::Window *w,
+    static void emitEvent( Tempest::Window *w,
                            const KeyEvent &ebase,
                            const KeyEvent &scut,
                            Event::Type type );
@@ -126,7 +127,9 @@ class SystemAPI{
       int cpuCount;
       };
 
-    static CpuInfo cpuInfo();
+    static CpuInfo cpuInfo();    
+    static bool isKeyPressed(Event::KeyType t);
+
   protected:
     SystemAPI();
 
@@ -170,13 +173,14 @@ class SystemAPI{
     virtual const std::string& androidActivityClassImpl();
     virtual CpuInfo cpuInfoImpl() = 0;
 
-    struct TranslateKeyPair{
+    struct TranslateKeyPair {
       uint64_t       src;
       Event::KeyType result;
       };
 
     void setupKeyTranslate( const TranslateKeyPair k[] );
-    void setFuncKeysCount( int c );    
+    void setFuncKeysCount( int c );
+
   private:
     SystemAPI( const SystemAPI& ){}
 
@@ -191,6 +195,13 @@ class SystemAPI{
       };
 
     KeyInf ki;
+
+    struct KHash {
+      size_t operator()(Event::KeyType t) const {
+        return size_t(t);
+        }
+      };
+    std::unordered_set<Event::KeyType,KHash> pressedKeys;
     struct GestureDeleter;
 
     std::vector<std::unique_ptr<ImageCodec, void (*)(ImageCodec* )>> codecs;

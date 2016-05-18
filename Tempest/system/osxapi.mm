@@ -10,6 +10,7 @@
 
 #include <Tempest/Window>
 #include <Tempest/Event>
+#include <Tempest/Log>
 
 #include "osxapi.h"
 #include "appdelegate.h"
@@ -284,9 +285,15 @@ static Event::MouseButton toButton( uint type ){
           kt = Event::KeyType(Event::K_A+(&k-keyTable));
 
       if(kt!=Event::K_NoKey || txt16[0]!='\0'){
+        const bool emulateUp = (event.modifierFlags & NSCommandKeyMask);
         state.eventType = eType;
         new (&state.event.key) Tempest::KeyEvent( kt, txt16[0], state.eventType );
         OsxAPI::swapContext();
+
+        if( emulateUp ){
+          state.eventType = Event::KeyUp;
+          new (&state.event.key) Tempest::KeyEvent( kt, txt16[0], state.eventType );
+          }
         }
       }
       break;
@@ -360,11 +367,7 @@ static Event::MouseButton toButton( uint type ){
   if( (flg&NSControlKeyMask )!=state.ctrl ){
     state.ctrl = (flg&NSCommandKeyMask);
 
-    state.eventType = Tempest::KeyEvent::KeyDown;
-    new (&state.event.key) Tempest::KeyEvent( KeyEvent::K_Control, state.eventType );
-    OsxAPI::swapContext();
-
-    state.eventType = Tempest::KeyEvent::KeyUp;
+    state.eventType = state.command ? Tempest::KeyEvent::KeyDown : Tempest::KeyEvent::KeyUp;
     new (&state.event.key) Tempest::KeyEvent( KeyEvent::K_Control, state.eventType );
     OsxAPI::swapContext();
     }
@@ -372,11 +375,7 @@ static Event::MouseButton toButton( uint type ){
   if( (flg&NSCommandKeyMask )!=state.command ){
     state.command = (flg&NSCommandKeyMask);
 
-    state.eventType = Tempest::KeyEvent::KeyDown;
-    new (&state.event.key) Tempest::KeyEvent( KeyEvent::K_Command, state.eventType );
-    OsxAPI::swapContext();
-
-    state.eventType = Tempest::KeyEvent::KeyUp;
+    state.eventType = state.command ? Tempest::KeyEvent::KeyDown : Tempest::KeyEvent::KeyUp;
     new (&state.event.key) Tempest::KeyEvent( KeyEvent::K_Command, state.eventType );
     OsxAPI::swapContext();
     }

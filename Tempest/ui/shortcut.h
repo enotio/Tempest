@@ -22,13 +22,17 @@ class Shortcut {
 
     void setKey( KeyEvent::KeyType key );
     void setKey( uint32_t key );
+    void setModifier( KeyEvent::KeyType key );
+
     KeyEvent::KeyType key()  const;
     uint32_t          lkey() const;
+    KeyEvent::KeyType modifier()  const;
 
     signal<> activated;
+
   private:
     struct M{
-      KeyEvent::KeyType key, modyfer;
+      KeyEvent::KeyType key, modifier;
       uint32_t lkey;
       Widget * owner;
       } m;

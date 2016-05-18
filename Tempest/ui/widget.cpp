@@ -1081,16 +1081,17 @@ void Widget::shortcutEvent(KeyEvent &e) {
       return;
     }
 
-  for( size_t i=0; i<skuts.size(); ++i )
-    if( (skuts[i]->key()==e.key &&
-         e.key != KeyEvent::K_NoKey ) ||
-        (e.key == KeyEvent::K_NoKey &&
-         skuts[i]->lkey()==e.u16 &&
-         e.u16!=0 )){
+  for( Shortcut* sc:skuts ){
+    if( sc->modifier()!=KeyEvent::K_NoKey && !SystemAPI::isKeyPressed(sc->modifier()) )
+      continue;
+
+    if( (SystemAPI::isKeyPressed(sc->key()) && e.key != KeyEvent::K_NoKey ) ||
+        (e.key == KeyEvent::K_NoKey && sc->lkey()==e.u16 && e.u16!=0 ) ){
       e.accept();
-      skuts[i]->activated();
+      sc->activated();
       return;
       }
+    }
 
   e.ignore();
   }
