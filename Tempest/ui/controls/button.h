@@ -82,7 +82,7 @@ class Button : public Tempest::Widget {
     void finishPaint();
 
   private:
-    clock_t timePressed;
+    uint64_t timePressed;
     bool pressed, presAnim;
     std::u16string txt, hnt;
 
