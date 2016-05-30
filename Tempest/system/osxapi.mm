@@ -165,6 +165,7 @@ static Event::MouseButton toButton( uint type ){
 @implementation TempestWindow
 
 -(void) display:(NSObject*) obj {
+  (void)obj;
   OsxAPI::swapContext();
   }
 
@@ -365,6 +366,7 @@ static Event::MouseButton toButton( uint type ){
   }
 
 - (void) flagsChanged: (NSEvent *)event {
+  (void)event;
   NSUInteger flags = [[NSApp currentEvent] modifierFlags];
   int flg = (flags & NSCommandKeyMask);
 
@@ -593,11 +595,6 @@ bool OsxAPI::processEvent(){
       break;
     case Event::KeyDown:{
       Tempest::KeyEvent k = KeyEvent(state.event.key.key,Event::Type(type));
-      SystemAPI::emitEvent( w,k,k,Event::Type(type) );
-      }
-      break;
-    case Event::KeyUp:{
-      Tempest::KeyEvent k = KeyEvent(state.event.key.key,Event::Type(type));
       uint32_t key = state.event.key.u16;
       SystemAPI::emitEvent( w,k,k,Event::Type(type) );
 
@@ -617,6 +614,11 @@ bool OsxAPI::processEvent(){
         Tempest::KeyEvent eu( Event::K_NoKey, e.u16, Event::KeyUp );
         SystemAPI::emitEvent(w, eu);
         }
+      }
+      break;
+    case Event::KeyUp:{
+      Tempest::KeyEvent k = KeyEvent(state.event.key.key,Event::Type(type));
+      SystemAPI::emitEvent( w,k,k,Event::Type(type) );
       }
       break;
     case Event::Resize:
@@ -757,7 +759,7 @@ void OsxAPI::setGeometry(SystemAPI::Window *wx, int x, int y, int w, int h){
   //state.eventType = Event::Type(EventWindowGeometry);
   //new (&state.event.setGeometry) Tempest::Rect(x,y,w,h);
 
-  NSWindow* wnd = (NSWindow*)wx;
+  //NSWindow* wnd = (NSWindow*)wx;
   //[wnd setFrame: frame display:YES];
   //OsxAPI::swapContext();
   }

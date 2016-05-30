@@ -531,14 +531,9 @@ bool iOSAPI::processEvent(){
     case Event::KeyDown:{
       Tempest::KeyEvent k = KeyEvent(state.event.key.key,Event::Type(type));
       SystemAPI::emitEvent( w,k,k,Event::Type(type) );
-      }
-      break;
-    case Event::KeyUp:{
-      Tempest::KeyEvent k = KeyEvent(state.event.key.key,Event::Type(type));
-      uint32_t key = state.event.key.u16;
-      SystemAPI::emitEvent( w,k,k,Event::Type(type) );
 
       //WM_CHAR
+      uint32_t key = state.event.key.u16;
       Tempest::KeyEvent e = Tempest::KeyEvent( key );
       uint16_t wrd[4] = {
         Event::K_Return,
@@ -554,6 +549,11 @@ bool iOSAPI::processEvent(){
         Tempest::KeyEvent eu( Event::K_NoKey, e.u16, Event::KeyUp );
         SystemAPI::emitEvent(w, eu);
         }
+      }
+      break;
+    case Event::KeyUp:{
+      Tempest::KeyEvent k = KeyEvent(state.event.key.key,Event::Type(type));
+      SystemAPI::emitEvent( w,k,k,Event::Type(type) );
       }
       break;
     case Event::Resize:

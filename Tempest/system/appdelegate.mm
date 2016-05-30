@@ -41,17 +41,19 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
   (void)aNotification;
-  [NSTimer
-      scheduledTimerWithTimeInterval:0.001
-      target:self
-      selector:@selector(draw)
-      userInfo:nil
-      repeats:YES];
+  self.timer =
+    [NSTimer
+        scheduledTimerWithTimeInterval:0.001
+        target:self
+        selector:@selector(draw)
+        userInfo:nil
+        repeats:YES];
   Tempest::OsxAPI::swapContext();
   }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)_app {
   (void)_app;
+  [self.timer invalidate];
   Tempest::OsxAPI::finish();
   return YES;
   }
