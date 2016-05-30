@@ -164,6 +164,10 @@ static Event::MouseButton toButton( uint type ){
 
 @implementation TempestWindow
 
+-(void) display:(NSObject*) obj {
+  OsxAPI::swapContext();
+  }
+
 -(void) processEvent:(NSEvent *)event {
   uint type = [event type];
   switch(type){
@@ -533,7 +537,12 @@ bool OsxAPI::setDisplaySettings(SystemAPI::Window *, const DisplaySettings &) {
   }
 
 Tempest::Size OsxAPI::implScreenSize() {
-  return Size(1440,980);//TODO
+  NSScreen* sc = [NSScreen mainScreen];
+  if( sc==nil )
+    return Size();
+
+  NSRect e = [sc frame];
+  return Size(e.size.width,e.size.height);
   }
 
 static void appleMain(void*){
@@ -786,7 +795,10 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
                                       CVOptionFlags flagsIn,
                                       CVOptionFlags* flagsOut,
                                       void* displayLinkContext) {
-  //OsxAPI::swapContext();
+  id view = (id)displayLinkContext;
+  [view performSelectorOnMainThread:@selector(display:)
+                         withObject:view
+                         waitUntilDone:YES];
   return kCVReturnSuccess;
   }*/
 
@@ -807,7 +819,7 @@ void* OsxAPI::initializeOpengl(void* wnd) {
   NSOpenGLContext*     openGLContext = [[NSOpenGLContext alloc]initWithFormat:pixelFormat shareContext:nil];
   [openGLContext setView:[window contentView]];
 
-  /*
+/*
   //TODO: CoreVide support
 
   CVDisplayLinkRef displayLink;
@@ -815,7 +827,7 @@ void* OsxAPI::initializeOpengl(void* wnd) {
   CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
 
   // Set the renderer output callback function
-  CVDisplayLinkSetOutputCallback(displayLink, &MyDisplayLinkCallback, nullptr);
+  CVDisplayLinkSetOutputCallback(displayLink, &MyDisplayLinkCallback, window);
 
   // Set the display link for the current renderer
   CGLContextObj cglContext = [openGLContext CGLContextObj];
@@ -824,8 +836,7 @@ void* OsxAPI::initializeOpengl(void* wnd) {
 
   // Activate the display link
   CVDisplayLinkStart(displayLink);
-  */
-
+*/
   return openGLContext;
   }
 
