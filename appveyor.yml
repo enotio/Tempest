@@ -8,6 +8,7 @@ install:
 
 build_script:
   - echo %CD%
+  - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86'
   - qmake Tempest/Tempest.pro -r -spec win32-msvc2015 "CONFIG+=debug" "CONFIG+=msvc_static"
   - jom.exe
 
