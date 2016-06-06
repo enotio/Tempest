@@ -15,18 +15,19 @@ environment:
       QMAKE_SPEC : "-r -spec win32-msvc2015"
       VSVER: 14.0 # Visual Studio 2015
 
+before_build:
+  # Prepare the out-of-source build directory.
+  - mkdir %APPVEYOR_BUILD_FOLDER%/../lib
+
 build_script:
-  - mkdir lib
-  - echo %CD%
   - '"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86'
   - qmake Tempest/Tempest.pro  %QMAKE_SPEC%  %QMAKE_FLAGS% "CONFIG+=msvc_static"
   - jom.exe
   - qmake Examples/examples.pro -r -spec win32-msvc2015 %QMAKE_FLAGS%
   - jom.exe
-  - cd lib
-  - echo %CD%
+  - echo %APPVEYOR_BUILD_FOLDER%/../lib
 
 artifacts:
-  - path: lib/Tempest*.dll
-  - path: lib/Tempest*.lib
-  - path: lib/Tempest*.a
+  - path: %APPVEYOR_BUILD_FOLDER%/../lib/Tempest*.dll
+  - path: %APPVEYOR_BUILD_FOLDER%/../lib/Tempest*.lib
+  - path: %APPVEYOR_BUILD_FOLDER%/../lib/Tempest*.a
