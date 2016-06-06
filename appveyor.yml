@@ -3,9 +3,8 @@ install:
   - cd utils
   - appveyor DownloadFile http://camlorn.net/appveyor/jom.exe
   - cd ..
-  - set QTDIR=C:\Qt\5.5\mingw492_32
+  - set QTDIR=C:\Qt\5.6\msvc2015
   - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin;./utils
-  - echo %CD%
 
 build_script:
   - echo %CD%
