@@ -415,3 +415,6 @@ OTHER_FILES += \
     include/Tempest/Label \
     include/Tempest/IOS \
     include/Tempest/OSX
+
+DISTFILES += \
+    appveyor.yml
