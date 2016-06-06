@@ -4,3 +4,6 @@ install:
 build_script:
   - qmake Tempest.pro
   - mingw32-make
+
+artifacts:
+  - path: Tempest*.dll
