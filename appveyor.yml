@@ -16,6 +16,7 @@ environment:
       VSVER: 14.0 # Visual Studio 2015
 
 build_script:
+  - mkdir lib
   - echo %CD%
   - '"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86'
   - qmake Tempest/Tempest.pro  %QMAKE_SPEC%  %QMAKE_FLAGS% "CONFIG+=msvc_static"
