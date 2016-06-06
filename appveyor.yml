@@ -1,6 +1,10 @@
 install:
+  - mkdir utils
+  - cd utils
+  - appveyor DownloadFile http://camlorn.net/appveyor/jom.exe
+  - cd ..
   - set QTDIR=C:\Qt\5.5\mingw492_32
-  - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin
+  - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin;C:\utils
 
 build_script:
   - qmake Tempest/Tempest.pro -r -spec win32-msvc2015 "CONFIG+=debug" "CONFIG+=msvc_static"
