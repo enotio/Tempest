@@ -28,6 +28,6 @@ build_script:
   - echo %APPVEYOR_BUILD_FOLDER%/../lib
 
 artifacts:
-  - path: %APPVEYOR_BUILD_FOLDER%/../lib/Tempest*.dll
-  - path: %APPVEYOR_BUILD_FOLDER%/../lib/Tempest*.lib
-  - path: %APPVEYOR_BUILD_FOLDER%/../lib/Tempest*.a
+  - path: %APPVEYOR_BUILD_FOLDER%\../lib/Tempest*.dll
+  - path: %APPVEYOR_BUILD_FOLDER%\../lib/Tempest*.lib
+  - path: %APPVEYOR_BUILD_FOLDER%\../lib/Tempest*.a
