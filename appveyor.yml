@@ -17,7 +17,7 @@ environment:
 
 before_build:
   # Prepare the out-of-source build directory.
-  - mkdir %APPVEYOR_BUILD_FOLDER%/../lib
+  - mkdir lib
 
 build_script:
   - '"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86'
@@ -25,7 +25,7 @@ build_script:
   - jom.exe
   - qmake Examples/examples.pro -r -spec win32-msvc2015 %QMAKE_FLAGS%
   - jom.exe
-  - echo %APPVEYOR_BUILD_FOLDER%/../lib
+  - echo lib
 
 artifacts:
   - path: lib\Tempest.dll
