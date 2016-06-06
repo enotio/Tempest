@@ -6,11 +6,24 @@ install:
   - set QTDIR=C:\Qt\5.6\msvc2015
   - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin;./utils
 
+environment:
+  matrix:
+    - QMAKE_FLAGS: "CONFIG+=debug"
+      QMAKE_SPEC : "-r -spec win32-msvc2015"
+      VSVER: 14.0 # Visual Studio 2015
+    - QMAKE_FLAGS: ""
+      QMAKE_SPEC : "-r -spec win32-msvc2015"
+      VSVER: 14.0 # Visual Studio 2015
+
 build_script:
   - echo %CD%
-  - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86'
-  - qmake Tempest/Tempest.pro -r -spec win32-msvc2015 "CONFIG+=debug" "CONFIG+=msvc_static"
+  - '"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86'
+  - qmake Tempest/Tempest.pro  %QMAKE_SPEC%  %QMAKE_FLAGS% "CONFIG+=msvc_static"
   - jom.exe
+  - qmake Examples/examples.pro -r -spec win32-msvc2015 %QMAKE_FLAGS%
+  - jom.exe
+  - cd lib
+  - echo %CD%
 
 artifacts:
   - path: lib/Tempest*.dll
