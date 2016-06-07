@@ -21,10 +21,13 @@ before_build:
 
 build_script:
   - '"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86'
-  - qmake Tempest/Tempest.pro  %QMAKE_SPEC%  %QMAKE_FLAGS% "CONFIG+=msvc_static"
+  - cd Tempest
+  - qmake Tempest.pro  %QMAKE_SPEC%  %QMAKE_FLAGS% "CONFIG+=msvc_static"
   - jom.exe
-  - qmake Examples/examples.pro -r -spec win32-msvc2015 %QMAKE_FLAGS%
+  - cd ../Examples
+  - qmake examples.pro -r -spec win32-msvc2015 %QMAKE_FLAGS%
   - jom.exe
+  - cd ../
   - echo lib
   - dir /s /b
 
