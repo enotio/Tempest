@@ -12,14 +12,13 @@ environment:
       VSVER: 14.0 # Visual Studio 2015
       QTDIR: C:\Qt\5.6\msvc2015
 
-    - QMAKE_FLAGS: "CONFIG+=msvc_static"
-      QMAKE_SPEC : "-r -spec win32-msvc2015"
-      VSVER: 14.0 # Visual Studio 2015
-      QTDIR: C:\Qt\5.6\msvc2015
-
     - QMAKE_FLAGS: ""
       QMAKE_SPEC : "-r -spec win32-g++"
       QTDIR: C:\Qt\5.6\mingw482_32
+
+    - QMAKE_FLAGS: ""
+      QMAKE_SPEC : "-r -spec android-g++"
+      QTDIR: C:\Qt\5.6\android_armv7
 
 configuration:
   - debug
@@ -31,10 +30,10 @@ before_build:
   # Setup the build toolchains
   - set PATH=%PATH%;%QTDIR%\bin
   - '%QTDIR%\bin\qtenv2.bat'
+  - '"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86'
 
 build_script:
-  - '"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86'
-  - cd Tempest
+  - cd %APPVEYOR_BUILD_FOLDER%\Tempest
   - qmake Tempest.pro CONFIG+=%CONFIGURATION% %QMAKE_SPEC%  %QMAKE_FLAGS%
   - jom.exe
   - cd ../Examples
