@@ -1,19 +1,16 @@
-QT     -= core gui
-CONFIG -= app_bundle
-CONFIG -= qt
-CONFIG += c++11
+TEMPLATE = lib
+QT      -= core gui
+CONFIG  -= app_bundle
+CONFIG  -= qt
+CONFIG  += c++11
 
 CONFIG += ogl directx
 
-msvc_static: {
-  TEMPLATE = lib
-  CONFIG   += staticlib
-  } else {
-  TEMPLATE = lib
-  CONFIG   += dll
+win32-msvc* {
+  CONFIG += staticlib
   }
 
-ios:CONFIG   += staticlib
+ios:CONFIG += staticlib
 
 DEFINES += TEMPEST_LIBRARY_BUILD
 DEFINES += TEMPEST_M_TREADS

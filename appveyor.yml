@@ -3,26 +3,39 @@ install:
   - cd utils
   - appveyor DownloadFile http://camlorn.net/appveyor/jom.exe
   - cd ..
-  - set QTDIR=C:\Qt\5.6\msvc2015
   - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin;c:\projects\tempest\utils
 
 environment:
   matrix:
-    - QMAKE_FLAGS: "CONFIG+=debug"
+    - QMAKE_FLAGS: "CONFIG+=msvc_static"
       QMAKE_SPEC : "-r -spec win32-msvc2015"
       VSVER: 14.0 # Visual Studio 2015
+      QTDIR=C:\Qt\5.6\msvc2015
+
+    - QMAKE_FLAGS: "CONFIG+=msvc_static"
+      QMAKE_SPEC : "-r -spec win32-msvc2015"
+      VSVER: 14.0 # Visual Studio 2015
+      QTDIR=C:\Qt\5.6\msvc2015
+
     - QMAKE_FLAGS: ""
-      QMAKE_SPEC : "-r -spec win32-msvc2015"
-      VSVER: 14.0 # Visual Studio 2015
+      QMAKE_SPEC : "-r -spec win32-g++"
+      QTDIR=C:\Qt\5.6\mingw482_32
+
+configuration:
+  - debug
+  - release
 
 before_build:
   # Prepare the out-of-source build directory.
   - mkdir lib
+  # Setup the build toolchains
+  - set PATH=%PATH%;%QTDIR%\bin
+  - '%QTDIR%\bin\qtenv2.bat'
 
 build_script:
   - '"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86'
   - cd Tempest
-  - qmake Tempest.pro  %QMAKE_SPEC%  %QMAKE_FLAGS% "CONFIG+=msvc_static"
+  - qmake Tempest.pro CONFIG+=%CONFIGURATION% %QMAKE_SPEC%  %QMAKE_FLAGS%
   - jom.exe
   - cd ../Examples
   - qmake examples.pro -r -spec win32-msvc2015 %QMAKE_FLAGS%
