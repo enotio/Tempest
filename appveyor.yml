@@ -28,8 +28,6 @@ build_script:
   - qmake examples.pro -r -spec win32-msvc2015 %QMAKE_FLAGS%
   - jom.exe
   - cd ../
-  - echo lib
-  - dir /s /b
 
 artifacts:
   - path: lib\Tempest.dll
