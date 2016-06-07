@@ -31,10 +31,10 @@ before_build:
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%\Tempest
-  - qmake Tempest.pro -r -spec CONFIG+=%CONFIGURATION% %QMAKE_SPEC%
+  - qmake Tempest.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
   - jom.exe
   - cd ../Examples
-  - qmake examples.pro -r -spec CONFIG+=%CONFIGURATION% %QMAKE_SPEC%
+  - qmake examples.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
   - jom.exe
   - cd ../
 
