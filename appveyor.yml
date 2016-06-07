@@ -7,17 +7,14 @@ install:
 
 environment:
   matrix:
-    - QMAKE_FLAGS: "CONFIG+=msvc_static"
-      QMAKE_SPEC : "-r -spec win32-msvc2015"
-      VSVER: 14.0 # Visual Studio 2015
+    - QMAKE_SPEC : "win32-msvc2015"
       QTDIR: C:\Qt\5.6\msvc2015
+      VSVER: 14.0 # Visual Studio 2015
 
-    - QMAKE_FLAGS: ""
-      QMAKE_SPEC : "-r -spec win32-g++"
+    - QMAKE_SPEC : "win32-g++"
       QTDIR: C:\Qt\5.6\mingw482_32
 
-    - QMAKE_FLAGS: ""
-      QMAKE_SPEC : "-r -spec android-g++"
+    - QMAKE_SPEC : "android-g++"
       QTDIR: C:\Qt\5.6\android_armv7
 
 configuration:
@@ -34,10 +31,10 @@ before_build:
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%\Tempest
-  - qmake Tempest.pro CONFIG+=%CONFIGURATION% %QMAKE_SPEC%  %QMAKE_FLAGS%
+  - qmake Tempest.pro -r -spec CONFIG+=%CONFIGURATION% %QMAKE_SPEC%
   - jom.exe
   - cd ../Examples
-  - qmake examples.pro -r -spec win32-msvc2015 %QMAKE_FLAGS%
+  - qmake examples.pro -r -spec CONFIG+=%CONFIGURATION% %QMAKE_SPEC%
   - jom.exe
   - cd ../
 
