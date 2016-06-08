@@ -27,7 +27,7 @@ before_build:
   # Setup the build toolchains
   - set PATH=%PATH%;%QTDIR%\bin
   - '%QTDIR%\bin\qtenv2.bat'
-  - '"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86'
+  - if defined VSVER ('"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86')
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%\Tempest
