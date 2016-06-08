@@ -7,12 +7,12 @@ install:
 
 environment:
   matrix:
-    - QMAKE_SPEC : "win32-g++"
-      QTDIR: C:\Qt\5.6\mingw49_32
-
     - QMAKE_SPEC : "win32-msvc2015"
       QTDIR: C:\Qt\5.6\msvc2015
       VSVER: 14.0 # Visual Studio 2015
+
+    - QMAKE_SPEC : "win32-g++"
+      QTDIR: C:\Qt\5.6\mingw49_32
 
 configuration:
   - debug
@@ -24,8 +24,8 @@ before_build:
   # Setup the build toolchains
   - if %QTDIR:msvc=%==%QTDIR% set(make=mingw32-make.exe) else make=jom.exe
   - set PATH=%PATH%;%QTDIR%\bin
-  - if not %QTDIR:msvc=%==%QTDIR% call '%QTDIR%\bin\qtenv2.bat'
-  - if not %QTDIR:msvc=%==%QTDIR% call '"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86'
+  - if not %QTDIR:msvc=%==%QTDIR% call "%QTDIR%\bin\qtenv2.bat"
+  - if not %QTDIR:msvc=%==%QTDIR% call "C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86
 
 build_script:
   - echo %path%
