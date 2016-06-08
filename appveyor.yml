@@ -3,7 +3,7 @@ install:
   - cd utils
   - appveyor DownloadFile http://camlorn.net/appveyor/jom.exe
   - cd ..
-  - set PATH=%PATH%;C:\MinGW\bin;c:\projects\tempest\utils
+  - set PATH=%PATH%;C:\Qt\Tools\mingw492_32;c:\projects\tempest\utils
 
 environment:
   matrix:
