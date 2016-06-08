@@ -22,8 +22,8 @@ before_build:
   # Prepare the out-of-source build directory.
   - mkdir lib
   # Setup the build toolchains
-  - if %QTDIR:msvc=%==%QTDIR% set make=jom.exe
-  - if not %QTDIR:msvc=%==%QTDIR% set make=mingw32-make.exe
+  - if not %QTDIR:msvc=%==%QTDIR% set make=jom.exe
+  - if %QTDIR:msvc=%==%QTDIR% set make=mingw32-make.exe
   - set PATH=%PATH%;%QTDIR%\bin
   - if not %QTDIR:msvc=%==%QTDIR% call "%QTDIR%\bin\qtenv2.bat"
   - if not %QTDIR:msvc=%==%QTDIR% call "C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86
