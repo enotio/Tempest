@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstddef>
 #include <cstdlib>
+#include <cstring>
 
 #ifdef __MINGW32__
 #include <stdalign.h>

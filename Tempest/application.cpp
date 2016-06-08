@@ -98,10 +98,10 @@ static int clock_gettime( int /*X*/, struct timespec *tv ) {
 
 using namespace Tempest;
 
-Application::App                         Application::app;
-signal<Font>                             Application::fontChanged;
-signal<UiMetrics>                        Application::uiMetricsChanged;
-signal<const std::u16string,const Rect&> Application::showHint;
+Application::App                                  Application::app;
+Tempest::signal<Font>                             Application::fontChanged;
+Tempest::signal<UiMetrics>                        Application::uiMetricsChanged;
+Tempest::signal<const std::u16string,const Rect&> Application::showHint;
 
 Application::Application() {
   app.ret  = -1;
