@@ -3,7 +3,7 @@ install:
   - cd utils
   - appveyor DownloadFile http://camlorn.net/appveyor/jom.exe
   - cd ..
-  - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin;c:\projects\tempest\utils
+  - set PATH=%PATH%;C:\MinGW\bin;c:\projects\tempest\utils
 
 environment:
   matrix:
@@ -25,18 +25,18 @@ before_build:
   # Prepare the out-of-source build directory.
   - mkdir lib
   # Setup the build toolchains
-  - if %QTDIR:msvc=%==%QTDIR% set make=mingw32-make.exe
+  - if %QTDIR:msvc=%==%QTDIR% set(make=mingw32-make.exe) else make=jom.exe
   - set PATH=%PATH%;%QTDIR%\bin
   - if not %QTDIR:msvc=%==%QTDIR% call '%QTDIR%\bin\qtenv2.bat'
   - if not %QTDIR:msvc=%==%QTDIR% call '"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86'
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%\Tempest
-  - qmake Tempest.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
-  - jom.exe
+  - qmake.exe Tempest.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
+  - '%make%'
   - cd ../Examples
-  - qmake examples.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
-  - jom.exe
+  - qmake.exe examples.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
+  - '%make%'
   - cd ../
 
 artifacts:
