@@ -3,7 +3,7 @@ install:
   - cd utils
   - appveyor DownloadFile http://camlorn.net/appveyor/jom.exe
   - cd ..
-  - set PATH=%PATH%;C:\MinGW\bin;c:\projects\tempest\utils
+  - set PATH=%PATH%;C:\MinGW\bin;%APPVEYOR_BUILD_FOLDER%\tempest\utils
 
 environment:
   matrix:
@@ -31,6 +31,7 @@ before_build:
   - if not %QTDIR:msvc=%==%QTDIR% call '"C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86'
 
 build_script:
+  - echo %path%
   - cd %APPVEYOR_BUILD_FOLDER%\Tempest
   - qmake.exe Tempest.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
   - '%make%'
