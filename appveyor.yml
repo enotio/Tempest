@@ -41,3 +41,4 @@ artifacts:
   - path: lib\Tempest.dll
   - path: lib\Tempest.lib
   - path: lib\Tempest.a
+  - path: lib\libTempest.a
