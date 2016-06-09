@@ -3,7 +3,7 @@ install:
   - cd utils
   - appveyor DownloadFile http://camlorn.net/appveyor/jom.exe
   - cd ..
-  - set PATH=%PATH%;C:\Qt\Tools\mingw492_32;c:\projects\tempest\utils
+  - set PATH=%PATH%;C:\Qt\Tools\mingw492_32\bin;c:\projects\tempest\utils
 
 environment:
   matrix:
@@ -24,7 +24,7 @@ before_build:
   # Setup the build toolchains
   - if not %QTDIR:msvc=%==%QTDIR% set make=jom.exe
   - if %QTDIR:msvc=%==%QTDIR% set make=mingw32-make.exe
-  - set PATH=%PATH%;%QTDIR%\bin
+  - set PATH=%QTDIR%\bin;%PATH%
   - if not %QTDIR:msvc=%==%QTDIR% call "%QTDIR%\bin\qtenv2.bat"
   - if not %QTDIR:msvc=%==%QTDIR% call "C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86
 
