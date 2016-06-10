@@ -74,7 +74,7 @@ class MemPool {
 
   private:
     struct TX{
-      char d[ sizeof(T) ];
+      alignas(alignof(T)) char d[ sizeof(T) ];
 
       template< class ... Args >
       void construct( Args... arg ){

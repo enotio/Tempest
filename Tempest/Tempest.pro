@@ -10,6 +10,10 @@ win32-msvc* {
   CONFIG += staticlib
   }
 
+win32-g++: {
+  QMAKE_CXXFLAGS += -Wno-unknown-pragmas
+  }
+
 ios:CONFIG += staticlib
 
 DEFINES += TEMPEST_LIBRARY_BUILD
