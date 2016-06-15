@@ -203,7 +203,7 @@ class signal : Detail::signalBase {
 #ifdef _MSC_VER
         align = __alignof(std::max_align_t)
 #else
-        align = alignof(max_align_t)
+        align = alignof(std::max_align_t)
 #endif
         };
 
