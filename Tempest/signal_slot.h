@@ -256,7 +256,11 @@ class signal : Detail::signalBase {
     template< class Ret, class ... FuncArgs >
     struct EmitFunc : public IEmit {
       enum {
-        align = alignof(max_align_t)
+#ifdef _MSC_VER
+        align = __alignof(std::max_align_t)
+#else
+        align = alignof(std::max_align_t)
+#endif
         };
 
       EmitFunc( Ret (&f)( FuncArgs... ) ): func(f) {
