@@ -12,6 +12,14 @@ os:
 compiler:
   - clang
 
+before_install:
+ - '[[ "$TRAVIS_OS_NAME" != "osx" ]] || brew update'
+
+install:
+ - '[[ "$TRAVIS_OS_NAME" != "osx" ]] || brew install qt5 protobuf fop docbook-xsl'
+ - '[[ "$TRAVIS_OS_NAME" != "osx" ]] || brew link --force qt5'
+ - '[[ "$TRAVIS_OS_NAME" != "osx" ]] || export PROTOBUF_PREFIX=$(brew --prefix protobuf)'
+
 script:
   - cd Tempest
   - qmake Tempest.pro
