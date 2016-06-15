@@ -1,12 +1,16 @@
 sudo: false
 language: cpp
 
+addons:
+ apt:
+  packages:
+   - qt5-qmake
+
 os:
   - osx
 
 compiler:
   - clang
-
 
 script:
   - cd Tempest
