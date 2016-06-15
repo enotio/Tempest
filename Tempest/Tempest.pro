@@ -418,4 +418,5 @@ OTHER_FILES += \
     include/Tempest/OSX
 
 DISTFILES += \
-    ../appveyor.yml
+    ../appveyor.yml \
+    ../.travis.yml
