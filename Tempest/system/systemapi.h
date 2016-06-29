@@ -180,6 +180,7 @@ class SystemAPI{
 
     void setupKeyTranslate( const TranslateKeyPair k[] );
     void setFuncKeysCount( int c );
+    void clearPressed();
 
   private:
     SystemAPI( const SystemAPI& ){}

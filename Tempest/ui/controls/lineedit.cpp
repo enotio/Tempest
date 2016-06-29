@@ -6,8 +6,13 @@
 using namespace Tempest;
 
 const char16_t LineEdit::passChar='*';
+#ifdef __OSX__
+static const KeyEvent::KeyType cmdKey = KeyEvent::K_Command;
+#else
+static const KeyEvent::KeyType cmdKey = KeyEvent::K_Control;
+#endif
 
-LineEdit::LineEdit(): anim(0), ctrlPressed(0) {
+LineEdit::LineEdit(): anim(0) {
   sedit    = 0;
   eedit    = 0;
   oldSedit = 0;
@@ -277,12 +282,7 @@ void LineEdit::redo() {
   }
 
 void LineEdit::keyDownEvent( KeyEvent &e ) {
-  if(e.key==KeyEvent::K_Control && ctrlPressed<unsigned(-1)){
-    ++ctrlPressed;
-    return;
-    }
-
-  if(ctrlPressed>0){
+  if(SystemAPI::isKeyPressed(cmdKey)){
     return;
     }
 
@@ -366,15 +366,12 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
   }
 
 void LineEdit::keyUpEvent(KeyEvent &e) {
-  if(ctrlPressed>0){
+  if( SystemAPI::isKeyPressed(cmdKey) ){
     if(e.key==KeyEvent::K_Z)
       undo();
     if(e.key==KeyEvent::K_Y)
       redo();
     }
-
-  if(e.key==KeyEvent::K_Control)
-    ctrlPressed=0;
   }
 
 void LineEdit::updateSel() {

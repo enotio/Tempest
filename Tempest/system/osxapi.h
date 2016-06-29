@@ -19,6 +19,7 @@ class OsxAPI:public SystemAPI {
     static void  glSwapBuffers(void* ctx);
     static void  swapContext();
     static void  finish();
+    static void  clearPressedImpl();
 
     struct Fiber;
     struct FiberCtx;

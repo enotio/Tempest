@@ -587,6 +587,10 @@ void SystemAPI::setFuncKeysCount(int c) {
   ki.fkeysCount = c;
   }
 
+void SystemAPI::clearPressed() {
+  pressedKeys.clear();
+  }
+
 bool SystemAPI::isKeyPressed(Event::KeyType t) {
   const auto& k = instance().pressedKeys;
   return k.find(t)!=k.end();

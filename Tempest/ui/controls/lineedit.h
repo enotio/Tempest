@@ -90,8 +90,6 @@ class LineEdit : public Tempest::Widget {
     bool anim;
     EchoMode emode=Normal;
 
-    unsigned ctrlPressed;
-
     size_t sedit, eedit;
     size_t oldSedit, oldEedit;
     Tempest::Point sp, ep;

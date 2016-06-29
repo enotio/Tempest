@@ -22,6 +22,10 @@
 #include <unistd.h>
 #include <atomic>
 
+#pragma GCC diagnostic push
+//swapcontext
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 using namespace Tempest;
 
 static const uint keyTable[26]={
@@ -422,6 +426,11 @@ static Event::MouseButton toButton( uint type ){
   state.window    = (void*)window;
   new (&state.event.size) SizeEvent(sz.size.width,sz.size.height);
   OsxAPI::swapContext();
+  }
+
+- (void)windowDidBecomeMain:(NSNotification *)notification {
+  (void)notification;
+  OsxAPI::clearPressedImpl();
   }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification {
@@ -867,4 +876,10 @@ void OsxAPI::finish() {
   swapContext();
   }
 
+void OsxAPI::clearPressedImpl() {
+  OsxAPI& api = reinterpret_cast<OsxAPI&>(SystemAPI::instance());
+  api.clearPressed();
+  }
+
+#pragma GCC diagnostic pop
 #endif
