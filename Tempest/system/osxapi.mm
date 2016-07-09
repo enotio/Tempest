@@ -226,12 +226,12 @@ static Event::MouseButton toButton( uint type ){
 
     case NSScrollWheel:{
       state.eventType = Event::MouseWheel;
-      float ticks = [event deltaY];
+      float ticks = [event scrollingDeltaY];
       new (&state.event.mouse)
           Tempest::MouseEvent( event.locationInWindow.x,
                                event.locationInWindow.y,
                                Tempest::Event::ButtonNone,
-                               ticks>0 ? 100 : -100,
+                               ticks,//>0 ? 100 : -100,
                                0,
                                Event::MouseWheel );
       OsxAPI::swapContext();
