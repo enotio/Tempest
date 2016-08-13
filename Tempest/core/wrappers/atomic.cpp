@@ -3,6 +3,8 @@
 #include <Tempest/Application>
 #include <Tempest/Platform>
 
+#include <stdatomic.h>
+
 #ifdef __WINDOWS__
 #include <windows.h>
 #endif
@@ -31,13 +33,15 @@ void Detail::Spin::unlock() {
 Detail::atomic_counter Detail::atomicInc( volatile Detail::atomic_counter &src,
                                           long add) {
 #ifdef TEMPEST_M_TREADS
-#ifdef __WINDOWS__
-  //return std::atomic_fetch_add(&src, add);
-  return InterlockedExchangeAdd( &src, add );
-#else
-#error "Detail::atomicInc not implemented for this platform"
+#  if defined(__WINDOWS__)
+     return InterlockedExchangeAdd( &src, add );
+#  elif defined(__OSX__) || defined(__LINUX__) || defined(__ANDROID__) || defined(__IOS__)
+     return __atomic_add_fetch(&src, add, __ATOMIC_SEQ_CST)-add;
+#  else
+#    error "Detail::atomicInc not implemented for this platform"
+#  endif
 #endif
-#endif
+
   auto old = src;
   src += add;
   return old;
