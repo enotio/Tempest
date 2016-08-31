@@ -50,7 +50,6 @@ win32:LIBS += -l"gdi32" -l"user32"
 android:{
   DEFINES += "sigset_t=\"unsigned int\""
   DEFINES += __STDC_INT64__
-  DEFINES -= TEMPEST_M_TREADS
 
   CONFIG += ogl
   CONFIG -= directx
@@ -58,7 +57,6 @@ android:{
   }
 
 unix: {
-  DEFINES -= TEMPEST_M_TREADS
   CONFIG += ogl
   CONFIG -= directx
   !android:!mac:SOURCES += system/linuxapi.cpp
