@@ -106,6 +106,7 @@ class Menu : public slot {
     struct Overlay:Tempest::WindowOverlay {
       ~Overlay();
       void mouseDownEvent( Tempest::MouseEvent& e );
+      void mouseMoveEvent( Tempest::MouseEvent& e );
 
       Widget* owner;
       Menu  * menu;

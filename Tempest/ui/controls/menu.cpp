@@ -39,6 +39,10 @@ void Menu::Overlay::mouseDownEvent(MouseEvent &e) {
     e.accept();
   }
 
+void Menu::Overlay::mouseMoveEvent(MouseEvent& e) {
+  e.accept();
+  }
+
 Menu::Menu(const Declarator &decl): overlay(nullptr), decl(decl){
   }
 
