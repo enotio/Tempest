@@ -3,10 +3,10 @@
 #include <Tempest/Application>
 #include <Tempest/Platform>
 
-#include <stdatomic.h>
-
 #ifdef __WINDOWS__
 #include <windows.h>
+#else
+#include <stdatomic.h>
 #endif
 
 using namespace Tempest;
