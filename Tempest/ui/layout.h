@@ -21,7 +21,7 @@ class Layout {
     Widget * owner();
     const Widget * owner() const;
 
-    void add(Widget* w, size_t pos);
+    void add( Widget* w, size_t pos);
     void add( Widget* widget );
     void del( Widget* widget );
     void removeAll();
@@ -41,8 +41,11 @@ class Layout {
 
     static void placeIn( Widget *wx, int x, int y, int w, int h );
     static void placeIn( Widget *wx, const Rect & r );
+
   protected:
     static Size sizeHint(const Widget *wx );
+    int         summarySpacings();
+    int         visibleCount() const;
 
   private:
     std::vector<Widget*> w;

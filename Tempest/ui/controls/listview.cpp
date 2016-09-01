@@ -95,17 +95,21 @@ void ListView::Layout::applyLayout() {
     if(orientation()==Horizontal){
       for(size_t i=0; i<widgetsCount; ++i){
         Widget*       view=delegate.createView(i,defaultRole);
-        const Size    sz  =view->minSize();
-        w += sz.w;
-        h = std::max(h,sz.h);
+        if( view->isVisible() ){
+          const Size    sz  =view->minSize();
+          w += sz.w;
+          h = std::max(h,sz.h);
+          }
         add(view);
         }
       } else {
       for(size_t i=0; i<widgetsCount; ++i){
         Widget*       view=delegate.createView(i,defaultRole);
-        const Size    sz  =view->minSize();
-        w = std::max(w,sz.w);
-        h += sz.h;
+        if( view->isVisible() ){
+          const Size    sz  =view->minSize();
+          w = std::max(w,sz.w);
+          h += sz.h;
+          }
         add(view);
         }
       }
@@ -113,20 +117,25 @@ void ListView::Layout::applyLayout() {
     const std::vector<Widget*>& wx = widgets();
     if(orientation()==Horizontal){
       for(size_t i=0; i<wx.size(); ++i){
-        const Size sz = wx[i]->minSize();
-        w += sz.w;
-        h = std::max(h,sz.h);
+        if( wx[i]->isVisible() ){
+          const Size sz = wx[i]->minSize();
+          w += sz.w;
+          h = std::max(h,sz.h);
+          }
         }
       } else {
       for(size_t i=0; i<wx.size(); ++i){
-        const Size sz = wx[i]->minSize();
-        w = std::max(w,sz.w);
-        h += sz.h;
+        if( wx[i]->isVisible() ){
+          const Size sz = wx[i]->minSize();
+          w = std::max(w,sz.w);
+          h += sz.h;
+          }
         }
       }
     }
 
-  const int sp = widgets().size()==0 ? 0 : (widgets().size()-1)*spacing();
+  const int sp=summarySpacings();
+
   if(orientation()==Horizontal)
     owner()->setMinimumSize(w+sp, h); else
     owner()->setMinimumSize(w, h+sp);

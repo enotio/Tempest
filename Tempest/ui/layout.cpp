@@ -212,6 +212,19 @@ Size Layout::sizeHint(const Widget *wx) {
   return sz;
   }
 
+int Layout::summarySpacings() {
+  return visibleCount()*mspacing;
+  }
+
+int Layout::visibleCount() const {
+  int cnt = 0;
+
+  for(Widget* wx:w)
+    if( wx->isVisible() )
+      cnt++;
+  return cnt;
+  }
+
 void Layout::rebind( Widget* wx) {
   ow = wx;
 
@@ -276,7 +289,8 @@ void LinearLayout::applyLayoutPrivate( int (*w)( const Size& wd ),
           maxSpaceNeed = 0,
           minSpaceNeedByPref = 0,
           maxSpaceNeedByExp = 0,
-          spacing = this->spacing()*(widgets().size()-1),
+          visibles = visibleCount(),
+          spacing  = visibles*this->spacing(),
 
           prefCount = 0,
           exCount   = 0;
@@ -331,11 +345,14 @@ void LinearLayout::applyLayoutPrivate( int (*w)( const Size& wd ),
       if( exCount==0 ) // TESTME
         spacePref = w(owner()->size()) - spacing - fixedSize - wmarg;
 
+      size_t nVisible=0;
       for( size_t i=0; i<wd.size(); ++i )
         if( wd[i]->isVisible() ){
           int sp = 0, hw = h(owner()->size()) - hmarg;
-          if( wd.size()-i > 1 )
-            sp = spacing/(wd.size()-i-1);
+          if( spaceEx==0 )
+            sp = this->spacing();
+          else if( visibles-nVisible > 1 )
+            sp = spacing/(visibles-nVisible-1);
 
           if( typeV(wd[i])==FixedMin )
             hw = h(wd[i]->sizePolicy().minSize);else//-hmarg; else
@@ -369,6 +386,7 @@ void LinearLayout::applyLayoutPrivate( int (*w)( const Size& wd ),
             --exCount;
             }
 
+          nVisible++;
           setGeometry( wd[i], x, y, ww, hw );
           x       += ww;
           x       += sp;
