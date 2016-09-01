@@ -5,8 +5,11 @@ addons:
  apt:
   packages:
    - qt5-qmake
+   - clang-3.7
 
 notifications: newer
+
+env: COMPILER=clang++-3.7
 
 os:
   - osx
