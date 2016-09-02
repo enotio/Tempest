@@ -213,7 +213,10 @@ Size Layout::sizeHint(const Widget *wx) {
   }
 
 int Layout::summarySpacings() {
-  return visibleCount()*mspacing;
+  const int vcount = visibleCount();
+  if( vcount<=0 )
+    return 0;
+  return (vcount-1)*mspacing;
   }
 
 int Layout::visibleCount() const {
@@ -290,7 +293,7 @@ void LinearLayout::applyLayoutPrivate( int (*w)( const Size& wd ),
           minSpaceNeedByPref = 0,
           maxSpaceNeedByExp = 0,
           visibles = visibleCount(),
-          spacing  = visibles*this->spacing(),
+          spacing  = std::max(0,visibles-1)*this->spacing(),
 
           prefCount = 0,
           exCount   = 0;
@@ -319,10 +322,11 @@ void LinearLayout::applyLayoutPrivate( int (*w)( const Size& wd ),
             }
           }
 
-      spacing = std::max(spacing,
-                         w( owner()->size() ) -
-                         (maxSpaceNeed+fixedSize+
-                          ((orientation()==Vertical)? margin().yMargin() : margin().xMargin()) ) );
+      const int realSpacing = w( owner()->size() )
+                             -maxSpaceNeed
+                             -fixedSize
+                             -((orientation()==Vertical)? margin().yMargin() : margin().xMargin());
+      spacing = std::max(spacing,realSpacing);
 
       int x = margin().left,
           hmarg = margin().top  + margin().bottom,
@@ -349,15 +353,13 @@ void LinearLayout::applyLayoutPrivate( int (*w)( const Size& wd ),
       for( size_t i=0; i<wd.size(); ++i )
         if( wd[i]->isVisible() ){
           int sp = 0, hw = h(owner()->size()) - hmarg;
-          if( spaceEx==0 )
-            sp = this->spacing();
-          else if( visibles-nVisible > 1 )
+          if( visibles-nVisible > 1 )
             sp = spacing/(visibles-nVisible-1);
 
           if( typeV(wd[i])==FixedMin )
-            hw = h(wd[i]->sizePolicy().minSize);else//-hmarg; else
+            hw = h(wd[i]->sizePolicy().minSize);else
           if( typeV(wd[i])==FixedMax )
-            hw = h(wd[i]->sizePolicy().maxSize);//-hmarg;
+            hw = h(wd[i]->sizePolicy().maxSize);
 
           int y = marg+( h(owner()->size())-hw-hmarg )/2,
               ww = 0;
