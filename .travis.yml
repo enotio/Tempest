@@ -5,11 +5,8 @@ addons:
  apt:
   packages:
    - qt5-qmake
-   - clang-3.7
 
 notifications: newer
-
-env: COMPILER=clang++-3.7
 
 os:
   - osx
@@ -26,5 +23,5 @@ install:
 
 script:
   - cd Tempest
-  - qmake Tempest.pro
+  - qmake Tempest.pro -r -spec macx-clang CONFIG+=x86_64
   - make
