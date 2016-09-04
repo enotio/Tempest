@@ -5,6 +5,7 @@ addons:
  apt:
   packages:
    - qt5-qmake
+   - clang-3.7
 
 notifications: newer
 
@@ -23,6 +24,8 @@ before_install:
 install:
  - '[[ "$TRAVIS_OS_NAME" != "osx" ]] || brew install qt5'
  - '[[ "$TRAVIS_OS_NAME" != "osx" ]] || brew link --force qt5'
+ # clang 3.7
+ - if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.7"; fi
 
 script:
   - cd Tempest
