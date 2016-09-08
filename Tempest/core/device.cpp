@@ -554,10 +554,10 @@ void Device::generateMipMaps(Texture2d &target) {
   bool resetPaint = false;
   if( data->isPaintMode ){
     endPaint();
-    forceEndPaint();
     resetPaint = true;
     }
 
+  forceEndPaint();
   api.generateMipmaps( impl, target.data.value() );
   TextureHolder& h = (TextureHolder&)target.data.manip.holder();
   h.onMipmapsAdded( target.data.value() );
