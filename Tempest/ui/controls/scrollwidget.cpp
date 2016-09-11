@@ -288,6 +288,8 @@ void ScrollWidget::removeList() {
   cen = new Widget();
   cen->setLayout(new BoxLayout(this,orient));
   helper.layout().add(cen);
+
+  updateScrolls();
   }
 
 void ScrollWidget::setLayout(Orientation ori) {
