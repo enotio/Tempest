@@ -25,7 +25,7 @@ struct ScrollWidget::BoxLayout: public Tempest::LinearLayout {
 
     const Widget* first = widgets().size()>0 ? widgets()[0] : nullptr;
     for(const Widget* w : widgets())
-      if(w->isVisible()){
+      if( w->isVisible() ){
         Size s = sizeHint(w);
         if(orientation()==Horizontal){
           sw += s.w;
@@ -167,8 +167,21 @@ void ScrollWidget::updateScrolls() {
   using std::min;
 
   const std::vector<Widget*>& wx = cen->layout().widgets();
-  const Widget* first = wx.size()>0 ? wx[0]     : nullptr;
-  const Widget* last  = wx.size()>0 ? wx.back() : nullptr;
+  const Widget* first = nullptr;
+  const Widget* last  = nullptr;
+
+  for(size_t i=0;i<wx.size();i++)
+    if( wx[i]->isVisible() ){
+      first = wx[i];
+      break;
+      }
+  for(size_t i=wx.size();i>1;){
+    i--;
+    if( wx[i]->isVisible() ){
+      last = wx[i];
+      break;
+      }
+    }
 
   bool hasScH = (hor ==AlwaysOn || cen->w()>w());
   bool hasScV = (vert==AlwaysOn || cen->h()>h());
