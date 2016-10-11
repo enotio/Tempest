@@ -120,9 +120,6 @@ class LocalBufferHolder : public Holder {
                        const char *src,
                        int size, int vsize,
                        AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags ) {
-      if( flg & AbstractAPI::BF_NoReadback )
-        flg = AbstractAPI::BufferFlag(flg ^ AbstractAPI::BF_NoReadback);
-
       if( needToRestore ){
         typename Holder::DescriptorType* old = t;
         Holder::createObject(t, src, size, vsize, flg );
