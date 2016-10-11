@@ -144,13 +144,12 @@ void IndexBufferHolder::unlockBuffer(AbstractAPI::IndexBuffer *t) {
     return;
 
   Data::LDData & ld = *data->ibos[t];
+  device().updateBuffer(t,&ld.data[ld.lockBegin],ld.lockBegin,ld.lockSize);
+  }
 
-  char *v = (char*)device().lockBuffer( t, ld.lockBegin, ld.lockSize );
-  if(v)
-    memcpy( v, (&ld.data[0])+ld.lockBegin, ld.lockSize );
-  device().unlockBuffer(t);
+void IndexBufferHolder::updateBuffer(GraphicsSubsystem::IndexBuffer* t, const void* data, int b, int sz) {
+  device().updateBuffer(t,data,b,sz);
   }
 
 void IndexBufferHolder::unlockNWBuffer(AbstractAPI::IndexBuffer *) {
-
   }

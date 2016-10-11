@@ -143,12 +143,22 @@ class Opengl2x : public OpenGLBase {
     void unlockBuffer( AbstractAPI::Device *d,
                        AbstractAPI::VertexBuffer*) const;
 
+    void updateBuffer( AbstractAPI::Device *d,
+                       AbstractAPI::VertexBuffer*,
+                       const void* data,
+                       unsigned offset, unsigned size) const;
+
     void* lockBuffer( AbstractAPI::Device *d,
                       AbstractAPI::IndexBuffer*,
                       unsigned offset, unsigned size) const;
 
     void unlockBuffer( AbstractAPI::Device *d,
                        AbstractAPI::IndexBuffer*) const;
+
+    void updateBuffer( AbstractAPI::Device *d,
+                       AbstractAPI::IndexBuffer*,
+                       const void* data,
+                       unsigned offset, unsigned size) const;
 
     AbstractShadingLang*
          createShadingLang( AbstractAPI::Device * l ) const;

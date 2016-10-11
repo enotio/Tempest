@@ -147,14 +147,7 @@ class LocalBufferHolder : public Holder {
       if( x.data.handle ){
         dynVBOs.push_back( x );
         t = dynVBOs.back().data.handle;
-        {
-          int   cpySz = size*vsize;
-          char *pVertices = this->lockBuffer( t, 0, cpySz);
-
-          memcpy( pVertices, src, cpySz );
-          this->unlockBuffer( t );
-          }
-
+        this->updateBuffer(t,src,0,size*vsize);
         return;
         }
 
