@@ -135,8 +135,8 @@ class LocalBufferHolder : public Holder {
         }
 
       NonFreedData d;
-      d.memSize       = std::max( minVboSize,
-                                  vsize*(nearPOT( size*vsize )/vsize) );
+      d.memSize       = std::max<int>( minVboSize,
+                                       vsize*(nearPOT( size*vsize )/vsize) );
       d.restoreIntent = false;
       d.elSize        = vsize;
 
@@ -148,11 +148,16 @@ class LocalBufferHolder : public Holder {
         return;
         }
 
-      std::vector<char> tmp( d.memSize );
-      memcpy( &tmp[0], src, size*vsize );
-      std::fill( tmp.begin()+size*vsize, tmp.end(), 0 );
+      if( flg & AbstractAPI::BF_NoReadback ){
+        Holder::createObject( t, 0, d.memSize/d.elSize, d.elSize, flg );
+        this->updateBuffer(t,src,0,size*vsize);
+        } else {
+        std::vector<char> tmp( d.memSize );
+        memcpy( &tmp[0], src, size*vsize );
+        std::fill( tmp.begin()+size*vsize, tmp.end(), 0 );
 
-      Holder::createObject( t, &tmp[0], d.memSize/d.elSize, d.elSize, flg );
+        Holder::createObject( t, &tmp[0], d.memSize/d.elSize, d.elSize, flg );
+        }
 
       if( !t )
         return;
@@ -195,15 +200,18 @@ class LocalBufferHolder : public Holder {
     std::vector< NonFreed >    dynVBOs;
     LocalObjectPool<NonFreed>  nonFreed;
 
-    int nearPOT( int x ) {
-      int r = 1;
-      for( int i=0; r<=reserveSize; ++i ){
-        if( r>=x )
-          return r;
-        r *= 2;
-        }
+    inline int nearPOT( uint32_t v ) {
+      if( v<uint32_t(reserveSize) )
+        v = reserveSize;
+      v--;
+      v |= v >> 1;
+      v |= v >> 2;
+      v |= v >> 4;
+      v |= v >> 8;
+      v |= v >> 16;
+      v++;
 
-      return x;
+      return v;
       }
 
     bool needToRestore;
