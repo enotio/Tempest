@@ -193,6 +193,7 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
     self.canBecomeFirstResponderFlag = NO;
     self.multipleTouchEnabled = YES;
     self.egLayer = (CAEAGLLayer*) super.layer;
+    self.contentScaleFactor = [UIScreen mainScreen].scale;
     self.egLayer.opaque = YES;
     //here we configure the properties of our canvas, most important is the color depth RGBA8 !
     self.egLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -215,13 +216,15 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
   (void)event;
   int x=p.x,y=p.y;
 
-  CGRect frame = [self frame];
+  CGRect frame        = [self frame];
+  const CGFloat scale = self.contentScaleFactor;
+  
   state.eventType = type;
 
   if(type!=Event::NoEvent){
     new (&state.event.mouse)
-      MouseEvent ( x,
-                   frame.size.height-y,
+      MouseEvent ( x*scale,
+                   frame.size.height*scale-y*scale,
                    Event::ButtonLeft,
                    0,
                    id,
@@ -321,15 +324,16 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 - (void)layoutSubviews {
   [super layoutSubviews];
 
-  CGRect frame  = self.rootViewController.view.bounds;
-  frame.origin.x = 0;
-  frame.origin.y = 0;
+  const CGFloat scale = self.contentScaleFactor;
+  CGRect frame        = self.rootViewController.view.bounds;
+  frame.origin.x      = 0;
+  frame.origin.y      = 0;
   [self.glView setFrame: frame];
 
   state.eventType = Event::Resize;
   state.window    = (void*)self;
 
-  new (&state.event.size) SizeEvent( frame.size.width, frame.size.height );
+  new (&state.event.size) SizeEvent( frame.size.width*scale, frame.size.height*scale );
   iOSAPI::swapContext();
   }
 
@@ -375,9 +379,12 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   (void)application;
   (void)launchOptions;
-
-  TempestWindow *window = [ [ TempestWindow alloc ] initWithFrame: [ [ UIScreen mainScreen ] bounds ] ];
+  
+  CGRect frame = [ [ UIScreen mainScreen ] bounds ];
+  TempestWindow *window = [ [ TempestWindow alloc ] initWithFrame: frame];
+  window.contentScaleFactor = [UIScreen mainScreen].scale;
   window.rootViewController = [ViewController new];
+  window.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
   window.backgroundColor = [ UIColor blackColor ];
 
@@ -556,8 +563,11 @@ bool iOSAPI::processEvent(){
       SystemAPI::emitEvent( w,k,k,Event::Type(type) );
       }
       break;
-    case Event::Resize:
-      SystemAPI::sizeEvent( w, state.event.size.w, state.event.size.h );
+    case Event::Resize:{
+      const int width=state.event.size.w, height=state.event.size.h;
+      SystemAPI::activateEvent(w,true);
+      SystemAPI::sizeEvent( w, width,height );
+      }
       break;
     case Event::Close: {
       CloseEvent ev = state.event.close;
@@ -655,7 +665,8 @@ Tempest::Size iOSAPI::windowClientRect(SystemAPI::Window* w) {
   TempestWindow* window = (TempestWindow*)w;
   UIView*        view   = window.glView;
   CGRect         frame  = view.frame;
-  return Size(frame.size.width,frame.size.height);
+  const CGFloat  scale  = view.contentScaleFactor;
+  return Size(frame.size.width*scale,frame.size.height*scale);
   }
 
 void iOSAPI::deleteWindow(SystemAPI::Window *w) {
