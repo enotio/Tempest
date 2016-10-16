@@ -30,11 +30,15 @@ script:
   - qmake Tempest.pro -r -spec macx-clang CONFIG+=x86_64
   - make
 
+before_deploy:
+  - zip     release.zip ./lib
+  - zip -ur release.zip ./Tempest/include
+
 deploy:
   provider: releases
   api_key: $AUTH_TOKEN
   file:
-    - "libTempest.dylib"
+    - "release.zip"
 
   skip_cleanup: true
   on:
