@@ -29,3 +29,14 @@ script:
   - cd Tempest
   - qmake Tempest.pro -r -spec macx-clang CONFIG+=x86_64
   - make
+
+deploy:
+  provider: releases
+  api_key: $AUTH_TOKEN
+  file:
+    - "libTempest.dylib"
+
+  skip_cleanup: true
+  on:
+    branch: release
+    tags: true
