@@ -237,10 +237,16 @@ class Device {
 
     void unlockBuffer( AbstractAPI::VertexBuffer*);
 
+    void updateBuffer( AbstractAPI::VertexBuffer*, const void* data,
+                       unsigned offset, unsigned size);
+
     void* lockBuffer( AbstractAPI::IndexBuffer*,
                       unsigned offset, unsigned size);
 
     void unlockBuffer( AbstractAPI::IndexBuffer*);
+
+    void updateBuffer( AbstractAPI::IndexBuffer*, const void* data,
+                       unsigned offset, unsigned size);
 
     AbstractAPI::VertexDecl *
           createVertexDecl( const VertexDeclaration::Declarator &de ) const;

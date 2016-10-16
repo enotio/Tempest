@@ -76,6 +76,20 @@ AbstractAPI::IndexBuffer *AbstractAPI::createIndexBuffer( AbstractAPI::Device *d
   return t;
   }
 
+void AbstractAPI::updateBuffer(Device* d, VertexBuffer* t, const void* data,
+                               unsigned offset, unsigned size) const {
+  void *pVertices = lockBuffer( d, t, offset, size );
+  memcpy( pVertices, data, size );
+  unlockBuffer( d, t );
+  }
+
+void AbstractAPI::updateBuffer(Device* d, IndexBuffer*  t, const void* data,
+                               unsigned offset, unsigned size) const {
+  void *pVertices = lockBuffer( d, t, offset, size );
+  memcpy( pVertices, data, size );
+  unlockBuffer( d, t );
+  }
+
 int AbstractAPI::vertexCount(AbstractAPI::PrimitiveType t, const int pCount) {
   switch (t) {
     case AbstractAPI::Triangle:

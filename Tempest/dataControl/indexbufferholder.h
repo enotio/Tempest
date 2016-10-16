@@ -67,6 +67,7 @@ class IndexBufferHolder : public AbstractHolder
 
     char* lockBuffer  (AbstractAPI::IndexBuffer* t, int b, int sz );
     void  unlockBuffer(AbstractAPI::IndexBuffer* t );
+    void  updateBuffer(AbstractAPI::IndexBuffer* t, const void* data, int b, int sz );
 
   private:
     IndexBufferHolder( const IndexBufferHolder &h );

@@ -1547,6 +1547,21 @@ void Opengl2x::unlockBuffer( AbstractAPI::Device *d,
   T_ASSERT_X( errCk(), "OpenGL error" );
   }
 
+void Opengl2x::updateBuffer(AbstractAPI::Device* d,
+                             AbstractAPI::VertexBuffer* v,
+                             const void* data, unsigned offset, unsigned size) const {
+  if( !setDevice(d) ) return;
+
+  Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
+
+  if( vbo->id==0 )
+    return;
+
+  glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
+  glBufferSubData( GL_ARRAY_BUFFER, offset, size, data );
+  T_ASSERT_X( errCk(), "OpenGL error" );
+  }
+
 void* Opengl2x::lockBuffer( AbstractAPI::Device *d,
                             AbstractAPI::IndexBuffer * v,
                             unsigned offset, unsigned size) const {
@@ -1599,6 +1614,21 @@ void Opengl2x::unlockBuffer( AbstractAPI::Device *d,
 
   //glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, *vbo );
   //glUnmapBuffer( GL_ELEMENT_ARRAY_BUFFER );
+  T_ASSERT_X( errCk(), "OpenGL error" );
+  }
+
+void Opengl2x::updateBuffer( AbstractAPI::Device* d,
+                             AbstractAPI::IndexBuffer* v,
+                             const void* data, unsigned offset, unsigned size) const {
+  if( !setDevice(d) ) return;
+
+  Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
+
+  if( vbo->id==0 )
+    return;
+
+  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, vbo->id );
+  glBufferSubData( GL_ELEMENT_ARRAY_BUFFER, offset, size, data );
   T_ASSERT_X( errCk(), "OpenGL error" );
   }
 

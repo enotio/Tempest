@@ -813,6 +813,13 @@ void Device::unlockBuffer( AbstractAPI::VertexBuffer* vbo){
   api.unlockBuffer( impl, vbo );
   }
 
+void Device::updateBuffer( AbstractAPI::VertexBuffer* v,
+                           const void* data,
+                           unsigned offset, unsigned size) {
+  forceEndPaint();
+  api.updateBuffer( impl, v, data, offset, size);
+  }
+
 void* Device::lockBuffer( AbstractAPI::IndexBuffer * ibo,
                           unsigned offset, unsigned size ){
   forceEndPaint();
@@ -822,6 +829,13 @@ void* Device::lockBuffer( AbstractAPI::IndexBuffer * ibo,
 void Device::unlockBuffer( AbstractAPI::IndexBuffer * ibo ) {
   forceEndPaint();
   api.unlockBuffer( impl, ibo );
+  }
+
+void Device::updateBuffer( AbstractAPI::IndexBuffer* i,
+                           const void* data,
+                           unsigned offset, unsigned size) {
+  forceEndPaint();
+  api.updateBuffer( impl, i, data, offset, size);
   }
 
 AbstractAPI::VertexDecl *

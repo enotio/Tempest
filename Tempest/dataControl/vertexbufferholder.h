@@ -68,6 +68,7 @@ class VertexBufferHolder : public AbstractHolder
     char* lockBuffer  (AbstractAPI::VertexBuffer* t, int b, int sz );
     char* bufferData  (AbstractAPI::VertexBuffer* t);
     void  unlockBuffer(AbstractAPI::VertexBuffer* t );
+    void  updateBuffer(AbstractAPI::VertexBuffer* t, const void* data, int b, int sz);
 
   private:
     VertexBufferHolder( const VertexBufferHolder &h ) = delete;

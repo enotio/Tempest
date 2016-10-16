@@ -147,13 +147,12 @@ void VertexBufferHolder::unlockBuffer(AbstractAPI::VertexBuffer *t) {
     return;
 
   Data::LDData & ld = *data->vbos[t];
+  device().updateBuffer(t,&ld.data[ld.lockBegin],ld.lockBegin,ld.lockSize);
+  }
 
-  char *v = (char*)device().lockBuffer( t, ld.lockBegin, ld.lockSize );
-  if(v)
-    memcpy( v, &ld.data[ld.lockBegin], ld.lockSize );
-  device().unlockBuffer(t);
+void VertexBufferHolder::updateBuffer(AbstractAPI::VertexBuffer* t, const void* data, int b, int sz) {
+  device().updateBuffer(t,data,b,sz);
   }
 
 void VertexBufferHolder::unlockNWBuffer(AbstractAPI::VertexBuffer *) {
-
   }

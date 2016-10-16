@@ -225,12 +225,22 @@ class AbstractAPI: public GraphicsSubsystem {
     virtual void unlockBuffer( AbstractAPI::Device *d,
                                AbstractAPI::VertexBuffer*) const = 0;
 
+    virtual void updateBuffer( AbstractAPI::Device *d,
+                               AbstractAPI::VertexBuffer*,
+                               const void* data,
+                               unsigned offset, unsigned size) const;
+
     virtual void* lockBuffer( AbstractAPI::Device *d,
                               AbstractAPI::IndexBuffer*,
                               unsigned offset, unsigned size) const = 0;
 
     virtual void unlockBuffer( AbstractAPI::Device *d,
                                AbstractAPI::IndexBuffer*) const = 0;
+
+    virtual void updateBuffer( AbstractAPI::Device *d,
+                               AbstractAPI::IndexBuffer*,
+                               const void* data,
+                               unsigned offset, unsigned size) const;
 
     virtual void bindVertexBuffer( AbstractAPI::Device *d,
                                    AbstractAPI::VertexBuffer*,
