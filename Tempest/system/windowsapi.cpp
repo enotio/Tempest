@@ -715,6 +715,9 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           bool a = (wParam==TRUE);
           SystemAPI::activateEvent(w,a);
 
+          WindowsAPI& api = (WindowsAPI&)SystemAPI::instance();
+          api.clearPressedImpl();
+
           if( !a && w->isFullScreenMode() ){
             ShowWindow( hWnd, SW_MINIMIZE );
             }
@@ -750,6 +753,10 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       }
 
     return 0;
+  }
+
+void WindowsAPI::clearPressedImpl(){
+  clearPressed();
   }
 
 static

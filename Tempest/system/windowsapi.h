@@ -15,6 +15,8 @@ class WindowsAPI:public SystemAPI {
                            int hotSpotX,
                            int hotSpotY );
     static std::string iso3Locale();
+    void clearPressedImpl();
+
   protected:
     WindowsAPI();
     ~WindowsAPI();
