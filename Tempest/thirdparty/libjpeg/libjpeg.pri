@@ -1,8 +1,7 @@
 INCLUDEPATH  += $$PWD/
 DEFINES      += _CRT_SECURE_NO_WARNINGS
 
-QMAKE_CFLAGS += /wd4996
-QMAKE_CFLAGS += /wd4244 /wd4018 /wd4305
+win32-msvc*:QMAKE_CFLAGS += /wd4996 /wd4244 /wd4018 /wd4305
 
 HEADERS += \
   $$PWD/jconfig.h \
