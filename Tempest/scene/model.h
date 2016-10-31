@@ -255,24 +255,23 @@ class Model {
 
     void load( const Tempest::VertexBuffer<Vertex>  & v,
                const Tempest::IndexBuffer<uint16_t> & i,
+               const Tempest::ModelBounds           & bounds,
                const Tempest::VertexDeclaration     & d ){
       if( v.size()==0 )
         setupMSZ(0); else
         setupMSZ(i.size());
 
       vdecl = d;
+      bds = bounds;
 
       if( i.size()==0 ){
         vbo   = Tempest::VertexBuffer<Vertex>();
         ibo   = Tempest::IndexBuffer<uint16_t>();
-        bds = Raw::computeBoundRect( vbo );
         return;
         }
 
       vbo   = v;
       ibo   = i;
-
-      bds = Raw::computeBoundRect( v );
       }
 
     void load( const Tempest::VertexBuffer<ModelVertex> & v,

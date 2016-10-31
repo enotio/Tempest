@@ -33,15 +33,9 @@ class Sprite {
     bool   isDelayd() const;
     void   flush() const;
 
-  private:    
-    void   reset();
-
-    Tempest::Rect    prect;
-    SpritesHolder   *holder;
-    size_t           delayd;
-
-    std::vector< std::unique_ptr<SpritesHolder::Page> > * tex;
-    size_t id;
+  private:
+    SpritesHolder::SpriteData* data=nullptr;
+    static SpritesHolder::SpriteData noData;
 
   friend class SurfaceRender;
   friend class SpritesHolder;

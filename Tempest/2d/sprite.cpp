@@ -2,76 +2,52 @@
 
 using namespace Tempest;
 
-Sprite::Sprite():holder(nullptr), delayd(-1), tex(nullptr), id(-1) {
+SpritesHolder::SpriteData Sprite::noData;
 
+Sprite::Sprite():data(&noData) {
   }
 
-Sprite::Sprite(const Sprite &s)
-  :prect(s.prect), holder(s.holder), delayd(s.delayd), tex(s.tex), id(s.id){
-  if( isDelayd() ){
-    holder->delayLoad(this);
-    }
+Sprite::Sprite(const Sprite &s) :data(s.data) {
+  if( data!=&noData )
+    data->addRef();
   }
 
 Sprite &Sprite::operator =(const Sprite &s) {
-  if( isDelayd() ){
-    holder->delayLoadRm(this);
-    }
+  if( this==&s )
+    return *this;
 
-  prect  = s.prect;
-  holder = s.holder;
-  delayd = s.delayd;
-  tex    = s.tex;
-  id     = s.id;
-
-  if( isDelayd() ){
-    holder->delayLoad(this);
-    }
+  if( data!=&noData )
+    data->decRef();
+  data = s.data;
+  data->addRef();
 
   return *this;
   }
 
 Sprite::~Sprite() {
-  if( isDelayd() ){
-    holder->delayLoadRm(this);
-    }
+  if( data!=&noData )
+    data->decRef();
   }
 
 bool Sprite::isDelayd() const{
-  return delayd!=size_t(-1);
+  return data->page==nullptr && data!=&noData;
   }
 
 void Sprite::flush() const {
-  if( isDelayd() ){
-    holder->loadDelayd();
-    }
-  }
-
-void Sprite::reset() {
-  holder = nullptr;
-  delayd = -1;
-  tex    = nullptr;
-  id     = -1;
-  prect  = Tempest::Rect();
+  if( isDelayd() && data->holder )
+    data->holder->loadDelayd();
   }
 
 int Sprite::w() const {
-  if( isDelayd() )
-    return holder->spriteSizeD( delayd ).w;
-  return prect.w;
+  return data->p.width();
   }
 
 int Sprite::h() const {
-  if( isDelayd() )
-    return holder->spriteSizeD( delayd ).h;
-  return prect.h;
+  return data->p.height();
   }
 
 Size Sprite::size() const {
-  if( isDelayd() )
-    return holder->spriteSizeD( delayd );
-  //flush();
-  return prect.size();
+  return data->p.size();
   }
 
 Rect Sprite::rect() const {
@@ -82,9 +58,9 @@ const Tempest::Texture2d &Sprite::pageRawData() const {
   flush();
 
   static const Tempest::Texture2d nullTex;
-  if( tex ){
-    holder->flush();
-    return (*tex)[id]->t;
+  if( data->page ){
+    data->holder->flush();
+    return data->page->t;
     }
 
   return nullTex;
@@ -93,8 +69,8 @@ const Tempest::Texture2d &Sprite::pageRawData() const {
 Size Sprite::pageRawSize() const {
   flush();
 
-  if( tex ){
-    return (*tex)[id]->p.size();
+  if( data->page ){
+    return data->page->p.size();
     }
 
   return Size();
@@ -102,7 +78,7 @@ Size Sprite::pageRawSize() const {
 
 Rect Sprite::pageRect() const {
   flush();
-  return prect;
+  return data->pageRect;
   }
 
 size_t Sprite::handle() const {

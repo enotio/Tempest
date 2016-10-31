@@ -440,8 +440,8 @@ void SurfaceRender::PaintDev::setTexture(const Sprite &t) {
   unsetTexture();
   surf.state.curTex = t;
 
-  if( t.holder && t.holder->needToflush )
-    t.holder->flush();
+  if( t.data->holder && t.data->holder->needToflush )
+    t.data->holder->flush();
   }
 
 void SurfaceRender::PaintDev::unsetTexture() {
