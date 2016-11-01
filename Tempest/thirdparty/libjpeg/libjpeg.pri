@@ -75,22 +75,26 @@ SOURCES += \
   $$PWD/jsimd_none.c \
   $$PWD/jstdhuff.c \
   $$PWD/jutils.c \
-  $$PWD/rdbmp.c \
   $$PWD/rdcolmap.c \
-  $$PWD/rdgif.c \
-  $$PWD/rdjpeg.c \
-  $$PWD/rdpng.c \
-  $$PWD/rdppm.c \
-  $$PWD/rdrle.c \
   $$PWD/rdswitch.c \
-  $$PWD/rdtarga.c \
   $$PWD/tjutil.c \
   $$PWD/transupp.c \
   $$PWD/turbojpeg.c \
-  $$PWD/wrbmp.c \
-  $$PWD/wrgif.c \
-  $$PWD/wrppm.c \
-  $$PWD/wrrle.c \
-  $$PWD/wrtarga.c \
   $$PWD/jcsample.c
+
+extra_jpeg: {
+    SOURCES += \
+      $$PWD/rdbmp.c \
+      $$PWD/rdgif.c \
+      $$PWD/rdjpeg.c \
+      $$PWD/rdpng.c \
+      $$PWD/rdppm.c \
+      $$PWD/rdrle.c \
+      $$PWD/rdtarga.c \
+      $$PWD/wrbmp.c \
+      $$PWD/wrgif.c \
+      $$PWD/wrppm.c \
+      $$PWD/wrrle.c \
+      $$PWD/wrtarga.c
+  }
 

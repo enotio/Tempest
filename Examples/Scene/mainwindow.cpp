@@ -80,7 +80,7 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
   T_ASSERT( shader.isValid() );
 
   Model<Vertex> m;
-  m.load( vbo, ibo , vdecl );
+  m.load( vbo, ibo, RawModel<Vertex>::computeBoundRect(quadVb,sizeof(quadVb)/sizeof(quadVb[0])) , vdecl );
 
   Material mat;
   mat.texture = texHolder.load("data/texture.png");
