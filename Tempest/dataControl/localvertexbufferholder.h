@@ -148,7 +148,7 @@ class LocalBufferHolder : public Holder {
         return;
         }
 
-      if( flg & AbstractAPI::BF_NoReadback ){
+      if( t && (flg & AbstractAPI::BF_NoReadback) ){
         Holder::createObject( t, 0, d.memSize/d.elSize, d.elSize, flg );
         this->updateBuffer(t,src,0,size*vsize);
         } else {

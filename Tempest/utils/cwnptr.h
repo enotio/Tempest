@@ -73,14 +73,13 @@ class Ptr {
       }
 
     T& nonConstData(){
-      Guard guard( r->spin );
-      (void)guard;
-
       if( r==0 ){
         nullValue = 0;
         return nullValue;
         }
 
+      Guard guard( r->spin );
+      (void)guard;
       if( r->count!=1 ){
         auto nr = r;
         r = manip.newRef( r );
