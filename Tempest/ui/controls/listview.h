@@ -10,6 +10,9 @@
 
 namespace Tempest {
 
+/** \addtogroup GUI
+ *  @{
+ */
 class ListView : public Widget {
   public:
     ListView(Tempest::Orientation ori = Tempest::Vertical);
@@ -68,6 +71,7 @@ class ListView : public Widget {
 
     void removeAll();
   };
+/** @}*/
 
 }
 

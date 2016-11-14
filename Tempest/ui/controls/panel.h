@@ -6,6 +6,9 @@
 
 namespace Tempest {
 
+/** \addtogroup GUI
+ *  @{
+ */
 class Panel : public Tempest::Widget {
   public:
     Panel();
@@ -30,6 +33,7 @@ class Panel : public Tempest::Widget {
     bool mouseTracking, dragable;
     Tempest::Point mpos, oldPos;
   };
+/** @}*/
 
 }
 

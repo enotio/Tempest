@@ -9,6 +9,9 @@ namespace Tempest {
 
 class ListView;
 
+/** \addtogroup GUI
+ *  @{
+ */
 class ScrollWidget : public Tempest::Widget {
   public:
     ScrollWidget();
@@ -101,7 +104,8 @@ class ScrollWidget : public Tempest::Widget {
 
     using Tempest::Widget::layout;
   };
+/** @}*/
 
-  }
+}
 
 #endif // SCROLLWIDGET_H

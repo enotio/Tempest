@@ -5,6 +5,9 @@
 
 namespace Tempest{
 
+/** \addtogroup GUI
+ *  @{
+ */
 class CheckBox: public Button {
   public:
     CheckBox();
@@ -42,6 +45,7 @@ class CheckBox: public Button {
     State st;
     bool  tristate;
   };
+/** @}*/
 
 }
 

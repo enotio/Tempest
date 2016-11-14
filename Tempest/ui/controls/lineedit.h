@@ -8,6 +8,9 @@
 
 namespace Tempest{
 
+/** \addtogroup GUI
+ *  @{
+ */
 class LineEdit : public Tempest::Widget {
   public:
     LineEdit();
@@ -108,6 +111,7 @@ class LineEdit : public Tempest::Widget {
 
     static const char16_t passChar;
   };
+/** @}*/
 
 }
 

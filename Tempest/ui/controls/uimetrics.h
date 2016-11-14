@@ -1,7 +1,10 @@
 #ifndef UIMETRICS_H
 #define UIMETRICS_H
 
-namespace Tempest{
+namespace Tempest {
+  /** \addtogroup GUI
+   *  @{
+   */
   class UiMetrics {
     public:
       UiMetrics();
@@ -18,6 +21,7 @@ namespace Tempest{
       int   scrollButtonSize = 27;
       int   margin           = 8;
     };
+  /** @}*/
   }
 
 #endif // UIMETRICS_H

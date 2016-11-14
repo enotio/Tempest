@@ -12,6 +12,9 @@ namespace Tempest{
 
 class Widget;
 
+/** \addtogroup GUI
+ *  @{
+ */
 class ListDelegate : public slot {
   public:
     enum Role{
@@ -128,6 +131,7 @@ class ArrayListDelegate : public AbstractListDelegate<T,std::vector<T>,Ctrl> {
 #endif
       }
   };
+/** @}*/
 }
 
 #endif // LISTDELEGATE_H

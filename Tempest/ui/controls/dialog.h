@@ -4,8 +4,12 @@
 #include <Tempest/Panel>
 
 namespace Tempest {
-  class WindowOverlay;
 
+class WindowOverlay;
+
+/** \addtogroup GUI
+ *  @{
+ */
 class Dialog : public Panel {
   public:
     Dialog();
@@ -28,6 +32,7 @@ class Dialog : public Panel {
 
     Overlay* owner_ov;
   };
+/** @}*/
 
 }
 #endif // DIALOG_H

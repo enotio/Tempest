@@ -5,6 +5,9 @@
 
 namespace Tempest {
 
+/** \addtogroup GUI
+ *  @{
+ */
 class Label : public Widget {
   public:
     Label();
@@ -23,6 +26,7 @@ class Label : public Widget {
     std::u16string txt;
     Tempest::Font  fnt;
   };
+/** @}*/
 
 }
 

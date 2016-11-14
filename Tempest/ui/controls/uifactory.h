@@ -4,7 +4,7 @@
 #include <string>
 #include <Tempest/Widget>
 
-namespace Tempest{
+namespace Tempest {
 
 class Widget;
 class Button;
@@ -18,6 +18,9 @@ class ScrollBar;
 class ScrollWidget;
 class CheckBox;
 
+/** \addtogroup GUI
+ *  @{
+ */
 class UiFactory {
   public:
     virtual ~UiFactory() = default;
@@ -37,6 +40,7 @@ class UiFactory {
     virtual ScrollWidget*  scrollWidget();
     virtual CheckBox*      checkBox();
   };
+/** @}*/
 
 }
 

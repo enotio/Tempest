@@ -8,6 +8,9 @@
 
 namespace Tempest{
 
+/** \addtogroup GUI
+ *  @{
+ */
 class ScrollBar : public Tempest::Widget {
   public:
     ScrollBar(Tempest::Orientation ori = Tempest::Vertical);
@@ -107,6 +110,7 @@ class ScrollBar : public Tempest::Widget {
 
     Timer timer;
   };
+/** @}*/
 }
 
 #endif // SCROLLBAR_H

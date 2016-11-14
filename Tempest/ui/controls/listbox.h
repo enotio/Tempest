@@ -10,6 +10,9 @@ namespace Tempest{
 
 class ListDelegate;
 
+/** \addtogroup GUI
+ *  @{
+ */
 class ListBox : public AbstractListBox {
   public:
     ListBox();
@@ -61,6 +64,7 @@ class ListBox : public AbstractListBox {
 
     struct ProxyDelegate;
   };
+/** @}*/
 
 }
 

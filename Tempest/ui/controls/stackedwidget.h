@@ -5,6 +5,9 @@
 
 namespace Tempest {
 
+/** \addtogroup GUI
+ *  @{
+ */
 class StackedWidget : public Widget {
   public:
     StackedWidget();
@@ -33,6 +36,7 @@ class StackedWidget : public Widget {
     std::vector<Widget*> pages;
     size_t current;
   };
+/** @}*/
 
 }
 

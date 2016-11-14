@@ -11,6 +11,9 @@
 
 namespace Tempest {
 
+/** \addtogroup GUI
+ *  @{
+ */
 class Button : public Tempest::Widget {
   public:
     Button();
@@ -95,6 +98,8 @@ class Button : public Tempest::Widget {
     Type           type       =T_PushButton;
     bool           isMouseOver=false;
   };
+/** @}*/
+
 }
 
 #endif // BUTTON_H

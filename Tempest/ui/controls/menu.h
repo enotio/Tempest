@@ -9,6 +9,9 @@
 
 namespace Tempest {
 
+/** \addtogroup GUI
+ *  @{
+ */
 class Menu : public slot {
   private:
     struct Delegate;
@@ -124,6 +127,7 @@ class Menu : public slot {
     static void assign(std::u16string& s, const std::string& ch);
     static void assign(std::u16string& s, const std::u16string& ch);
   };
+/** @}*/
 }
 
 #endif // MENU_H

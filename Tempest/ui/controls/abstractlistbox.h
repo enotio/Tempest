@@ -6,6 +6,9 @@
 
 namespace Tempest{
 
+/** \addtogroup GUI
+ *  @{
+ */
 class AbstractListBox : public Widget {
   public:
     AbstractListBox();
@@ -34,6 +37,7 @@ class AbstractListBox : public Widget {
     Overlay * overlay;    
     void setLayout(Tempest::Layout* l);
   };
+/** @}*/
 
 }
 

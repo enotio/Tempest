@@ -31,8 +31,9 @@ class Layout;
 class LinearLayout;
 class Shortcut;
 
-// class Painter;
-
+/** \addtogroup GUI
+ *  @{
+ */
 class Widget : public slot {
   public:
     Widget( ResourceContext* context = 0 );
@@ -221,6 +222,7 @@ class Widget : public slot {
   friend class SurfaceRender;
   friend class Application;
   };
+/** @}*/
 
 }
 
