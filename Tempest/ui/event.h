@@ -7,7 +7,16 @@
 namespace Tempest{
 
 class PainterDevice;
-//! abstract event class
+
+/**
+ * \addtogroup UI_Event
+ *  \ingroup GUI
+ *  @{
+ */
+
+/*!
+ * \brief The Event class is the base class of all event classes. Event objects contain event parameters.
+ */
 class Event {
   public:
     Event();
@@ -144,6 +153,9 @@ class Event {
   friend class SystemAPI;
   };
 
+/*!
+ * \brief The MouseEvent class contains event parameters for mouse and touch events.
+ */
 class MouseEvent : public Event {
   public:
     MouseEvent( int mx = -1, int my = -1,
@@ -266,6 +278,7 @@ class DragGesture: public AbstractGestureEvent {
 
     const Point start, pos, dpos;
   };
+/** @}*/
 }
 
 #endif // TEMPEST_EVENT_H

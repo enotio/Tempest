@@ -803,7 +803,9 @@ div.directory {
 
 .directory td.entry {
         white-space: nowrap;
-        padding-right: 6px;
+        padding-right:  6px;
+        padding-top:    6px;
+        padding-bottom: 6px;
 	padding-top: 3px;
 }
 

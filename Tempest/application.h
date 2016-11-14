@@ -21,6 +21,11 @@ class Font;
 class Timer;
 /**
  * \addtogroup Core
+ *  @{
+ */
+
+/*!
+ * \brief The Application class manages the GUI application's control flow and main settings.
  */
 class Application {
   public:
@@ -61,6 +66,7 @@ class Application {
     friend class Timer;
     //static bool processMessage();
   };
+/** @}*/
 
 }
 #endif // APPLICATION_H
