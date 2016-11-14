@@ -60,6 +60,7 @@ using namespace Tempest::GLProc;
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 struct GLSL::Data{
   AbstractAPI::OpenGL2xDevice * context;
   float maxAnisotropy;
@@ -329,6 +330,7 @@ struct GLSL::Data{
       }
     }
   };
+/// \endcond
 
 void* GLSL::context() const{
   return data->context;

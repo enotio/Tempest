@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+/// \cond HIDDEN_SYMBOLS
 template< class T, class Less=std::less<T> >
 class SortedVec {
   public:
@@ -42,5 +43,6 @@ class SortedVec {
   private:
     Less less;
   };
+/// \endcond
 
 #endif // SORTEDVEC_H

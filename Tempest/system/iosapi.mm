@@ -843,13 +843,13 @@ int iOSAPI::densityDpi() {
 
   float dpi;
   if( UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPad )
-    dpi = isIpadMini() ? 163*scale : 132 * scale;
+    dpi = isIpadMini() ? 163 : 132;
   else if( UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPhone )
-    dpi = 163 * scale;
+    dpi = 163;
   else
-    dpi = 160 * scale;
+    dpi = 160;
 
-  return int(dpi);
+  return int(dpi*scale*scale);
   }
 
 const std::string& iOSAPI::iso3Locale() {

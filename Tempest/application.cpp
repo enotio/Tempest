@@ -27,10 +27,12 @@
 #endif
 
 #if !defined(_INC_TYPES) && !defined(_LINUX_TIME_H) && !defined(_TIME_H) && !defined(__APPLE__) && !defined(_INC_TIME)
+/// \cond HIDDEN_SYMBOLS
 struct timespec {
   long tv_sec;
   long tv_nsec;
   };
+/// \endcond
 
 static LARGE_INTEGER getFILETIMEoffset() {
   SYSTEMTIME s;

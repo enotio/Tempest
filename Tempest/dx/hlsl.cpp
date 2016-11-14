@@ -9,6 +9,7 @@
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 struct HLSL::Data{
   LPDIRECT3DDEVICE9   dev;
   D3DCAPS9            caps;
@@ -137,6 +138,7 @@ struct HLSL::Data{
     dev->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, caps.MaxAnisotropy );
     }
   };
+/// \endcond
 
 HLSL::HLSL( AbstractAPI::DirectX9Device *dev ) {
   data = new Data();

@@ -18,6 +18,7 @@
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 struct Device::Data{
   typedef std::unordered_set< AbstractHolderBase* > Holders;
   typedef Holders::iterator HIterator;
@@ -273,6 +274,7 @@ struct Device::Data{
     return tx;
     }
   };
+/// \endcond
 
 
 Device::Device(const AbstractAPI &dx,

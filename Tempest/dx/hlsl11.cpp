@@ -37,6 +37,7 @@
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 struct SmpHash{
   size_t operator()(const Texture2d::Sampler& s) const {
     return (size_t(s.uClamp)*2u+size_t(s.minFilter))*8u + size_t(s.anisotropic?1:0);
@@ -350,6 +351,7 @@ struct HLSL11::Data{
     (void)s;
     }
   };
+/// \endcond
 
 HLSL11::HLSL11(AbstractAPI::DirectX11Device *dev , void *context, unsigned featureLevel) {
   data = new Data();

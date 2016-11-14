@@ -5,9 +5,11 @@
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 struct ShaderProgramHolder::Data {
   std::unordered_map<AbstractAPI::ProgramObject*,ShaderProgram::Source> sh;
   };
+/// \endcond
 
 ShaderProgramHolder::ShaderProgramHolder(Device &d):BaseType(d){
   data = new Data();

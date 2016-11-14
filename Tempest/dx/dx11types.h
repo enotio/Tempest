@@ -22,6 +22,7 @@
 #endif
 #include <D3D11.h>
 
+/// \cond HIDDEN_SYMBOLS
 namespace Tempest{
   struct DX11Texture{
     ID3D11Texture2D*          texture = 0;
@@ -31,5 +32,6 @@ namespace Tempest{
     ID3D11ShaderResourceView* view    = 0;
     };
   }
+/// \endcond
 
 #endif // DX11TYPES_H

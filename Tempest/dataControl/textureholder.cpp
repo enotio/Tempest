@@ -14,6 +14,7 @@
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 struct TextureHolder::Data {
   struct DynTexture{
     int w, h;
@@ -50,6 +51,7 @@ struct TextureHolder::Data {
 
   size_t count;
   };
+/// \endcond
 
 TextureHolder::TextureHolder( Device& d):BaseType(d) {
   data = new Data();

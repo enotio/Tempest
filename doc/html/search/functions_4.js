@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['g',['g',['../class_tempest_1_1_color.html#a7dd31a26074d75037eb72979d11f9a87',1,'Tempest::Color']]]
+  ['g',['g',['../class_tempest_1_1_color.html#a09a7c4d10a387bf59823d52eb0bc0173',1,'Tempest::Color']]]
 ];

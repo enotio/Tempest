@@ -18,6 +18,7 @@
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 struct CgDx9::Data{
   CGcontext context;
   LPDIRECT3DDEVICE9 device;
@@ -51,6 +52,7 @@ struct CgDx9::Data{
   const Tempest::VertexShader*   currentVS;
   const Tempest::FragmentShader* currentFS;
   };
+/// \endcond
 
 LPDIRECT3DDEVICE9 CgDx9::Data::currentDev = 0;
 

@@ -9,6 +9,7 @@
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 struct IndexBufferHolder::Data {
   struct LDData{
     int vsize, size;
@@ -22,6 +23,7 @@ struct IndexBufferHolder::Data {
   std::unordered_map< AbstractAPI::IndexBuffer*, LDData* > ibos, restore;
   typedef std::unordered_map< AbstractAPI::IndexBuffer*, LDData* >::iterator Iterator;
   };
+/// \endcond
 
 IndexBufferHolder::IndexBufferHolder( Device& d):BaseType(d) {
   data = new Data();

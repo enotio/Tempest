@@ -10,6 +10,7 @@
 
 namespace Tempest {
 
+/// \cond HIDDEN_SYMBOLS
 template< class T >
 class MemPool {
   public:
@@ -125,6 +126,7 @@ class MemPool {
     std::vector< Block* > data, available;
     Detail::Spin spin;
     };
+/// \endcond
 
 }
 

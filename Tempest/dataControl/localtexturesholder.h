@@ -21,7 +21,9 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
 
     void pauseCollect( bool p );
     bool isCollectPaused() const;
+
   protected:
+    /// \cond HIDDEN_SYMBOLS
     struct NonFreedData {
       Tempest::AbstractAPI::Texture* handle;
 
@@ -50,6 +52,7 @@ class LocalTexturesHolder : public Tempest::TextureHolder {
       unsigned collectIteration;
       void * userPtr;
       };
+    /// \endcond
 
     virtual void reset();
     virtual bool restore();

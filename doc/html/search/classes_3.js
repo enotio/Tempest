@@ -1,28 +1,16 @@
 var searchData=
 [
-  ['data',['Data',['../struct_g_l_s_l_1_1_data.html',1,'Tempest::GLSL']]],
-  ['data',['Data',['../struct_index_buffer_holder_1_1_data.html',1,'Tempest::IndexBufferHolder']]],
-  ['data',['Data',['../struct_vertex_buffer_holder_1_1_data.html',1,'Tempest::VertexBufferHolder']]],
-  ['data',['Data',['../struct_h_l_s_l_1_1_data.html',1,'Tempest::HLSL']]],
-  ['data',['Data',['../struct_direct_x9_1_1_data.html',1,'Tempest::DirectX9']]],
-  ['data',['Data',['../struct_device_1_1_data.html',1,'Tempest::Device']]],
-  ['data',['Data',['../struct_texture_holder_1_1_data.html',1,'Tempest::TextureHolder']]],
-  ['data',['Data',['../struct_volume_holder_1_1_data.html',1,'Tempest::VolumeHolder']]],
-  ['data',['Data',['../struct_cg_dx9_1_1_data.html',1,'Tempest::CgDx9']]],
-  ['dec',['Dec',['../struct_device_1_1_data_1_1_dec.html',1,'Device::Data']]],
   ['declarator',['Declarator',['../class_tempest_1_1_vertex_declaration_1_1_declarator.html',1,'Tempest::VertexDeclaration']]],
+  ['declarator',['Declarator',['../struct_tempest_1_1_menu_1_1_declarator.html',1,'Tempest::Menu']]],
   ['defaultvertex',['DefaultVertex',['../struct_tempest_1_1_default_vertex.html',1,'Tempest']]],
+  ['delegate',['Delegate',['../struct_menu_1_1_delegate.html',1,'Tempest::Menu']]],
   ['deleteevent',['DeleteEvent',['../struct_tempest_1_1_graphics_subsystem_1_1_delete_event.html',1,'Tempest::GraphicsSubsystem']]],
-  ['deleteguard',['DeleteGuard',['../struct_widget_1_1_delete_guard.html',1,'Tempest::Widget']]],
-  ['device',['Device',['../struct_tempest_1_1_opengl2x_1_1_device.html',1,'Tempest::Opengl2x']]],
-  ['device',['Device',['../struct_direct_x9_1_1_device.html',1,'Tempest::DirectX9']]],
   ['device',['Device',['../class_tempest_1_1_device.html',1,'Tempest']]],
+  ['dialog',['Dialog',['../class_tempest_1_1_dialog.html',1,'Tempest']]],
   ['directionlight',['DirectionLight',['../class_tempest_1_1_direction_light.html',1,'Tempest']]],
+  ['directx11',['DirectX11',['../class_tempest_1_1_direct_x11.html',1,'Tempest']]],
   ['directx9',['DirectX9',['../class_tempest_1_1_direct_x9.html',1,'Tempest']]],
   ['displaysettings',['DisplaySettings',['../class_tempest_1_1_display_settings.html',1,'Tempest']]],
   ['draggesture',['DragGesture',['../class_tempest_1_1_drag_gesture.html',1,'Tempest']]],
-  ['draggesturerecognizer',['DragGestureRecognizer',['../struct_window_1_1_drag_gesture_recognizer.html',1,'Tempest::Window']]],
-  ['dynbuffer',['DynBuffer',['../struct_tempest_1_1_opengl2x_1_1_device_1_1_dyn_buffer.html',1,'Tempest::Opengl2x::Device']]],
-  ['dyntexture',['DynTexture',['../struct_texture_holder_1_1_data_1_1_dyn_texture.html',1,'TextureHolder::Data']]],
-  ['dyntexture',['DynTexture',['../struct_volume_holder_1_1_data_1_1_dyn_texture.html',1,'VolumeHolder::Data']]]
+  ['draggesturerecognizer',['DragGestureRecognizer',['../struct_window_1_1_drag_gesture_recognizer.html',1,'Tempest::Window']]]
 ];

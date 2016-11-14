@@ -361,6 +361,7 @@ struct JpegCodec:ImageCodec {
   JpegCodec(){
     }
 
+  /// \cond HIDDEN_SYMBOLS
   struct JpegStream : jpeg_source_mgr{
     jmp_buf         jmpErr;
     IDevice*        stream;
@@ -428,6 +429,7 @@ struct JpegCodec:ImageCodec {
       jpeg_destroy_decompress(this);
       }
     };
+  /// \endcond
 
   bool load( IDevice &d,
              ImgInfo &info,

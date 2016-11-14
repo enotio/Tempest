@@ -10,6 +10,7 @@
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 struct VertexBufferHolder::Data {
   struct LDData{
     int vsize, size;
@@ -23,6 +24,7 @@ struct VertexBufferHolder::Data {
   std::unordered_map< AbstractAPI::VertexBuffer*, LDData* > vbos, restore;
   typedef std::unordered_map< AbstractAPI::VertexBuffer*, LDData* >::iterator Iterator;
   };
+/// \endcond
 
 VertexBufferHolder::VertexBufferHolder( Device& d):BaseType(d) {
   data = new Data();

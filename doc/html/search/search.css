@@ -6,14 +6,14 @@
 
 #MSearchBox {
     white-space : nowrap;
-    position: absolute;
     float: none;
-    display: inline;
-    margin-top: 8px;
+    margin-top: 0px;
     right: 0px;
     width: 170px;
+    height: 24px;
     z-index: 102;
-    background-color: white;
+    display: inline;
+    position: absolute;
 }
 
 #MSearchBox .left
@@ -54,6 +54,7 @@
     color: #909090;
     outline: none;
     font: 9pt Arial, Verdana, sans-serif;
+    -webkit-border-radius: 0px;
 }
 
 #FSearchBox #MSearchField {
@@ -100,9 +101,9 @@
     display: none;
     position: absolute;
     left: 0; top: 0;
-    border: 1px solid #90A5CE;
-    background-color: #F9FAFC;
-    z-index: 1;
+    border: 1px solid #AFAFAF;
+    background-color: #FAFAFA;
+    z-index: 10001;
     padding-top: 4px;
     padding-bottom: 4px;
     -moz-border-radius: 4px;
@@ -145,7 +146,7 @@ a.SelectItem:active {
 
 a.SelectItem:hover {
     color: #FFFFFF;
-    background-color: #3D578C;
+    background-color: #646464;
     outline-style: none;
     text-decoration: none;
     cursor: pointer;
@@ -164,7 +165,8 @@ iframe#MSearchResults {
     position: absolute;
     left: 0; top: 0;
     border: 1px solid #000;
-    background-color: #EEF1F7;
+    background-color: #F2F2F2;
+    z-index:10000;
 }
 
 /* ----------------------------------- */
@@ -199,7 +201,7 @@ body.SRPage {
 
 .SRSymbol {
     font-weight: bold; 
-    color: #425E97;
+    color: #6C6C6C;
     font-family: Arial, Verdana, sans-serif;
     text-decoration: none;
     outline: none;
@@ -207,7 +209,7 @@ body.SRPage {
 
 a.SRScope {
     display: block;
-    color: #425E97; 
+    color: #6C6C6C; 
     font-family: Arial, Verdana, sans-serif;
     text-decoration: none;
     outline: none;
@@ -240,7 +242,7 @@ DIV.searchresults {
 /*---------------- External search page results */
 
 .searchresult {
-    background-color: #F0F3F8;
+    background-color: #F4F4F4;
 }
 
 .pages b {

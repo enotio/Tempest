@@ -10,6 +10,7 @@
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 struct Widget::DeleteGuard{
   DeleteGuard( Widget* w):w(w){
     w->lockDelete();
@@ -21,6 +22,7 @@ struct Widget::DeleteGuard{
 
   Widget *w;
   };
+/// \endcond
 
 size_t Widget::count = 0;
 

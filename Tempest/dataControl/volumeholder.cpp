@@ -14,6 +14,7 @@
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 struct VolumeHolder::Data {
   //std::map< AbstractAPI::Texture*, std::string > textures;
 
@@ -28,6 +29,7 @@ struct VolumeHolder::Data {
 
   size_t count;
   };
+/// \endcond
 
 VolumeHolder::VolumeHolder( Device& d):BaseType(d) {
   data = new Data();

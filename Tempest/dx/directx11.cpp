@@ -39,6 +39,7 @@
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 static const IID ID3D11Texture2D_uuid = {0x6f15aaf2,0xd208,0x4e89, {0x9a,0xb4,0x48,0x95,0x35,0xd3,0x4f,0x9c}};
 
 struct BlendDesc{
@@ -320,6 +321,8 @@ struct DirectX11::Device{
     return S_OK;
     }
   };
+/// \endcond
+
 
 DirectX11::DirectX11() {
   }

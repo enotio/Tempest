@@ -5,6 +5,7 @@
 #include <Tempest/AbstractAPI>
 
 namespace Tempest {
+/// \cond HIDDEN_SYMBOLS
   class GLSL: public AbstractShadingLang {
     public:
       GLSL( AbstractAPI::OpenGL2xDevice *dev );
@@ -39,7 +40,7 @@ namespace Tempest {
 
       void event(const DeleteEvent &e);
     };
+/// \endcond
   }
-
 
 #endif // GLSL_H

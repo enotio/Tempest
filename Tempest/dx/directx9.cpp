@@ -18,6 +18,7 @@
 
 using namespace Tempest;
 
+/// \cond HIDDEN_SYMBOLS
 struct DirectX9::Device{
   LPDIRECT3DDEVICE9 dev;
   DirectX9::IBO * curIBO;
@@ -58,6 +59,7 @@ struct DirectX9::Data{
     return ((DirectX9::Device*)(d))->dev;
     }
   };
+/// \endcond
 
 DirectX9::DirectX9(){
   impl   = (DirectX9Impl*)Direct3DCreate9( D3D_SDK_VERSION );
