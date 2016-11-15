@@ -50,12 +50,13 @@ struct SmpHash{
 
 struct SmpCmp{
   bool operator()(const Texture2d::Sampler& s1,
-                    const Texture2d::Sampler& s2) const {
+                  const Texture2d::Sampler& s2) const {
     return s1.magFilter==s2.magFilter &&
            s1.minFilter==s2.minFilter &&
            s1.mipFilter==s2.mipFilter &&
            s1.uClamp==s2.uClamp &&
-           s1.vClamp==s2.vClamp;
+           s1.vClamp==s2.vClamp &&
+           s1.anisotropic==s2.anisotropic;
     }
   };
 
@@ -155,7 +156,7 @@ struct HLSL11::Data{
     sampDesc.MinLOD   = 0;
     sampDesc.MaxLOD   = D3D11_FLOAT32_MAX;
 
-    sampDesc.MaxAnisotropy = 1;
+    sampDesc.MaxAnisotropy = 16;
 
     ID3D11SamplerState* ret = 0;
     HRESULT hr = dev->CreateSamplerState( &sampDesc, &ret );
@@ -442,7 +443,8 @@ void Tempest::HLSL11::deleteShader(GraphicsSubsystem::ProgramObject * p) const {
     data->sh[nsz]=data->sh[i];
     if( prog->vs==data->sh[i].vs &&
         prog->fs==data->sh[i].fs ){
-      data->sh[i].dxDecl->Release();
+      if(data->sh[i].dxDecl)
+        data->sh[i].dxDecl->Release();
       } else {
       ++nsz;
       }
