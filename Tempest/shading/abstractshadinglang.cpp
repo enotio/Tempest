@@ -35,8 +35,9 @@ static inline void align(void*& ptr){
   }
 
 template< class T >
-static inline void align(size_t& /*ptr*/){
-  //ptr = ((ptr+alignof(T)-1)/alignof(T))*alignof(T);
+static inline void align(size_t& ptr,size_t mod=1){
+  size_t alig = alignof(T)*mod;
+  ptr = ((ptr+alig-1)/alig)*alig;
   }
 
 template< class T, class X >
@@ -46,16 +47,11 @@ static inline void inc(X& ptr, int count=1){
   }
 
 template< class T >
-static inline void align(size_t& offset,const char*& ptr){
-#ifdef _MSC_VER
-  size_t dpt = offset%__alignof(T);
+static inline void align(size_t& offset,const char*& ptr,size_t mod=1){
+  size_t alig = alignof(T)*mod;
+  size_t dpt  = offset%alig;
   if(dpt)
-    dpt=__alignof(T)-dpt;
-#else
-  size_t dpt = offset%__alignof(T);
-  if(dpt)
-    dpt=alignof(T)-dpt;
-#endif
+    dpt=alig-dpt;
   offset += dpt;
   ptr    += dpt;
   }
@@ -66,11 +62,11 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   size_t bufsz=0, sampSz[2]={0,0}, tex[2] = {0,0};
   for( int type:u.type ){
     if( type<=Decl::float4){
-      align<float>(bufsz);
+      align<float>(bufsz,2);
       bufsz += type*sizeof(float);
       }
     else if( type<Decl::count ){
-      align<float>(bufsz);
+      align<float>(bufsz,2);
       bufsz += 4*sizeof(float);//Decl::elementSize(Decl::ComponentType(type));
       }
     else if( type==Decl::Texture2d ){
@@ -88,8 +84,9 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   ux.id.resize(u.type.size());
   ux.names = u.name;
   ux.desc  = u.type;
-  if(bufsz>0)
-    ux.data.resize( std::max<size_t>( ((bufsz+15)/16)*16, 32) );
+  if(bufsz>0) {
+    ux.data.resize( ((bufsz+15)/16)*16 );
+    }
   ux.smp[0].resize(sampSz[0]);
   ux.smp[1].resize(sampSz[1]);
   ux.fields.resize(ux.desc.size());
@@ -107,7 +104,15 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
     ux.fields[i] = (data-ux.data.data());
     ++i;
 
-    if( type<=Decl::float4){
+    if( type==Decl::float3 ){
+      size_t vsz = Decl::elementSize(Decl::ComponentType(type));
+      align<float>(bufsz);
+      memcpy(data, addr, vsz);
+
+      bufsz += vsz;
+      data  += 4*sizeof(float);
+      }
+    else if( type<=Decl::float4 ){
       size_t vsz = Decl::elementSize(Decl::ComponentType(type));
       align<float>(bufsz);
       memcpy(data, addr, vsz);
