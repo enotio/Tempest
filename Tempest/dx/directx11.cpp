@@ -457,7 +457,7 @@ AbstractAPI::Device *DirectX11::createDevice( void *Hwnd,
 
   UINT createDeviceFlags = 0;
 #ifndef NDEBUG
-  //createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+  createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
   D3D_DRIVER_TYPE driverTypes[] =
@@ -546,9 +546,10 @@ void DirectX11::clear( AbstractAPI::Device *d, const Color &cl,
   if(dev->renderToTexture){
     for( size_t i=0; i<dev->rt.size(); ++i )
       dev->immediateContext->ClearRenderTargetView( dev->rt[i], cl.data() );
-    dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
-                                                  D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
-                                                  z, stencil );
+    if( dev->rtDepth )
+      dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
+                                                    D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
+                                                    z, stencil );
     } else {
     dev->immediateContext->ClearRenderTargetView( dev->renderTargetView, cl.data() );
     dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
@@ -573,9 +574,10 @@ void DirectX11::clear(AbstractAPI::Device *d, const Color &cl, float z) const {
   if(dev->renderToTexture){
     for( size_t i=0; i<dev->rt.size(); ++i )
       dev->immediateContext->ClearRenderTargetView( dev->rt[i], cl.data() );
-    dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
-                                                  D3D11_CLEAR_DEPTH,
-                                                  z, 0 );
+    if( dev->rtDepth )
+      dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
+                                                    D3D11_CLEAR_DEPTH,
+                                                    z, 0 );
     } else {
     dev->immediateContext->ClearRenderTargetView( dev->renderTargetView, cl.data() );
     dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
@@ -587,9 +589,10 @@ void DirectX11::clear(AbstractAPI::Device *d, const Color &cl, float z) const {
 void DirectX11::clear(AbstractAPI::Device *d, float z, unsigned stencil) const {
   Device* dev = (Device*)d;
   if(dev->renderToTexture){
-    dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
-                                                  D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
-                                                  z, 0 );
+    if( dev->rtDepth )
+      dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
+                                                    D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
+                                                    z, 0 );
     } else {
     dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
                                                   D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL,
@@ -600,9 +603,10 @@ void DirectX11::clear(AbstractAPI::Device *d, float z, unsigned stencil) const {
 void DirectX11::clearZ(AbstractAPI::Device *d, float z) const {
   Device* dev = (Device*)d;
   if(dev->renderToTexture){
-    dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
-                                                  D3D11_CLEAR_DEPTH,
-                                                  z, 0 );
+    if( dev->rtDepth )
+      dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
+                                                    D3D11_CLEAR_DEPTH,
+                                                    z, 0 );
     } else {
     dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
                                                   D3D11_CLEAR_DEPTH,
@@ -613,9 +617,10 @@ void DirectX11::clearZ(AbstractAPI::Device *d, float z) const {
 void DirectX11::clearStencil(AbstractAPI::Device *d, unsigned stencil) const {
   Device* dev = (Device*)d;
   if(dev->renderToTexture){
-    dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
-                                                  D3D11_CLEAR_STENCIL,
-                                                  1.0f, stencil );
+    if( dev->rtDepth )
+      dev->immediateContext->ClearDepthStencilView( dev->rtDepth,
+                                                    D3D11_CLEAR_STENCIL,
+                                                    1.0f, stencil );
     } else {
     dev->immediateContext->ClearDepthStencilView( dev->depthStencilView,
                                                   D3D11_CLEAR_STENCIL,
@@ -693,9 +698,9 @@ void DirectX11::setRenderTaget( AbstractAPI::Device *d,
 void DirectX11::unsetRenderTagets(AbstractAPI::Device *d, int /*count*/) const {
   Device* dev = (Device*)d;
   dev->rt.clear();
+  dev->rtDepth = 0;
   dev->immediateContext->OMSetRenderTargets( 1, &dev->renderTargetView,
                                                  dev->depthStencilView );
-
   }
 
 void DirectX11::setDSSurfaceTaget(AbstractAPI::Device *,
