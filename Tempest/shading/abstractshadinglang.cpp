@@ -65,7 +65,11 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
                                                const UniformDeclaration &u ) {
   size_t bufsz=0, sampSz[2]={0,0}, tex[2] = {0,0};
   for( int type:u.type ){
-    if( type<Decl::count ){
+    if( type<=Decl::float4){
+      align<float>(bufsz);
+      bufsz += type*sizeof(float);
+      }
+    else if( type<Decl::count ){
       align<float>(bufsz);
       bufsz += 4*sizeof(float);//Decl::elementSize(Decl::ComponentType(type));
       }
@@ -85,7 +89,7 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
   ux.names = u.name;
   ux.desc  = u.type;
   if(bufsz>0)
-    ux.data.resize( std::max<size_t>( (bufsz/16+15)*16, 32) );
+    ux.data.resize( std::max<size_t>( ((bufsz+15)/16)*16, 32) );
   ux.smp[0].resize(sampSz[0]);
   ux.smp[1].resize(sampSz[1]);
   ux.fields.resize(ux.desc.size());
@@ -103,14 +107,23 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
     ux.fields[i] = (data-ux.data.data());
     ++i;
 
-    if( type<Decl::count ){
+    if( type<=Decl::float4){
+      size_t vsz = Decl::elementSize(Decl::ComponentType(type));
+      align<float>(bufsz);
+      memcpy(data, addr, vsz);
+
+      bufsz += vsz;
+      data  += type*sizeof(float);
+      }
+    else if( type<Decl::count ){
       size_t vsz = Decl::elementSize(Decl::ComponentType(type));
       align<float>(bufsz);
       memcpy(data, addr, vsz);
 
       bufsz += vsz;
       data  += 4*sizeof(float);
-      } else {
+      }
+    else {
       void* t=0;
       switch (type) {
         case Decl::Texture2d:

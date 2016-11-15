@@ -457,7 +457,7 @@ AbstractAPI::Device *DirectX11::createDevice( void *Hwnd,
 
   UINT createDeviceFlags = 0;
 #ifndef NDEBUG
-  createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+  //createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
   D3D_DRIVER_TYPE driverTypes[] =
