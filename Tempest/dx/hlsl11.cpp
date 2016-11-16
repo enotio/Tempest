@@ -378,6 +378,7 @@ void Tempest::HLSL11::bind( const ShaderProgram &px ) const {
     data->immediateContext->VSSetShader( p->vs, NULL, 0 );
     data->immediateContext->PSSetShader( p->fs, NULL, 0 );
     data->curSamplers.clear();
+    data->curTextures.clear();
     }
   data->prog.vs     = p->vs;
   data->prog.fs     = p->fs;
@@ -472,7 +473,7 @@ void HLSL11::enable() const {
     data->curUboD->resize(ubo.size());
 
   ID3D11Buffer** curD = (*data->curUboD).data();
-  for( const UBO u:ubo ){
+  for( const UBO& u:ubo ){
     if(!u.updated){
       setUniforms( u, slot );
       u.updated = true;
