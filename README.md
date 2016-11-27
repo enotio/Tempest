@@ -1,6 +1,6 @@
-![Tempest Logo](https://raw.githubusercontent.com/Try/Tempest/master/doc/icon.png)
+![Tempest Logo](https://raw.githubusercontent.com/enotio/Tempest/master/docs/icon.png)
 =
-[![Build Status](https://travis-ci.org/Try/Tempest.svg?branch=master)](https://travis-ci.org/Try/Tempest)
+[![Build Status](https://travis-ci.org/enotio/Tempest.svg?branch=master)](https://travis-ci.org/enotio/Tempest)
 [![Build status](https://ci.appveyor.com/api/projects/status/e8v457k9tfuk511m?svg=true)](https://ci.appveyor.com/project/Try/Tempest)
 
 Crossplatform 3d engine.
