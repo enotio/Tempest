@@ -1,5 +1,5 @@
 var class_tempest_1_1_buffer_writer =
 [
-    [ "BufferWriter", "class_tempest_1_1_buffer_writer.html#a3f12ab32e9db8dff08d748c71b5d3f73", null ],
-    [ "writeData", "class_tempest_1_1_buffer_writer.html#a8301482bb39483279fcf58a4badb6753", null ]
+    [ "BufferWriter", "class_tempest_1_1_buffer_writer.html#ab9450330e0aea545d6ad2da10a208e7f", null ],
+    [ "writeData", "class_tempest_1_1_buffer_writer.html#ae10e354f8876c440bbb886229817d543", null ]
 ];

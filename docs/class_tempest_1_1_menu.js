@@ -1,17 +1,16 @@
 var class_tempest_1_1_menu =
 [
     [ "Declarator", "struct_tempest_1_1_menu_1_1_declarator.html", "struct_tempest_1_1_menu_1_1_declarator" ],
-    [ "Delegate", "struct_menu_1_1_delegate.html", "struct_menu_1_1_delegate" ],
     [ "Item", "struct_tempest_1_1_menu_1_1_item.html", "struct_tempest_1_1_menu_1_1_item" ],
     [ "ItemButton", "struct_tempest_1_1_menu_1_1_item_button.html", "struct_tempest_1_1_menu_1_1_item_button" ],
-    [ "Menu", "class_tempest_1_1_menu.html#a1e100e46e249ac5793471f7d2f8b8aca", null ],
-    [ "~Menu", "class_tempest_1_1_menu.html#a831387f51358cfb88cd018e1777bc980", null ],
-    [ "close", "class_tempest_1_1_menu.html#a4bc958c66bb39a91446b5c12ac6469c6", null ],
-    [ "createDropList", "class_tempest_1_1_menu.html#a7d7fb63b13da0053db05fe1b8df24f97", null ],
-    [ "createItem", "class_tempest_1_1_menu.html#a9947a6131f25d79a73c73d3e7224e211", null ],
-    [ "createItems", "class_tempest_1_1_menu.html#a726f766899414f28af7d6abe9a2c2a6a", null ],
-    [ "exec", "class_tempest_1_1_menu.html#acfe33784ccac5c18118161301cf41442", null ],
-    [ "exec", "class_tempest_1_1_menu.html#a237972dc2f72ae14429b72e7a9a743f2", null ],
-    [ "openSubMenu", "class_tempest_1_1_menu.html#a33189baff32c6b9187acf7a441a80a7c", null ],
-    [ "setupMenuPanel", "class_tempest_1_1_menu.html#a4307ce12799ee998a65e5af4ff71868a", null ]
+    [ "Menu", "class_tempest_1_1_menu.html#afd77c7e6d28bfcc342339b0c9146f95b", null ],
+    [ "~Menu", "class_tempest_1_1_menu.html#ad2d7a6e277357cdf97c025b3af077127", null ],
+    [ "close", "class_tempest_1_1_menu.html#a23ec8a44af8c88197278f46825b5e824", null ],
+    [ "createDropList", "class_tempest_1_1_menu.html#a9ce582c12d32c923becd53576a9d91cf", null ],
+    [ "createItem", "class_tempest_1_1_menu.html#a0cc0dd73ce27cb0ee05e0a928b6153ee", null ],
+    [ "createItems", "class_tempest_1_1_menu.html#a9d396977a9a83c8fb3560fd43109b080", null ],
+    [ "exec", "class_tempest_1_1_menu.html#a6cf3fd204c4f4b1cb4305cbdf28f575b", null ],
+    [ "exec", "class_tempest_1_1_menu.html#a20cef6544561674e56390c9e2ab0706e", null ],
+    [ "openSubMenu", "class_tempest_1_1_menu.html#aec0ca9a3bdc1efc2f3b64923796f4a50", null ],
+    [ "setupMenuPanel", "class_tempest_1_1_menu.html#a90e9b261a1c22cf82eefec6f519455c5", null ]
 ];

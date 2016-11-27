@@ -1,8 +1,8 @@
 var class_tempest_1_1_cg_dx9 =
 [
-    [ "CgDx9", "class_tempest_1_1_cg_dx9.html#ae00dd2a61f6ee4eac03c4fab4defd0ea", null ],
-    [ "~CgDx9", "class_tempest_1_1_cg_dx9.html#af5773ffcbf28fc49e0150d1d1f574072", null ],
-    [ "context", "class_tempest_1_1_cg_dx9.html#a53a7a10e686aee6f15e4d0ed622edcbb", null ],
-    [ "enable", "class_tempest_1_1_cg_dx9.html#a1b153be43bc9745ef1ac2ba1cb61ba57", null ],
-    [ "surfaceShader", "class_tempest_1_1_cg_dx9.html#afc5f5ebb1901a6ba9d3cba82c0511a4a", null ]
+    [ "CgDx9", "class_tempest_1_1_cg_dx9.html#ae0c53918c04b8c4e06de025a6b6d99fc", null ],
+    [ "~CgDx9", "class_tempest_1_1_cg_dx9.html#a2105521b793821a3ce94af3afffa6eaf", null ],
+    [ "context", "class_tempest_1_1_cg_dx9.html#a76af65139f52c7e66e63986414750e7b", null ],
+    [ "enable", "class_tempest_1_1_cg_dx9.html#aea475ef3e625a723c8de6438c4b5f6a1", null ],
+    [ "surfaceShader", "class_tempest_1_1_cg_dx9.html#a99fc2bb7e34051bc043aee3ac218157b", null ]
 ];

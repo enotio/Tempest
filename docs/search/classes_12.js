@@ -5,7 +5,6 @@ var searchData=
   ['texture2d',['Texture2d',['../class_tempest_1_1_texture2d.html',1,'Tempest']]],
   ['texture3d',['Texture3d',['../class_tempest_1_1_texture3d.html',1,'Tempest']]],
   ['textureholder',['TextureHolder',['../class_tempest_1_1_texture_holder.html',1,'Tempest']]],
-  ['tgacodec',['TgaCodec',['../struct_tempest_1_1_tga_codec.html',1,'Tempest']]],
   ['timer',['Timer',['../class_tempest_1_1_timer.html',1,'Tempest']]],
   ['translatekeypair',['TranslateKeyPair',['../struct_tempest_1_1_system_a_p_i_1_1_translate_key_pair.html',1,'Tempest::SystemAPI']]]
 ];

@@ -1,12 +1,11 @@
 var searchData=
 [
-  ['s3tccodec',['S3TCCodec',['../struct_tempest_1_1_s3_t_c_codec.html',1,'Tempest']]],
-  ['sampler',['Sampler',['../struct_tempest_1_1_texture3d_1_1_sampler.html',1,'Tempest::Texture3d']]],
   ['sampler',['Sampler',['../struct_tempest_1_1_texture2d_1_1_sampler.html',1,'Tempest::Texture2d']]],
+  ['sampler',['Sampler',['../struct_tempest_1_1_texture3d_1_1_sampler.html',1,'Tempest::Texture3d']]],
   ['scissorrect',['ScissorRect',['../struct_tempest_1_1_painter_device_1_1_state_1_1_scissor_rect.html',1,'Tempest::PainterDevice::State']]],
   ['scrollbar',['ScrollBar',['../class_tempest_1_1_scroll_bar.html',1,'Tempest']]],
   ['scrollwidget',['ScrollWidget',['../class_tempest_1_1_scroll_widget.html',1,'Tempest']]],
-  ['set',['set',['../class_tempest_1_1_color.html#ac527f9b3cd41835585b31767b44cf6a9',1,'Tempest::Color::set(float r, float g, float b, float a)'],['../class_tempest_1_1_color.html#a8d94f6e9cabde79faeb5b8a7391c3101',1,'Tempest::Color::set(float rgba)']]],
+  ['set',['set',['../class_tempest_1_1_color.html#a3fcc8fb0dcba020c00b18872e09b6b47',1,'Tempest::Color::set(float r, float g, float b, float a)'],['../class_tempest_1_1_color.html#ac0699dbdb086b9be9f88a1ad6e455d20',1,'Tempest::Color::set(float rgba)']]],
   ['shaderprogram',['ShaderProgram',['../class_tempest_1_1_shader_program.html',1,'Tempest']]],
   ['shaderprogramholder',['ShaderProgramHolder',['../class_tempest_1_1_shader_program_holder.html',1,'Tempest']]],
   ['shortcut',['Shortcut',['../class_tempest_1_1_shortcut.html',1,'Tempest']]],

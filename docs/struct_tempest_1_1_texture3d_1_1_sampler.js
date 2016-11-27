@@ -1,6 +1,6 @@
 var struct_tempest_1_1_texture3d_1_1_sampler =
 [
-    [ "Sampler", "struct_tempest_1_1_texture3d_1_1_sampler.html#a5c421fcc74c5275cf4aecb05f1d2a404", null ],
+    [ "Sampler", "struct_tempest_1_1_texture3d_1_1_sampler.html#a0bf9894d46a25bcff473bcd02a244b21", null ],
     [ "setClamping", "struct_tempest_1_1_texture3d_1_1_sampler.html#af0c2af52ab78dbb71acdcb91cbed47e6", null ],
     [ "setFiltration", "struct_tempest_1_1_texture3d_1_1_sampler.html#af9caf9a3c362fe72aaf048d7ac5de325", null ],
     [ "magFilter", "struct_tempest_1_1_texture3d_1_1_sampler.html#a110b8b1b2cb7b2465c5ce9364ba895c6", null ],

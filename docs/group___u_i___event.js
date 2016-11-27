@@ -103,7 +103,7 @@ var group___u_i___event =
         [ "Gesture", "class_tempest_1_1_event.html#abaea3e734410b7e9364cf2c75edf60b0ac86eb6a86659f1fac115d21b9b55e8ae", null ],
         [ "Custom", "class_tempest_1_1_event.html#abaea3e734410b7e9364cf2c75edf60b0a5e029420a0a4099c74b085cc6247f08f", null ]
       ] ],
-      [ "Event", "class_tempest_1_1_event.html#a5a40dd4708297f7031e29b39e039ae10", null ],
+      [ "Event", "class_tempest_1_1_event.html#a78f92b619d9a9dc9e04976b32166d784", null ],
       [ "~Event", "class_tempest_1_1_event.html#aae98c44cc839da1caf2556e328783a68", null ],
       [ "accept", "class_tempest_1_1_event.html#a09af39b1579c9c2f4af900106e16b28f", null ],
       [ "ignore", "class_tempest_1_1_event.html#ab48b274894b28736e245334629d0c41a", null ],
@@ -114,7 +114,7 @@ var group___u_i___event =
     ] ],
     [ "MouseEvent", "class_tempest_1_1_mouse_event.html", [
       [ "MouseEvent", "class_tempest_1_1_mouse_event.html#a61783f8a11fd73170bda9a2b2cf3665f", null ],
-      [ "pos", "class_tempest_1_1_mouse_event.html#a38e04adede8d74534bb728be1191cd69", null ],
+      [ "pos", "class_tempest_1_1_mouse_event.html#a9db3d31f05758fe24f3f8f005c152d08", null ],
       [ "button", "class_tempest_1_1_mouse_event.html#ac5a87cdb74aafc1fd472ee77b776973a", null ],
       [ "delta", "class_tempest_1_1_mouse_event.html#af59e72cfe86c61bc41143f4035607c52", null ],
       [ "mouseID", "class_tempest_1_1_mouse_event.html#a1922afc293095cba9f7b56ce69d7e3d0", null ],
@@ -123,7 +123,7 @@ var group___u_i___event =
     ] ],
     [ "SizeEvent", "class_tempest_1_1_size_event.html", [
       [ "SizeEvent", "class_tempest_1_1_size_event.html#aa79068ad8126d339f225bbefa37c9997", null ],
-      [ "size", "class_tempest_1_1_size_event.html#af7671656dc87f84800d44316cc9f06ec", null ],
+      [ "size", "class_tempest_1_1_size_event.html#ae336e46b249e4b239006537259f978c9", null ],
       [ "h", "class_tempest_1_1_size_event.html#a992bab532628dc20ad833b958eb1a955", null ],
       [ "w", "class_tempest_1_1_size_event.html#a24623b33ea5df2225e5070ce6e118982", null ]
     ] ],
@@ -157,15 +157,15 @@ var group___u_i___event =
         [ "GestureFinished", "class_tempest_1_1_abstract_gesture_event.html#a5043ef1de12eae615db6bc57dc914c19a5137508b94dcbf6e6489981d64ac3c6e", null ],
         [ "GestureCanceled", "class_tempest_1_1_abstract_gesture_event.html#a5043ef1de12eae615db6bc57dc914c19a173accdb6e63f990750d1e326b604c47", null ]
       ] ],
-      [ "AbstractGestureEvent", "class_tempest_1_1_abstract_gesture_event.html#a3f3fa312a143aa76066a58f2b7472196", null ],
-      [ "gestureType", "class_tempest_1_1_abstract_gesture_event.html#a08323c5d47a5801eaf85ac415fc9012f", null ],
-      [ "hotSpot", "class_tempest_1_1_abstract_gesture_event.html#a146e9267676accc7b118b7e883b0bcf8", null ],
-      [ "owner", "class_tempest_1_1_abstract_gesture_event.html#a5a1f63c60f6d7af665b988c240304554", null ],
-      [ "owner", "class_tempest_1_1_abstract_gesture_event.html#a5aa3f098e0fa6e47a34b16ba98208167", null ],
-      [ "setGestureType", "class_tempest_1_1_abstract_gesture_event.html#a274dfad490043c6bcaa84697545f1f69", null ],
-      [ "setHotSpot", "class_tempest_1_1_abstract_gesture_event.html#a9a8a21cfb5f828c1528ea41f6627f3b9", null ],
-      [ "setState", "class_tempest_1_1_abstract_gesture_event.html#a19c364480a3a7cc38eacc5f4a2c69b58", null ],
-      [ "state", "class_tempest_1_1_abstract_gesture_event.html#ab803bb788433bf101f71a86e99993646", null ]
+      [ "AbstractGestureEvent", "class_tempest_1_1_abstract_gesture_event.html#a2e3555cc113c77b27a5496253e3c132c", null ],
+      [ "gestureType", "class_tempest_1_1_abstract_gesture_event.html#abaa40660f387eddbea7f5c2e18f9ae42", null ],
+      [ "hotSpot", "class_tempest_1_1_abstract_gesture_event.html#ad7e7d5603dd3f6a22cb36ea1478da972", null ],
+      [ "owner", "class_tempest_1_1_abstract_gesture_event.html#aead6bcacdfa5c0d7f329a563312ee9e1", null ],
+      [ "owner", "class_tempest_1_1_abstract_gesture_event.html#a52bc5857cd0a0b0a129f27ec92164bb9", null ],
+      [ "setGestureType", "class_tempest_1_1_abstract_gesture_event.html#acd4a21adb1bf80ce35f0cd5fd3dffba9", null ],
+      [ "setHotSpot", "class_tempest_1_1_abstract_gesture_event.html#a89b76240854839a57dd31a03639f479c", null ],
+      [ "setState", "class_tempest_1_1_abstract_gesture_event.html#ad999019bba269d9d8f9691c9dff6d36b", null ],
+      [ "state", "class_tempest_1_1_abstract_gesture_event.html#a85b81309f941521979f5adabb3ee3dcb", null ]
     ] ],
     [ "DragGesture", "class_tempest_1_1_drag_gesture.html", [
       [ "DragGesture", "class_tempest_1_1_drag_gesture.html#aadf2d77a7fba3ee819183beed65603e5", null ],

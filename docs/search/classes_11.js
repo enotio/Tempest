@@ -1,8 +1,7 @@
 var searchData=
 [
-  ['s3tccodec',['S3TCCodec',['../struct_tempest_1_1_s3_t_c_codec.html',1,'Tempest']]],
-  ['sampler',['Sampler',['../struct_tempest_1_1_texture3d_1_1_sampler.html',1,'Tempest::Texture3d']]],
   ['sampler',['Sampler',['../struct_tempest_1_1_texture2d_1_1_sampler.html',1,'Tempest::Texture2d']]],
+  ['sampler',['Sampler',['../struct_tempest_1_1_texture3d_1_1_sampler.html',1,'Tempest::Texture3d']]],
   ['scissorrect',['ScissorRect',['../struct_tempest_1_1_painter_device_1_1_state_1_1_scissor_rect.html',1,'Tempest::PainterDevice::State']]],
   ['scrollbar',['ScrollBar',['../class_tempest_1_1_scroll_bar.html',1,'Tempest']]],
   ['scrollwidget',['ScrollWidget',['../class_tempest_1_1_scroll_widget.html',1,'Tempest']]],

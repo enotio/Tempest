@@ -52,9 +52,9 @@ struct CgDx9::Data{
   const Tempest::VertexShader*   currentVS;
   const Tempest::FragmentShader* currentFS;
   };
-/// \endcond
 
 LPDIRECT3DDEVICE9 CgDx9::Data::currentDev = 0;
+/// \endcond
 
 void* CgDx9::context() const{
   return data->context;

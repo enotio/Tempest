@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['color',['Color',['../class_tempest_1_1_color.html#a9a742cbe9f9f4037f5d9f4e81a9b2428',1,'Tempest::Color::Color()'],['../class_tempest_1_1_color.html#a4570f17f449c0302fd4c2964989ff65d',1,'Tempest::Color::Color(float rgba)'],['../class_tempest_1_1_color.html#a1ff48fafaffb35cdbf0d8384fc48e7e9',1,'Tempest::Color::Color(float r, float g, float b, float a=1.0)']]]
+  ['color',['Color',['../class_tempest_1_1_color.html#a2495d190e780a279961d1f551c34e6bf',1,'Tempest::Color::Color()'],['../class_tempest_1_1_color.html#a124778cde8c157134731936494e7b378',1,'Tempest::Color::Color(float rgba)'],['../class_tempest_1_1_color.html#a86cd13828b741ba28a1c7ded4e767030',1,'Tempest::Color::Color(float r, float g, float b, float a=1.0)']]]
 ];

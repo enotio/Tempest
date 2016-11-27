@@ -1,17 +1,17 @@
 var class_tempest_1_1_local_textures_holder =
 [
-    [ "LocalTexturesHolder", "class_tempest_1_1_local_textures_holder.html#a8731d5d6ee28e967e3c15320eb37de02", null ],
-    [ "~LocalTexturesHolder", "class_tempest_1_1_local_textures_holder.html#a7bea40d4083188dda4503c036ed390fc", null ],
-    [ "deleteCond", "class_tempest_1_1_local_textures_holder.html#a286caab38bc6ddb5f33984876392c8b6", null ],
+    [ "LocalTexturesHolder", "class_tempest_1_1_local_textures_holder.html#a7547a451713da41751bc7b1551737e2f", null ],
+    [ "~LocalTexturesHolder", "class_tempest_1_1_local_textures_holder.html#ac031066d8f08e4573013816a76dce42b", null ],
+    [ "deleteCond", "class_tempest_1_1_local_textures_holder.html#a2d91b92eb97a42cfbc7934850396bced", null ],
     [ "deleteObject", "class_tempest_1_1_local_textures_holder.html#ab743f2fde2cbe5f4b041f10975cfb6c4", null ],
-    [ "isCollectPaused", "class_tempest_1_1_local_textures_holder.html#a6fd806a88cb71c52e82ce0ea73f577f6", null ],
-    [ "maxCollectIterations", "class_tempest_1_1_local_textures_holder.html#a090f1ca149ef1fb961cf7504dc239dff", null ],
-    [ "maxReservedCount", "class_tempest_1_1_local_textures_holder.html#a0e991b5e950f1c4c214fd35373e107f3", null ],
-    [ "onMipmapsAdded", "class_tempest_1_1_local_textures_holder.html#ab3ddd48996c648584df1083a987e2c44", null ],
-    [ "pauseCollect", "class_tempest_1_1_local_textures_holder.html#a823f9af63c647eada19f921d40e09ff5", null ],
-    [ "presentEvent", "class_tempest_1_1_local_textures_holder.html#a22ed5322cf5b838aef08c3996ae95c15", null ],
-    [ "reset", "class_tempest_1_1_local_textures_holder.html#a52a1993c3afedeae802697f8d8909ba9", null ],
-    [ "restore", "class_tempest_1_1_local_textures_holder.html#aa9a66f0ca50b65cf509b430ff052ab12", null ],
-    [ "setMaxCollectIterations", "class_tempest_1_1_local_textures_holder.html#a7a251e7b5553b5c48d48d4e21e238a2a", null ],
-    [ "setMaxReservedCount", "class_tempest_1_1_local_textures_holder.html#a4afc33f484effdb5b5601b5077fe7c9b", null ]
+    [ "isCollectPaused", "class_tempest_1_1_local_textures_holder.html#aacebd1e08316beee7ad8ba7646659e06", null ],
+    [ "maxCollectIterations", "class_tempest_1_1_local_textures_holder.html#ab2800b6b451b501c2c59ac04a59e7b83", null ],
+    [ "maxReservedCount", "class_tempest_1_1_local_textures_holder.html#a8ccc90bb0c10ae9ab15b89151b6a2838", null ],
+    [ "onMipmapsAdded", "class_tempest_1_1_local_textures_holder.html#a5851288df26399073444258748e5fc87", null ],
+    [ "pauseCollect", "class_tempest_1_1_local_textures_holder.html#ad9716489a18d7a6966cd5924711f0b43", null ],
+    [ "presentEvent", "class_tempest_1_1_local_textures_holder.html#ad92f8973a622a85014df905860666c72", null ],
+    [ "reset", "class_tempest_1_1_local_textures_holder.html#a6c3f3021f022e5aa5b2c06267182dbfc", null ],
+    [ "restore", "class_tempest_1_1_local_textures_holder.html#a390c1e170c1963a9ee639562740513eb", null ],
+    [ "setMaxCollectIterations", "class_tempest_1_1_local_textures_holder.html#af25f929dd7f984eacb0c4d50a021be9c", null ],
+    [ "setMaxReservedCount", "class_tempest_1_1_local_textures_holder.html#a1fd937c322585e4c68a9e4a133026d1e", null ]
 ];

@@ -1,14 +1,12 @@
 var class_tempest_1_1_dialog =
 [
-    [ "LayShadow", "struct_dialog_1_1_lay_shadow.html", "struct_dialog_1_1_lay_shadow" ],
-    [ "Overlay", "struct_dialog_1_1_overlay.html", "struct_dialog_1_1_overlay" ],
-    [ "Dialog", "class_tempest_1_1_dialog.html#a1f16fe034646a987e6de37396e40f674", null ],
-    [ "~Dialog", "class_tempest_1_1_dialog.html#a2a1fe6ef28513eed13bfcd3a4da83ccb", null ],
-    [ "close", "class_tempest_1_1_dialog.html#ab923f2209998417603afc18ed037ff84", null ],
-    [ "closeEvent", "class_tempest_1_1_dialog.html#a064385e568e88a322aa69f3fe0bed1b9", null ],
-    [ "exec", "class_tempest_1_1_dialog.html#ab6a4db9e31e8e43126b3f74f433c58d9", null ],
-    [ "isModal", "class_tempest_1_1_dialog.html#aec1788c2f5be5bf44afa455c3fa8884a", null ],
-    [ "keyDownEvent", "class_tempest_1_1_dialog.html#a81a5e4c424efab9926107260099bf857", null ],
-    [ "paintShadow", "class_tempest_1_1_dialog.html#aec115cab5858a547403074d828c21ddb", null ],
-    [ "setModal", "class_tempest_1_1_dialog.html#ad0baaf44861b117fae759c5169e9123e", null ]
+    [ "Dialog", "class_tempest_1_1_dialog.html#ae7548b9150a297dc26247c78912006c5", null ],
+    [ "~Dialog", "class_tempest_1_1_dialog.html#a171d8caca01e8333b0d1eb621ca69d1f", null ],
+    [ "close", "class_tempest_1_1_dialog.html#a3ba35a92b5528dbc2a8884bb348e7324", null ],
+    [ "closeEvent", "class_tempest_1_1_dialog.html#a895f476e2df49bd1f2f1bf8f0e875265", null ],
+    [ "exec", "class_tempest_1_1_dialog.html#aa6eb237bf9f6a8d73576ecbba71466aa", null ],
+    [ "isModal", "class_tempest_1_1_dialog.html#a9e1bcfecb0057f453357f5e96925070b", null ],
+    [ "keyDownEvent", "class_tempest_1_1_dialog.html#a429378b0908419898b31db6051be8bb6", null ],
+    [ "paintShadow", "class_tempest_1_1_dialog.html#ac78a36a8c8e54268d122b4d32300a2fe", null ],
+    [ "setModal", "class_tempest_1_1_dialog.html#a74980ca1ed64c4c78f8a9cff17bfd7d8", null ]
 ];

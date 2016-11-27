@@ -35,7 +35,6 @@ var annotated_dup =
       [ "DirectX9", "class_tempest_1_1_direct_x9.html", "class_tempest_1_1_direct_x9" ],
       [ "DisplaySettings", "class_tempest_1_1_display_settings.html", "class_tempest_1_1_display_settings" ],
       [ "DragGesture", "class_tempest_1_1_drag_gesture.html", "class_tempest_1_1_drag_gesture" ],
-      [ "ETCCodec", "struct_tempest_1_1_e_t_c_codec.html", "struct_tempest_1_1_e_t_c_codec" ],
       [ "EvalShader", "class_tempest_1_1_eval_shader.html", "class_tempest_1_1_eval_shader" ],
       [ "Event", "class_tempest_1_1_event.html", "class_tempest_1_1_event" ],
       [ "Font", "class_tempest_1_1_font.html", "class_tempest_1_1_font" ],
@@ -55,7 +54,6 @@ var annotated_dup =
       [ "IndexBuffer", "class_tempest_1_1_index_buffer.html", "class_tempest_1_1_index_buffer" ],
       [ "IndexBufferBase", "class_tempest_1_1_index_buffer_base.html", "class_tempest_1_1_index_buffer_base" ],
       [ "IndexBufferHolder", "class_tempest_1_1_index_buffer_holder.html", "class_tempest_1_1_index_buffer_holder" ],
-      [ "JpegCodec", "struct_tempest_1_1_jpeg_codec.html", "struct_tempest_1_1_jpeg_codec" ],
       [ "KeyEvent", "class_tempest_1_1_key_event.html", "class_tempest_1_1_key_event" ],
       [ "Label", "class_tempest_1_1_label.html", "class_tempest_1_1_label" ],
       [ "Layout", "class_tempest_1_1_layout.html", "class_tempest_1_1_layout" ],
@@ -91,14 +89,12 @@ var annotated_dup =
       [ "PeekReader", "class_tempest_1_1_peek_reader.html", "class_tempest_1_1_peek_reader" ],
       [ "PixEditor", "class_tempest_1_1_pix_editor.html", "class_tempest_1_1_pix_editor" ],
       [ "Pixmap", "class_tempest_1_1_pixmap.html", "class_tempest_1_1_pixmap" ],
-      [ "PngCodec", "struct_tempest_1_1_png_codec.html", "struct_tempest_1_1_png_codec" ],
       [ "Point", "struct_tempest_1_1_point.html", "struct_tempest_1_1_point" ],
       [ "RawModel", "struct_tempest_1_1_raw_model.html", "struct_tempest_1_1_raw_model" ],
       [ "Rect", "struct_tempest_1_1_rect.html", "struct_tempest_1_1_rect" ],
       [ "RenderState", "class_tempest_1_1_render_state.html", "class_tempest_1_1_render_state" ],
       [ "ResourceContext", "class_tempest_1_1_resource_context.html", "class_tempest_1_1_resource_context" ],
       [ "RFile", "class_tempest_1_1_r_file.html", "class_tempest_1_1_r_file" ],
-      [ "S3TCCodec", "struct_tempest_1_1_s3_t_c_codec.html", "struct_tempest_1_1_s3_t_c_codec" ],
       [ "ScrollBar", "class_tempest_1_1_scroll_bar.html", "class_tempest_1_1_scroll_bar" ],
       [ "ScrollWidget", "class_tempest_1_1_scroll_widget.html", "class_tempest_1_1_scroll_widget" ],
       [ "ShaderProgram", "class_tempest_1_1_shader_program.html", "class_tempest_1_1_shader_program" ],
@@ -119,7 +115,6 @@ var annotated_dup =
       [ "Texture2d", "class_tempest_1_1_texture2d.html", "class_tempest_1_1_texture2d" ],
       [ "Texture3d", "class_tempest_1_1_texture3d.html", "class_tempest_1_1_texture3d" ],
       [ "TextureHolder", "class_tempest_1_1_texture_holder.html", "class_tempest_1_1_texture_holder" ],
-      [ "TgaCodec", "struct_tempest_1_1_tga_codec.html", "struct_tempest_1_1_tga_codec" ],
       [ "Timer", "class_tempest_1_1_timer.html", "class_tempest_1_1_timer" ],
       [ "UiFactory", "class_tempest_1_1_ui_factory.html", "class_tempest_1_1_ui_factory" ],
       [ "UiMetrics", "class_tempest_1_1_ui_metrics.html", "class_tempest_1_1_ui_metrics" ],
@@ -134,5 +129,15 @@ var annotated_dup =
       [ "Widget", "class_tempest_1_1_widget.html", "class_tempest_1_1_widget" ],
       [ "Window", "class_tempest_1_1_window.html", "class_tempest_1_1_window" ],
       [ "WindowOverlay", "class_tempest_1_1_window_overlay.html", "class_tempest_1_1_window_overlay" ]
-    ] ]
+    ] ],
+    [ "Ui", null, [
+      [ "MainWindow", "class_ui_1_1_main_window.html", null ],
+      [ "RenderWidget", "class_ui_1_1_render_widget.html", null ]
+    ] ],
+    [ "MainWindow", "class_main_window.html", "class_main_window" ],
+    [ "Material", "struct_material.html", "struct_material" ],
+    [ "QTempestWidget", "class_q_tempest_widget.html", "class_q_tempest_widget" ],
+    [ "RenderWidget", "class_render_widget.html", "class_render_widget" ],
+    [ "Ui_MainWindow", "class_ui___main_window.html", "class_ui___main_window" ],
+    [ "Ui_RenderWidget", "class_ui___render_widget.html", "class_ui___render_widget" ]
 ];

@@ -1,9 +1,9 @@
 var class_tempest_1_1_open_g_l_base =
 [
-    [ "OpenGLBase", "class_tempest_1_1_open_g_l_base.html#a6520e4ee07b174cde9d11a803eb3d5c5", null ],
-    [ "errCk", "class_tempest_1_1_open_g_l_base.html#a61818e3aad14a0d56664f094791b5634", null ],
-    [ "renderer", "class_tempest_1_1_open_g_l_base.html#ac6646ba65442832365c74192ec7a2b23", null ],
-    [ "setClearDepth", "class_tempest_1_1_open_g_l_base.html#a911b4f02ab99e99338b348a6cc5b8612", null ],
+    [ "OpenGLBase", "class_tempest_1_1_open_g_l_base.html#a1d8c5351f2d234780d7ccf88ad89677a", null ],
+    [ "errCk", "class_tempest_1_1_open_g_l_base.html#aa367159c91f02ffbeb7f1d7643d7a2cf", null ],
+    [ "renderer", "class_tempest_1_1_open_g_l_base.html#adbc65b0a6f000c4de6642429ce912713", null ],
+    [ "setClearDepth", "class_tempest_1_1_open_g_l_base.html#addfce804680dd401fda4a0be07ecb6a6", null ],
     [ "setDevice", "class_tempest_1_1_open_g_l_base.html#af1e9eb3df6034fa382fbb14e721ee72c", null ],
-    [ "vendor", "class_tempest_1_1_open_g_l_base.html#a4f7e226d3493aa762009a310eeb6681f", null ]
+    [ "vendor", "class_tempest_1_1_open_g_l_base.html#ad1b0690b5456af14eee9c0fbf2f4486c", null ]
 ];

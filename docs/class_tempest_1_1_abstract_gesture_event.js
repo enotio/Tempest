@@ -11,13 +11,13 @@ var class_tempest_1_1_abstract_gesture_event =
       [ "GestureFinished", "class_tempest_1_1_abstract_gesture_event.html#a5043ef1de12eae615db6bc57dc914c19a5137508b94dcbf6e6489981d64ac3c6e", null ],
       [ "GestureCanceled", "class_tempest_1_1_abstract_gesture_event.html#a5043ef1de12eae615db6bc57dc914c19a173accdb6e63f990750d1e326b604c47", null ]
     ] ],
-    [ "AbstractGestureEvent", "class_tempest_1_1_abstract_gesture_event.html#a3f3fa312a143aa76066a58f2b7472196", null ],
-    [ "gestureType", "class_tempest_1_1_abstract_gesture_event.html#a08323c5d47a5801eaf85ac415fc9012f", null ],
-    [ "hotSpot", "class_tempest_1_1_abstract_gesture_event.html#a146e9267676accc7b118b7e883b0bcf8", null ],
-    [ "owner", "class_tempest_1_1_abstract_gesture_event.html#a5a1f63c60f6d7af665b988c240304554", null ],
-    [ "owner", "class_tempest_1_1_abstract_gesture_event.html#a5aa3f098e0fa6e47a34b16ba98208167", null ],
-    [ "setGestureType", "class_tempest_1_1_abstract_gesture_event.html#a274dfad490043c6bcaa84697545f1f69", null ],
-    [ "setHotSpot", "class_tempest_1_1_abstract_gesture_event.html#a9a8a21cfb5f828c1528ea41f6627f3b9", null ],
-    [ "setState", "class_tempest_1_1_abstract_gesture_event.html#a19c364480a3a7cc38eacc5f4a2c69b58", null ],
-    [ "state", "class_tempest_1_1_abstract_gesture_event.html#ab803bb788433bf101f71a86e99993646", null ]
+    [ "AbstractGestureEvent", "class_tempest_1_1_abstract_gesture_event.html#a2e3555cc113c77b27a5496253e3c132c", null ],
+    [ "gestureType", "class_tempest_1_1_abstract_gesture_event.html#abaa40660f387eddbea7f5c2e18f9ae42", null ],
+    [ "hotSpot", "class_tempest_1_1_abstract_gesture_event.html#ad7e7d5603dd3f6a22cb36ea1478da972", null ],
+    [ "owner", "class_tempest_1_1_abstract_gesture_event.html#aead6bcacdfa5c0d7f329a563312ee9e1", null ],
+    [ "owner", "class_tempest_1_1_abstract_gesture_event.html#a52bc5857cd0a0b0a129f27ec92164bb9", null ],
+    [ "setGestureType", "class_tempest_1_1_abstract_gesture_event.html#acd4a21adb1bf80ce35f0cd5fd3dffba9", null ],
+    [ "setHotSpot", "class_tempest_1_1_abstract_gesture_event.html#a89b76240854839a57dd31a03639f479c", null ],
+    [ "setState", "class_tempest_1_1_abstract_gesture_event.html#ad999019bba269d9d8f9691c9dff6d36b", null ],
+    [ "state", "class_tempest_1_1_abstract_gesture_event.html#a85b81309f941521979f5adabb3ee3dcb", null ]
 ];

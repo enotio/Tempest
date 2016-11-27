@@ -8,8 +8,8 @@ var class_tempest_1_1_graphics_subsystem =
       [ "Tess", "class_tempest_1_1_graphics_subsystem.html#a92ffbf28fb07334ab59c23051eb089c3a54798d93934d7dad6d151422e12e1351", null ],
       [ "Eval", "class_tempest_1_1_graphics_subsystem.html#a92ffbf28fb07334ab59c23051eb089c3ab3b4e67a4d516d82c47617aecfe5aeb5", null ]
     ] ],
-    [ "GraphicsSubsystem", "class_tempest_1_1_graphics_subsystem.html#af8678d02e06721ad2e85a3fb807a4dbe", null ],
-    [ "~GraphicsSubsystem", "class_tempest_1_1_graphics_subsystem.html#ada6f953ec787e799c4b860a76ca6f33b", null ],
-    [ "event", "class_tempest_1_1_graphics_subsystem.html#a8c7b7a5fee3e9b20f9946c6fc2152cc0", null ],
-    [ "event", "class_tempest_1_1_graphics_subsystem.html#a927c91646e25c44e94ffdcdfe9dffdc2", null ]
+    [ "GraphicsSubsystem", "class_tempest_1_1_graphics_subsystem.html#ab7b55de0f5f8b1beb23cc92d0f40b866", null ],
+    [ "~GraphicsSubsystem", "class_tempest_1_1_graphics_subsystem.html#aac0dcee6a5c4047f0d826c496f56937d", null ],
+    [ "event", "class_tempest_1_1_graphics_subsystem.html#a32472c78a5c80cef80d1eee79eae3b3c", null ],
+    [ "event", "class_tempest_1_1_graphics_subsystem.html#a440684c06cb0e1cc294682a6998f1402", null ]
 ];
