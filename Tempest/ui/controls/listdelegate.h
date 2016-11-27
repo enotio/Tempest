@@ -15,6 +15,9 @@ class Widget;
 /** \addtogroup GUI
  *  @{
  */
+/**
+ * @brief The ListDelegate class provides items to display in list or other collection
+ */
 class ListDelegate : public slot {
   public:
     enum Role{
