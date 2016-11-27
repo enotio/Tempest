@@ -355,7 +355,7 @@ OTHER_FILES += \
     doc_title.doxy \
     ../doc/header.html \
     ../doc/footer.html \
-    ../doc/html/style.css \
+    ../doc/style.css \
     include/Tempest/DirectX11 \
     include/Tempest/ShaderProgramHolder \
     include/Tempest/Windows \
