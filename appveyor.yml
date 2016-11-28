@@ -42,3 +42,17 @@ artifacts:
   - path: lib\Tempest.lib
   - path: lib\Tempest.a
   - path: lib\libTempest.a
+
+deploy:
+  release: Tempest-v$(appveyor_build_version)
+  description: 'add release description'
+  provider: GitHub
+  auth_token:
+    secure: F+uuqiw9spJMK5f1giN0HjRVJrxn6AFGrhNyTa0pq/pIrZTxKdd/hcXUdsT+gtmV
+  artifact: lib\Tempest.dll
+  draft: true
+  force_update: true
+  prerelease: false
+  on:
+    branch: master                 # release from master branch only
+    appveyor_repo_tag: false        # deploy on tag push only
