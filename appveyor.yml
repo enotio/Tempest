@@ -47,7 +47,7 @@ after_build:
   - 7z a %name% Tempest/include/*
 
 artifacts:
-  - path: bin/Tempest-${CONFIGURATION}.zip
+  - path: bin/Tempest-$(CONFIGURATION).zip
     name: archive
 
 deploy:
