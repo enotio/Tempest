@@ -37,12 +37,14 @@ build_script:
   - '%make%'
   - cd ../
 
+after_build:
+  - 7z a Tempest.zip lib\*.dll
+  - 7z a Tempest.zip lib\*.lib
+  - 7z a Tempest.zip lib\*.a
+
 artifacts:
-  - path: lib\Tempest.dll
-    name: dynamic_lib
-  - path: lib\Tempest.lib
-  - path: lib\Tempest.a
-  - path: lib\libTempest.a
+  - path: lib\Tempest.zip
+    name: archive
 
 deploy:
   release: Tempest-v$(appveyor_build_version)
@@ -50,7 +52,7 @@ deploy:
   provider: GitHub
   auth_token:
     secure: F+uuqiw9spJMK5f1giN0HjRVJrxn6AFGrhNyTa0pq/pIrZTxKdd/hcXUdsT+gtmV
-  artifact: dynamic_lib
+  artifact: archive
   draft: true
   force_update: true
   prerelease: false
