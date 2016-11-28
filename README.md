@@ -1,6 +1,6 @@
-![Tempest Logo](https://raw.githubusercontent.com/Try/Tempest/master/docs/icon.png)
+![Tempest Logo](https://raw.githubusercontent.com/enotio/Tempest/master/doc_src/icon.png)
 =
-[![Build Status](https://travis-ci.org/Try/Tempest.svg?branch=master)](https://travis-ci.org/Try/Tempest)
+[![Build Status](https://travis-ci.org/enotio/Tempest.svg?branch=master)](https://travis-ci.org/enotio/Tempest)
 [![Build status](https://ci.appveyor.com/api/projects/status/e8v457k9tfuk511m?svg=true)](https://ci.appveyor.com/project/Try/Tempest)
 
 Crossplatform 3d engine.
@@ -47,20 +47,20 @@ Crossplatform 3d engine.
 
 ## Examples
 
-### [00-Cube](https://github.com/Try/Tempest/tree/master/Examples/Cube)
-![example-01-cube](https://raw.githubusercontent.com/Try/Tempest/master/doc/screens/cube.png)
+### [00-Cube](https://github.com/enotio/Tempest/tree/master/Examples/Cube)
+![example-01-cube](https://raw.githubusercontent.com/enotio/Tempest/master/doc_src/screens/cube.png)
 
-### [01-Bump](https://github.com/Try/Tempest/tree/master/Examples/Bump)
-![example-02-bump](https://raw.githubusercontent.com/Try/Tempest/master/doc/screens/bump.png)
+### [01-Bump](https://github.com/enotio/Tempest/tree/master/Examples/Bump)
+![example-02-bump](https://raw.githubusercontent.com/enotio/Tempest/master/doc_src/screens/bump.png)
 
-### [02-Paint2d](https://github.com/Try/Tempest/tree/master/Examples/Painting2d)
-![example-03-paint2d](https://raw.githubusercontent.com/Try/Tempest/master/doc/screens/paint2d.png)
+### [02-Paint2d](https://github.com/enotio/Tempest/tree/master/Examples/Painting2d)
+![example-03-paint2d](https://raw.githubusercontent.com/enotio/Tempest/master/doc_src/screens/paint2d.png)
 
-### [03-Load3ds](https://github.com/Try/Tempest/tree/master/Examples/Load3ds)
-![example-04-bump](https://raw.githubusercontent.com/Try/Tempest/master/doc/screens/load3ds.png)
+### [03-Load3ds](https://github.com/enotio/Tempest/tree/master/Examples/Load3ds)
+![example-04-bump](https://raw.githubusercontent.com/enotio/Tempest/master/doc_src/screens/load3ds.png)
 
-### [04-Volume](https://github.com/Try/Tempest/tree/master/Examples/Volume)
-![example-04-bump](https://raw.githubusercontent.com/Try/Tempest/master/doc/screens/volume.png)
+### [04-Volume](https://github.com/enotio/Tempest/tree/master/Examples/Volume)
+![example-04-bump](https://raw.githubusercontent.com/enotio/Tempest/master/doc_src/screens/volume.png)
 
 
 

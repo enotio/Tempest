@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.12"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Tempest: Main Page</title>
+<title>Tempest: Tempest</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -91,22 +91,54 @@ $(document).ready(function(){initNavTree('index.html','');});
 
 <div class="header">
   <div class="headertitle">
-<div class="title">Tempest Documentation</div>  </div>
+<div class="title">Tempest </div>  </div>
 </div><!--header-->
 <div class="contents">
-<ul><li><a href="index.html"><span>Main&#160;Page</span></a>
-</li><li><a href="modules.html"><span>Modules</span></a>
-</li><li><a href="annotated.html"><span>Classes</span></a>
-<ul><li><a href="annotated.html"><span>Class&#160;List</span></a>
-</li><li><a href="classes.html"><span>Class&#160;Index</span></a>
-</li><li><a href="hierarchy.html"><span>Class&#160;Hierarchy</span></a>
-</li><li><a href="functions.html"><span>Class&#160;Members</span></a>
-</li></ul>
-</li><li><a href="files.html"><span>Files</span></a>
-<ul><li><a href="files.html"><span>File&#160;List</span></a>
-</li></ul>
-</li></ul>
-</div><!-- contents -->
+<div class="textblock"><p>Crossplatform 3d engine.</p>
+<h2>Supported platforms and API:</h2>
+<ul>
+<li>Windows: OpenGL4/GLSL, OpenGL2/GLSL, DirectX11/HLSL, DirectX9/HLSL, DirectX9/Cg</li>
+<li>OSX: OpenGL2/GLSL</li>
+<li>Android: OpenGLES2/GLSL</li>
+<li>iOS: OpenGLES2/GLSL</li>
+</ul>
+<h2>How to build</h2>
+<h3>1. Install dependencies:</h3>
+<p>1.1. Install DirectXSDK, from <a href="http://www.microsoft.com/en-us/download/details.aspx?id=6812">www.microsoft.com</a></p>
+<p>1.2. Install QtSDK(need qmake, plus mingw4.8+), from <a href="http://qt-project.org/downloads">http://qt-project.org/downloads</a></p>
+<p>1.3. Install Android SDK+NDK to compile android version</p>
+<p>1.4. Install CgToolkit(optional), from <a href="http://developer.nvidia.com/cg-toolkit-download">developer.nvidia.com/cg-toolkit-download</a> </p><pre class="fragment">hint: you can disable directx support in .pro file.
+hint: you can enable cg support in .pro file.
+</pre><h3>2. Build(Console):</h3>
+<p>2.1 open Tempest directory</p>
+<p>2.2 run qmake</p>
+<p>2.3 run make</p>
+<h3>3. Build(QtCreator 3.0):</h3>
+<p>2.1 open Tempest.pro</p>
+<p>2.2 configure build kit( set to MinGW4.8 )</p>
+<p>2.3 click build button</p>
+<h2>Examples</h2>
+<h3><a href="https://github.com/enotio/Tempest/tree/master/Examples/Cube">00-Cube</a></h3>
+<div class="image">
+<img src="https://raw.githubusercontent.com/enotio/Tempest/master/doc_src/screens/cube.png" alt="example-01-cube"/>
+</div>
+<h3><a href="https://github.com/enotio/Tempest/tree/master/Examples/Bump">01-Bump</a></h3>
+<div class="image">
+<img src="https://raw.githubusercontent.com/enotio/Tempest/master/doc_src/screens/bump.png" alt="example-02-bump"/>
+</div>
+<h3><a href="https://github.com/enotio/Tempest/tree/master/Examples/Painting2d">02-Paint2d</a></h3>
+<div class="image">
+<img src="https://raw.githubusercontent.com/enotio/Tempest/master/doc_src/screens/paint2d.png" alt="example-03-paint2d"/>
+</div>
+<h3><a href="https://github.com/enotio/Tempest/tree/master/Examples/Load3ds">03-Load3ds</a></h3>
+<div class="image">
+<img src="https://raw.githubusercontent.com/enotio/Tempest/master/doc_src/screens/load3ds.png" alt="example-04-bump"/>
+</div>
+<h3><a href="https://github.com/enotio/Tempest/tree/master/Examples/Volume">04-Volume</a></h3>
+<div class="image">
+<img src="https://raw.githubusercontent.com/enotio/Tempest/master/doc_src/screens/volume.png" alt="example-04-bump"/>
+</div>
+ </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
