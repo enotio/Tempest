@@ -43,12 +43,12 @@ after_build:
   - 7z a Tempest.zip lib\*.a
 
 artifacts:
-  - path: lib\Tempest.zip
+  - path: Tempest.zip
     name: archive
 
 deploy:
   release: Tempest-v$(appveyor_build_version)
-  description: 'add release description'
+  description: 'no release description'
   provider: GitHub
   auth_token:
     secure: F+uuqiw9spJMK5f1giN0HjRVJrxn6AFGrhNyTa0pq/pIrZTxKdd/hcXUdsT+gtmV
