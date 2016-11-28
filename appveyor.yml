@@ -41,6 +41,8 @@ after_build:
   - 7z a Tempest.zip lib\*.dll
   - 7z a Tempest.zip lib\*.lib
   - 7z a Tempest.zip lib\*.a
+  - 7z a Tempest.zip Tempest/Examples/*.*
+  - 7z a Tempest.zip Tempest/include/*.*
 
 artifacts:
   - path: Tempest.zip
