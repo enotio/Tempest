@@ -38,7 +38,7 @@ build_script:
   - cd ../
 
 after_build:
-  name: bin/Tempest-${CONFIGURATION}.zip
+  - set name="bin/Tempest-${CONFIGURATION}.zip"
   - mkdir bin
   - 7z a %name% lib\*.dll
   - 7z a %name% lib\*.lib
