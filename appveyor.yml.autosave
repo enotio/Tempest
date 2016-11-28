@@ -1,0 +1,65 @@
+install:
+  - mkdir utils
+  - cd utils
+  - appveyor DownloadFile http://camlorn.net/appveyor/jom.exe
+  - cd ..
+  - set PATH=%PATH%;C:\Qt\Tools\mingw492_32\bin;c:\projects\tempest\utils
+
+environment:
+  matrix:
+    - QMAKE_SPEC : "win32-msvc2015"
+      QTDIR: C:\Qt\5.6\msvc2015
+      VSVER: 14.0 # Visual Studio 2015
+
+    - QMAKE_SPEC : "win32-g++"
+      QTDIR: C:\Qt\5.6\mingw49_32
+
+configuration:
+  - debug
+  - release
+
+before_build:
+  # Prepare the out-of-source build directory.
+  - mkdir lib
+  # Setup the build toolchains
+  - if not %QTDIR:msvc=%==%QTDIR% set make=jom.exe
+  - if %QTDIR:msvc=%==%QTDIR% set make=mingw32-make.exe
+  - set PATH=%QTDIR%\bin;%PATH%
+  - if not %QTDIR:msvc=%==%QTDIR% call "%QTDIR%\bin\qtenv2.bat"
+  - if not %QTDIR:msvc=%==%QTDIR% call "C:\Program Files (x86)\Microsoft Visual Studio %VSVER%\VC\vcvarsall.bat" x86
+
+build_script:
+  - cd %APPVEYOR_BUILD_FOLDER%\Tempest
+  - qmake.exe Tempest.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
+  - '%make%'
+  - cd ../Examples
+  - qmake.exe examples.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
+  - '%make%'
+  - cd ../
+
+after_build:
+  - set name="bin/Tempest-${CONFIGURATION}.zip"
+  - mkdir bin
+  - 7z a %name% lib\*.dll
+  - 7z a %name% lib\*.lib
+  - 7z a %name% lib\*.a
+  - 7z a %name% Examples/*
+  - 7z a %name% Tempest/include/*
+
+artifacts:
+  - path: bin/Tempest-${CONFIGURATION}.zip
+    name: archive
+
+deploy:
+  release: Tempest-v$(appveyor_build_version)
+  description: 'no release description'
+  provider: GitHub
+  auth_token:
+    secure: F+uuqiw9spJMK5f1giN0HjRVJrxn6AFGrhNyTa0pq/pIrZTxKdd/hcXUdsT+gtmV
+  artifact: archive
+  draft: true
+  force_update: true
+  prerelease: false
+  on:
+    branch: master                 # release from master branch only
+    appveyor_repo_tag: false       # deploy on tag push only
