@@ -10,9 +10,11 @@ environment:
     - QMAKE_SPEC : "win32-msvc2015"
       QTDIR: C:\Qt\5.6\msvc2015
       VSVER: 14.0 # Visual Studio 2015
+      CXX:   msvc2015
 
     - QMAKE_SPEC : "win32-g++"
       QTDIR: C:\Qt\5.6\mingw49_32
+      CXX:   mingw49_32
 
 configuration:
   - debug
@@ -38,16 +40,17 @@ build_script:
   - cd ../
 
 after_build:
-  - set name="bin/Tempest-%CONFIGURATION%.zip"
+  - set name="bin/Tempest-$CXX-%CONFIGURATION%.zip"
   - mkdir bin
   - 7z a %name% lib\*.dll
   - 7z a %name% lib\*.lib
   - 7z a %name% lib\*.a
   - 7z a %name% Examples/*
   - 7z a %name% Tempest/include/*
+  - 7z a %name% Tempest/*.h
 
 artifacts:
-  - path: bin/Tempest-$(CONFIGURATION).zip
+  - path: bin/Tempest-$(CXX)-$(CONFIGURATION).zip
     name: archive
 
 deploy:
