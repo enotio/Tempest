@@ -37,6 +37,7 @@ build_script:
   - cd ../Examples
   - qmake.exe examples.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
   - '%make%'
+  - '%make%' clean
   - cd ../
 
 after_build:
@@ -52,7 +53,7 @@ artifacts:
     name: archive
 
 deploy:
-  release: Tempest-v$(appveyor_build_version)
+  release: Tempest-win32-v$(appveyor_build_version)
   description: 'no release description'
   provider: GitHub
   auth_token:
