@@ -42,12 +42,10 @@ build_script:
 after_build:
   - set name="bin/Tempest-%CXX%-%CONFIGURATION%.zip"
   - mkdir bin
-  - 7z a %name% lib\*.dll
-  - 7z a %name% lib\*.lib
-  - 7z a %name% lib\*.a
-  - 7z a %name% Examples/*
-  - 7z a %name% Tempest/include/*
-  - 7z a %name% Tempest/*.h
+  - 7z a %name%    lib\*
+  - 7z a %name%    Examples/*
+  - 7z a %name%    Tempest/include/*
+  - 7z a %name% -r Tempest/*.h
 
 artifacts:
   - path: bin/Tempest-$(CXX)-$(CONFIGURATION).zip
