@@ -32,11 +32,14 @@ script:
 
 deploy:
   provider: releases
-  api_key: $AUTH_TOKEN
+  description: 'no release description'
+  draft: true
+  api_key:
+    secure: MU46nqAAiST24NfifJVbkGuMY67mmuwdz+l4o0IdkqNT9LeMWH4oqB3DqXK4L0V3SI1x6vAteAdACcT2qgMG7uGO/2YEw3jr16H2s1k/e0gx0pIPkwS1gbtbtJPSpIpST26zi1vjHuIDsr931qbKKdbK4JiTsUsDfjyflyZOa0KXqxEnGGEQDgJ7ufmUEMu01/HQP+AwY2aJwrc5LroUEK01B0PZCB8cOgUB2INM3TAg/mHLNPPKEq2/yuSJIFMeeFn3S8G5E1kuIUE/OURsE/mW+Sw8chSxAypMEPVYrAekA09XtUi9ab0qaUBI355RyIVJA6KWHQBX5z3+jMDAJacs427TEN7LidcypwW/Of8Ua4BaNKV3WUC8AWRzj1uHwRuNs/GSCHTC6rkVIpdrVAxlxtvNOeQ1yl+iKkp+PmeeSuExuEm2jdR8Z4hwwwQNuXxOcO+jzJdQSH8rRecCs7y+iRlxH0dqEwwO7xK+zSiDWOqjyifgBlNDbAuXOzMSzn39iggZfcvacoppLvgnu7QMlAndCWcGgbUgotVJfojqtHHNuqJrBA+ByOBxmrJHDygCg6lNGEJkQPDNEDd7aaaf5YJCe3J+Qji3Q5M5JgtG2Fcqrlcvk1glP1vwycDoBkDfuznJwzmC/c+AbcvNkd74lGFN7yZkrOclXXz6rHY=
   file:
     - "libTempest.dylib"
 
   skip_cleanup: true
   on:
     branch: release
-    tags: true
+    tags: false
