@@ -18,18 +18,13 @@ var searchData=
   ['abstractlightcollection',['AbstractLightCollection',['../class_tempest_1_1_abstract_light_collection.html',1,'Tempest']]],
   ['abstractlistbox',['AbstractListBox',['../class_tempest_1_1_abstract_list_box.html',1,'Tempest']]],
   ['abstractlistdelegate',['AbstractListDelegate',['../class_tempest_1_1_abstract_list_delegate.html',1,'Tempest']]],
-  ['abstractlistdelegate_3c_20double_2c_20std_3a_3avector_3c_20double_20_3e_2c_20button_20_3e',['AbstractListDelegate&lt; double, std::vector&lt; double &gt;, Button &gt;',['../class_tempest_1_1_abstract_list_delegate.html',1,'Tempest']]],
-  ['abstractlistdelegate_3c_20std_3a_3astring_2c_20std_3a_3avector_3c_20std_3a_3astring_20_3e_2c_20button_20_3e',['AbstractListDelegate&lt; std::string, std::vector&lt; std::string &gt;, Button &gt;',['../class_tempest_1_1_abstract_list_delegate.html',1,'Tempest']]],
   ['abstractlistdelegate_3c_20t_2c_20std_3a_3avector_3c_20t_20_3e_2c_20ctrl_20_3e',['AbstractListDelegate&lt; T, std::vector&lt; T &gt;, Ctrl &gt;',['../class_tempest_1_1_abstract_list_delegate.html',1,'Tempest']]],
   ['abstractscene',['AbstractScene',['../class_tempest_1_1_abstract_scene.html',1,'Tempest']]],
-  ['abstractscene_3c_20abstractgraphicobject_20_3e',['AbstractScene&lt; AbstractGraphicObject &gt;',['../class_tempest_1_1_abstract_scene.html',1,'Tempest']]],
   ['abstractsceneobject',['AbstractSceneObject',['../class_tempest_1_1_abstract_scene_object.html',1,'Tempest']]],
   ['abstractshadinglang',['AbstractShadingLang',['../class_tempest_1_1_abstract_shading_lang.html',1,'Tempest']]],
   ['abstracttexture',['AbstractTexture',['../class_tempest_1_1_abstract_texture.html',1,'Tempest']]],
   ['alphablendmode',['AlphaBlendMode',['../struct_tempest_1_1_render_state_1_1_alpha_blend_mode.html',1,'Tempest::RenderState']]],
   ['alphatestmode',['AlphaTestMode',['../struct_tempest_1_1_render_state_1_1_alpha_test_mode.html',1,'Tempest::RenderState']]],
   ['application',['Application',['../class_tempest_1_1_application.html',1,'Tempest']]],
-  ['arraylistdelegate',['ArrayListDelegate',['../class_tempest_1_1_array_list_delegate.html',1,'Tempest']]],
-  ['arraylistdelegate_3c_20double_20_3e',['ArrayListDelegate&lt; double &gt;',['../class_tempest_1_1_array_list_delegate.html',1,'Tempest']]],
-  ['arraylistdelegate_3c_20std_3a_3astring_20_3e',['ArrayListDelegate&lt; std::string &gt;',['../class_tempest_1_1_array_list_delegate.html',1,'Tempest']]]
+  ['arraylistdelegate',['ArrayListDelegate',['../class_tempest_1_1_array_list_delegate.html',1,'Tempest']]]
 ];

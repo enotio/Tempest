@@ -1,0 +1,26 @@
+digraph "Tempest::GraphicsSubsystem"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node0 [label="{Tempest::GraphicsSubsystem\n||+ GraphicsSubsystem()\l+ ~GraphicsSubsystem()\l+ event()\l+ event()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node0 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node1 [label="{Tempest::AbstractAPI\n||+ AbstractAPI()\l+ ~AbstractAPI()\l+ caps()\l+ vendor()\l+ renderer()\l+ testDisplaySettings()\l+ setDisplaySettings()\l+ createDevice()\l+ deleteDevice()\l+ clear()\land 48 more...\l+ primitiveCount()\l+ mipCount()\l+ mipCount()\l+ mipCount()\l# vertexCount()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_abstract_a_p_i.html"];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node2 [label="{Tempest::DirectX11\n||+ DirectX11()\l+ ~DirectX11()\l+ caps()\l+ vendor()\l+ renderer()\l+ createDevice()\l+ deleteDevice()\l+ clear()\l+ clear()\l+ clear()\land 43 more...\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_direct_x11.html"];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node3 [label="{Tempest::DirectX9\n||+ DirectX9()\l+ ~DirectX9()\l+ caps()\l+ vendor()\l+ renderer()\l+ createDevice()\l+ deleteDevice()\l+ clear()\l+ clear()\l+ clear()\land 40 more...\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_direct_x9.html"];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node4 [label="{Tempest::OpenGLBase\n||+ OpenGLBase()\l+ vendor()\l+ renderer()\l# setDevice()\l# errCk()\l# setClearDepth()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_open_g_l_base.html"];
+  Node4 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node5 [label="{Tempest::Opengl2x\n|# dev\l|+ Opengl2x()\l+ ~Opengl2x()\l+ caps()\l+ createDevice()\l+ deleteDevice()\l+ clear()\l+ clear()\l+ clear()\l+ clear()\l+ clearZ()\land 45 more...\l# loadTextureS3TC()\l# loadTextureETC()\l# setDevice()\l# setupFBO()\l# startTiledRender()\l# endTiledRender()\l# createDepthStorage()\l# createContext()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_opengl2x.html"];
+  Node5 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node6 [label="{Tempest::Opengl4x\n||+ Opengl4x()\l+ createDevice()\l+ deleteDevice()\l# createContext()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_opengl4x.html"];
+  Node0 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node7 [label="{Tempest::AbstractShadingLang\n||+ AbstractShadingLang()\l+ ~AbstractShadingLang()\l+ beginPaint()\l+ endPaint()\l+ enable()\l+ disable()\l+ bind()\l+ setVertexDecl()\l+ context()\l+ createShaderFromSource()\l+ deleteShader()\l+ surfaceShader()\l+ assignUniformBuffer()\l# get()\l# get()\l# get()\l# inputOf()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_abstract_shading_lang.html"];
+  Node7 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node8 [label="{Tempest::CgDx9\n||+ CgDx9()\l+ ~CgDx9()\l+ enable()\l+ context()\l+ surfaceShader()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_cg_dx9.html"];
+  Node7 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node9 [label="{Tempest::HLSL\n||+ HLSL()\l+ ~HLSL()\l+ enable()\l+ endPaint()\l+ bind()\l+ context()\l+ surfaceShader()\l+ surfaceShader()\l+ createShaderFromSource()\l+ deleteShader()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_h_l_s_l.html"];
+  Node7 -> Node10 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node10 [label="{Tempest::HLSL11\n||+ HLSL11()\l+ ~HLSL11()\l+ enable()\l+ context()\l+ bind()\l+ setVertexDecl()\l+ createShaderFromSource()\l+ deleteShader()\l+ surfaceShader()\l+ surfaceShader()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_h_l_s_l11.html"];
+}

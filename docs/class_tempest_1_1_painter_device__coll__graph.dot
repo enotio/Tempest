@@ -1,0 +1,6 @@
+digraph "Tempest::PainterDevice"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node2 [label="{Tempest::PainterDevice\n||# PainterDevice()\l# ~PainterDevice()\l# setScissor()\l# setScissor()\l# scissor()\l# drawRect()\l# drawRect()\l# drawRectTailed()\l# drawRectTailed()\l# drawLine()\land 21 more...\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+}

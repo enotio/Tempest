@@ -1,0 +1,18 @@
+digraph "Tempest::ShaderProgramHolder"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node3 [label="{Tempest::ShaderProgramHolder\n||+ ShaderProgramHolder()\l+ ~ShaderProgramHolder()\l+ compile()\l+ load()\l+ surfaceShader()\l# deleteObject()\l# reset()\l# restore()\l# copy()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node4 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node4 [label="{Tempest::AbstractHolder\l\< ShaderProgram, AbstractAPI\l::ProgramObject \>\n|# references\l# pool\l|+ makeManip()\l# AbstractHolder()\l# deleteObject()\l# reset()\l# reset()\l# restore()\l# restore()\l# copy()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_abstract_holder.html"];
+  Node5 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node5 [label="{Tempest::AbstractHolderBase\n||+ AbstractHolderBase()\l+ AbstractHolderBase()\l+ ~AbstractHolderBase()\l+ operator=()\l+ device()\l+ device()\l# reset()\l# restore()\l# presentEvent()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_abstract_holder_base.html"];
+  Node6 -> Node5 [color="grey25",fontsize="10",style="solid",label=" #m_device" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node6 [label="{Tempest::Device\n||+ Device()\l+ Device()\l+ ~Device()\l+ caps()\l+ vendor()\l+ renderer()\l+ clear()\l+ clear()\l+ clear()\l+ clear()\land 25 more...\l# shadingLang()\l# implDraw()\l# implDrawIndexed()\l# assertPaint()\l# applyRs()\l# bind()\l# bind()\l# bind()\l# bind()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_device.html"];
+  Node7 -> Node6 [color="grey25",fontsize="10",style="solid",label=" +onRestored" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node7 [label="{Tempest::signal\< Args \>\n||+ signal()\l+ signal()\l+ ~signal()\l+ operator=()\l+ exec()\l+ operator()()\l+ bind()\l+ ubind()\l+ bind()\l+ bind()\l+ bind()\l+ ubind()\l+ ubind()\l+ bindsCount()\l+ removeBinds()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1signal.html",tooltip="signal class, for signals and slots system. "];
+  Node8 -> Node7 [dir="back",color="firebrick4",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node8 [label="{Tempest::Detail::signalBase\n||}",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node9 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node9 [label="{Tempest::slot\n||# slot()\l# slot()\l# ~slot()\l# operator=()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1slot.html"];
+}

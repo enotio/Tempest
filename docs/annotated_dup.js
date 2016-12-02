@@ -129,15 +129,5 @@ var annotated_dup =
       [ "Widget", "class_tempest_1_1_widget.html", "class_tempest_1_1_widget" ],
       [ "Window", "class_tempest_1_1_window.html", "class_tempest_1_1_window" ],
       [ "WindowOverlay", "class_tempest_1_1_window_overlay.html", "class_tempest_1_1_window_overlay" ]
-    ] ],
-    [ "Ui", null, [
-      [ "MainWindow", "class_ui_1_1_main_window.html", null ],
-      [ "RenderWidget", "class_ui_1_1_render_widget.html", null ]
-    ] ],
-    [ "MainWindow", "class_main_window.html", "class_main_window" ],
-    [ "Material", "struct_material.html", "struct_material" ],
-    [ "QTempestWidget", "class_q_tempest_widget.html", "class_q_tempest_widget" ],
-    [ "RenderWidget", "class_render_widget.html", "class_render_widget" ],
-    [ "Ui_MainWindow", "class_ui___main_window.html", "class_ui___main_window" ],
-    [ "Ui_RenderWidget", "class_ui___render_widget.html", "class_ui___render_widget" ]
+    ] ]
 ];

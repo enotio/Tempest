@@ -1,0 +1,14 @@
+digraph "Tempest::SurfaceRender::RState"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="{Tempest::SurfaceRender\l::RState\n|+ bm\l+ flip\l|}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node2 -> Node1 [color="grey25",fontsize="10",style="solid",label=" +cl" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node2 [label="{Tempest::Color\n||+ Color()\l+ Color()\l+ Color()\l+ set()\l+ set()\l+ data()\l+ operator=()\l+ operator+()\l+ operator-()\l+ operator+=()\land 9 more...\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_color.html",tooltip="Цвет, rgba, [0..1], одинарная точность. "];
+  Node3 -> Node1 [color="grey25",fontsize="10",style="solid",label=" +curTex2d" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node3 [label="{Tempest::Texture2d\n||+ Texture2d()\l+ Texture2d()\l+ sampler()\l+ setSampler()\l+ handle()\l+ width()\l+ height()\l+ size()\l+ rect()\l+ isEmpty()\l+ format()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_texture2d.html",tooltip="simple 2d texture class "];
+  Node4 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node4 [label="{Tempest::AbstractTexture\n||+ ~AbstractTexture()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_abstract_texture.html",tooltip="Интерфейс класса текстуры. "];
+  Node5 -> Node1 [color="grey25",fontsize="10",style="solid",label=" +curTex" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node5 [label="{Tempest::Sprite\n||+ Sprite()\l+ Sprite()\l+ operator=()\l+ ~Sprite()\l+ w()\l+ h()\l+ size()\l+ rect()\l+ pageRawData()\l+ pageRawSize()\l+ pageRect()\l+ handle()\l+ isDelayd()\l+ flush()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_sprite.html"];
+}

@@ -1,0 +1,10 @@
+digraph "Tempest::AbstractListDelegate&lt; T, VT, Ctrl &gt;"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node0 [label="{Tempest::AbstractListDelegate\l\< T, VT, Ctrl \>\n|# data\l|+ AbstractListDelegate()\l+ size()\l+ createView()\l+ removeView()\l# initializeItem()\l# textOf()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node1 -> Node0 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node1 [label="{Tempest::ListDelegate\n|+ invalidateView\l+ updateView\l+ onItemSelected\l+ onItemViewSelected\l|+ ~ListDelegate()\l+ size()\l+ createView()\l+ createView()\l+ removeView()\l+ update()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_list_delegate.html",tooltip="The ListDelegate class provides items to display in list or other collection. "];
+  Node2 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node2 [label="{Tempest::slot\n||# slot()\l# slot()\l# ~slot()\l# operator=()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1slot.html"];
+}

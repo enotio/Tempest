@@ -52,7 +52,6 @@ var hierarchy =
       [ "Tempest::LightCollection", "class_tempest_1_1_light_collection.html", null ]
     ] ],
     [ "Tempest::AbstractScene< Item >", "class_tempest_1_1_abstract_scene.html", null ],
-    [ "Tempest::AbstractScene< AbstractGraphicObject >", "class_tempest_1_1_abstract_scene.html", null ],
     [ "Tempest::AbstractSceneObject", "class_tempest_1_1_abstract_scene_object.html", [
       [ "Tempest::AbstractGraphicObject< Material, UserState >", "class_tempest_1_1_abstract_graphic_object.html", [
         [ "Tempest::GraphicObject< Material, UserState >", "class_tempest_1_1_graphic_object.html", null ]
@@ -139,7 +138,6 @@ var hierarchy =
     [ "Tempest::LocalObjectPool< Tempest::LocalBufferHolder::NonFreed >", "struct_tempest_1_1_local_object_pool.html", null ],
     [ "Tempest::Log", "class_tempest_1_1_log.html", null ],
     [ "Tempest::Margin", "struct_tempest_1_1_margin.html", null ],
-    [ "Material", "struct_material.html", null ],
     [ "Tempest::Matrix4x4", "class_tempest_1_1_matrix4x4.html", null ],
     [ "Tempest::Model< ModelVertex >", "class_tempest_1_1_model.html", null ],
     [ "Tempest::Model< V >", "class_tempest_1_1_model.html", null ],
@@ -165,17 +163,6 @@ var hierarchy =
     [ "Tempest::Pixmap", "class_tempest_1_1_pixmap.html", null ],
     [ "Tempest::Point", "struct_tempest_1_1_point.html", null ],
     [ "Tempest::RenderState::PolyRenderMode", "struct_tempest_1_1_render_state_1_1_poly_render_mode.html", null ],
-    [ "QMainWindow", null, [
-      [ "MainWindow", "class_main_window.html", null ]
-    ] ],
-    [ "QPaintEngine", null, [
-      [ "QTempestWidget::PaintEngine", "class_q_tempest_widget_1_1_paint_engine.html", null ]
-    ] ],
-    [ "QTempestWidgetBase", null, [
-      [ "QTempestWidget", "class_q_tempest_widget.html", [
-        [ "RenderWidget", "class_render_widget.html", null ]
-      ] ]
-    ] ],
     [ "Tempest::RawModel< V >", "struct_tempest_1_1_raw_model.html", null ],
     [ "Tempest::Rect", "struct_tempest_1_1_rect.html", null ],
     [ "Tempest::AbstractHolder< Data, APIDescriptor >::ImplManip::Ref", "struct_tempest_1_1_abstract_holder_1_1_impl_manip_1_1_ref.html", null ],
@@ -183,8 +170,8 @@ var hierarchy =
     [ "Tempest::RenderState", "class_tempest_1_1_render_state.html", null ],
     [ "Tempest::ResourceContext", "class_tempest_1_1_resource_context.html", null ],
     [ "Tempest::SurfaceRender::RState", "struct_tempest_1_1_surface_render_1_1_r_state.html", null ],
-    [ "Tempest::Texture2d::Sampler", "struct_tempest_1_1_texture2d_1_1_sampler.html", null ],
     [ "Tempest::Texture3d::Sampler", "struct_tempest_1_1_texture3d_1_1_sampler.html", null ],
+    [ "Tempest::Texture2d::Sampler", "struct_tempest_1_1_texture2d_1_1_sampler.html", null ],
     [ "Tempest::PainterDevice::State::ScissorRect", "struct_tempest_1_1_painter_device_1_1_state_1_1_scissor_rect.html", null ],
     [ "Shader", null, [
       [ "Tempest::EvalShader", "class_tempest_1_1_eval_shader.html", null ],
@@ -214,12 +201,6 @@ var hierarchy =
         [ "Tempest::signal< Args >", "class_tempest_1_1signal.html", null ]
       ] ],
       [ "Tempest::ListDelegate", "class_tempest_1_1_list_delegate.html", [
-        [ "Tempest::AbstractListDelegate< double, std::vector< double >, Button >", "class_tempest_1_1_abstract_list_delegate.html", [
-          [ "Tempest::ArrayListDelegate< double >", "class_tempest_1_1_array_list_delegate.html", null ]
-        ] ],
-        [ "Tempest::AbstractListDelegate< std::string, std::vector< std::string >, Button >", "class_tempest_1_1_abstract_list_delegate.html", [
-          [ "Tempest::ArrayListDelegate< std::string >", "class_tempest_1_1_array_list_delegate.html", null ]
-        ] ],
         [ "Tempest::AbstractListDelegate< T, std::vector< T >, Ctrl >", "class_tempest_1_1_abstract_list_delegate.html", [
           [ "Tempest::ArrayListDelegate< T, Ctrl >", "class_tempest_1_1_array_list_delegate.html", null ]
         ] ],
@@ -248,21 +229,7 @@ var hierarchy =
         [ "Tempest::ScrollWidget", "class_tempest_1_1_scroll_widget.html", null ],
         [ "Tempest::StackedWidget", "class_tempest_1_1_stacked_widget.html", null ],
         [ "Tempest::Surface", "class_tempest_1_1_surface.html", null ],
-        [ "Tempest::Window", "class_tempest_1_1_window.html", [
-          [ "MainWindow", "class_main_window.html", null ],
-          [ "MainWindow", "class_main_window.html", null ],
-          [ "MainWindow", "class_main_window.html", null ],
-          [ "MainWindow", "class_main_window.html", null ],
-          [ "MainWindow", "class_main_window.html", null ],
-          [ "MainWindow", "class_main_window.html", null ],
-          [ "MainWindow", "class_main_window.html", null ],
-          [ "MainWindow", "class_main_window.html", null ],
-          [ "MainWindow", "class_main_window.html", null ],
-          [ "MainWindow", "class_main_window.html", null ],
-          [ "MainWindow", "class_main_window.html", null ],
-          [ "MainWindow", "class_main_window.html", null ],
-          [ "MainWindow", "class_main_window.html", null ]
-        ] ],
+        [ "Tempest::Window", "class_tempest_1_1_window.html", null ],
         [ "Tempest::WindowOverlay", "class_tempest_1_1_window_overlay.html", [
           [ "Tempest::AbstractListBox::Overlay", "struct_tempest_1_1_abstract_list_box_1_1_overlay.html", null ]
         ] ]
@@ -276,13 +243,6 @@ var hierarchy =
     [ "Tempest::Timer", "class_tempest_1_1_timer.html", null ],
     [ "Tempest::SystemAPI::TranslateKeyPair", "struct_tempest_1_1_system_a_p_i_1_1_translate_key_pair.html", null ],
     [ "Tempest::AbstractShadingLang::UBO", "struct_tempest_1_1_abstract_shading_lang_1_1_u_b_o.html", null ],
-    [ "MainWindow::UBO", "struct_main_window_1_1_u_b_o.html", null ],
-    [ "Ui_MainWindow", "class_ui___main_window.html", [
-      [ "Ui::MainWindow", "class_ui_1_1_main_window.html", null ]
-    ] ],
-    [ "Ui_RenderWidget", "class_ui___render_widget.html", [
-      [ "Ui::RenderWidget", "class_ui_1_1_render_widget.html", null ]
-    ] ],
     [ "Tempest::UiFactory", "class_tempest_1_1_ui_factory.html", null ],
     [ "Tempest::UiMetrics", "class_tempest_1_1_ui_metrics.html", null ],
     [ "Tempest::AbstractShadingLang::UiShaderOpt", "struct_tempest_1_1_abstract_shading_lang_1_1_ui_shader_opt.html", null ],
@@ -291,12 +251,8 @@ var hierarchy =
       [ "Tempest::LineEdit::IntValidator", "class_tempest_1_1_line_edit_1_1_int_validator.html", null ]
     ] ],
     [ "Tempest::SurfaceRender::Vertex", "struct_tempest_1_1_surface_render_1_1_vertex.html", null ],
-    [ "MainWindow::Vertex", "struct_main_window_1_1_vertex.html", null ],
-    [ "RenderWidget::Vertex", "struct_render_widget_1_1_vertex.html", null ],
     [ "Tempest::VertexBufferBase", "class_tempest_1_1_vertex_buffer_base.html", [
       [ "Tempest::VertexBuffer< Vertex >", "class_tempest_1_1_vertex_buffer.html", null ],
-      [ "Tempest::VertexBuffer< MainWindow::Vertex >", "class_tempest_1_1_vertex_buffer.html", null ],
-      [ "Tempest::VertexBuffer< RenderWidget::Vertex >", "class_tempest_1_1_vertex_buffer.html", null ],
       [ "Tempest::VertexBuffer< Tempest::SurfaceRender::Vertex >", "class_tempest_1_1_vertex_buffer.html", null ]
     ] ],
     [ "Tempest::VertexDeclaration", "class_tempest_1_1_vertex_declaration.html", null ],

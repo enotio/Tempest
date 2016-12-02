@@ -1,0 +1,6 @@
+digraph "Tempest::Painter"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="{Tempest::Painter\n||+ Painter()\l+ Painter()\l+ ~Painter()\l+ setScissor()\l+ setScissor()\l+ scissor()\l+ drawRect()\l+ drawRect()\l+ drawRect()\l+ drawRect()\land 31 more...\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+}

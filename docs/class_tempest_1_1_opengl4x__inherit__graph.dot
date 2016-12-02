@@ -1,0 +1,14 @@
+digraph "Tempest::Opengl4x"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node0 [label="{Tempest::Opengl4x\n||+ Opengl4x()\l+ createDevice()\l+ deleteDevice()\l# createContext()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node1 -> Node0 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node1 [label="{Tempest::Opengl2x\n|# dev\l|+ Opengl2x()\l+ ~Opengl2x()\l+ caps()\l+ createDevice()\l+ deleteDevice()\l+ clear()\l+ clear()\l+ clear()\l+ clear()\l+ clearZ()\land 45 more...\l# loadTextureS3TC()\l# loadTextureETC()\l# setDevice()\l# setupFBO()\l# startTiledRender()\l# endTiledRender()\l# createDepthStorage()\l# createContext()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_opengl2x.html"];
+  Node2 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node2 [label="{Tempest::OpenGLBase\n||+ OpenGLBase()\l+ vendor()\l+ renderer()\l# setDevice()\l# errCk()\l# setClearDepth()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_open_g_l_base.html"];
+  Node3 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node3 [label="{Tempest::AbstractAPI\n||+ AbstractAPI()\l+ ~AbstractAPI()\l+ caps()\l+ vendor()\l+ renderer()\l+ testDisplaySettings()\l+ setDisplaySettings()\l+ createDevice()\l+ deleteDevice()\l+ clear()\land 48 more...\l+ primitiveCount()\l+ mipCount()\l+ mipCount()\l+ mipCount()\l# vertexCount()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_abstract_a_p_i.html"];
+  Node4 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node4 [label="{Tempest::GraphicsSubsystem\n||+ GraphicsSubsystem()\l+ ~GraphicsSubsystem()\l+ event()\l+ event()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_graphics_subsystem.html"];
+}

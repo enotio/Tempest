@@ -1,0 +1,6 @@
+digraph "Tempest::Matrix4x4"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="{Tempest::Matrix4x4\n||+ Matrix4x4()\l+ Matrix4x4()\l+ Matrix4x4()\l+ Matrix4x4()\l+ ~Matrix4x4()\l+ identity()\l+ translate()\l+ translate()\l+ scale()\l+ scale()\land 19 more...\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+}

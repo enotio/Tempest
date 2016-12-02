@@ -1,0 +1,6 @@
+digraph "Tempest::UiMetrics"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="{Tempest::UiMetrics\n|+ buttonWidth\l+ buttonHeight\l+ uiScale\l+ smallTextSize\l+ normalTextSize\l+ largeTextSize\l+ scrollButtonSize\l+ margin\l|+ UiMetrics()\l+ ~UiMetrics()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+}

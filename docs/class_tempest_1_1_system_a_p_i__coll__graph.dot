@@ -1,0 +1,6 @@
+digraph "Tempest::SystemAPI"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="{Tempest::SystemAPI\n||+ ~SystemAPI()\l+ createWindow()\l+ createWindowMaximized()\l+ createWindowMinimized()\l+ createWindowFullScr()\l+ windowClientPos()\l+ windowClientRect()\l+ deleteWindow()\l+ setGeometry()\l+ show()\land 10 more...\l+ screenSize()\l+ instance()\l+ loadText()\l+ loadText()\l+ loadText()\l+ loadText()\l+ loadBytes()\l+ loadBytes()\l+ writeBytes()\l+ writeBytes()\land 28 more...\l# SystemAPI()\l# addOverlay()\l# fopenImpl()\l# fopenImpl()\l# readDataImpl()\l# writeDataImpl()\l# flushImpl()\l# peekImpl()\l# skipImpl()\l# eofImpl()\land 18 more...\l# handle()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+}

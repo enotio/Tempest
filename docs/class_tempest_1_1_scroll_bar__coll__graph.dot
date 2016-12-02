@@ -1,0 +1,30 @@
+digraph "Tempest::ScrollBar"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node3 [label="{Tempest::ScrollBar\n||+ ScrollBar()\l+ setOrientation()\l+ orientation()\l+ setRange()\l+ range()\l+ minValue()\l+ maxValue()\l+ setValue()\l+ value()\l+ smallStep()\l+ largeStep()\l+ setSmallStep()\l+ setLargeStep()\l+ setCentralButtonSize()\l+ centralAreaSize()\l# ScrollBar()\l# resizeEvent()\l# mouseWheelEvent()\l# buttonIcon()\l# createMoveButton()\l# createCentralWidget()\l# createCentralButton()\l# setupUi()\l# updateValueFromView()\l# assignCentralButton()\l# linearSize()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node4 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node4 [label="{Tempest::Widget\n||+ Widget()\l+ ~Widget()\l+ deleteLater()\l+ x()\l+ y()\l+ w()\l+ h()\l+ pos()\l+ rect()\l+ size()\land 65 more...\l# paintNested()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_widget.html"];
+  Node5 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node5 [label="{Tempest::slot\n||# slot()\l# slot()\l# ~slot()\l# operator=()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1slot.html"];
+  Node6 -> Node4 [color="grey25",fontsize="10",style="solid",label=" +onFocusChange\n+onChildFocusChange" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node6 [label="{Tempest::signal\< bool \>\n||+ signal()\l+ signal()\l+ ~signal()\l+ operator=()\l+ exec()\l+ operator()()\l+ bind()\l+ bind()\l+ bind()\l+ bind()\l+ ubind()\l+ ubind()\l+ ubind()\l+ bindsCount()\l+ removeBinds()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1signal.html"];
+  Node7 -> Node6 [dir="back",color="firebrick4",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node7 [label="{Tempest::Detail::signalBase\n||}",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node5 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node8 -> Node4 [color="grey25",fontsize="10",style="solid",label=" +intentToUpdate" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node8 [label="{Tempest::signal\< Args \>\n||+ signal()\l+ signal()\l+ ~signal()\l+ operator=()\l+ exec()\l+ operator()()\l+ bind()\l+ ubind()\l+ bind()\l+ bind()\l+ bind()\l+ ubind()\l+ ubind()\l+ bindsCount()\l+ removeBinds()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1signal.html",tooltip="signal class, for signals and slots system. "];
+  Node7 -> Node8 [dir="back",color="firebrick4",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node9 -> Node4 [color="grey25",fontsize="10",style="solid",label=" +onPositionChange\n+onResize" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node9 [label="{Tempest::signal\< int,\l int \>\n||+ signal()\l+ signal()\l+ ~signal()\l+ operator=()\l+ exec()\l+ operator()()\l+ bind()\l+ bind()\l+ bind()\l+ bind()\l+ ubind()\l+ ubind()\l+ ubind()\l+ bindsCount()\l+ removeBinds()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1signal.html"];
+  Node7 -> Node9 [dir="back",color="firebrick4",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node10 -> Node4 [color="grey25",fontsize="10",style="solid",label=" +onDestroy" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node10 [label="{Tempest::signal\< Tempest\l::Widget *\>\n||+ signal()\l+ signal()\l+ ~signal()\l+ operator=()\l+ exec()\l+ operator()()\l+ bind()\l+ bind()\l+ bind()\l+ bind()\l+ ubind()\l+ ubind()\l+ ubind()\l+ bindsCount()\l+ removeBinds()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1signal.html"];
+  Node7 -> Node10 [dir="back",color="firebrick4",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node11 -> Node3 [color="grey25",fontsize="10",style="solid",label=" +onValueChanged" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node11 [label="{Tempest::signal\< int \>\n||+ signal()\l+ signal()\l+ ~signal()\l+ operator=()\l+ exec()\l+ operator()()\l+ bind()\l+ bind()\l+ bind()\l+ bind()\l+ ubind()\l+ ubind()\l+ ubind()\l+ bindsCount()\l+ removeBinds()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1signal.html"];
+  Node7 -> Node11 [dir="back",color="firebrick4",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node12 -> Node3 [color="grey25",fontsize="10",style="solid",label=" +onOrientationChanged" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node12 [label="{Tempest::signal\< Tempest\l::Orientation \>\n||+ signal()\l+ signal()\l+ ~signal()\l+ operator=()\l+ exec()\l+ operator()()\l+ bind()\l+ bind()\l+ bind()\l+ bind()\l+ ubind()\l+ ubind()\l+ ubind()\l+ bindsCount()\l+ removeBinds()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1signal.html"];
+  Node7 -> Node12 [dir="back",color="firebrick4",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+}

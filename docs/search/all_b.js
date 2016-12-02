@@ -1,9 +1,6 @@
 var searchData=
 [
-  ['mainwindow',['MainWindow',['../class_ui_1_1_main_window.html',1,'Ui']]],
-  ['mainwindow',['MainWindow',['../class_main_window.html',1,'']]],
   ['margin',['Margin',['../struct_tempest_1_1_margin.html',1,'Tempest']]],
-  ['material',['Material',['../struct_material.html',1,'']]],
   ['matrix4x4',['Matrix4x4',['../class_tempest_1_1_matrix4x4.html',1,'Tempest']]],
   ['memreader',['MemReader',['../class_tempest_1_1_mem_reader.html',1,'Tempest']]],
   ['memwriter',['MemWriter',['../class_tempest_1_1_mem_writer.html',1,'Tempest']]],

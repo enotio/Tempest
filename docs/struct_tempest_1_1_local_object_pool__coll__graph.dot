@@ -1,0 +1,6 @@
+digraph "Tempest::LocalObjectPool&lt; T &gt;"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="{Tempest::LocalObjectPool\< T \>\n|+ data\l+ maxColletIterations\l|+ LocalObjectPool()\l+ push()\l+ find()\l+ collect()\l+ reset()\l+ deleteObject()\l+ size()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+}

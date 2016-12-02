@@ -1,0 +1,14 @@
+digraph "Tempest::Opengl2x"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node5 [label="{Tempest::Opengl2x\n||+ Opengl2x()\l+ ~Opengl2x()\l+ caps()\l+ createDevice()\l+ deleteDevice()\l+ clear()\l+ clear()\l+ clear()\l+ clear()\l+ clearZ()\land 45 more...\l# loadTextureS3TC()\l# loadTextureETC()\l# setDevice()\l# setupFBO()\l# startTiledRender()\l# endTiledRender()\l# createDepthStorage()\l# createContext()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node6 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node6 [label="{Tempest::OpenGLBase\n||+ OpenGLBase()\l+ vendor()\l+ renderer()\l# setDevice()\l# errCk()\l# setClearDepth()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_open_g_l_base.html"];
+  Node7 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node7 [label="{Tempest::AbstractAPI\n||+ AbstractAPI()\l+ ~AbstractAPI()\l+ caps()\l+ vendor()\l+ renderer()\l+ testDisplaySettings()\l+ setDisplaySettings()\l+ createDevice()\l+ deleteDevice()\l+ clear()\land 48 more...\l+ primitiveCount()\l+ mipCount()\l+ mipCount()\l+ mipCount()\l# vertexCount()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_abstract_a_p_i.html"];
+  Node8 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node8 [label="{Tempest::GraphicsSubsystem\n||+ GraphicsSubsystem()\l+ ~GraphicsSubsystem()\l+ event()\l+ event()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_graphics_subsystem.html"];
+  Node9 -> Node5 [color="grey25",fontsize="10",style="solid",label=" #dev" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node9 [label="{Tempest::Detail::ImplDeviceBase\n||}",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+}

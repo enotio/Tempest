@@ -1,0 +1,14 @@
+digraph "Tempest::SurfaceRender::TextEngine"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node2 [label="{Tempest::SurfaceRender\l::TextEngine\n|+ state_stk\l|+ TextEngine()\l+ pushState()\l+ popState()\l+ setNullState()\l+ setFont()\l+ font()\l+ drawText()\l+ drawText()\l+ letter()\l+ dText()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node3 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node3 [label="{Tempest::PaintTextEngine\n||+ ~PaintTextEngine()\l+ setFont()\l+ setFont()\l+ font()\l+ letter()\l+ drawText()\l+ drawText()\l+ setScissor()\l+ pushState()\l+ popState()\l+ setNullState()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_paint_text_engine.html"];
+  Node4 -> Node2 [color="grey25",fontsize="10",style="solid",label=" +p" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node4 [label="{Tempest::SurfaceRender\l::PaintDev\n||+ PaintDev()\l+ setTexture()\l+ setTexture()\l+ unsetTexture()\l+ color()\l+ setColor()\l+ setColor()\l+ setFlip()\l+ isHorizontalFliped()\l+ isVerticalFliped()\land 9 more...\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$struct_tempest_1_1_surface_render_1_1_paint_dev.html"];
+  Node5 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node5 [label="{Tempest::PainterDevice\n||# PainterDevice()\l# ~PainterDevice()\l# setScissor()\l# setScissor()\l# scissor()\l# drawRect()\l# drawRect()\l# drawRectTailed()\l# drawRectTailed()\l# drawLine()\land 21 more...\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_painter_device.html"];
+  Node6 -> Node2 [color="grey25",fontsize="10",style="solid",label=" +fnt" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node6 [label="{Tempest::Font\n||+ Font()\l+ Font()\l+ Font()\l+ Font()\l+ size()\l+ setSize()\l+ setBold()\l+ isBold()\l+ setItalic()\l+ isItalic()\land 12 more...\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_font.html"];
+}

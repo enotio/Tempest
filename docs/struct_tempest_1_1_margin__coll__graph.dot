@@ -1,0 +1,6 @@
+digraph "Tempest::Margin"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="{Tempest::Margin\n|+ left\l+ right\l+ top\l+ bottom\l|+ Margin()\l+ Margin()\l+ xMargin()\l+ yMargin()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+}

@@ -1,0 +1,15 @@
+digraph "MainWindow::UBO"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="{MainWindow::UBO\n|+ lightDir\l|+ UBO()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node2 -> Node1 [color="grey25",fontsize="10",style="solid",label=" +mvpMatrixInv\n+modelView\n+mvpMatrix" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node2 [label="{Tempest::Matrix4x4\n||+ Matrix4x4()\l+ Matrix4x4()\l+ Matrix4x4()\l+ Matrix4x4()\l+ ~Matrix4x4()\l+ identity()\l+ translate()\l+ translate()\l+ scale()\l+ scale()\land 19 more...\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_matrix4x4.html"];
+  Node3 -> Node1 [color="grey25",fontsize="10",style="solid",label=" +volume" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node3 [label="{Tempest::Texture3d\n||+ Texture3d()\l+ Texture3d()\l+ sampler()\l+ setSampler()\l+ handle()\l+ width()\l+ height()\l+ sizeX()\l+ sizeY()\l+ sizeZ()\l+ isEmpty()\l+ format()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_texture3d.html",tooltip="simple 3d texture class "];
+  Node4 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node4 [label="{Tempest::AbstractTexture\n||+ ~AbstractTexture()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_abstract_texture.html",tooltip="Интерфейс класса текстуры. "];
+  Node5 -> Node1 [color="grey25",fontsize="10",style="solid",label=" +xtexture\n+grad\n+diffuse\n+texture\n+heightMap\n+bump" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node5 [label="{Tempest::Texture2d\n||+ Texture2d()\l+ Texture2d()\l+ sampler()\l+ setSampler()\l+ handle()\l+ width()\l+ height()\l+ size()\l+ rect()\l+ isEmpty()\l+ format()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_texture2d.html",tooltip="simple 2d texture class "];
+  Node4 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+}

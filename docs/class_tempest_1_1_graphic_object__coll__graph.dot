@@ -1,0 +1,10 @@
+digraph "Tempest::GraphicObject&lt; Material, UserState &gt;"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node3 [label="{Tempest::GraphicObject\l\< Material, UserState \>\n||+ GraphicObject()\l+ GraphicObject()\l+ ~GraphicObject()\l+ operator=()\l+ setModel()\l+ bounds()\l+ transform()\l+ setPosition()\l+ setSize()\l+ setSize()\land 13 more...\l# computeMat()\l# requestMatrixUpdate()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node4 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node4 [label="{Tempest::AbstractGraphic\lObject\< Material, UserState \>\n|+ ustate\l# vboH\l# iboH\l|+ AbstractGraphicObject()\l+ AbstractGraphicObject()\l+ ~AbstractGraphicObject()\l+ operator=()\l+ setMaterial()\l+ material()\l+ vboHandle()\l+ iboHandle()\l# onTransformChanged()\l# sceneAddObject()\l# sceneDelObject()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_abstract_graphic_object.html"];
+  Node5 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node5 [label="{Tempest::AbstractSceneObject\n||+ AbstractSceneObject()\l+ AbstractSceneObject()\l+ ~AbstractSceneObject()\l+ operator=()\l+ bounds()\l+ transform()\l+ isVisible()\l+ setVisible()\l+ x()\l+ y()\l+ z()\l+ sizeX()\l+ sizeY()\l+ sizeZ()\l+ radius()\l# onTransformChanged()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1_abstract_scene_object.html"];
+}

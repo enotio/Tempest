@@ -1,0 +1,6 @@
+digraph "Tempest::AbstractScene&lt; Item &gt;"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="{Tempest::AbstractScene\l\< Item \>\n||+ AbstractScene()\l+ ~AbstractScene()\l+ setViewTester()\l+ viewTester()\l+ setCamera()\l+ camera()\l+ setLightCollection()\l+ lights()\l+ lights()\l# onObjectAdded()\l# onObjectRemoved()\l# onObjectTransform()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+}

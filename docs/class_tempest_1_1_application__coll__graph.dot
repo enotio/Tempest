@@ -1,0 +1,18 @@
+digraph "Tempest::Application"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="{Tempest::Application\n||+ Application()\l+ ~Application()\l+ exec()\l+ mainFont()\l+ setMainFont()\l+ uiMetrics()\l+ setUiMetrics()\l+ isQuit()\l+ processEvents()\l+ sleep()\l+ tickCount()\l+ exit()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node2 -> Node1 [color="grey25",fontsize="10",style="solid",label=" +showHint" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node2 [label="{Tempest::signal\< const\l std::u16string, const\l Tempest::Rect &\>\n||+ signal()\l+ signal()\l+ ~signal()\l+ operator=()\l+ exec()\l+ operator()()\l+ bind()\l+ bind()\l+ bind()\l+ bind()\l+ ubind()\l+ ubind()\l+ ubind()\l+ bindsCount()\l+ removeBinds()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1signal.html"];
+  Node3 -> Node2 [dir="back",color="firebrick4",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node3 [label="{Tempest::Detail::signalBase\n||}",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node4 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node4 [label="{Tempest::slot\n||# slot()\l# slot()\l# ~slot()\l# operator=()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1slot.html"];
+  Node5 -> Node1 [color="grey25",fontsize="10",style="solid",label=" +uiMetricsChanged" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node5 [label="{Tempest::signal\< Tempest\l::UiMetrics \>\n||+ signal()\l+ signal()\l+ ~signal()\l+ operator=()\l+ exec()\l+ operator()()\l+ bind()\l+ bind()\l+ bind()\l+ bind()\l+ ubind()\l+ ubind()\l+ ubind()\l+ bindsCount()\l+ removeBinds()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1signal.html"];
+  Node3 -> Node5 [dir="back",color="firebrick4",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node6 -> Node1 [color="grey25",fontsize="10",style="solid",label=" +fontChanged" ,arrowhead="odiamond",fontname="Helvetica"];
+  Node6 [label="{Tempest::signal\< Tempest\l::Font \>\n||+ signal()\l+ signal()\l+ ~signal()\l+ operator=()\l+ exec()\l+ operator()()\l+ bind()\l+ bind()\l+ bind()\l+ bind()\l+ ubind()\l+ ubind()\l+ ubind()\l+ bindsCount()\l+ removeBinds()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tempest_1_1signal.html"];
+  Node3 -> Node6 [dir="back",color="firebrick4",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+}
