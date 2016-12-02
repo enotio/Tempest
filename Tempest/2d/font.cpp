@@ -592,8 +592,8 @@ bool Tempest::Font::isItalic() const {
   }
 
 void Tempest::Font::setSize(int s) {
-  for( int i=0; i<1; ++i )
-    for( int r=0; r<1; ++r ){
+  for( int i=0; i<2; ++i )
+    for( int r=0; r<2; ++r ){
       ttf[i][r].key.size = s;
       ttf[i][r].update();
       }
