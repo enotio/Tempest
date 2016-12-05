@@ -229,10 +229,13 @@ struct DirectX11::Device{
       } else {
       size_t count=w*h;
       for( size_t i=0; i<count; ++i ){
-        *tx=*pix;  ++tx; ++pix;
-        *tx=*pix;  ++tx; ++pix;
-        *tx=*pix;  ++tx; ++pix;
-        *tx=255;   ++tx;
+        tx[0] = pix[0];
+        tx[1] = pix[1];
+        tx[2] = pix[2];
+        tx[3] = 255;
+
+        tx  += 4;
+        pix += 3;
         }
       }
 
@@ -923,6 +926,7 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
     D3D11_USAGE_DEFAULT,
     D3D11_USAGE_DEFAULT//D3D11_USAGE_STAGING
     };
+
   static const DXGI_FORMAT d3frm[] = {
     DXGI_FORMAT_R32_FLOAT,  // Luminance,
     DXGI_FORMAT_R8_UNORM,   // Luminance4,
@@ -931,13 +935,13 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
 
     DXGI_FORMAT_R8G8B8A8_UNORM,    // RGB,
     DXGI_FORMAT_R8G8B8A8_UNORM,    // RGB4,
-    DXGI_FORMAT_R8G8B8A8_UNORM, //DXGI_FORMAT_B5G6R5_UNORM,      // RGB5, need dx11.1
+    DXGI_FORMAT_R8G8B8A8_UNORM,    // DXGI_FORMAT_B5G6R5_UNORM,      // RGB5, need dx11.1
     DXGI_FORMAT_R10G10B10A2_UINT,  // RGB10,
     DXGI_FORMAT_R10G10B10A2_UNORM, // RGB12,
     DXGI_FORMAT_R10G10B10A2_UNORM, // RGB16,
 
     DXGI_FORMAT_R8G8B8A8_UNORM,     // RGBA,
-    DXGI_FORMAT_R8G8B8A8_UNORM,//DXGI_FORMAT_B5G5R5A1_UNORM,     // RGBA5, need dx11.1
+    DXGI_FORMAT_R8G8B8A8_UNORM,     // DXGI_FORMAT_B5G5R5A1_UNORM,   // RGBA5, need dx11.1
     DXGI_FORMAT_R8G8B8A8_UNORM,     // RGBA8,
     DXGI_FORMAT_R10G10B10A2_UNORM,  // RGB10_A2,
     DXGI_FORMAT_R10G10B10A2_UNORM,  // RGBA12,
@@ -948,11 +952,11 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
     DXGI_FORMAT_UNKNOWN, // RGBA_DXT3,
     DXGI_FORMAT_UNKNOWN, // RGBA_DXT5,
 
-    DXGI_FORMAT_D16_UNORM, // Depth16,
+    DXGI_FORMAT_D16_UNORM,         // Depth16,
     DXGI_FORMAT_D24_UNORM_S8_UINT, // Depth24,
-    DXGI_FORMAT_D32_FLOAT, // Depth32,
+    DXGI_FORMAT_D32_FLOAT,         // Depth32,
 
-    DXGI_FORMAT_R16G16_FLOAT,// RG16
+    DXGI_FORMAT_R16G16_FLOAT,   // RG16
 
     DXGI_FORMAT_R32_TYPELESS,   // RedableDepth16,
     DXGI_FORMAT_R32_TYPELESS,   // RedableDepth32,
@@ -990,7 +994,9 @@ AbstractAPI::Texture* DirectX11::createTexture( AbstractAPI::Device *d,
   DX11Texture* tex = new DX11Texture;
   if( SUCCEEDED(dev->device->CreateTexture2D( &desc, NULL, &tex->texture )) ){
     if( desc.BindFlags&D3D11_BIND_SHADER_RESOURCE )
-      dev->device->CreateShaderResourceView(tex->texture, dev->buildDesc(desc.Format), &tex->view);
+      dev->device->CreateShaderResourceView(tex->texture,
+                                            dev->buildDesc(desc.Format),
+                                            &tex->view);
 
     if( mips && (desc.MiscFlags&D3D11_RESOURCE_MISC_GENERATE_MIPS) )
       dev->immediateContext->GenerateMips(tex->view);

@@ -248,9 +248,10 @@ struct TgaCodec:ImageCodec {
       return false;
 
     d.skip(h.idLeight);
-    info.w   = h.width;
-    info.h   = h.height;
-    info.bpp = h.bitsPerPel/8;
+    info.w      = h.width;
+    info.h      = h.height;
+    info.bpp    = h.bitsPerPel/8;
+    info.alpha  = info.bpp==4;
     info.format = info.bpp==3 ? Pixmap::Format_RGB : Pixmap::Format_RGBA;
 
     int bpp = h.bitsPerPel/8;
@@ -474,9 +475,11 @@ struct JpegCodec:ImageCodec {
       i++;
     }
 
-    info.w   = cInfo.image_width;
-    info.h   = cInfo.image_height;
-    info.bpp = cInfo.output_components;
+    info.w      = cInfo.image_width;
+    info.h      = cInfo.image_height;
+    info.bpp    = cInfo.output_components;
+    info.alpha  = info.bpp==4;
+    info.format = info.bpp==3 ? Pixmap::Format_RGB : Pixmap::Format_RGBA;
 
     if( !jpeg_finish_decompress(&cInfo) )
       Log::e("jpeg_finish_decompress error");

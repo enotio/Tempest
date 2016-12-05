@@ -486,6 +486,13 @@ void HLSL11::enable() const {
         data->immediateContext->VSSetConstantBuffers( bufNum, 1, &curD[bufNum] );
         data->immediateContext->PSSetConstantBuffers( bufNum, 1, &curD[bufNum] );
         }
+      } else {
+      for( int t: u.desc ){
+        if(t==Decl::Texture2d)
+          ++slot; else
+        if(t==Decl::Texture3d)
+          ++slot;
+        }
       }
     ++bufNum;
     }
