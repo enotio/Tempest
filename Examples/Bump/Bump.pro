@@ -8,6 +8,10 @@ DESTDIR = ../bin
 INCLUDEPATH += ../../Tempest/include
 LIBS        += -L../../lib -l"Tempest"
 
+win32-g++: {
+  QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++
+  }
+
 win32:{
   #msvc static build
   LIBS += -L"$$(DXSDK_DIR)Lib/x86"
