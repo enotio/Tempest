@@ -41,5 +41,6 @@ deploy:
 
   skip_cleanup: true
   on:
-    branch: release
+    branch:
+      - master
     tags: false
