@@ -39,6 +39,7 @@ build_script:
   - '%make%'
   - '%make% clean'
   - cd ../
+  - del Makefile* /s /q
 
 after_build:
   - set name="bin/Tempest-%CXX%-%CONFIGURATION%.zip"
@@ -47,6 +48,8 @@ after_build:
   - 7z a %name%    Examples/*
   - 7z a %name%    Tempest/include/*
   - 7z a %name% -r Tempest/*.h
+  - 7z a %name% -r Tempest/*.pro
+  - 7z a %name% -r Tempest/*.pri
 
 artifacts:
   - path: bin/Tempest-$(CXX)-$(CONFIGURATION).zip
