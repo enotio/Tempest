@@ -13,6 +13,7 @@ win32-msvc* {
 win32-g++: {
   QMAKE_CXXFLAGS += -Wno-unknown-pragmas
   QMAKE_CXXFLAGS += -Wno-comment
+  QMAKE_LFLAGS   += -static -static-libgcc -static-libstdc++
   }
 
 ios:CONFIG += staticlib

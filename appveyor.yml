@@ -42,8 +42,10 @@ build_script:
   - del Makefile* /s /q
 
 after_build:
+  - echo Tempest-win32-v$(appveyor_build_version) >> VERSION
   - set name="bin/Tempest-%CXX%-%CONFIGURATION%.zip"
   - mkdir bin
+  - 7z a %name%    VERSION
   - 7z a %name%    lib\*
   - 7z a %name%    Examples/*
   - 7z a %name%    Tempest/include/*
