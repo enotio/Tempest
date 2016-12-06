@@ -13,6 +13,8 @@ win32-msvc* {
 win32-g++: {
   QMAKE_CXXFLAGS += -Wno-unknown-pragmas
   QMAKE_CXXFLAGS += -Wno-comment
+  QMAKE_LFLAGS   += -Wl,--exclude-libs,libgcc_eh.a
+  QMAKE_LFLAGS   += -Wl,--exclude-libs,libpthread.a
   QMAKE_LFLAGS   += -static -static-libgcc -static-libstdc++
   }
 
