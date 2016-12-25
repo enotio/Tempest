@@ -76,6 +76,7 @@ int Dialog::exec() {
     owner_ov->layout().add( this );
     }
 
+  setVisible(true);
   setPosition( (owner_ov->w()-w())/2,
                (owner_ov->h()-h())/2 );
   while( owner_ov && !Application::isQuit() ) {
