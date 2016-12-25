@@ -32,18 +32,20 @@ script:
   - cd ../
 
 before_deploy:
-  - zip -r release.zip ./lib
-  - zip -r release.zip ./Tempest/include
-  - zip -r release.zip ./Examples
+  - zip -r Tempest-osx-v1.0.0.zip ./lib
+  - zip -r Tempest-osx-v1.0.0.zip ./Tempest/include
+  - zip -r Tempest-osx-v1.0.0.zip ./Examples
+  - zip -r Tempest-osx-v1.0.0.zip ./Tempest/*.h
 
 deploy:
   provider: releases
   description: 'no release description'
   draft: true
+  edge: true
   api_key:
     secure: n1YzoXFwccHSkLf5+bxrMgZkqKCkJl8++qDnK9eT8y9TeoYflG9P0g0lz7DNsn9qKlnbfzDwdDQyYNChD9ITUi0BduOPDRTaUF03TqVE36+dLu5PqxCJzzzHAKG8mLe/iSNcVHzl1iyb8Mx3y2JpdbzLVbpi/rsvTUr7AV0IXJKxPKJGcnGPQ3/C4yCujEAyJ4ONQkKteB7azPFdZYVn5T+oMb6t+1rZ5YEKbvFIJcaPuxg8ziNDBETiBjApZsl2DlWpxWokeISaGyTutveDtcPh91HyzV76ObIFQnFct+fRD5CC86awQ670tQScIkNFcbCVcJhgsxBQoPar5RNXXDiJZSbnuN/Nep0nPeuJAJoP9vTP/aUq/cXw4NmgGH85TArj1CXM+cLSCDs5dbWhzivHQXbDINDsVxcekslm7oU+9GbrIHjeeIPH4CpNmVrvSk7uIPf9KTwhcX98wfxP7LmNbU6IizTjshSl41ATgBCMf8dhJjR/bcTHKEL15UtQum8VSA+DoscixTYVAbd4ybjJDErRYcVp1P+F4HmUVXcImSTnY2wz/fpcLuoUox+K+kkOEwQsMuxZoBAoy8strup7VXLd5UoscGfxCvL9C5MeLWGQCag0/U3GeFF9W5rCa7pTXPGyb2ncO5CWPxeV+ffUXgtPZYOyzNB6INf7+vI=
   file:
-    - "release.zip"
+    - "Tempest-osx-v1.0.0.zip"
 
   skip_cleanup: true
   on:
