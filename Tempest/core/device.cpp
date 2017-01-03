@@ -15,11 +15,12 @@
 #include <sstream>
 #include <algorithm>
 #include <stdexcept>
+#include <thread>
 
 using namespace Tempest;
 
 /// \cond HIDDEN_SYMBOLS
-struct Device::Data{
+struct Device::Data {
   typedef std::unordered_set< AbstractHolderBase* > Holders;
   typedef Holders::iterator HIterator;
 
@@ -237,7 +238,7 @@ struct Device::Data{
         }
       }
 
-    int vbo, ibo, tex, dec;
+    Detail::atomic_counter vbo, ibo, tex, dec;
     } allockCount;
 
   template< class ... Args >
@@ -273,6 +274,26 @@ struct Device::Data{
 
     return tx;
     }
+
+  struct DeleteOp {
+    void* handler;
+    void (*deleter)(const AbstractAPI& api,AbstractAPI::Device* dev,AbstractShadingLang* sh,void* h);
+    };
+
+  struct PostDeleter {
+    std::mutex sync;
+    std::vector<DeleteOp> op;
+
+    void exec(const AbstractAPI& api,AbstractAPI::Device* dev,AbstractShadingLang* sh){
+      std::lock_guard<std::mutex> g(sync);
+
+      for(size_t i=0;i<op.size();++i)
+        op[i].deleter(api,dev,sh,op[i].handler);
+      op.clear();
+      }
+    } deleter;
+
+  std::thread::id graphicsThread;
   };
 /// \endcond
 
@@ -299,6 +320,7 @@ void Device::init( const AbstractAPI &,
   shLang = api.createShadingLang( impl );
 
   data = new Data();
+  data->graphicsThread = std::this_thread::get_id();
   data->add(shLang);
 
   data->declPool.reserve(64);
@@ -347,10 +369,26 @@ Device::~Device(){
   api.retDSSurfaceTaget( impl, data->depthStencil );
 
   data->del(shLang);
+  data->deleter.exec(api,impl,shLang);
   delete data;
 
   api.deleteShadingLang( shLang );
   api.deleteDevice( impl );
+  }
+
+void Device::del(void* handler,void (*del)(const AbstractAPI& api,AbstractAPI::Device* dev,AbstractShadingLang* sh,void* h)) const {
+  if(data->graphicsThread==std::this_thread::get_id()){
+    del(api,impl,shLang,handler);
+    return;
+    }
+
+  std::lock_guard<std::mutex> g(data->deleter.sync);
+
+  Data::DeleteOp d;
+  d.handler = handler;
+  d.deleter = del;
+
+  data->deleter.op.push_back(d);
   }
 
 AbstractAPI::Caps Device::caps() const {
@@ -595,6 +633,7 @@ bool Device::startRender(){
     return 0;
     }
 
+  data->deleter.exec(api,impl,shLang);
   api.startRender( impl, false );
   return 1;
   }
@@ -602,6 +641,7 @@ bool Device::startRender(){
 bool Device::reset( const Options & opt ) {
   if( api.startRender( impl, data->isLost ) ){
     forceEndPaint();
+    data->deleter.exec(api,impl,shLang);
 
     if( !hasManagedStorge() )
       invalidateDeviceObjects();
@@ -625,6 +665,7 @@ bool Device::reset( const Options & opt ) {
 
 void Device::present( AbstractAPI::SwapBehavior b ){
   forceEndPaint();
+  data->deleter.exec(api,impl,shLang);
 
   Data::HIterator end = data->holders.end();
 
@@ -672,7 +713,7 @@ AbstractAPI::Texture *Device::createTexture( const Pixmap &p,
                                                    *this,
                                                    impl, p, mips, compress );
   if( tx )
-    data->allockCount.tex++;
+    Detail::atomicInc(data->allockCount.tex,1);
 
   return tx;
   }
@@ -684,14 +725,14 @@ AbstractAPI::Texture *Device::recreateTexture( const Pixmap &p,
                                                ) {
   forceEndPaint();
   if( t )
-    data->allockCount.tex--;
+    Detail::atomicInc(data->allockCount.tex,-1);
   AbstractAPI::Texture* nt = data->createTexture(
                                api,
                                &AbstractAPI::recreateTexture,
                                *this,
                                impl, p, mips, compress, t );
   if( nt )
-    data->allockCount.tex++;
+    Detail::atomicInc(data->allockCount.tex,1);
   return nt;
   }
 
@@ -702,7 +743,7 @@ AbstractAPI::Texture* Device::createTexture( int w, int h,
   forceEndPaint();
   AbstractAPI::Texture* t = api.createTexture( impl, w, h, mips, f, u );
   if( t )
-    data->allockCount.tex++;
+    Detail::atomicInc(data->allockCount.tex,1);
   return t;
   }
 
@@ -714,7 +755,7 @@ AbstractAPI::Texture *Device::createTexture3d( int x, int y, int z,
   forceEndPaint();
   AbstractAPI::Texture* t = api.createTexture3d( impl, x, y, z, mips, f, u, d );
   if( t )
-    data->allockCount.tex++;
+    Detail::atomicInc(data->allockCount.tex,1);
   return t;
   }
 
@@ -726,8 +767,10 @@ void Device::deleteTexture( AbstractAPI::Texture* & t ){
     e.texture = t;
     event(e);
 
-    data->allockCount.tex--;
-    api.deleteTexture( impl, t );
+    Detail::atomicInc(data->allockCount.tex,-1);
+    del(t,[](const AbstractAPI& api,AbstractAPI::Device* impl,AbstractShadingLang*,void* b){
+      api.deleteTexture( impl, (AbstractAPI::Texture*)b );
+      });
     }
   }
 
@@ -740,7 +783,7 @@ AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el,
   forceEndPaint();
   AbstractAPI::VertexBuffer* v = api.createVertexBuffer( impl, size, el, u );
   if( v )
-    data->allockCount.vbo++;
+    Detail::atomicInc(data->allockCount.vbo,1);
   return v;
   }
 
@@ -750,7 +793,7 @@ AbstractAPI::VertexBuffer* Device::createVertexbuffer( size_t size, size_t el,
   forceEndPaint();
   AbstractAPI::VertexBuffer* v =  api.createVertexBuffer( impl, size, el, src, u );
   if( v )
-    data->allockCount.vbo++;
+    Detail::atomicInc(data->allockCount.vbo,1);
 
   return v;
   }
@@ -763,8 +806,10 @@ void Device::deleteVertexBuffer( AbstractAPI::VertexBuffer* vbo ){
     e.vertex = vbo;
     event(e);
 
-    data->allockCount.vbo--;
-    api.deleteVertexBuffer( impl, vbo );
+    Detail::atomicInc(data->allockCount.vbo,-1);
+    del(vbo,[](const AbstractAPI& api,AbstractAPI::Device* impl,AbstractShadingLang*,void* b){
+      api.deleteVertexBuffer( impl, (AbstractAPI::VertexBuffer*)b );
+      });
     }
   }
 
@@ -774,7 +819,7 @@ AbstractAPI::IndexBuffer* Device::createIndexBuffer( size_t size,
   forceEndPaint();
   AbstractAPI::IndexBuffer* i = api.createIndexBuffer( impl, size, elSize, u );
   if( i )
-    data->allockCount.ibo++;
+    Detail::atomicInc(data->allockCount.ibo,1);
 
   return i;
   }
@@ -786,7 +831,7 @@ AbstractAPI::IndexBuffer *Device::createIndexBuffer( size_t size,
   forceEndPaint();
   AbstractAPI::IndexBuffer* i =  api.createIndexBuffer( impl, size, elSize, src, u );
   if( i )
-    data->allockCount.ibo++;
+    Detail::atomicInc(data->allockCount.ibo,1);
 
   return i;
   }
@@ -799,8 +844,10 @@ void Device::deleteIndexBuffer( AbstractAPI::IndexBuffer* b ){
     e.index = b;
     event(e);
 
-    data->allockCount.ibo--;
-    api.deleteIndexBuffer( impl, b);
+    Detail::atomicInc(data->allockCount.ibo,-1);
+    del(b,[](const AbstractAPI& api,AbstractAPI::Device* impl,AbstractShadingLang*,void* b){
+      api.deleteIndexBuffer( impl, (AbstractAPI::IndexBuffer*)b );
+      });
     }
   }
 
@@ -857,7 +904,7 @@ AbstractAPI::VertexDecl *
     }
 
   if( v )
-    data->allockCount.dec++;
+    Detail::atomicInc(data->allockCount.dec,1);
 
   return v;
   }
@@ -870,10 +917,13 @@ void Device::deleteVertexDecl( AbstractAPI::VertexDecl* d ) const {
       GraphicsSubsystem::DeleteEvent e;
       e.declaration = d;
       event(e);
-      api.deleteVertexDecl( impl, d );
+
+      del(d,[](const AbstractAPI& api,AbstractAPI::Device* impl,AbstractShadingLang*,void* h){
+        api.deleteVertexDecl( impl, (AbstractAPI::VertexDecl*)h );
+        });
       }
 
-    data->allockCount.dec--;
+    Detail::atomicInc(data->allockCount.dec,-1);
     }
   }
 
@@ -888,6 +938,10 @@ void Device::deleteShader(GraphicsSubsystem::ProgramObject *s) const {
   e.sh = s;
   event(e);
   shLang->deleteShader(s);
+
+  del(s,[](const AbstractAPI&,AbstractAPI::Device*,AbstractShadingLang* shLang,void* s){
+    shLang->deleteShader((GraphicsSubsystem::ProgramObject*)s);
+    });
   }
 
 void Device::assertPaint() {

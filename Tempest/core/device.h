@@ -283,6 +283,7 @@ class Device {
                void * windowHwnd );
 
     void forceEndPaint() const;
+    void del(void* handler,void (*del)(const AbstractAPI&, GraphicsSubsystem::Device*, AbstractShadingLang*, void*)) const;
 
   template< class Shader, class APIDescriptor, AbstractShadingLang::ShaderType >
   friend class ShaderHolder;
