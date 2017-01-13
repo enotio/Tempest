@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <thread>
+#include <mutex>
 
 using namespace Tempest;
 
