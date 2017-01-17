@@ -2,6 +2,8 @@ install:
   - mkdir utils
   - cd utils
   - appveyor DownloadFile http://camlorn.net/appveyor/jom.exe
+  - appveyor DownloadFile http://download.qt.io/official_releases/jom/jom.zip -FileName jom.zip
+  - 7z e jom_1_1_2.zip *.exe
   - cd ..
   - set PATH=%PATH%;C:\Qt\Tools\mingw492_32\bin;c:\projects\tempest\utils
 
