@@ -938,7 +938,6 @@ void Device::deleteShader(GraphicsSubsystem::ProgramObject *s) const {
   GraphicsSubsystem::DeleteEvent e;
   e.sh = s;
   event(e);
-  shLang->deleteShader(s);
 
   del(s,[](const AbstractAPI&,AbstractAPI::Device*,AbstractShadingLang* shLang,void* s){
     shLang->deleteShader((GraphicsSubsystem::ProgramObject*)s);

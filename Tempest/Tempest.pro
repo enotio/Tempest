@@ -4,7 +4,7 @@ CONFIG  -= app_bundle
 CONFIG  -= qt
 CONFIG  += c++11
 
-CONFIG += ogl directx
+!ogl:!directx: CONFIG += ogl directx
 
 win32-msvc* {
   CONFIG += staticlib
