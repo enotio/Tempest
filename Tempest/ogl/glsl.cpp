@@ -560,7 +560,7 @@ void GLSL::enable() const {
   auto& ubo = *data->curUbo;
 
   int slot=0;
-  for( UBO u:ubo ){
+  for( UBO& u:ubo ){
     if(!u.updated){
       setUniforms( data->bindedProg, u, slot );
       u.updated = true;
