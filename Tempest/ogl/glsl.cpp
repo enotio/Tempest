@@ -545,7 +545,12 @@ void GLSL::bind(const Tempest::ShaderProgram &p) const {
     data->curLinked.linked = 0;
     }
 
-  data->curUbo = inputOf(p);
+  auto& u = inputOf(p);
+  if( data->curUbo!=u ){
+    data->curUbo = u;
+    for( UBO& u:*data->curUbo )
+      u.updated=false;
+    }
   }
 
 void GLSL::setVertexDecl(const AbstractAPI::VertexDecl *v ) const {
@@ -564,6 +569,8 @@ void GLSL::enable() const {
     if(!u.updated){
       setUniforms( data->bindedProg, u, slot );
       u.updated = true;
+      } else {
+      slot += u.tex.size();
       }
     }
   }
@@ -603,14 +610,12 @@ void GLSL::setUniforms( unsigned int /*prog*/,
           Detail::GLTexture* t = *(Detail::GLTexture**)tex;
           if(t)
             data->setupSampler(GL_TEXTURE_2D,*id,slot,t,*smp2d);
-          ++slot;
           }
           break;
         case Decl::Texture3d:{
           Detail::GLTexture* t = *(Detail::GLTexture**)tex;
           if(t)
             data->setupSampler(GL_TEXTURE_3D,*id,slot,t,*smp3d);
-          ++slot;
           }
           break;
         case Decl::Matrix4x4:
@@ -620,10 +625,12 @@ void GLSL::setUniforms( unsigned int /*prog*/,
     if(t==Decl::Texture2d){
       ++tex;
       ++smp2d;
+      ++slot;
       } else
     if(t==Decl::Texture3d){
       ++tex;
       ++smp3d;
+      ++slot;
       }
     name += strlen(name)+1;
     ++id;
