@@ -148,6 +148,11 @@ class Widget : public slot {
 
     bool hasMultitouch() const;
     void setMultiTouchTracking( bool multiTouch );
+
+    void setEnabled(bool e);
+    bool isEnabled() const;
+    bool isEnabledTo(const Widget* other) const;
+
   protected:
     virtual void paintNested( Tempest::PaintEvent & p );
 
@@ -170,6 +175,7 @@ class Widget : public slot {
     void rootGestureEvent( Tempest::AbstractGestureEvent & e );
     void rootCustomEvent(CustomEvent &e );
 
+    static void impl_disableSum(Widget *root, int diff);
 
     static Widget* impl_mouseEvent( Tempest::MouseEvent & e,
                                     Widget *root,
@@ -199,6 +205,9 @@ class Widget : public slot {
     Layout * mlay;
     Layout * parentLay;
 
+    bool   disabled  =false;
+    int    disableSum=0;
+
     ResourceContext* rcontext;
 
     bool nToUpdate, deleteLaterFlag, multiTouch;
@@ -210,6 +219,7 @@ class Widget : public slot {
     void setupMouseReleasePtr(size_t mouseID);
     void detachMouseReleasePtr();
     void detachMouseLeavePtr();
+    void detach();
 
     std::vector<Shortcut*> skuts;
 

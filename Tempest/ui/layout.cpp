@@ -25,7 +25,7 @@ void Layout::add(Widget *widget, size_t pos) {
   if(widget->parentLay==this)
     return;
 
-  size_t hasReleaseReciver = -1, hasLeavePtr = -1;
+  size_t hasReleaseReciver = size_t(-1), hasLeavePtr = size_t(-1);
   if(widget->parentLay){
     Widget* ow = widget->parentLay->owner();
 
@@ -55,8 +55,10 @@ void Layout::add(Widget *widget, size_t pos) {
   if( hasLeavePtr!=size_t(-1) )
     widget->setupMouseReleasePtr(hasLeavePtr);
 
-  if( owner() )
+  if( owner() ) {
     widget->setContext( owner()->context() );
+    Widget::impl_disableSum(widget,owner()->disableSum);
+    }
 
   if( widget->nToUpdate ){
     widget->nToUpdate    = false;
@@ -76,8 +78,7 @@ void Layout::del(Widget *widget) {
 
   w.resize( std::remove( w.begin(), w.end(), widget ) - w.begin() );
   widget->deleteLater();
-  widget->detachMouseReleasePtr();
-  widget->detachMouseLeavePtr();
+  widget->detach();
 
   applyLayout();
 
@@ -145,8 +146,7 @@ Widget *Layout::take(Widget *widget) {
   if( widget->hasFocus() )
     widget->setFocus(0);
 
-  widget->detachMouseReleasePtr();
-  widget->detachMouseLeavePtr();
+  widget->detach();
   w.resize( std::remove( w.begin(), w.end(), widget ) - w.begin() );
   widget->parentLay = 0;
 

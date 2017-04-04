@@ -47,6 +47,8 @@ void MainWindow::setupUi() {
   Button* button = new Button();
   button->setText("Button");
   button->setHint("button hint");
+  button->setIcon(Icon("data/icon.png",spHolder));
+  button->onClicked.bind(this,&MainWindow::buttonClick);
   panel->layout().add(button);
 
   LineEdit* edit = new LineEdit();
@@ -60,7 +62,7 @@ void MainWindow::setupUi() {
 
   ScrollWidget* sc = new ScrollWidget();
 
-  ListView* list = new ListView();
+  list = new ListView();
   list->setDelegate(listViewDelegate);
   sc->centralWidget().layout().add(list);
   panel->layout().add(sc);
@@ -78,6 +80,10 @@ void MainWindow::paintEvent(PaintEvent &e) {
   p.drawText(100, 80, hint);
 
   paintNested(e);
+  }
+
+void MainWindow::buttonClick() {
+  list->setEnabled(!list->isEnabledTo(list));
   }
 
 void MainWindow::render() {

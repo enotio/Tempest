@@ -557,6 +557,14 @@ void Widget::detachMouseLeavePtr() {
     }
   }
 
+void Widget::detach() {
+  detachMouseReleasePtr();
+  detachMouseLeavePtr();
+
+  if(Widget* w = owner())
+    impl_disableSum(this,-w->disableSum);
+  }
+
 void Widget::lockDelete() {
   if(deleteLaterFlagGuard>=0)
     ++deleteLaterFlagGuard;
@@ -979,6 +987,44 @@ bool Widget::hasMultitouch() const {
 
 void Widget::setMultiTouchTracking( bool m ) {
   multiTouch = m;
+  }
+
+void Widget::impl_disableSum(Widget *root,int diff) {
+  root->disableSum+=diff;
+
+  const std::vector<Widget*> & w = root->layout().widgets();
+
+  for( Widget* wx:w )
+    impl_disableSum(wx,diff);
+  }
+
+void Widget::setEnabled(bool e) {
+  if(e!=disabled)
+    return;
+  if(disabled) {
+    disabled=false;
+    impl_disableSum(this,-1);
+    } else {
+    disabled=true;
+    impl_disableSum(this,+1);
+    }
+  update();
+  }
+
+bool Widget::isEnabled() const {
+  return disableSum==0;
+  }
+
+bool Widget::isEnabledTo(const Widget *other) const {
+  const Widget* w = this;
+  while( w ){
+    if(w->disabled)
+       return false;
+    if( w==other )
+       return true;
+    w = w->owner();
+    }
+  return true;
   }
 
 void Widget::setFocus(bool f) {

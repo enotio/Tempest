@@ -30,9 +30,6 @@ class Button : public Tempest::Widget {
     void  setIcon(const Tempest::Icon&   s);
     const Tempest::Icon& icon() const;
 
-    void  setEnabled(bool e);
-    bool  isEnabled() const;
-
     const Tempest::Shortcut& shortcut() const;
     void  setShortcut( const Tempest::Shortcut & sc );
 
@@ -93,7 +90,6 @@ class Button : public Tempest::Widget {
     Tempest::Font  fnt;
     Tempest::Color fntColor;
     Tempest::Icon  icn;
-    bool           enabled=true;
 
     Type           type       =T_PushButton;
     bool           isMouseOver=false;

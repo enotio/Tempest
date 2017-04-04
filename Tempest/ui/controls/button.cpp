@@ -48,17 +48,6 @@ const Icon &Button::icon() const {
   return icn;
   }
 
-void Button::setEnabled(bool e) {
-  if(enabled!=e){
-    enabled = e;
-    update();
-    }
-  }
-
-bool Button::isEnabled() const {
-  return enabled;
-  }
-
 const Shortcut& Button::shortcut() const {
   return hotKey;
   }
@@ -122,7 +111,7 @@ Button::Type Button::buttonType() const {
   }
 
 void Button::mouseDownEvent(Tempest::MouseEvent &) {
-  if(!enabled)
+  if(!isEnabled())
     return;
   pressed     = true;
   presAnim    = true;
@@ -138,7 +127,7 @@ void Button::mouseMoveEvent( Tempest::MouseEvent & ) {
 
 void Button::mouseUpEvent(Tempest::MouseEvent &e) {
   if( e.x <= w() && e.y <=h() &&  e.x >=0 && e.y >=0 &&
-      pressed && enabled ){
+      pressed && isEnabled() ){
     emitClick();
     }
 
@@ -173,7 +162,7 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
                              buttonType()!=T_FlatButton;
   if(drawBackFrame)
     drawBack(p);
-  const Sprite icon = enabled ? icn.normal : icn.disabled;
+  const Sprite icon = isEnabled() ? icn.normal : icn.disabled;
 
   if( !icon.size().isEmpty() ){
     p.setTexture( icon );
@@ -241,6 +230,7 @@ void Button::drawFrame( Tempest::Painter &p ) {
 void Button::drawFrame(Tempest::Painter & p, const Tempest::Rect &vRect) {
   auto c = p.color();
   p.setColor(Color(0.25,0.25,0.25,1));
+  p.unsetTexture();
 
   p.drawLine(vRect.x,vRect.y,          vRect.x+vRect.w-1,vRect.y);
   p.drawLine(vRect.x,vRect.y+vRect.h-1,vRect.x+vRect.w-1,vRect.y+vRect.h-1);

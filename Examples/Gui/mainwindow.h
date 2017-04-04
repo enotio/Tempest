@@ -17,6 +17,7 @@
 #include <Tempest/SurfaceRender>
 #include <Tempest/SpritesHolder>
 
+#include <Tempest/ListView>
 #include <Tempest/ListDelegate>
 
 class MainWindow:public Tempest::Window {
@@ -31,13 +32,17 @@ class MainWindow:public Tempest::Window {
 
     Tempest::ShaderProgramHolder  shHolder;
 
-    Tempest::Texture2d             texture;
+    Tempest::Texture2d            texture;
 
-    Tempest::SpritesHolder         spHolder;
-    Tempest::SurfaceRender         uiRender;
+    Tempest::SpritesHolder        spHolder;
+    Tempest::SurfaceRender        uiRender;
+
+    Tempest::ListView*            list;
 
     void setupUi();
     void paintEvent( Tempest::PaintEvent& e );
+
+    void buttonClick();
 
     void render();
     void resizeEvent( Tempest::SizeEvent& e );

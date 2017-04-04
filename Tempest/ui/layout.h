@@ -71,7 +71,6 @@ class LinearLayout : public Layout {
         } else {
         applyLayoutPrivate( &w, &h, &typeH, &typeV,  true, &setGeometryD );
         }
-
       }
 
     Orientation orientation() const {
