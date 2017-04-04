@@ -54,7 +54,6 @@ void MainWindow::setupUi() {
   LineEdit* edit = new LineEdit();
   edit->setText("LineEdit");
   edit->setHint("some edit");
-  edit->setEnabled(false);
   panel->layout().add(edit);
 
   ListBox* listBox = new ListBox();
