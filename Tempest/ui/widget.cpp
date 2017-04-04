@@ -1015,12 +1015,12 @@ bool Widget::isEnabled() const {
   return disableSum==0;
   }
 
-bool Widget::isEnabledTo(const Widget *other) const {
+bool Widget::isEnabledTo(const Widget *ancestor) const {
   const Widget* w = this;
   while( w ){
     if(w->disabled)
        return false;
-    if( w==other )
+    if( w==ancestor )
        return true;
     w = w->owner();
     }

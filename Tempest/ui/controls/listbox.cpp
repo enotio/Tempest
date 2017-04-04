@@ -94,7 +94,7 @@ void ListBox::setCurrentItem(size_t i) {
   }
 
 void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
-  if( !rect().contains(e.x+x(), e.y+y()) ){
+  if( !rect().contains(e.x+x(), e.y+y()) || !isEnabled() ){
     e.ignore();
     return;
     }

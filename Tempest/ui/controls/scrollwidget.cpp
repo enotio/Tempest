@@ -377,6 +377,9 @@ bool ScrollWidget::hasScrollBeforeBeginV() const {
   }
 
 void ScrollWidget::mouseWheelEvent(Tempest::MouseEvent &e) {
+  if(!isEnabled())
+    return;
+
   if(sbV==nullptr)
     return;
 

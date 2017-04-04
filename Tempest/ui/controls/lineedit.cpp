@@ -152,6 +152,8 @@ void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
     e.ignore();
     return;
     }
+  if(!isEnabled())
+    return;
 
   sp = e.pos();
   ep = e.pos();
@@ -177,6 +179,8 @@ void LineEdit::mouseMoveEvent(MouseEvent &) {
   }
 
 void LineEdit::mouseDragEvent(MouseEvent &e) {
+  if(!isEnabled())
+    return;
   ep = e.pos();
   updateSel();
   update();
@@ -282,7 +286,7 @@ void LineEdit::redo() {
   }
 
 void LineEdit::keyDownEvent( KeyEvent &e ) {
-  if(SystemAPI::isKeyPressed(cmdKey)){
+  if(SystemAPI::isKeyPressed(cmdKey) || !isEnabled() ){
     return;
     }
 
@@ -366,7 +370,7 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
   }
 
 void LineEdit::keyUpEvent(KeyEvent &e) {
-  if( SystemAPI::isKeyPressed(cmdKey) ){
+  if( SystemAPI::isKeyPressed(cmdKey) && isEnabled() ){
     if(e.key==KeyEvent::K_Z)
       undo();
     if(e.key==KeyEvent::K_Y)
@@ -463,6 +467,8 @@ void LineEdit::setupTimer( bool f ) {
   }
 
 void LineEdit::animation() {
+  if(!(isEnabled() && editable) && !anim)
+    return;
   anim = !anim;
   update();
   }

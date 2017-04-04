@@ -142,6 +142,9 @@ void ScrollBar::resizeEvent(Tempest::SizeEvent &) {
   }
 
 void ScrollBar::mouseWheelEvent(MouseEvent &e) {
+  if(!isEnabled())
+    return;
+
   if(e.delta>0)
     decL(); else
   if(e.delta<0)
@@ -290,6 +293,10 @@ void ScrollBar::buttonScrollStop() {
   }
 
 void ScrollBar::CentralButton::mouseDownEvent(Tempest::MouseEvent &e) {
+  if( !isEnabled() ){
+    e.ignore();
+    return;
+    }
   Button::mouseDownEvent(e);
 
   mpos   = mapToRoot( e.pos() );
@@ -327,6 +334,9 @@ void ScrollBar::CentralWidget::mouseDownEvent(Tempest::MouseEvent &) {
   }
 
 void ScrollBar::CentralWidget::mouseUpEvent(Tempest::MouseEvent &e) {
+  if(!isEnabled())
+    return;
+
   if( owner.orientation()==Tempest::Vertical && owner.cenBtn!=nullptr ){
     if( e.pos().y < owner.cenBtn->y() )
       owner.decL();
@@ -344,7 +354,8 @@ void ScrollBar::CentralWidget::mouseUpEvent(Tempest::MouseEvent &e) {
 
 void ScrollBar::MoveBtn::mouseDownEvent(MouseEvent &e) {
   Button::mouseDownEvent(e);
-  owner.buttonScrollStart(dir);
+  if( isEnabled() )
+    owner.buttonScrollStart(dir);
   }
 
 void ScrollBar::MoveBtn::mouseUpEvent(MouseEvent &e) {

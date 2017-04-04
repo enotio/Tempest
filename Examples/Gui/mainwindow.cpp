@@ -54,18 +54,19 @@ void MainWindow::setupUi() {
   LineEdit* edit = new LineEdit();
   edit->setText("LineEdit");
   edit->setHint("some edit");
+  edit->setEnabled(false);
   panel->layout().add(edit);
 
   ListBox* listBox = new ListBox();
   listBox->setDelegate(listBoxDelegate);
   panel->layout().add(listBox);
 
-  ScrollWidget* sc = new ScrollWidget();
+  scroll = new ScrollWidget();
 
-  list = new ListView();
+  ListView* list = new ListView();
   list->setDelegate(listViewDelegate);
-  sc->centralWidget().layout().add(list);
-  panel->layout().add(sc);
+  scroll->centralWidget().layout().add(list);
+  panel->layout().add(scroll);
 
   layout().add(panel);
   }
@@ -83,7 +84,7 @@ void MainWindow::paintEvent(PaintEvent &e) {
   }
 
 void MainWindow::buttonClick() {
-  list->setEnabled(!list->isEnabledTo(list));
+  scroll->setEnabled(!scroll->isEnabledTo(scroll));
   }
 
 void MainWindow::render() {

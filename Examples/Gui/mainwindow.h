@@ -17,8 +17,8 @@
 #include <Tempest/SurfaceRender>
 #include <Tempest/SpritesHolder>
 
-#include <Tempest/ListView>
 #include <Tempest/ListDelegate>
+#include <Tempest/ScrollWidget>
 
 class MainWindow:public Tempest::Window {
   public:
@@ -37,7 +37,7 @@ class MainWindow:public Tempest::Window {
     Tempest::SpritesHolder        spHolder;
     Tempest::SurfaceRender        uiRender;
 
-    Tempest::ListView*            list;
+    Tempest::ScrollWidget*        scroll;
 
     void setupUi();
     void paintEvent( Tempest::PaintEvent& e );

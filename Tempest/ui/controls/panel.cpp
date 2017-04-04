@@ -20,7 +20,7 @@ bool Panel::isDragable() {
   }
 
 void Panel::mouseDownEvent(Tempest::MouseEvent &e) {
-  if( !dragable ){
+  if( !dragable || !isEnabled() ){
     return;
     }
 

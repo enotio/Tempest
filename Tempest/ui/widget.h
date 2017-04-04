@@ -151,7 +151,7 @@ class Widget : public slot {
 
     void setEnabled(bool e);
     bool isEnabled() const;
-    bool isEnabledTo(const Widget* other) const;
+    bool isEnabledTo(const Widget* ancestor) const;
 
   protected:
     virtual void paintNested( Tempest::PaintEvent & p );
