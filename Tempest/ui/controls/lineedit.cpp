@@ -130,6 +130,7 @@ void LineEdit::resetSelection() {
 
 void LineEdit::setEditable(bool e) {
   editable = e;
+  setFocusPolicy( e ? ClickFocus : NoFocus );
   }
 
 void LineEdit::setValidator(LineEdit::Validator *v) {
@@ -375,6 +376,8 @@ void LineEdit::keyUpEvent(KeyEvent &e) {
       undo();
     if(e.key==KeyEvent::K_Y)
       redo();
+    if(e.key==KeyEvent::K_Tab)
+      focusNext();
     }
   }
 

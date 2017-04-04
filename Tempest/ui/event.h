@@ -69,6 +69,7 @@ class Event {
       K_Down,
 
       K_Back,
+      K_Tab,
       K_Delete,
       K_Insert,
       K_Return,
