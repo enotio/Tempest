@@ -287,7 +287,7 @@ struct HLSL11::Data{
     std::vector<D3D11_INPUT_ELEMENT_DESC> decl;
     for( int i=0; i<de.size(); ++i ){
       const VertexDeclaration::Declarator::Element& ex = de[i];
-      D3D11_INPUT_ELEMENT_DESC e;
+      D3D11_INPUT_ELEMENT_DESC e={};
       e.SemanticName         = usage[ex.usage];
       e.SemanticIndex        = ex.index;
       e.Format               = ct[ex.component];

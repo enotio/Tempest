@@ -152,18 +152,8 @@ struct DirectX11::Device{
       }
     }
 
-  ~Device(){
-    for( auto i:blendSt )
-      if(i.second)
-        i.second->Release();
-
-    for( auto i:ztestSt )
-      if(i.second)
-        i.second->Release();
-
-    for( auto i:rasterSt )
-      if(i.second)
-        i.second->Release();
+  ~Device() {
+    clearOMStates();
 
     if( immediateContext )
       immediateContext->ClearState();
@@ -182,6 +172,23 @@ struct DirectX11::Device{
       immediateContext->Release();
     if( device )
       device->Release();
+    }
+
+  void clearOMStates() {
+    for( auto i:blendSt )
+      if(i.second)
+        i.second->Release();
+    blendSt.clear();
+
+    for( auto i:ztestSt )
+      if(i.second)
+        i.second->Release();
+    ztestSt.clear();
+
+    for( auto i:rasterSt )
+      if(i.second)
+        i.second->Release();
+    rasterSt.clear();
     }
 
   D3D11_SHADER_RESOURCE_VIEW_DESC* buildDesc(DXGI_FORMAT format){
@@ -772,6 +779,8 @@ bool DirectX11::reset( AbstractAPI::Device *d, void* hwnd,
                        const Options & opt ) const{
   Device* dx = (Device*)d;
   dx->vSync = opt.vSync;
+  dx->clearOMStates();
+
 #ifdef __WINDOWS_PHONE__
   WinRt::getScreenRect( hwnd, dx->scrW, dx->scrH );
 #else
@@ -884,11 +893,13 @@ AbstractAPI::Texture *DirectX11::createTexture( AbstractAPI::Device *d,
   const int bpp      = p.hasAlpha() ? 4:3;
   pix[0].pSysMem     = dev->flipTexture(p.width(), p.height(), bpp, p.const_data(), mips);
   pix[0].SysMemPitch = p.width()*4;
+  pix[0].SysMemSlicePitch = 0;
   w=p.width();
   for(size_t i=1; i<pix.size(); ++i ){
     w/=2;
     pix[i].pSysMem    =pix[0].pSysMem;
     pix[i].SysMemPitch=w*4;
+    pix[i].SysMemSlicePitch = 0;
     }
 
   DX11Texture* tex = new DX11Texture;
