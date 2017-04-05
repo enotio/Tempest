@@ -139,6 +139,7 @@ LinuxAPI::LinuxAPI() {
     { XK_KP_Down,   Event::K_Down   },
 
     { XK_Escape, Event::K_ESCAPE },
+    { XK_Tab,    Event::K_Tab },
     { XK_BackSpace,   Event::K_Back   },
     { XK_Delete, Event::K_Delete },
     { XK_Insert, Event::K_Insert },

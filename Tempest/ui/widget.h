@@ -15,7 +15,7 @@
 
 namespace Tempest{
 
-enum Orientation{
+enum Orientation {
   Horizontal,
   Vertical
   };
@@ -154,6 +154,9 @@ class Widget : public slot {
 
   protected:
     virtual void paintNested( Tempest::PaintEvent & p );
+    void         focusNext();
+    void         focusPrevious();
+    virtual void focusTraverse(bool forward);
 
   private:
     Widget( const Widget& ) = delete;

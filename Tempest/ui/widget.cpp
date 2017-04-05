@@ -613,6 +613,11 @@ void Widget::keyDownEvent(KeyEvent &e){
   }
 
 void Widget::keyUpEvent(KeyEvent &e) {
+  if( e.key==Event::K_Tab ){
+    focusNext();
+    return;
+    }
+
   e.ignore();
   }
 
@@ -745,6 +750,78 @@ void Widget::paintNested( PaintEvent &p ){
       if( uscis ){
         p.painter.setScissor( scissor );
         }
+      }
+    }
+  }
+
+static size_t indexof(Widget* owner,Widget* dest){
+  if(owner==nullptr)
+    return 0;
+
+  auto w = owner->layout().widgets();
+  for(size_t i=0; i<w.size(); ++i)
+    if( w[i]==dest )
+      return i;
+  return 0;
+  }
+
+static Widget* nextWidget(Widget* w) {
+  if( w->layout().widgets().size()>0 ) {
+    return w->layout().widgets()[0];
+    }
+
+  Widget* prev = w;
+  Widget* ow   = w->owner();
+  while( ow ) {
+    size_t id = indexof(ow,prev)+1;
+    if(id<ow->layout().widgets().size()){
+      Widget* target=ow->layout().widgets()[id];
+      return target;
+      }
+    prev = ow;
+    ow   = ow->owner();
+    }
+
+  return nullptr;
+  }
+
+static Widget* prevWidget(Widget* w) {
+  if( w->layout().widgets().size()>0 ) {
+    return w->layout().widgets().back();
+    }
+
+  Widget* prev = w;
+  Widget* ow   = w->owner();
+  while( ow ) {
+    size_t id = indexof(ow,prev);
+    if( id>0 ){
+      Widget* target=ow->layout().widgets()[id-1];
+      return target;
+      }
+    prev = ow;
+    ow   = ow->owner();
+    }
+
+  return nullptr;
+  }
+
+void Widget::focusNext() {
+  return focusTraverse(true);
+  }
+
+void Widget::focusPrevious() {
+  return focusTraverse(false);
+  }
+
+void Widget::focusTraverse(bool forward) {
+  DeleteGuard g(this);(void)g;
+
+  Widget* w = this;
+  while( w ) {
+    w = forward ? nextWidget(w) : prevWidget(w);
+    if( w && w->focusPolicy()>=TabFocus ) {
+      w->setFocus(true);
+      return;
       }
     }
   }

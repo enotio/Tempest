@@ -14,6 +14,7 @@
 #include <Tempest/Log>
 
 #include <iostream>
+#include <array>
 #include "core/wrappers/atomic.h"
 
 using namespace Tempest;
@@ -44,6 +45,7 @@ WindowsAPI::WindowsAPI() {
 
     { VK_ESCAPE,   Event::K_ESCAPE  },
     { VK_BACK,     Event::K_Back    },
+    { VK_TAB,      Event::K_Tab     },
     { VK_DELETE,   Event::K_Delete  },
     { VK_INSERT,   Event::K_Insert  },
     { VK_HOME,     Event::K_Home    },
@@ -572,14 +574,15 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       {
          Tempest::KeyEvent e = Tempest::KeyEvent( uint32_t(wParam) );
 
-         DWORD wrd[4] = {
+         std::array<DWORD,5> wrd = {{
            VK_RETURN,
            VK_BACK,
            VK_CONTROL,
+           VK_TAB,
            0
-           };
+           }};
 
-         if( 0 == *std::find( wrd, wrd+3, wParam) ){
+         if( wrd.end() == std::find( wrd.begin(), wrd.end(), wParam) ){
            Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );
            SystemAPI::emitEvent(w, ed);
 
