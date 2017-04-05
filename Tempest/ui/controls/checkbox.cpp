@@ -16,6 +16,8 @@ CheckBox::CheckBox() {
                   int(sz.h*m.uiScale) );
   setMaximumSize( std::max(maxSize().w, minSize().w),
                   std::max(maxSize().h, minSize().h) );
+
+  setFocusPolicy(StrongFocus);
   }
 
 void CheckBox::setChecked( bool c ) {
