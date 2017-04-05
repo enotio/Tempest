@@ -20,11 +20,10 @@ enum Orientation{
   Vertical
   };
 
-enum FocusPolicy{
-  NoFocus,
-  BackgroundFocus,
-  TabFocus,
-  ClickFocus
+enum FocusPolicy {
+  NoFocus    = 0,
+  TabFocus   = 1,
+  ClickFocus = 2
   };
 
 class Layout;

@@ -26,6 +26,7 @@ class Font;
 class SurfaceRender {
   public:
     SurfaceRender( Tempest::ShaderProgramHolder& sh );
+    virtual ~SurfaceRender(){}
 
     void clearVbo();
 
@@ -174,7 +175,7 @@ class SurfaceRender {
     const Tempest::VertexDeclaration::Declarator &decl();
     static const Tempest::VertexDeclaration::Declarator declImpl();
 
-    struct Vertex{
+    struct Vertex {
       float x,y;
       float u,v;
       float color[4];
@@ -182,7 +183,7 @@ class SurfaceRender {
 
     Tempest::ShaderProgramHolder& shH;
 
-    struct Block{
+    struct Block {
       size_t begin, end;
       bool   isLine;
 
@@ -215,7 +216,7 @@ class SurfaceRender {
 
     void update( Vertex* v, int count );
 
-    struct UDpos{
+    struct UDpos {
       float     dpos[2];
       };
 

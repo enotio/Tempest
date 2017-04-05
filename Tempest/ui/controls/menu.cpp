@@ -151,6 +151,7 @@ void Menu::openSubMenu(const Declarator &decl, Widget &owner) {
   Widget *box = createDropList(*overlay->owner,false,decl.items);
   if(!box)
     return;
+  box->setEnabled(owner.isEnabled());
   panels[decl.level] = box;
   Widget* ow = decl.level>0 ? panels[decl.level-1] : nullptr;
   if(ow!=nullptr)

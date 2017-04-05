@@ -142,13 +142,13 @@ void SurfaceRender::render(Device &dev) const {
       sh.setUniform(uniforms,udecl,0);
       }
 
-    int sz = b.isLine? 2:3;
+    size_t sz = b.isLine ? 2u : 3u;
     dev.drawPrimitive( b.isLine? AbstractAPI::Lines : AbstractAPI::Triangle,
                        sh,
                        vdecl,
                        vbo,
-                       b.begin,
-                       (b.end-b.begin)/sz );
+                       int(b.begin),
+                       int((b.end-b.begin)/sz) );
     }
 
   uniforms.brush = Tempest::Texture2d();
@@ -316,8 +316,8 @@ void SurfaceRender::updateBackBlock( bool isLine ) {
     b.state     = state;
     }
 
-  Block& b  = blocks.back();
-  b.end     = cpuVertexCurrentCount();
+  Block& b = blocks.back();
+  b.end    = cpuVertexCurrentCount();
   }
 
 const Tempest::VertexDeclaration::Declarator &SurfaceRender::decl() {
