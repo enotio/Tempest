@@ -43,7 +43,7 @@ void MainWindow::setupUi() {
   Panel *panel = new Panel();
   panel->setDragable(true);
   panel->setLayout(Vertical);
-
+  /*
   Button* button = new Button();
   button->setText("Button");
   button->setHint("button hint");
@@ -65,7 +65,17 @@ void MainWindow::setupUi() {
   ListView* list = new ListView();
   list->setDelegate(listViewDelegate);
   scroll->centralWidget().layout().add(list);
-  panel->layout().add(scroll);
+  panel->layout().add(scroll);*/
+
+  LineEdit* edit1 = new LineEdit();
+  edit1->setText("LineEdit1");
+  edit1->setHint("some edit");
+  panel->layout().add(edit1);
+
+  LineEdit* edit2 = new LineEdit();
+  edit2->setText("LineEdit2");
+  edit2->setHint("some edit");
+  panel->layout().add(edit2);
 
   layout().add(panel);
   }

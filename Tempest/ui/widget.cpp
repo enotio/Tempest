@@ -788,7 +788,7 @@ static Widget* nextWidget(Widget* w) {
     ow   = ow->owner();
     }
 
-  return nullptr;
+  return prev;
   }
 
 static Widget* prevWidget(Widget* w) {
@@ -808,7 +808,7 @@ static Widget* prevWidget(Widget* w) {
     ow   = ow->owner();
     }
 
-  return nullptr;
+  return prev;
   }
 
 void Widget::focusNext() {
