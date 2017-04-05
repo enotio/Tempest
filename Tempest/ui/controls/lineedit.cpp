@@ -12,6 +12,8 @@ static const KeyEvent::KeyType cmdKey = KeyEvent::K_Command;
 static const KeyEvent::KeyType cmdKey = KeyEvent::K_Control;
 #endif
 
+const int LineEdit::cursorFlashTime=500;
+
 LineEdit::LineEdit(): anim(0) {
   sedit    = 0;
   eedit    = 0;
@@ -91,6 +93,15 @@ void LineEdit::setText(const std::u16string &t) {
     onTextChanged(txt);
     update();
     }
+  }
+
+void LineEdit::setTextColor(const Color& c) {
+  tColor = c;
+  update();
+  }
+
+const Color& LineEdit::textColor() const {
+  return tColor;
   }
 
 const std::u16string &LineEdit::text() const {
@@ -237,15 +248,9 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
     x += 1;
     }
 
-  p.setBlendMode(noBlend);
-  if( editable && ((anim || s!=e) && hasFocus()) ){
-    p.setColor( 0,0,1,1 );
-    //p.setBlendMode( addBlend );
-    p.drawRect( sx+oldSc, 0, x-sx, h(),
-                2,0, 1,1 );
-    }
+  drawCursor(p,sx+oldSc,x-sx,anim);
 
-  p.setColor(1,1,1,1);
+  p.setColor(tColor);
   int dY = (h()-fnt.size()-m.yMargin())/2;
   Rect sc = p.scissor();
   p.setScissor(sc.intersected(Rect(m.left, 0, w()-m.xMargin(), h())));
@@ -288,6 +293,15 @@ void LineEdit::redo() {
   setSelectionBounds(sedit,eedit);
   isEdited = 0;
   onEditingFinished( txt );
+  }
+
+void LineEdit::drawCursor(Painter &p,int x1,int x2, bool animState) {
+  if( editable && ((animState || selectionBegin()!=selectionEnd()) && hasFocus()) ){
+    p.setBlendMode(noBlend);
+    p.unsetTexture();
+    p.setColor( 0,0,1,1 );
+    p.drawRect( x1, 0, x2, h() );
+    }
   }
 
 void LineEdit::keyDownEvent( KeyEvent &e ) {
@@ -478,7 +492,7 @@ void LineEdit::storeText() {
 void LineEdit::setupTimer( bool f ) {
   if( f ){
     anim=true;
-    timer.start(700);
+    timer.start(cursorFlashTime);
     } else {
     timer.stop();
     anim = false;

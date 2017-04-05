@@ -35,6 +35,9 @@ class LineEdit : public Tempest::Widget {
     void  setText( const std::string&    t );
     void  setText( const std::u16string& t );
 
+    void         setTextColor(const Color& c);
+    const Color& textColor() const;
+
     const std::u16string &hint() const;
     void  setHint( const std::u16string & str );
     void  setHint( const std::string & str    );
@@ -89,11 +92,13 @@ class LineEdit : public Tempest::Widget {
     virtual void storeOldText();
     virtual void undo();
     virtual void redo();
+    virtual void drawCursor(Painter& p, int x1, int x2, bool animState);
 
   private:
     std::u16string txt, oldTxt, hnt;
     mutable std::unique_ptr<Validator> mvalidator;
 
+    Color tColor;
     bool editable;
     bool anim;
     bool tabChFocus;
@@ -115,6 +120,7 @@ class LineEdit : public Tempest::Widget {
 
     void animation();
 
+    static const int      cursorFlashTime;
     static const char16_t passChar;
   };
 /** @}*/
