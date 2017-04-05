@@ -25,6 +25,9 @@ class LineEdit : public Tempest::Widget {
     void setEchoMode(EchoMode m);
     EchoMode echoMode() const;
 
+    void setTabChangesFocus(bool ch);
+    bool tabChangesFocus() const;
+
     void setFont(const Font& f);
     const Font& font() const;
 
@@ -91,6 +94,7 @@ class LineEdit : public Tempest::Widget {
 
     bool editable;
     bool anim;
+    bool tabChFocus;
     EchoMode emode=Normal;
 
     size_t sedit, eedit;

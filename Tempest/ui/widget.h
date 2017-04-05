@@ -13,7 +13,7 @@
 
 #include <Tempest/ResourceContext>
 
-namespace Tempest{
+namespace Tempest {
 
 enum Orientation {
   Horizontal,

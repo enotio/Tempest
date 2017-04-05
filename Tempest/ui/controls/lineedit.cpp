@@ -20,8 +20,9 @@ LineEdit::LineEdit(): anim(0) {
 
   resize(100,27);
 
-  editable = 1;
-  isEdited = false;
+  editable   = 1;
+  isEdited   = false;
+  tabChFocus = true;
 
   setFocusPolicy( WheelFocus );
 
@@ -58,6 +59,14 @@ void LineEdit::setEchoMode(LineEdit::EchoMode m) {
 
 LineEdit::EchoMode LineEdit::echoMode() const {
   return emode;
+  }
+
+void LineEdit::setTabChangesFocus(bool ch) {
+  tabChFocus=ch;
+  }
+
+bool LineEdit::tabChangesFocus() const {
+  return tabChFocus;
   }
 
 void LineEdit::setFont(const Font &f) {
@@ -291,6 +300,9 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
     return;
     }
 
+  if(e.key==Event::K_Tab && tabChangesFocus())
+    return;
+
   if(!isEdited)
     storeOldText();
 
@@ -371,6 +383,11 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
   }
 
 void LineEdit::keyUpEvent(KeyEvent &e) {
+  if(e.key==Event::K_Tab && tabChangesFocus()) {
+    focusNext();
+    return;
+    }
+
   if( SystemAPI::isKeyPressed(cmdKey) && isEnabled() ){
     if(e.key==KeyEvent::K_Z)
       undo();
