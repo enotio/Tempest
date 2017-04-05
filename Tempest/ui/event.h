@@ -40,6 +40,7 @@ class Event {
       MouseLeave,
       KeyDown,
       KeyUp,
+      Focus,
       Resize,
       Shortcut,
       Paint,
@@ -143,7 +144,15 @@ class Event {
       K_Last
       };
 
+    enum FocusReason {
+      TabReason,
+      ClickReason,
+      WheelReason,
+      UnknownReason
+      };
+
     Type type () const{ return etype; }
+
   protected:
     void setType( Type t ){ etype = t; }
 
@@ -201,6 +210,16 @@ class KeyEvent: public Event {
 
     const KeyType  key;
     const uint32_t u16;
+  };
+
+class FocusEvent: public Event {
+  public:
+    FocusEvent( bool in, FocusReason reason ): in(in), reason(reason) {
+      setType( Focus );
+      }
+
+    const bool        in;
+    const FocusReason reason;
   };
 
 class PaintEvent: public Event {

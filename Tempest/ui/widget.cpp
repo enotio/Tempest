@@ -495,7 +495,7 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
           w->setupMouseReleasePtr(et.mouseID);
 
         if( focus && (w->focusPolicy()&ClickFocus) )
-          w->setFocus(1);
+          w->impl_setFocus(true,Event::ClickReason);
 
         if(w->deleteLaterFlag)
           return nullptr; else
@@ -609,12 +609,6 @@ void Widget::mouseWheelEvent(MouseEvent &e){
   }
 
 void Widget::keyDownEvent(KeyEvent &e){
-  if( e.key==Event::K_Tab )
-    return;
-  e.ignore();
-  }
-
-void Widget::keyUpEvent(KeyEvent &e) {
   if( e.key==Event::K_Tab ){
     focusNext();
     return;
@@ -623,11 +617,19 @@ void Widget::keyUpEvent(KeyEvent &e) {
   e.ignore();
   }
 
+void Widget::keyUpEvent(KeyEvent &e) {
+  e.ignore();
+  }
+
 void Widget::customEvent( CustomEvent &e ) {
   e.ignore();
   }
 
 void Widget::closeEvent(CloseEvent &e) {
+  e.ignore();
+  }
+
+void Widget::focusEvent(FocusEvent &e) {
   e.ignore();
   }
 
@@ -828,7 +830,7 @@ void Widget::focusTraverse(bool forward) {
   while( w ) {
     w = forward ? nextWidget(w) : prevWidget(w);
     if( w && (w->focusPolicy()&TabFocus) && w->isEnabled() ) {
-      w->setFocus(true);
+      w->impl_setFocus(true,Event::TabReason);
       return;
       }
     }
@@ -852,7 +854,7 @@ void Widget::rootMouseDownEvent(MouseEvent &e) {
     e.accept();
     this->event(e);
     if(e.isAccepted() && (this->focusPolicy()&ClickFocus) )
-      this->setFocus(1);
+      this->impl_setFocus(true,Event::ClickReason);
     }
   }
 
@@ -942,7 +944,7 @@ void Widget::rootMouseWheelEvent(MouseEvent &e) {
     e.accept();
     this->event(e);
     if(e.isAccepted() && (this->focusPolicy()&WheelFocus))
-      this->setFocus(1);
+      this->impl_setFocus(true,Event::WheelReason);
     }
   }
 
@@ -1113,8 +1115,15 @@ bool Widget::isEnabledTo(const Widget *ancestor) const {
   }
 
 void Widget::setFocus(bool f) {
+  impl_setFocus(f,Event::UnknownReason);
+  }
+
+void Widget::impl_setFocus(bool f,Event::FocusReason reason) {
   DeleteGuard g(this);
   (void)g;
+
+  FocusEvent inEv  (true,reason);
+  FocusEvent outEv(false,reason);
 
   if( focus!=f ){
     if( f ){
@@ -1124,8 +1133,9 @@ void Widget::setFocus(bool f) {
 
       while( root && !root->chFocus ){
         if( root->hasFocus() ){
-          root->focus = 0;
-          root->onFocusChange( 0 );
+          root->focus = false;
+          root->focusEvent(outEv);
+          root->onFocusChange( false );
           }
 
         if( !root->chFocus && root!=this ){
@@ -1168,6 +1178,7 @@ void Widget::setFocus(bool f) {
       }
 
     focus = f;
+    focusEvent(f ? inEv : outEv);
     onFocusChange(f);
     }
   }

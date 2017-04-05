@@ -29,7 +29,6 @@ Button::Button()
   pressed  = false;
   presAnim = false;
 
-  onFocusChange.bind( *this, &Button::focusChange );
   timePressed = Application::tickCount();
 
   setFontColor(Color(1));
@@ -146,6 +145,10 @@ void Button::mouseEnterEvent(MouseEvent &) {
 
 void Button::mouseLeaveEvent(MouseEvent &) {
   isMouseOver = false;
+  update();
+  }
+
+void Button::focusEvent(FocusEvent&) {
   update();
   }
 
@@ -266,10 +269,6 @@ void Button::keyUpEvent(Tempest::KeyEvent &e) {
     } else {
     Widget::keyUpEvent(e);
     }
-  }
-
-void Button::focusChange( bool ) {
-  update();
   }
 
 void Button::onShortcut() {

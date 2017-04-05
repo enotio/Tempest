@@ -67,13 +67,13 @@ class Button : public Tempest::Widget {
     void mouseEnterEvent(Tempest::MouseEvent& e);
     void mouseLeaveEvent(Tempest::MouseEvent& e);
 
+    void focusEvent(Tempest::FocusEvent& e);
+
     void paintEvent( Tempest::PaintEvent &p);
 
     void gestureEvent(Tempest::AbstractGestureEvent &e);
 
     void keyUpEvent(Tempest::KeyEvent &e);
-
-    void focusChange(bool);
 
     void onShortcut();
     virtual void emitClick();

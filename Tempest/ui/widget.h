@@ -126,6 +126,7 @@ class Widget : public slot {
     virtual void customEvent ( Tempest::CustomEvent & e );
     virtual void closeEvent  ( Tempest::CloseEvent  & e );
 
+    virtual void focusEvent(Tempest::FocusEvent& e);
     virtual void shortcutEvent( Tempest::KeyEvent & e );
     virtual void resizeEvent( Tempest::SizeEvent& e );
 
@@ -196,6 +197,7 @@ class Widget : public slot {
     static void    impl_enterLeaveEvent(Widget *w, MouseEvent &e, bool enter);
 
     static void    impl_gestureEvent( Widget *w, Tempest::AbstractGestureEvent & e );
+    void           impl_setFocus(bool f,Event::FocusReason reason);
 
     void unsetChFocus( Widget* root, Widget* emiter );
 

@@ -84,6 +84,8 @@ class LineEdit : public Tempest::Widget {
     void keyDownEvent(Tempest::KeyEvent &e);
     void keyUpEvent(Tempest::KeyEvent &e);
 
+    void focusEvent(Tempest::FocusEvent& e);
+
     virtual void storeOldText();
     virtual void undo();
     virtual void redo();
@@ -108,7 +110,7 @@ class LineEdit : public Tempest::Widget {
     bool isEdited;
     void updateSel();
 
-    void storeText(bool);
+    void storeText();
     void setupTimer(bool);
 
     void animation();

@@ -26,8 +26,6 @@ LineEdit::LineEdit(): anim(0) {
 
   setFocusPolicy( WheelFocus );
 
-  onFocusChange.bind( *this, &LineEdit::storeText );
-
   scroll = 0;
 
   const UiMetrics& uiMetrics = Application::uiMetrics();
@@ -43,13 +41,10 @@ LineEdit::LineEdit(): anim(0) {
 
   timer.setRepeatCount(0);
   timer.timeout.bind( this, &LineEdit::animation );
-  onFocusChange.bind( this, &LineEdit::setupTimer );
   }
 
 LineEdit::~LineEdit() {
-  onFocusChange.ubind( this, &LineEdit::setupTimer );
-  onFocusChange.ubind( this, &LineEdit::storeText );
-  storeText(false);
+  storeText();
   }
 
 void LineEdit::setEchoMode(LineEdit::EchoMode m) {
@@ -300,8 +295,10 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
     return;
     }
 
-  if(e.key==Event::K_Tab && tabChangesFocus())
+  if(e.key==Event::K_Tab && tabChangesFocus()) {
+    focusNext();
     return;
+    }
 
   if(!isEdited)
     storeOldText();
@@ -333,7 +330,7 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
     }
 
   if( e.key==KeyEvent::K_Return ){
-    storeText(0);
+    storeText();
     onEnter(txt);
     return;
     }
@@ -383,11 +380,6 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
   }
 
 void LineEdit::keyUpEvent(KeyEvent &e) {
-  if(e.key==Event::K_Tab && tabChangesFocus()) {
-    focusNext();
-    return;
-    }
-
   if( SystemAPI::isKeyPressed(cmdKey) && isEnabled() ){
     if(e.key==KeyEvent::K_Z)
       undo();
@@ -395,6 +387,14 @@ void LineEdit::keyUpEvent(KeyEvent &e) {
       redo();
     if(e.key==KeyEvent::K_Tab)
       focusNext();
+    }
+  }
+
+void LineEdit::focusEvent(FocusEvent &e) {
+  storeText();
+  setupTimer(e.in);
+  if( e.reason==Event::TabReason && e.in ){
+    setSelectionBounds(0,text().size());
     }
   }
 
@@ -467,7 +467,7 @@ void LineEdit::updateSel() {
     }
   }
 
-void LineEdit::storeText(bool) {
+void LineEdit::storeText() {
   if( isEdited ){
     isEdited = 0;
     storeOldText();
@@ -477,10 +477,11 @@ void LineEdit::storeText(bool) {
 
 void LineEdit::setupTimer( bool f ) {
   if( f ){
+    anim=true;
     timer.start(700);
     } else {
     timer.stop();
-    anim = 0;
+    anim = false;
     }
 
   update();
