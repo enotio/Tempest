@@ -263,8 +263,9 @@ void Button::keyUpEvent(Tempest::KeyEvent &e) {
     presAnim    = true;
     timePressed = Application::tickCount();
     update();
-    } else
-    e.ignore();
+    } else {
+    Widget::keyUpEvent(e);
+    }
   }
 
 void Button::focusChange( bool ) {

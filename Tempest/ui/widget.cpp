@@ -609,6 +609,8 @@ void Widget::mouseWheelEvent(MouseEvent &e){
   }
 
 void Widget::keyDownEvent(KeyEvent &e){
+  if( e.key==Event::K_Tab )
+    return;
   e.ignore();
   }
 
@@ -665,7 +667,7 @@ void Widget::impl_keyPressEvent(Widget *wd, KeyEvent &e) {
       }
 
     if( chFocus ){
-      impl_keyPressEvent(w[i-1], e);
+      impl_keyPressEvent(wx, e);
       if( e.isAccepted() )
         return;
       }

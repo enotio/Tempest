@@ -121,10 +121,10 @@ class Widget : public slot {
 
     virtual void mouseWheelEvent( Tempest::MouseEvent & e );
 
-    virtual void keyDownEvent( Tempest::KeyEvent & e );
-    virtual void keyUpEvent( Tempest::KeyEvent & e );
-    virtual void customEvent( Tempest::CustomEvent & e );
-    virtual void closeEvent( Tempest::CloseEvent & e );
+    virtual void keyDownEvent( Tempest::KeyEvent    & e );
+    virtual void keyUpEvent  ( Tempest::KeyEvent    & e );
+    virtual void customEvent ( Tempest::CustomEvent & e );
+    virtual void closeEvent  ( Tempest::CloseEvent  & e );
 
     virtual void shortcutEvent( Tempest::KeyEvent & e );
     virtual void resizeEvent( Tempest::SizeEvent& e );
