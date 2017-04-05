@@ -7,7 +7,7 @@ using namespace Tempest;
 
 Button::Button()
        : hotKey(this, Tempest::KeyEvent::K_NoKey) {
-  setFocusPolicy( Tempest::ClickFocus );
+  setFocusPolicy( Tempest::TabFocus );
 
   const UiMetrics& m = Application::uiMetrics();
   const int  h = int(m.buttonHeight*m.uiScale);

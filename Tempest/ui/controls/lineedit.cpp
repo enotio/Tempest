@@ -23,7 +23,7 @@ LineEdit::LineEdit(): anim(0) {
   editable = 1;
   isEdited = false;
 
-  setFocusPolicy( ClickFocus );
+  setFocusPolicy( WheelFocus );
 
   onFocusChange.bind( *this, &LineEdit::storeText );
 
@@ -130,7 +130,7 @@ void LineEdit::resetSelection() {
 
 void LineEdit::setEditable(bool e) {
   editable = e;
-  setFocusPolicy( e ? ClickFocus : NoFocus );
+  setFocusPolicy( e ? WheelFocus : NoFocus );
   }
 
 void LineEdit::setValidator(LineEdit::Validator *v) {

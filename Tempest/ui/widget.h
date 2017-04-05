@@ -21,9 +21,11 @@ enum Orientation {
   };
 
 enum FocusPolicy {
-  NoFocus    = 0,
-  TabFocus   = 1,
-  ClickFocus = 2
+  NoFocus     = 0,
+  TabFocus    = 1,
+  ClickFocus  = 2,
+  StrongFocus = TabFocus|ClickFocus,
+  WheelFocus  = 4|StrongFocus
   };
 
 class Layout;

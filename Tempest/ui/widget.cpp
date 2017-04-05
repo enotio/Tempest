@@ -27,7 +27,7 @@ struct Widget::DeleteGuard{
 size_t Widget::count = 0;
 
 Widget::Widget(ResourceContext *context):
-  fpolicy(BackgroundFocus), rcontext(context), deleteLaterFlagGuard(0){
+  fpolicy(NoFocus), rcontext(context), deleteLaterFlagGuard(0){
   ++Widget::count;
 
   parentLay    = 0;
@@ -494,7 +494,7 @@ Widget* Widget::impl_mouseEvent( Tempest::MouseEvent & e,
         if( mpress )
           w->setupMouseReleasePtr(et.mouseID);
 
-        if( focus && w->focusPolicy()==ClickFocus )
+        if( focus && (w->focusPolicy()&ClickFocus) )
           w->setFocus(1);
 
         if(w->deleteLaterFlag)
@@ -648,22 +648,28 @@ void Widget::impl_keyPressEvent(Widget *wd, KeyEvent &e) {
   DeleteGuard guard(wd);
   (void)guard;
 
-  const std::vector<Widget*> & w = wd->layout().widgets();
+  const std::vector<Widget*>& w = wd->layout().widgets();
 
   for( size_t i=w.size(); i>0; --i ){
-    if( w[i-1]->hasFocus() ){
+    Widget* wx=w[i-1];
+    DeleteGuard g(wx);(void)g;
+
+    const bool focus   = wx->hasFocus();
+    const bool chFocus = wx->hasChildFocus();
+
+    if( focus ){
       e.accept();
-      w[i-1]->event(e);
+      wx->event(e);
       if( e.isAccepted() )
         return;
       }
 
-    if( w[i-1]->chFocus ){
+    if( chFocus ){
       impl_keyPressEvent(w[i-1], e);
+      if( e.isAccepted() )
+        return;
       }
     }
-
-  // e.ignore();
   }
 
 void Widget::impl_customEvent( Widget*w, CustomEvent &e ) {
@@ -766,7 +772,7 @@ static size_t indexof(Widget* owner,Widget* dest){
   }
 
 static Widget* nextWidget(Widget* w) {
-  if( w->layout().widgets().size()>0 ) {
+  if( w->layout().widgets().size()>0 && w->isVisible() ) {
     return w->layout().widgets()[0];
     }
 
@@ -786,7 +792,7 @@ static Widget* nextWidget(Widget* w) {
   }
 
 static Widget* prevWidget(Widget* w) {
-  if( w->layout().widgets().size()>0 ) {
+  if( w->layout().widgets().size()>0 && w->isVisible() ) {
     return w->layout().widgets().back();
     }
 
@@ -819,7 +825,7 @@ void Widget::focusTraverse(bool forward) {
   Widget* w = this;
   while( w ) {
     w = forward ? nextWidget(w) : prevWidget(w);
-    if( w && w->focusPolicy()>=TabFocus ) {
+    if( w && (w->focusPolicy()&TabFocus) && w->isEnabled() ) {
       w->setFocus(true);
       return;
       }
@@ -843,7 +849,7 @@ void Widget::rootMouseDownEvent(MouseEvent &e) {
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch())){
     e.accept();
     this->event(e);
-    if(e.isAccepted() && this->focusPolicy()==ClickFocus)
+    if(e.isAccepted() && (this->focusPolicy()&ClickFocus) )
       this->setFocus(1);
     }
   }
@@ -933,7 +939,7 @@ void Widget::rootMouseWheelEvent(MouseEvent &e) {
   if( !e.isAccepted() && (e.mouseID==0 || hasMultitouch()) ){
     e.accept();
     this->event(e);
-    if(e.isAccepted() && this->focusPolicy()==ClickFocus)
+    if(e.isAccepted() && (this->focusPolicy()&WheelFocus))
       this->setFocus(1);
     }
   }

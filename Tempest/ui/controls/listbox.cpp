@@ -120,10 +120,12 @@ void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
   }
 
 void ListBox::setupView(size_t oldSelected) {
+  bool focused=false;
   if(!listDelegate)
     return;
 
   if(view){
+    focused = view->hasFocus();
     layout().take(view);
     listDelegate->removeView(view,oldSelected);
     view = 0;
@@ -133,6 +135,7 @@ void ListBox::setupView(size_t oldSelected) {
     selected = std::min(selected,listDelegate->size()-1);
     view     = listDelegate->createView(selected,ListDelegate::R_ListBoxView);
     layout().add(view);
+    view->setFocus(focused);
     } else {
     selected = 0;
     }
