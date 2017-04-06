@@ -115,19 +115,7 @@ Opengl2x::Caps Opengl2x::caps( AbstractAPI::Device* d ) const {
   return dev->caps;
   }
 
-bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
-                              void *hwnd, const Options& /*opt*/) const {
-#ifdef __APPLE__
-  dev->window  = hwnd;
-#ifdef __MOBILE_PLATFORM__
-  dev->context = iOSAPI::initializeOpengl(hwnd);
-  return dev->context!=nullptr && iOSAPI::glMakeCurrent(dev->context);
-#else
-  dev->context = OsxAPI::initializeOpengl(hwnd);
-  return dev->context!=nullptr && OsxAPI::glMakeCurrent(dev->context);
-#endif
-#endif
-
+GraphicsSubsystem::Device* Opengl2x::createDevice(void *hwnd, const AbstractAPI::Options &opt) const {
 #ifdef __WINDOWS__
   PIXELFORMATDESCRIPTOR pfd;
   memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
@@ -142,7 +130,29 @@ bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
   HDC    hDC        = GetDC( HWND(hwnd) );
   GLint pixelFormat = ChoosePixelFormat( hDC, &pfd );
   SetPixelFormat( hDC, pixelFormat, &pfd);
+#endif
+  return AbstractAPI::createDevice(hwnd,opt);
+  }
 
+void Opengl2x::deleteDevice(GraphicsSubsystem::Device *d) const {
+  return AbstractAPI::deleteDevice(d);
+  }
+
+bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
+                              void *hwnd, const Options& /*opt*/) const {
+#ifdef __APPLE__
+  dev->window  = hwnd;
+#ifdef __MOBILE_PLATFORM__
+  dev->context = iOSAPI::initializeOpengl(hwnd);
+  return dev->context!=nullptr && iOSAPI::glMakeCurrent(dev->context);
+#else
+  dev->context = OsxAPI::initializeOpengl(hwnd);
+  return dev->context!=nullptr && OsxAPI::glMakeCurrent(dev->context);
+#endif
+#endif
+
+#ifdef __WINDOWS__
+  HDC   hDC = GetDC( HWND(hwnd) );
   HGLRC hRC = Detail::createContext( hDC );
   wglMakeCurrent( hDC, hRC );
 
@@ -779,7 +789,8 @@ void Opengl2x::setDSSurfaceTaget( AbstractAPI::Device *d,
 //#endif
   }
 
-bool Opengl2x::startRender(AbstractAPI::Device* ,void *hwnd, bool   ) const {
+bool Opengl2x::startRender(AbstractAPI::Device* d,void *hwnd, bool   ) const {
+  if( !setDevice(d) ) return false;
 #ifdef  __ANDROID__
   return AndroidAPI::startRender(0);
 #endif
@@ -788,7 +799,10 @@ bool Opengl2x::startRender(AbstractAPI::Device* ,void *hwnd, bool   ) const {
 #endif
 #ifdef __WINDOWS__
   HDC hDC = GetDC( HWND(hwnd) );
-  wglMakeCurrent( hDC, dev->hRC );
+  if(!wglMakeCurrent( hDC, dev->hRC )){
+    Log::e("wglMakeCurrent failed: ",uint32_t(GetLastError()));
+    T_ASSERT(0);
+    }
 #endif
 #ifdef __APPLE__
 #ifdef __MOBILE_PLATFORM__
@@ -797,7 +811,7 @@ bool Opengl2x::startRender(AbstractAPI::Device* ,void *hwnd, bool   ) const {
   return OsxAPI::glMakeCurrent(dev->context);
 #endif
 #endif
-  //glViewport(0,0, dev->scrW, dev->scrH);
+  setupViewport(d,hwnd);
   return 1;
   }
 
@@ -841,6 +855,7 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
                       void* hwnd,
                       const Options &opt ) const {
   if( !setDevice(d) ) return 0;
+  dev->displaySettings = opt.displaySettings;
 
 #ifdef __APPLE__
   Size sz   = SystemAPI::instance().windowClientRect((SystemAPI::Window*)hwnd);
@@ -879,23 +894,8 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
 #endif
 
 #ifdef __WINDOWS__
-  RECT rectWindow;
-  GetClientRect( HWND(hwnd), &rectWindow);
-
-  int w = rectWindow.right  - rectWindow.left;
-  int h = rectWindow.bottom - rectWindow.top;
-
-  if( opt.displaySettings.width>=0 )
-    w = opt.displaySettings.width;
-
-  if( opt.displaySettings.height>=0 )
-    h = opt.displaySettings.height;
-
-  dev->scrW = w;
-  dev->scrH = h;
-
-  glViewport(0,0, w,h);
-  if( opt.displaySettings!=DisplaySettings(-1,-1) )
+  setupViewport(d,hwnd);
+  if( dev->displaySettings!=DisplaySettings(-1,-1) )
     AbstractAPI::setDisplaySettings( hwnd, opt.displaySettings );
 
   if( dev->wglSwapInterval )
@@ -927,6 +927,28 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
   dev->vbo    = 0;
   dev->ibo    = 0;
   return 1;
+  }
+
+void Opengl2x::setupViewport(AbstractAPI::Device *d,void *hwnd) const {
+  if( !setDevice(d) ) return;
+
+#ifdef __WINDOWS__
+  RECT rectWindow;
+  GetClientRect( HWND(hwnd), &rectWindow);
+
+  int w = rectWindow.right  - rectWindow.left;
+  int h = rectWindow.bottom - rectWindow.top;
+
+  if( dev->displaySettings.width>=0 && dev->displaySettings.height>=0 ) {
+    w = dev->displaySettings.width;
+    h = dev->displaySettings.height;
+    }
+
+  dev->scrW = w;
+  dev->scrH = h;
+
+  glViewport(0,0, w,h);
+#endif
   }
 
 bool Opengl2x::isFormatSupported(AbstractAPI::Device *d, Pixmap::Format f) const {
