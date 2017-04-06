@@ -97,8 +97,8 @@ class AbstractAPI: public GraphicsSubsystem {
     virtual Device* allocDevice( void * hwnd, const Options & opt ) const = 0;
     virtual void    freeDevice ( Device* d )  const = 0;
 
-    Device*         createDevice(void * hwnd,const Options & opt) const;
-    void            deleteDevice( Device* d )  const;
+    virtual Device* createDevice(void * hwnd,const Options & opt) const;
+    virtual void    deleteDevice( Device* d )  const;
 
     virtual void clear( AbstractAPI::Device *d,
                         const Color& cl, float z, unsigned stencil ) const = 0;

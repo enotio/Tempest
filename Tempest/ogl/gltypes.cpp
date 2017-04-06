@@ -25,7 +25,7 @@ Tempest::Detail::GLTexture::GLTexture() {
   fboHash = -1;
   }
 
-Tempest::Detail::ImplDeviceBase::ImplDeviceBase() {
+Tempest::Detail::ImplDeviceBase::ImplDeviceBase():displaySettings(0,0) {
   isTileRenderStarted = false;
   isPainting = false;
   memset( &target, 0, sizeof(target) );

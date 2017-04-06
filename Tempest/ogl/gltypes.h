@@ -145,7 +145,8 @@ namespace Detail{
   #endif
       }
 
-    int scrW, scrH;
+    int scrW=0, scrH=0;
+    DisplaySettings   displaySettings;
     AbstractAPI::Caps caps;
 
     VertexDeclaration::Declarator * decl;

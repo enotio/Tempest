@@ -17,6 +17,9 @@ class Opengl2x : public OpenGLBase {
 
     Caps caps(Device *d) const;
 
+    Device* createDevice(void * hwnd,const Options & opt) const;
+    void    deleteDevice( Device* d )  const;
+
     Device* allocDevice( void * hwnd, const Options & opt ) const;
     void    freeDevice( Device* d )  const;
 
@@ -190,6 +193,7 @@ class Opengl2x : public OpenGLBase {
                          bool compress ) const;
 
     bool setDevice(  AbstractAPI::Device *d ) const;
+    void setupViewport(AbstractAPI::Device *d,void* hwnd) const;
 
     bool setupFBO() const;
     void startTiledRender() const;
