@@ -86,7 +86,7 @@ Opengl4x::Opengl4x() {
 
   }
 
-AbstractAPI::Device *Opengl4x::createDevice( void *hwnd,
+AbstractAPI::Device *Opengl4x::allocDevice( void *hwnd,
                                              const AbstractAPI::Options &opt ) const {
   ImplDevice* dev = new ImplDevice();
 
@@ -125,10 +125,10 @@ AbstractAPI::Device *Opengl4x::createDevice( void *hwnd,
   return (AbstractAPI::Device*)dev;
   }
 
-void Opengl4x::deleteDevice(GraphicsSubsystem::Device *d) const {
+void Opengl4x::freeDevice(GraphicsSubsystem::Device *d) const {
   setDevice(d);
   ((ImplDevice*)dev)->glDeleteVertexArrays(1, &dev->vbo);
-  Opengl2x::deleteDevice(d);
+  Opengl2x::freeDevice(d);
   }
 
 bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
@@ -170,7 +170,6 @@ bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
   PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = 0;
   wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
 
-  dev->hDC = hDC;
   dev->hRC = hRC;
 
   wglMakeCurrent(NULL, NULL);
@@ -180,14 +179,11 @@ bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
     return false;
     }
 
-  hRC = wglCreateContextAttribsARB(dev->hDC, 0, attribs);
+  hRC = wglCreateContextAttribsARB(hDC, 0, attribs);
 
   if (!hRC || !wglMakeCurrent(hDC, hRC)) {
     return false;
     }
-
-  dev->hDC = hDC;
-  dev->hRC = hRC;
 
   int major, minor;
   glGetIntegerv(GL_MAJOR_VERSION, &major);

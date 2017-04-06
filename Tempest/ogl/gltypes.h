@@ -117,7 +117,6 @@ namespace Detail{
   #endif
 
   #ifdef __WINDOWS__
-    HDC   hDC;
     HGLRC hRC;
   #endif
 

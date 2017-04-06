@@ -445,7 +445,7 @@ static HRESULT createDevice( IDXGIAdapter *pAdapter,
 #endif
   }
 
-AbstractAPI::Device *DirectX11::createDevice( void *Hwnd,
+AbstractAPI::Device *DirectX11::allocDevice( void *Hwnd,
                                               const AbstractAPI::Options &opt ) const {
   std::unique_ptr<Device> dev( new Device() );
   dev->vSync = opt.vSync;
@@ -545,7 +545,7 @@ AbstractAPI::Device *DirectX11::createDevice( void *Hwnd,
   return (AbstractAPI::Device*)dev.release();
   }
 
-void DirectX11::deleteDevice(AbstractAPI::Device *d) const {
+void DirectX11::freeDevice(AbstractAPI::Device *d) const {
   delete ((Device*)d);
   }
 
@@ -761,11 +761,11 @@ void DirectX11::retDSSurfaceTaget(AbstractAPI::Device *,
                                   AbstractAPI::StdDSSurface *) const {
   }
 
-bool DirectX11::startRender( AbstractAPI::Device *, bool /*isLost*/ ) const{
+bool DirectX11::startRender(AbstractAPI::Device *, void *hwnd, bool /*isLost*/ ) const{
   return true;
   }
 
-bool DirectX11::present( AbstractAPI::Device *d, SwapBehavior /*b*/ ) const{
+bool DirectX11::present(AbstractAPI::Device *d, void *hwnd, SwapBehavior /*b*/ ) const{
   Device* dev = (Device*)d;
 #ifdef __WINDOWS_PHONE__
   dev->swapChain->Present(1,0);

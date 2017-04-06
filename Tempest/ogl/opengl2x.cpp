@@ -129,8 +129,6 @@ bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
 #endif
 
 #ifdef __WINDOWS__
-  GLuint PixelFormat;
-
   PIXELFORMATDESCRIPTOR pfd;
   memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
 
@@ -141,14 +139,13 @@ bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
   pfd.cColorBits = 32;
   pfd.cDepthBits = 24;
 
-  HDC hDC = GetDC( (HWND)hwnd );
-  PixelFormat = ChoosePixelFormat( hDC, &pfd );
-  SetPixelFormat( hDC, PixelFormat, &pfd);
+  HDC    hDC        = GetDC( HWND(hwnd) );
+  GLint pixelFormat = ChoosePixelFormat( hDC, &pfd );
+  SetPixelFormat( hDC, pixelFormat, &pfd);
 
   HGLRC hRC = Detail::createContext( hDC );
   wglMakeCurrent( hDC, hRC );
 
-  dev->hDC = hDC;
   dev->hRC = hRC;
 
   if( !Detail::initGLProc() ) {
@@ -183,7 +180,7 @@ bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
   return 0;
   }
 
-AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) const {
+AbstractAPI::Device* Opengl2x::allocDevice(void *hwnd, const Options &opt) const {
   ImplDevice* dev = new ImplDevice();
 
   if( !createContext(dev, hwnd, opt) )
@@ -214,7 +211,7 @@ AbstractAPI::Device* Opengl2x::createDevice(void *hwnd, const Options &opt) cons
   return (AbstractAPI::Device*)dev;
   }
 
-void Opengl2x::deleteDevice(AbstractAPI::Device *d) const {
+void Opengl2x::freeDevice(AbstractAPI::Device *d) const {
   ImplDevice* dev = (ImplDevice*)d;
   if( !setDevice(d) ) return;
   dev->free(dev->dynVbo);
@@ -782,7 +779,7 @@ void Opengl2x::setDSSurfaceTaget( AbstractAPI::Device *d,
 //#endif
   }
 
-bool Opengl2x::startRender( AbstractAPI::Device* ,bool   ) const {
+bool Opengl2x::startRender(AbstractAPI::Device* ,void *hwnd, bool   ) const {
 #ifdef  __ANDROID__
   return AndroidAPI::startRender(0);
 #endif
@@ -790,7 +787,8 @@ bool Opengl2x::startRender( AbstractAPI::Device* ,bool   ) const {
   glXMakeCurrent( dev->dpy, dev->window, dev->glc);
 #endif
 #ifdef __WINDOWS__
-  wglMakeCurrent( dev->hDC, dev->hRC );
+  HDC hDC = GetDC( HWND(hwnd) );
+  wglMakeCurrent( hDC, dev->hRC );
 #endif
 #ifdef __APPLE__
 #ifdef __MOBILE_PLATFORM__
@@ -803,11 +801,13 @@ bool Opengl2x::startRender( AbstractAPI::Device* ,bool   ) const {
   return 1;
   }
 
-bool Opengl2x::present(AbstractAPI::Device *d, SwapBehavior b) const {
+bool Opengl2x::present(AbstractAPI::Device *d, void *hwnd, SwapBehavior b) const {
   ImplDevice* dev = (ImplDevice*)d;
+  (void)dev;
 #ifdef __WINDOWS__
   (void)b;
-  SwapBuffers( dev->hDC );
+  HDC hDC = GetDC( HWND(hwnd) );
+  SwapBuffers( hDC );
 #endif
 
 #ifdef __LINUX__

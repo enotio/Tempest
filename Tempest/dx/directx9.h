@@ -19,8 +19,8 @@ class DirectX9 : public AbstractAPI {
     std::string vendor( AbstractAPI::Device* d ) const;
     std::string renderer( AbstractAPI::Device* d ) const;
 
-    Device* createDevice( void * hwnd, const Options & opt ) const;
-    void    deleteDevice( Device* d )  const;
+    Device* allocDevice( void * hwnd, const Options & opt ) const;
+    void    freeDevice( Device* d )  const;
 
     void clear( AbstractAPI::Device *d,
                 const Color& cl, float z, unsigned stencil ) const;
@@ -53,9 +53,8 @@ class DirectX9 : public AbstractAPI {
     void retDSSurfaceTaget( AbstractAPI::Device *d,
                             AbstractAPI::StdDSSurface * s ) const;
 
-    bool startRender( AbstractAPI::Device *d,
-                      bool isLost ) const;
-    bool present( AbstractAPI::Device *d, SwapBehavior b ) const;
+    bool startRender( AbstractAPI::Device *d,void* hwnd,bool isLost ) const;
+    bool present( AbstractAPI::Device *d,void *hwnd, SwapBehavior b ) const;
     bool reset  ( AbstractAPI::Device *d, void* hwnd,
                   const Options & opt ) const;
 

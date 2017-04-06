@@ -94,8 +94,11 @@ class AbstractAPI: public GraphicsSubsystem {
     virtual bool testDisplaySettings( void* hwnd, const DisplaySettings& d ) const;
     virtual bool setDisplaySettings ( void* hwnd, const DisplaySettings& d ) const;
 
-    virtual Device* createDevice( void * hwnd, const Options & opt ) const = 0;
-    virtual void    deleteDevice( Device* d )  const = 0;
+    virtual Device* allocDevice( void * hwnd, const Options & opt ) const = 0;
+    virtual void    freeDevice ( Device* d )  const = 0;
+
+    Device*         createDevice(void * hwnd,const Options & opt) const;
+    void            deleteDevice( Device* d )  const;
 
     virtual void clear( AbstractAPI::Device *d,
                         const Color& cl, float z, unsigned stencil ) const = 0;
@@ -137,11 +140,9 @@ class AbstractAPI: public GraphicsSubsystem {
     virtual void unsetRenderTagets( AbstractAPI::Device *d,
                                     int count ) const = 0;
 
-    virtual bool startRender( AbstractAPI::Device *d,
-                              bool isLost ) const = 0;
-    virtual bool present( AbstractAPI::Device *d, SwapBehavior b ) const = 0;
-    virtual bool reset  ( AbstractAPI::Device *d, void* hwnd,
-                          const Options & opt ) const = 0;
+    virtual bool startRender( AbstractAPI::Device *d, void* hwnd, bool isLost ) const = 0;
+    virtual bool present( AbstractAPI::Device *d, void *hwnd, SwapBehavior b      ) const = 0;
+    virtual bool reset  ( AbstractAPI::Device *d, void* hwnd, const Options & opt ) const = 0;
 
     virtual bool isFormatSupported( AbstractAPI::Device *d, Pixmap::Format f ) const  = 0;
     virtual AbstractAPI::Texture* createTexture( AbstractAPI::Device *d,
@@ -270,6 +271,8 @@ class AbstractAPI: public GraphicsSubsystem {
 
   protected:
     static int vertexCount(PrimitiveType t, const int pcount );
+    static Device*  device;
+    static uint32_t deviceRefCount;
 
   private:
     AbstractAPI(const AbstractAPI&) = delete;

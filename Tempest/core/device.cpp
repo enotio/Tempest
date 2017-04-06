@@ -626,7 +626,7 @@ void Device::applyRs() const {
 bool Device::startRender(){
   if( data->isLost ){
 
-    if( api.startRender( impl, true ) ){
+    if( api.startRender( impl, data->windowHwnd, true ) ){
       data->isLost = reset();
       return data->isLost;
       }
@@ -635,12 +635,12 @@ bool Device::startRender(){
     }
 
   data->deleter.exec(api,impl,shLang);
-  api.startRender( impl, false );
+  api.startRender( impl, data->windowHwnd, false );
   return 1;
   }
 
 bool Device::reset( const Options & opt ) {
-  if( api.startRender( impl, data->isLost ) ){
+  if( api.startRender( impl, data->windowHwnd, data->isLost ) ){
     forceEndPaint();
     data->deleter.exec(api,impl,shLang);
 
@@ -674,7 +674,7 @@ void Device::present( AbstractAPI::SwapBehavior b ){
     (*i)->presentEvent();
     }
 
-  data->isLost = api.present( impl, b );
+  data->isLost = api.present( impl, data->windowHwnd, b );
   }
 
 bool Device::hasManagedStorge() const {

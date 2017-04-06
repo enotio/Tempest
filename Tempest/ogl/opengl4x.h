@@ -9,8 +9,8 @@ class Opengl4x : public Opengl2x {
   public:
     Opengl4x();
 
-    Device* createDevice( void * hwnd, const Options & opt ) const;
-    void    deleteDevice( Device* d )  const;
+    Device* allocDevice( void * hwnd, const Options & opt ) const;
+    void    freeDevice( Device* d )  const;
 
   protected:
     struct ImplDevice;

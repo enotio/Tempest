@@ -100,7 +100,7 @@ std::string DirectX9::renderer( AbstractAPI::Device *d ) const {
   return dx->adapter.Description;
   }
 
-AbstractAPI::Device* DirectX9::createDevice(void *hwnd, const Options &opt) const {
+AbstractAPI::Device* DirectX9::allocDevice(void *hwnd, const Options &opt) const {
   LPDIRECT3D9 D3D = LPDIRECT3D9(impl);
 
   D3DPRESENT_PARAMETERS d3dpp;
@@ -174,7 +174,7 @@ void DirectX9::makePresentParams( void * p, void *hWnd,
     d3dpp.BackBufferHeight = opt.displaySettings.height;
   }
 
-void DirectX9::deleteDevice(AbstractAPI::Device *d) const {
+void DirectX9::freeDevice(AbstractAPI::Device *d) const {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
   if( dev )
     dev->Release();
@@ -350,7 +350,7 @@ void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
     }
   }
 
-bool DirectX9::startRender( AbstractAPI::Device *d,
+bool DirectX9::startRender(AbstractAPI::Device *d, void *hwnd,
                             bool isLost  ) const {
 
   if( isLost ){
@@ -363,7 +363,7 @@ bool DirectX9::startRender( AbstractAPI::Device *d,
   return 1;
   }
 
-bool DirectX9::present(AbstractAPI::Device *d, SwapBehavior /*b*/ ) const {
+bool DirectX9::present(AbstractAPI::Device *d, void *hwnd, SwapBehavior /*b*/ ) const {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   return ( D3DERR_DEVICELOST == dev->Present( NULL, NULL, NULL, NULL ) );

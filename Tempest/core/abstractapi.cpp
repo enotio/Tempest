@@ -6,6 +6,9 @@
 
 using namespace Tempest;
 
+GraphicsSubsystem::Device* AbstractAPI::device=nullptr;
+uint32_t                   AbstractAPI::deviceRefCount=0;
+
 AbstractAPI::Options::Options():displaySettings(-1, -1, 32, false){
   vSync    = false;
   //windowed = true;
@@ -17,6 +20,25 @@ bool AbstractAPI::testDisplaySettings( void *hwnd, const DisplaySettings &d ) co
 
 bool AbstractAPI::setDisplaySettings( void *hwnd, const DisplaySettings &d ) const {
   return SystemAPI::instance().setDisplaySettings( (SystemAPI::Window*)hwnd, d );
+}
+
+GraphicsSubsystem::Device *AbstractAPI::createDevice(void *hwnd, const AbstractAPI::Options &opt) const {
+  deviceRefCount++;
+  if(deviceRefCount==1)
+    device = allocDevice(hwnd,opt);
+  return device;
+  }
+
+void AbstractAPI::deleteDevice(GraphicsSubsystem::Device *d) const {
+  if(d==device){
+    deviceRefCount--;
+    if(deviceRefCount==0) {
+      freeDevice(device);
+      device=nullptr;
+      }
+    } else {
+    T_ASSERT(0);
+    }
   }
 
 int AbstractAPI::mipCount(int width, int height, int depth) {
