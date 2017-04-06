@@ -180,7 +180,7 @@ class Widget : public slot {
     void rootGestureEvent( Tempest::AbstractGestureEvent & e );
     void rootCustomEvent(CustomEvent &e );
 
-    static void impl_disableSum(Widget *root, int diff);
+    static void    impl_disableSum(Widget *root, int diff);
 
     static Widget* impl_mouseEvent( Tempest::MouseEvent & e,
                                     Widget *root,
@@ -199,7 +199,7 @@ class Widget : public slot {
     static void    impl_gestureEvent( Widget *w, Tempest::AbstractGestureEvent & e );
     void           impl_setFocus(bool f,Event::FocusReason reason);
 
-    void unsetChFocus( Widget* root, Widget* emiter );
+    void unsetChFocus( Widget* root, Widget* emiter, Event::FocusReason reason );
 
     Rect wrect;
     bool wvisible;

@@ -1118,7 +1118,7 @@ void Widget::setFocus(bool f) {
   impl_setFocus(f,Event::UnknownReason);
   }
 
-void Widget::impl_setFocus(bool f,Event::FocusReason reason) {
+void Widget::impl_setFocus(bool f, Event::FocusReason reason) {
   DeleteGuard g(this);
   (void)g;
 
@@ -1127,7 +1127,7 @@ void Widget::impl_setFocus(bool f,Event::FocusReason reason) {
 
   if( focus!=f ){
     if( f ){
-      unsetChFocus( this, this );
+      unsetChFocus( this, this, reason );
 
       Widget * root = this, *proot = this;
 
@@ -1139,8 +1139,8 @@ void Widget::impl_setFocus(bool f,Event::FocusReason reason) {
           }
 
         if( !root->chFocus && root!=this ){
-          root->chFocus = 1;
-          root->onChildFocusChange(1);
+          root->chFocus = true;
+          root->onChildFocusChange(true);
           }
 
         if( root->owner() ){
@@ -1157,7 +1157,7 @@ void Widget::impl_setFocus(bool f,Event::FocusReason reason) {
 
         for( size_t i=0; i<root->layout().widgets().size(); ++i ){
           if( root->layout().widgets()[i]!=proot )
-            unsetChFocus( root->layout().widgets()[i], root );
+            unsetChFocus( root->layout().widgets()[i], root, reason );
           }
         }
 
@@ -1183,23 +1183,25 @@ void Widget::impl_setFocus(bool f,Event::FocusReason reason) {
     }
   }
 
-void Widget::unsetChFocus( Widget* root, Widget* emiter ){  
+void Widget::unsetChFocus( Widget* root, Widget* emiter, Event::FocusReason reason ){
   DeleteGuard g(root);
   (void)g;
 
   if( root!=emiter && root->focus ){
-    root->focus = 0;
-    root->onFocusChange(0);
+    FocusEvent outEv(false,reason);
+    root->focus = false;
+    root->focusEvent(outEv);
+    root->onFocusChange(false);
     }
 
   if( root->chFocus ){
-    root->chFocus = 0;
-    root->onChildFocusChange(0);
+    root->chFocus = false;
+    root->onChildFocusChange(false);
     }
 
   const std::vector<Widget*>& lx = root->layout().widgets();
   for( size_t i=0; i<lx.size(); ++i )
-    unsetChFocus( lx[i], emiter );
+    unsetChFocus( lx[i], emiter, reason );
   }
 
 void Widget::deleteLater() {

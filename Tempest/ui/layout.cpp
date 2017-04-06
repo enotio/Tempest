@@ -44,7 +44,7 @@ void Layout::add(Widget *widget, size_t pos) {
     pos=w.size();
 
   if( widget->hasFocus() || widget->hasChildFocus() )
-    widget->unsetChFocus(widget, 0);
+    widget->unsetChFocus(widget, 0, Event::UnknownReason);
 
   w.insert(w.begin()+pos,widget);
 
