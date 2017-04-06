@@ -182,6 +182,7 @@ class Device {
     void bind( AbstractAPI::IndexBuffer* b );
 
     void bind( const Tempest::ShaderProgram  &s );
+
   private:
     void draw( AbstractAPI::PrimitiveType t,
                int firstVertex, int pCount );
@@ -258,17 +259,6 @@ class Device {
                                 std::string & outputLog ) const;
     void deleteShader( AbstractAPI::ProgramObject*  ) const;
 
-    AbstractShadingLang * shLang;
-
-    Device( const Device&d ) = delete;
-    void operator = ( const Device& ) = delete;
-
-    AbstractAPI::Device* impl;
-    const AbstractAPI & api;
-
-    struct Data;
-    Data *data;
-
     void invalidateDeviceObjects();
     bool restoreDeviceObjects();
 
@@ -284,6 +274,16 @@ class Device {
 
     void forceEndPaint() const;
     void del(void* handler,void (*del)(const AbstractAPI&, GraphicsSubsystem::Device*, AbstractShadingLang*, void*)) const;
+
+    Device( const Device&d ) = delete;
+    Device& operator = ( const Device& ) = delete;
+
+    AbstractShadingLang* shLang;
+    AbstractAPI::Device* impl;
+    const AbstractAPI&   api;
+
+    struct Data;
+    Data *data;
 
   template< class Shader, class APIDescriptor, AbstractShadingLang::ShaderType >
   friend class ShaderHolder;
