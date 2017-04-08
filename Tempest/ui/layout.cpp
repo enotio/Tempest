@@ -146,7 +146,11 @@ Widget *Layout::take(Widget *widget) {
   if( widget->hasFocus() )
     widget->setFocus(0);
 
+  MouseEvent e;
+  Widget::impl_enterLeaveEvent(widget,e,false);
+
   widget->detach();
+
   w.resize( std::remove( w.begin(), w.end(), widget ) - w.begin() );
   widget->parentLay = 0;
 
