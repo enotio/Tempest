@@ -20,6 +20,7 @@
 
 #include <ucontext.h>
 #include <unistd.h>
+#include <array>
 #include <atomic>
 
 #pragma GCC diagnostic push
@@ -524,6 +525,7 @@ OsxAPI::OsxAPI(){
     { kVK_End,           Event::K_End    },
     //{ kVK_Pause,         Event::K_Pause  },
     { kVK_Return,        Event::K_Return },
+    { kVK_Tab,           Event::K_Tab},
 
     //{ kVK_F1,     Event::K_F1 },
     //{ kVK_ANSI_0, Event::K_0  },
@@ -609,14 +611,14 @@ bool OsxAPI::processEvent(){
 
       //WM_CHAR
       Tempest::KeyEvent e = Tempest::KeyEvent( key );
-      uint16_t wrd[4] = {
+      static const std::array<uint16_t,4> wrd = {{
         Event::K_Return,
         Event::K_Back,
         Event::K_Control,
-        0
-        };
+        Event::K_Tab
+        }};
 
-      if( 0 == *std::find( wrd, wrd+3, k.key) && e.u16 ){
+      if( wrd.end() == std::find( wrd.begin(), wrd.end(), k.key) && e.u16 ){
         Tempest::KeyEvent ed( Event::K_NoKey, e.u16, Event::KeyDown );
         SystemAPI::emitEvent(w, ed);
 
