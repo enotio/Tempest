@@ -818,6 +818,7 @@ bool Opengl2x::startRender(AbstractAPI::Device* d,void *hwnd, bool   ) const {
 bool Opengl2x::present(AbstractAPI::Device *d, void *hwnd, SwapBehavior b) const {
   ImplDevice* dev = (ImplDevice*)d;
   (void)dev;
+  (void)hwnd;
 #ifdef __WINDOWS__
   (void)b;
   HDC hDC = GetDC( HWND(hwnd) );
@@ -931,6 +932,7 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
 
 void Opengl2x::setupViewport(AbstractAPI::Device *d,void *hwnd) const {
   if( !setDevice(d) ) return;
+  (void)hwnd;
 
 #ifdef __WINDOWS__
   RECT rectWindow;
