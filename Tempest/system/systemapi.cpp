@@ -1,4 +1,3 @@
-//--- enable fopen
 #include "systemapi.h"
 
 #include "system/windowsapi.h"

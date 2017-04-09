@@ -11,12 +11,15 @@
 
 namespace Tempest {
 
+class Menu;
+
 /** \addtogroup GUI
  *  @{
  */
 class Button : public Tempest::Widget {
   public:
     Button();
+    ~Button();
 
     enum Type{
       T_PushButton,
@@ -49,6 +52,11 @@ class Button : public Tempest::Widget {
 
     void setButtonType(Type t);
     Type buttonType() const;
+
+    void setMenu(Tempest::Menu* menu);
+    Tempest::Menu* menu() const;
+
+    void showMenu();
 
   protected:
     virtual void drawFrame(Tempest::Painter &p, const Tempest::Rect& r );
@@ -90,6 +98,8 @@ class Button : public Tempest::Widget {
     Tempest::Font  fnt;
     Tempest::Color fntColor;
     Tempest::Icon  icn;
+
+    std::unique_ptr<Tempest::Menu> btnMenu;
 
     Type           type       =T_PushButton;
     bool           isMouseOver=false;

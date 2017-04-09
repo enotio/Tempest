@@ -29,6 +29,16 @@ struct Margin{
 
   int xMargin() const;
   int yMargin() const;
+
+  bool operator == (const Margin& other) const {
+    return left  ==other.left  &&
+           right ==other.right &&
+           top   ==other.top   &&
+           bottom==other.bottom;
+    }
+  bool operator != (const Margin& other) const {
+    return !(*this==other);
+    }
   };
 }
 

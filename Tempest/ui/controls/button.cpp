@@ -4,6 +4,7 @@ using namespace Tempest;
 
 #include <Tempest/Utility>
 #include <Tempest/Application>
+#include <Tempest/Menu>
 
 Button::Button()
        : hotKey(this, Tempest::KeyEvent::K_NoKey) {
@@ -32,6 +33,9 @@ Button::Button()
   timePressed = Application::tickCount();
 
   setFontColor(Color(1));
+  }
+
+Button::~Button() {
   }
 
 void Button::setIcon(const Sprite &s) {
@@ -109,11 +113,24 @@ Button::Type Button::buttonType() const {
   return type;
   }
 
-void Button::mouseDownEvent(Tempest::MouseEvent &) {
+void Button::setMenu(Menu* m) {
+  btnMenu.reset(m);
+  }
+
+Menu* Button::menu() const {
+  return btnMenu.get();
+  }
+
+void Button::showMenu() {
+  if( btnMenu )
+    btnMenu->exec(*this);
+  }
+
+void Button::mouseDownEvent(Tempest::MouseEvent& e) {
   if(!isEnabled())
     return;
-  pressed     = true;
-  presAnim    = true;
+  pressed     = e.button==Event::ButtonLeft;
+  presAnim    = pressed;
   timePressed = Application::tickCount();
 
   update();
@@ -125,9 +142,11 @@ void Button::mouseMoveEvent( Tempest::MouseEvent & ) {
   }
 
 void Button::mouseUpEvent(Tempest::MouseEvent &e) {
-  if( e.x <= w() && e.y <=h() &&  e.x >=0 && e.y >=0 &&
-      pressed && isEnabled() ){
-    emitClick();
+  if( e.x<=w() && e.y<=h() &&  e.x>=0 && e.y>=0 && isEnabled() ){
+    if(pressed)
+      emitClick();
+    else if(e.button==Event::ButtonRight)
+      showMenu();
     }
 
   pressed = false;
