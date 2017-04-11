@@ -14,6 +14,8 @@ class WindowsAPI:public SystemAPI {
                            const Pixmap& pinput,
                            int hotSpotX,
                            int hotSpotY );
+    static bool setWindowTitle(Tempest::Window &w, const std::u16string& title );
+
     static std::string iso3Locale();
     void clearPressedImpl();
 

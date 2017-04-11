@@ -305,12 +305,15 @@ void LineEdit::drawCursor(Painter &p,int x1,int x2, bool animState) {
   }
 
 void LineEdit::keyDownEvent( KeyEvent &e ) {
-  if(SystemAPI::isKeyPressed(cmdKey) || !isEnabled() ){
+  if(!isEnabled())
+    return;
+
+  if(e.key==Event::K_Tab && (tabChangesFocus() || SystemAPI::isKeyPressed(cmdKey)) ) {
+    focusTraverse( !SystemAPI::isKeyPressed(Event::K_Shift) );
     return;
     }
 
-  if(e.key==Event::K_Tab && tabChangesFocus()) {
-    focusNext();
+  if(SystemAPI::isKeyPressed(cmdKey)){
     return;
     }
 
@@ -399,8 +402,6 @@ void LineEdit::keyUpEvent(KeyEvent &e) {
       undo();
     if(e.key==KeyEvent::K_Y)
       redo();
-    if(e.key==KeyEvent::K_Tab)
-      focusNext();
     }
   }
 

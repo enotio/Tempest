@@ -610,7 +610,7 @@ void Widget::mouseWheelEvent(MouseEvent &e){
 
 void Widget::keyDownEvent(KeyEvent &e){
   if( e.key==Event::K_Tab ){
-    focusNext();
+    focusTraverse( !SystemAPI::isKeyPressed(Event::K_Shift) );
     return;
     }
 

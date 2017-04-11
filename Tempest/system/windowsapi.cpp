@@ -46,6 +46,7 @@ WindowsAPI::WindowsAPI() {
     { VK_ESCAPE,   Event::K_ESCAPE  },
     { VK_BACK,     Event::K_Back    },
     { VK_TAB,      Event::K_Tab     },
+    { VK_SHIFT,    Event::K_Shift   },
     { VK_DELETE,   Event::K_Delete  },
     { VK_INSERT,   Event::K_Insert  },
     { VK_HOME,     Event::K_Home    },
@@ -317,6 +318,11 @@ SystemAPI::Window *WindowsAPI::createWindowFullScr() {
   ShowWindow( hwnd, SW_NORMAL );
   UpdateWindow( hwnd );
   return (Window*)hwnd;
+  }
+
+bool WindowsAPI::setWindowTitle(Tempest::Window& w, const std::u16string &title) {
+  HWND  hwnd = (HWND)handle(w);
+  return SetWindowTextW(hwnd,LPWSTR(title.c_str()))==TRUE;
   }
 
 Widget* WindowsAPI::addOverlay(WindowOverlay *ov) {

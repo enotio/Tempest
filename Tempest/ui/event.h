@@ -77,6 +77,7 @@ class Event {
       K_Home,
       K_End,
       K_Pause,
+      K_Shift,
 
       K_F1,
       K_F2,

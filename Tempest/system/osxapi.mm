@@ -526,6 +526,8 @@ OsxAPI::OsxAPI(){
     //{ kVK_Pause,         Event::K_Pause  },
     { kVK_Return,        Event::K_Return },
     { kVK_Tab,           Event::K_Tab},
+    { kVK_Shift,         Event::K_Shift},
+    { kVK_RightShift,    Event::K_Shift},
 
     //{ kVK_F1,     Event::K_F1 },
     //{ kVK_ANSI_0, Event::K_0  },
