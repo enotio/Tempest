@@ -47,8 +47,8 @@ class Button : public Tempest::Widget {
     const Tempest::Font& font() const;
     void  setFont( const Tempest::Font& f );
 
-    void setFontColor(const Tempest::Color& color);
-    const Tempest::Color& fontColor() const;
+    void setTextColor(const Tempest::Color& color);
+    const Tempest::Color& textColor() const;
 
     void setButtonType(Type t);
     Type buttonType() const;

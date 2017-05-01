@@ -27,6 +27,15 @@ const Font &Label::font() const {
   return fnt;
   }
 
+void Label::setTextColor(const Color& c) {
+  tColor = c;
+  update();
+  }
+
+const Color& Label::textColor() const {
+  return tColor;
+  }
+
 void Label::setText( const std::string &t ) {
   std::u16string s;
   s.assign( t.begin(), t.end() );
@@ -44,7 +53,7 @@ void Label::paintEvent(PaintEvent &e) {
 
   const Margin& m = margin();
 
-  p.setColor(1,1,1,1);
+  p.setColor(tColor);
   int dY = (h()-fnt.size()-m.yMargin())/2;
   Rect sc = p.scissor();
   p.setScissor(sc.intersected(Rect(m.left, 0, w()-m.xMargin(), h())));

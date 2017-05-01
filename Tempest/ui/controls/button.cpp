@@ -32,7 +32,7 @@ Button::Button()
 
   timePressed = Application::tickCount();
 
-  setFontColor(Color(1));
+  setTextColor(Color(1));
   }
 
 Button::~Button() {
@@ -96,11 +96,12 @@ const Tempest::Font& Button::font() const {
   return fnt;
   }
 
-void Button::setFontColor(const Color &color) {
+void Button::setTextColor(const Color &color) {
   fntColor = color;
+  update();
   }
 
-const Color& Button::fontColor() const {
+const Color& Button::textColor() const {
   return fntColor;
   }
 

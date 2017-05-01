@@ -15,6 +15,9 @@ class Label : public Widget {
     void setFont(const Font& f);
     const Font& font() const;
 
+    void         setTextColor(const Color& c);
+    const Color& textColor() const;
+
     const std::u16string& text() const;
     void  setText( const std::string&    t );
     void  setText( const std::u16string& t );
@@ -25,6 +28,7 @@ class Label : public Widget {
   private:
     std::u16string txt;
     Tempest::Font  fnt;
+    Tempest::Color tColor;
   };
 /** @}*/
 
