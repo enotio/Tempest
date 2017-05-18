@@ -349,9 +349,9 @@ class signal : Detail::signalBase {
         }
 
       IEmit* remove(size_t at,size_t sz){
-        for(size_t i=0;i<sz;++i)
-          data[at+i] = data[at+i+sz];
         size -= sz;
+        for(size_t i=at;i<size;++i)
+          data[i] = data[i+sz];
         char* c = (char*)realloc(data,size);
         if( c )
           data = c;
