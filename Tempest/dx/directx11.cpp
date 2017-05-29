@@ -1,5 +1,6 @@
 #include "directx11.h"
 
+#if defined(__WINDOWS_PHONE__) || (__WINDOWS__)
 #include "shading/abstractshadinglang.h"
 #include <Tempest/RenderState>
 #include <Tempest/Platform>
@@ -1410,3 +1411,4 @@ void DirectX11::setRenderState( AbstractAPI::Device *d,
     dev->rasterSt[rdesc] = state;
     }
   }
+#endif

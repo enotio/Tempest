@@ -1299,6 +1299,10 @@ void Widget::event( Event &e ) {
       shortcutEvent( (Tempest::KeyEvent&)e );
       break;
 
+    case Event::Focus:
+      focusEvent( (Tempest::FocusEvent&)e );
+      break;
+
     case Event::Paint:{
       Tempest::PaintEvent& pe = (Tempest::PaintEvent&)e;
       if( pe.pass==0 )

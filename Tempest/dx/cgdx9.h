@@ -1,6 +1,8 @@
 #ifndef CGDX9_H
 #define CGDX9_H
 
+#ifdef __WINDOWS__
+
 #include <Tempest/AbstractShadingLang>
 #include <Tempest/AbstractAPI>
 
@@ -54,4 +56,5 @@ class CgDx9 : public AbstractShadingLang {
 
 }
 
+#endif // __WINDOWS__
 #endif // CGDX9_H

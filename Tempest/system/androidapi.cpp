@@ -8,10 +8,13 @@ using namespace Tempest;
 #include <Tempest/Window>
 #include <Tempest/Event>
 #include <Tempest/Log>
-#include <map>
-#include <queue>
 #include <Tempest/Assert>
 #include <Tempest/DisplaySettings>
+#include <Tempest/JniExtras>
+
+#include <thread>
+#include <map>
+#include <queue>
 
 #include <EGL/egl.h>
 #include <GLES/gl.h>
@@ -20,6 +23,8 @@ using namespace Tempest;
 #include <errno.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <dlfcn.h>
+#include <limits.h>
 
 #include <jni.h>
 #include <android/asset_manager.h>
@@ -40,6 +45,8 @@ using namespace Tempest;
 #include <cmath>
 #include <locale>
 
+Tempest::signal<> AndroidAPI::onSurfaceDestroyed;
+
 struct Guard {
   Guard( pthread_mutex_t& m ):m(m){
     pthread_mutex_lock(&m);
@@ -52,33 +59,32 @@ struct Guard {
   pthread_mutex_t& m;
   };
 
-static struct Android{
-  EGLDisplay display;
-  EGLSurface surface;
-  EGLContext context;
+static struct Android {
+  //Tempest::Window* wnd=nullptr;
 
-  int window_w, window_h;
-  Tempest::Window * volatile wnd;
+  std::unordered_map<jobject, Tempest::Window*> wndWx;
 
-  JavaVM  *vm;
-  JNIEnv  *env;
-  jobject assets;
-  jclass  tempestClass;
-  jobject activity;
+  JavaVM     *vm =nullptr;
+  JNIEnv     *env=nullptr;
+  Jni::Object assets;
 
-  ANativeWindow   * volatile window;
+  Jni::Class  tempestClass;
+  Jni::Class  surfaceClass;
+  Jni::Class  applicationClass;
+
+  Jni::Object activity;
+
   pthread_mutex_t appMutex, waitMutex, assetsPreloadedMutex;
-  volatile AndroidAPI::GraphicsContexState graphicsState;
+  pthread_t       mainThread;
 
-  pthread_t mainThread;
+  int (*mainFunc)(int,char**) = nullptr;
+  std::string mainFnArgs;
 
-  bool forceToResize;
-  bool isWndAvailable;
-  bool isPaused;
+  bool isPaused=true;
 
   std::vector<char> internal, external;
   std::string locale;
-  int densityDpi;
+  float       density;
 
   enum MainThreadMessage {
     MSG_NONE = 0,
@@ -105,13 +111,13 @@ static struct Android{
       data2  = 0;
       }
 
-    union{
-      struct {
-        int x,y;
+    struct {
+      union {
+        int x,w;
+        void* ptr;
         };
-
-      struct {
-        int w,h;
+      union {
+        int y,h;
         };
       } data;
 
@@ -225,28 +231,9 @@ static struct Android{
     }
 
   Android(){
-    display  = EGL_NO_DISPLAY;
-    surface  = 0;
-    context  = 0;
-    activity = 0;
+    density = 1.5;
 
-    msg.reserve(256);
-
-    env        = 0;
-    densityDpi = 480;
-
-    graphicsState = SystemAPI::NotAvailable;
-    window        = 0;
-    window_w      = 0;
-    window_h      = 0;
-    wnd           = 0;
-    forceToResize = 0;
-
-    isWndAvailable = false;
-    isPaused       = true;
-
-    mainThread = 0;
-    msg.  reserve(32);
+    msg.  reserve(256);
     mouse.reserve(8);
 
     pthread_mutex_init(&waitMutex, 0);
@@ -260,8 +247,7 @@ static struct Android{
     pthread_mutex_destroy(&waitMutex);
     }
 
-  bool initialize();
-  void destroy(bool killContext);
+  SystemAPI::Window *createWindow();
 
   void waitForQueue();
   } android;
@@ -314,11 +300,38 @@ JNIEnv *AndroidAPI::jenvi() {
   return android.env;
   }
 
-jclass AndroidAPI::appClass() {
+Jni::Object AndroidAPI::surface(jobject activity) {
+  while( true ) {
+    jobject obj = android.tempestClass.callObject(*android.env,activity,"nativeSurface","()Landroid/view/Surface;");
+    if( obj!=nullptr ) {
+      return Jni::Object(*android.env,obj);
+      }
+    if( android.env->ExceptionOccurred() )
+      return Jni::Object();
+    std::this_thread::yield();
+    }
+  }
+
+Jni::AndroidWindow AndroidAPI::nWindow(void* hwnd) {
+  Jni::Object jsurface = AndroidAPI::surface(reinterpret_cast<jobject>(hwnd));
+  JNIEnv* env = jenvi();
+
+  Jni::AndroidWindow wnd;
+  while(true) {
+    wnd = Jni::AndroidWindow(*env,jsurface);
+    if( wnd )
+      return wnd;
+    std::this_thread::yield();
+    Application::sleep(10);
+    }
+  return Jni::AndroidWindow();
+  }
+
+const Jni::Class& AndroidAPI::appClass() {
   return android.tempestClass;
   }
 
-jobject AndroidAPI::activity() {
+Jni::Object AndroidAPI::activity() {
   return android.activity;
   }
 
@@ -332,47 +345,35 @@ const char *AndroidAPI::externalStorage() {
   return android.external.data();
   }
 
-int AndroidAPI::densityDpi(){
-  return android.densityDpi;
+float AndroidAPI::densityDpi(){
+  return android.density;
   }
 
 void AndroidAPI::toast( const std::string &s ) {
   Android &a = android;
 
-  jclass clazz    = a.tempestClass;
-  jmethodID toast = a.env->GetStaticMethodID( clazz, "showToast", "(Ljava/lang/String;)V");
-
   jstring str = a.env->NewStringUTF( s.c_str() );
-  a.env->CallStaticVoidMethod(clazz, toast, str);
-
+  a.tempestClass.callStaticVoid(*a.env,"showToast", "(Ljava/lang/String;)V");
   a.env->DeleteLocalRef(str);
   }
 
 void AndroidAPI::showSoftInput() {
   Android &a = android;
+  if( android.wndWx.empty() )
+    return;
 
-  jclass clazz    = a.tempestClass;
-  jmethodID showKeyboard = a.env->GetStaticMethodID( clazz, "showSoftInput", "()V");
-
-  a.env->CallStaticVoidMethod( clazz, showKeyboard );
+  jobject w = android.wndWx.begin()->first;
+  a.surfaceClass.callVoid(*a.env,w,"showSoftInput", "()V");
   }
 
 void AndroidAPI::hideSoftInput() {
   Android &a = android;
-
-  jclass clazz    = a.tempestClass;
-  jmethodID showKeyboard = a.env->GetStaticMethodID( clazz, "hideSoftInput", "()V");
-
-  a.env->CallStaticVoidMethod( clazz, showKeyboard );
+  a.tempestClass.callStaticVoid(*a.env,"hideSoftInput", "()V");
   }
 
 void AndroidAPI::toggleSoftInput(){
   Android &a = android;
-
-  jclass clazz    = a.tempestClass;
-  jmethodID showKeyboard = a.env->GetStaticMethodID( clazz, "toggleSoftInput", "()V");
-
-  a.env->CallStaticVoidMethod( clazz, showKeyboard );
+  a.tempestClass.callStaticVoid(*a.env,"toggleSoftInput", "()V");
   }
 
 const std::string &AndroidAPI::iso3Locale() {
@@ -380,35 +381,34 @@ const std::string &AndroidAPI::iso3Locale() {
   }
 
 AndroidAPI::Window* AndroidAPI::createWindow(int /*w*/, int /*h*/) {
-  return 0;
+  return android.createWindow();
   }
 
 AndroidAPI::Window* AndroidAPI::createWindowMaximized(){
-  return 0;
+  return android.createWindow();
   }
 
 AndroidAPI::Window* AndroidAPI::createWindowMinimized(){
-  return 0;
+  return android.createWindow();
   }
 
 AndroidAPI::Window* AndroidAPI::createWindowFullScr(){
-  return 0;
+  return android.createWindow();
   }
 
 Widget *AndroidAPI::addOverlay(WindowOverlay *ov) {
-  if( android.wnd==0 ){
+  if( android.wndWx.empty() ){
     delete ov;
     return 0;
     }
 
-  SystemAPI::addOverlay(android.wnd, ov);
+  Tempest::Window* w = android.wndWx.begin()->second;
+  SystemAPI::addOverlay(w, ov);
   return ov;
   }
 
 bool AndroidAPI::testDisplaySettings( Window* , const DisplaySettings & s ) {
-  return s.width ==android.window_w  &&
-         s.height==android.window_h &&
-         s.bits==16 &&
+  return s.bits==16 &&
          s.fullScreen;
   }
 
@@ -569,7 +569,7 @@ void AndroidAPI::fcloseImpl(SystemAPI::File *f) {
   }
 
 Size AndroidAPI::implScreenSize() {
-  return Size(android.window_w, android.window_h);
+  return Size();//android.window_w, android.window_h);
   }
 
 bool AndroidAPI::startRender( Window * ) {
@@ -601,7 +601,7 @@ static Tempest::KeyEvent makeKeyEvent( int32_t k, bool scut = false ){
 static void render();
 
 void Android::waitForQueue() {
-  while( mainThread && android.window ){
+  while( android.wndWx.empty() ){
     size_t s = android.msgSize();
     if( s==0 )
       return;
@@ -615,7 +615,7 @@ int AndroidAPI::nextEvents(bool &quit) {
     {
       Android::MainThreadMessage msg = android.takeMsg().msg;
 
-      if( android.window==0 && msg!=Android::MSG_RENDER_LOOP_EXIT  ){
+      if( android.wndWx.size()==0 && msg!=Android::MSG_RENDER_LOOP_EXIT  ){
         android.sleep();
         return 1;
         }
@@ -631,19 +631,14 @@ int AndroidAPI::nextEvents(bool &quit) {
   return r;
   }
 
-int AndroidAPI::nextEvent(bool &quit) {  
-  /*
-  static const int ACTION_DOWN = 0,
-                   ACTION_UP   = 1,
-                   ACTION_MOVE = 2;
-  */
-
+int AndroidAPI::nextEvent(bool &quit) {
   bool hasWindow = true;
   Android::Message msg = Android::MSG_NONE;
+
   {
   Guard g(android.appMutex);
   (void)g;
-  hasWindow = android.window;
+  hasWindow = !android.wndWx.empty();//android.window;
 
   if( android.msg.size() ){
     msg = android.msg[0];
@@ -654,19 +649,25 @@ int AndroidAPI::nextEvent(bool &quit) {
       }
 
     android.msg.erase( android.msg.begin() );
-    } else {
-    if( !android.isPaused && hasWindow )
-      render(); else
-      android.sleep();
-    return 0;
     }
   }
 
-  if( android.wnd==0 )
+  if( android.wndWx.size()==0 )
     return 0;
 
+  Tempest::Window* wnd = android.wndWx.begin()->second;
+
   switch( msg.msg ) {
+    case Android::MSG_WINDOW_SET:
+      if(msg.data.ptr) {
+        SystemAPI::activateEvent( wnd, true);
+        } else {
+        onSurfaceDestroyed();
+        SystemAPI::activateEvent( wnd, false);
+        }
+      break;
     case Android::MSG_SURFACE_RESIZE:
+      SystemAPI::sizeEvent(wnd,msg.data.w,msg.data.h);
       break;
 
     case Android::MSG_RENDER_LOOP_EXIT:
@@ -685,15 +686,15 @@ int AndroidAPI::nextEvent(bool &quit) {
 
        if( 0 == *std::find( wrd, wrd+2, msg.data1) ){
          Tempest::KeyEvent ed( e.key, e.u16, Event::KeyDown );
-         SystemAPI::emitEvent( android.wnd, ed);
+         SystemAPI::emitEvent( wnd, ed);
 
          Tempest::KeyEvent eu( e.key, e.u16, Event::KeyUp );
-         SystemAPI::emitEvent( android.wnd, eu);
+         SystemAPI::emitEvent( wnd, eu);
          }
     }
 
     case Android::MSG_KEYDOWN_EVENT:{
-      SystemAPI::emitEvent( android.wnd,
+      SystemAPI::emitEvent( wnd,
                             makeKeyEvent(msg.data1),
                             makeKeyEvent(msg.data1, true),
                             Event::KeyDown );
@@ -704,7 +705,7 @@ int AndroidAPI::nextEvent(bool &quit) {
       Tempest::KeyEvent e = makeKeyEvent(msg.data1);
 
       Tempest::KeyEvent eu( e.key, e.u16, Event::KeyUp );
-      SystemAPI::emitEvent( android.wnd, eu);
+      SystemAPI::emitEvent( wnd, eu);
       }
       break;
 
@@ -716,14 +717,14 @@ int AndroidAPI::nextEvent(bool &quit) {
                       MouseEvent::ButtonLeft, 0, id,
                       Event::MouseDown );
         android.pointerPos(id) = Point(msg.data.x, msg.data.y);
-        SystemAPI::emitEvent(android.wnd, e);
+        SystemAPI::emitEvent(wnd, e);
         }
 
       if( msg.data1==1 ){
         MouseEvent e( msg.data.x, msg.data.y,
                       MouseEvent::ButtonLeft, 0, id,
                       Event::MouseUp );
-        SystemAPI::emitEvent(android.wnd, e);
+        SystemAPI::emitEvent(wnd, e);
         android.unsetPointer(msg.data2);
         }
 
@@ -733,7 +734,7 @@ int AndroidAPI::nextEvent(bool &quit) {
                       Event::MouseMove );
         if( android.pointerPos(id) != Point(msg.data.x, msg.data.y) ){
           android.pointerPos(id) = Point(msg.data.x, msg.data.y);
-          SystemAPI::emitEvent(android.wnd, e);
+          SystemAPI::emitEvent(wnd, e);
           }
         }
       }
@@ -741,7 +742,7 @@ int AndroidAPI::nextEvent(bool &quit) {
 
     case Android::MSG_CLOSE:  {
       Tempest::CloseEvent e;
-      SystemAPI::emitEvent(android.wnd, e);
+      SystemAPI::emitEvent(wnd, e);
       if( !e.isAccepted() ){
         android.pushMsg( Android::MSG_RENDER_LOOP_EXIT );
         }
@@ -749,24 +750,25 @@ int AndroidAPI::nextEvent(bool &quit) {
       break;
 
     case Android::MSG_START:
-      SystemAPI::setShowMode(android.wnd, Tempest::Window::Maximized);
+      SystemAPI::setShowMode(wnd, Tempest::Window::Maximized);
       break;
 
     case Android::MSG_STOP:
-      SystemAPI::setShowMode(android.wnd, Tempest::Window::Minimized);
+      SystemAPI::setShowMode(wnd, Tempest::Window::Minimized);
       break;
 
     case Android::MSG_PAUSE:
-      android.destroy(false);
+      android.isPaused = true;
       break;
 
     case Android::MSG_RESUME:
-      android.initialize();
+      android.isPaused = false;
       break;
 
     case Android::MSG_NONE:
-      if( !android.isPaused && hasWindow )
-        render();
+      if( !android.isPaused )
+        render(); else
+        android.sleep();
       break;
 
     default:
@@ -780,240 +782,74 @@ Point AndroidAPI::windowClientPos ( Window* ){
   return Point(0,0);
   }
 
-Size AndroidAPI::windowClientRect( Window* ){
-  Android &a = android;
-  return Size(a.window_w, a.window_h);
+Size AndroidAPI::windowClientRect( Window* hwnd ){
+  ANativeWindow* window = AndroidAPI::nWindow(hwnd);
+  EGLint w=ANativeWindow_getWidth (window);
+  EGLint h=ANativeWindow_getHeight(window);
+  return Size(w,h);
   }
 
-void AndroidAPI::deleteWindow( Window */*w*/ ) {
-  android.wnd = 0;
-  }
-
-void AndroidAPI::show(Window *) {
-  if( android.wnd && android.display!=EGL_NO_DISPLAY ){
-    glViewport( 0, 0, android.window_w, android.window_h );
-    if( android.wnd )
-      SystemAPI::sizeEvent( android.wnd, android.window_w, android.window_h );
-    android.isWndAvailable = true;
+void AndroidAPI::deleteWindow( Window *w ) {
+  if( w!=nullptr ) {
+    jobject ptr = reinterpret_cast<jobject>(w);
+    android.tempestClass.callStaticVoid(*android.env,"nativeDelWindow","(Lcom/tempest/engine/Activity;)V",ptr);
+    android.env->DeleteGlobalRef(ptr);
+    android.wndWx.erase(ptr);
     }
+  }
+
+void AndroidAPI::show(Window *hwnd) {
+  ANativeWindow*   window = AndroidAPI::nWindow(hwnd);
+  jobject          ptr    = reinterpret_cast<jobject>(hwnd);
+  Tempest::Window* wnd    = nullptr;
+
+  auto i = android.wndWx.find(ptr);
+
+  if( i!= android.wndWx.end() )
+    wnd = i->second;
+
+  EGLint w=ANativeWindow_getWidth (window);
+  EGLint h=ANativeWindow_getHeight(window);
+  if( wnd )
+    SystemAPI::sizeEvent(wnd, w, h);
   }
 
 void AndroidAPI::setGeometry( Window */*hw*/, int /*x*/, int /*y*/, int /*w*/, int /*h*/ ) {
   }
 
-void AndroidAPI::bind( Window *, Tempest::Window *wx ) {
-  android.wnd = wx;
-  SystemAPI::activateEvent( android.wnd, android.window!=0);
-  }
-
-AndroidAPI::GraphicsContexState AndroidAPI::isGraphicsContextAvailable( Tempest::Window * ){
-  return android.graphicsState;
+void AndroidAPI::bind( Window *hwnd, Tempest::Window *wx ) {
+  jobject w = reinterpret_cast<jobject>(hwnd);
+  android.wndWx[w] = wx;
+  SystemAPI::activateEvent(wx, true);
   }
 
 static void render() {
   Android& e = android;
-
-  if( e.display!= EGL_NO_DISPLAY && e.wnd &&
-      android.graphicsState != SystemAPI::DestroyedByAndroid){
-    int w = e.window_w,
-        h = e.window_h;
-
-    eglQuerySurface(e.display, e.surface, EGL_WIDTH,  &w);
-    eglQuerySurface(e.display, e.surface, EGL_HEIGHT, &h);
-
-    if( e.forceToResize ||
-        (e.window_w!=w || e.window_h!=h) ){
-      e.window_w = w;
-      e.window_h = h;
-
-      if( e.forceToResize  ){
-        SizeEvent s(w,h);
-        e.wnd->resizeEvent(s);
-        e.wnd->resize(w,h);
-        e.forceToResize = 0;
-        } else {
-        e.wnd->resize( w,h );
-        }
-      }
-
-    if( e.wnd )
-      e.wnd->render();
+  for(auto& i:e.wndWx) {
+    Tempest::Window& wnd=*i.second;
+    if( !wnd.size().isEmpty() )
+      if( wnd.showMode()!=Tempest::Window::Minimized && wnd.isActive() )
+        wnd.render();
     }
   }
-/*
-EGLint findConfigAttrib( EGLDisplay display,
-                      EGLConfig config, EGLint attribute, EGLint defaultValue) {
-  EGLint value = defaultValue;
-  eglGetConfigAttrib(display, config, attribute, &value);
-  return value;
-  }
 
-static EGLConfig* chooseConfig( EGLDisplay display, EGLConfig* configs,
-                                int count,
-                                int r0, int g0, int b0, int a0, int d0, int s0) {
-  for( int i=0; i<count; ++i ){
-    EGLConfig config = configs[i];
-    EGLint d = findConfigAttrib( display, config,
-                                 EGL_DEPTH_SIZE, 0);
-    EGLint s = findConfigAttrib( display, config,
-                                 EGL_STENCIL_SIZE, 0);
-    
-    // We need at least mDepthSize and mStencilSize bits
-    if (d < d0 || s < s0)
+AndroidAPI::Window* Android::createWindow() {
+  JNIEnv* e = android.env;
+  if( !e )
+    return nullptr;
+
+  while( true ) {
+    jobject obj = android.tempestClass.callStaticObject(*e,"nativeNewWindow","()Lcom/tempest/engine/Activity;");
+    if(!obj)
       continue;
-    
-    // We want an *exact* match for red/green/blue/alpha
-    EGLint r = findConfigAttrib( display, config,
-                                 EGL_RED_SIZE, 0);
-    EGLint g = findConfigAttrib( display, config,
-                                 EGL_GREEN_SIZE, 0);
-    EGLint b = findConfigAttrib( display, config,
-                                 EGL_BLUE_SIZE, 0);
-    EGLint a = findConfigAttrib( display, config,
-                                 EGL_ALPHA_SIZE, 0);
-    
-    if(r == r0 && g == g0 && b == b0 && a == a0)
-      return &configs[i];
+    obj = env->NewGlobalRef(obj);
+    return reinterpret_cast<AndroidAPI::Window*>(obj);
     }
-  return 0;
-  }
-*/
-bool Android::initialize() {
-  Android* e = this;
-
-  if( display != EGL_NO_DISPLAY )
-    return true;
-
-  static const EGLint attribs16[] = {
-    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-    EGL_BLUE_SIZE,    5,
-    EGL_GREEN_SIZE,   6,
-    EGL_RED_SIZE,     5,
-    EGL_ALPHA_SIZE,   0,
-    EGL_DEPTH_SIZE,   16,
-    EGL_STENCIL_SIZE, 0,
-    EGL_NONE
-  };
-
-  /*
-  static const EGLint attribs32[] = {
-    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-    EGL_BLUE_SIZE,    8,
-    EGL_GREEN_SIZE,   8,
-    EGL_RED_SIZE,     8,
-    EGL_ALPHA_SIZE,   8,
-    EGL_DEPTH_SIZE,   16,
-    EGL_STENCIL_SIZE, 0,
-    EGL_NONE
-  };*/
-
-  static const EGLint attribs4[] = {
-    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-    EGL_BLUE_SIZE,    4,
-    EGL_GREEN_SIZE,   4,
-    EGL_RED_SIZE,     4,
-    EGL_NONE
-  };
-
-  const EGLint* attribs = attribs16;
-
-  EGLint w, h, format;
-  EGLint numConfigs;
-  EGLConfig  config;
-  EGLSurface ini_surface;
-  EGLContext ini_context;
-
-  EGLDisplay ini_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-
-  if(!eglInitialize(ini_display, 0, 0))
-    Log::e("eglInitialize failed");
-  //chooseConfig(display, config);
-  if(!eglChooseConfig(ini_display, attribs, &config, 1, &numConfigs))
-    Log::e("eglChooseConfig failed"); else
-    Log::e("eglChooseConfig = ",config);
-  if(numConfigs==0){
-    eglChooseConfig(ini_display, attribs4, &config, 1, &numConfigs);
-    }
-  Log::d("numConfigs=",numConfigs);
-  eglGetConfigAttrib(ini_display, config, EGL_NATIVE_VISUAL_ID, &format);
-
-  ANativeWindow_setBuffersGeometry( window, 0, 0, format);
-
-  ini_surface = eglCreateWindowSurface( ini_display, config, window, NULL);
-
-  if( e->context==EGL_NO_CONTEXT ){
-    const EGLint attrib_list[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
-    ini_context = eglCreateContext(ini_display, config, EGL_NO_CONTEXT, attrib_list);
-    if( ini_context==EGL_NO_CONTEXT )
-      Log::e("Unable to create context");
-    } else {
-    ini_context = e->context;
-    }
-
-  Log::e("Surface=", ini_surface, " Display=", ini_display, " Context=", ini_context);
-  if( eglMakeCurrent(ini_display, ini_surface, ini_surface, ini_context) == EGL_FALSE ){
-    Log::e("Unable to eglMakeCurrent");
-    return false;
-    }
-
-  eglQuerySurface(ini_display, ini_surface, EGL_WIDTH,  &w);
-  eglQuerySurface(ini_display, ini_surface, EGL_HEIGHT, &h);
-
-  e->display = ini_display;
-  e->context = ini_context;
-  e->surface = ini_surface;
-
-  e->window_w = w;
-  e->window_h = h;
-
-  if( e->wnd && e->display != EGL_NO_DISPLAY ){
-    e->forceToResize = true;
-    }
-
-  glViewport(0, 0, w, h);
-  graphicsState = SystemAPI::Available;
-
-  return true;
-  }
-
-void Android::destroy( bool killContext ) {
-  Log::e("Destroying context");
-
-  if( graphicsState == SystemAPI::DestroyedByAndroid )
-    return;
-
-  graphicsState = SystemAPI::NotAvailable;
-
-  if( display != EGL_NO_DISPLAY ) {
-    eglMakeCurrent( display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
-
-    if( context != EGL_NO_CONTEXT && killContext ){
-      eglDestroyContext( display, context );
-      }
-
-    if( surface != EGL_NO_SURFACE ){
-      eglDestroySurface( display, surface );
-      }
-
-    if( killContext )
-      eglTerminate(display);
-    }
-
-  display = EGL_NO_DISPLAY;
-  if( killContext )
-    context = EGL_NO_CONTEXT;
-  surface = EGL_NO_SURFACE;
   }
 
 static void* tempestMainFunc(void*);
 
 static void JNICALL resize( JNIEnv * , jobject, jobject, jint w, jint h ) {
-  SyncMethod wm;
-  (void)wm;
-
   Android::Message m = Android::MSG_SURFACE_RESIZE;
   m.data.w = w;
   m.data.h = h;
@@ -1036,7 +872,6 @@ static void JNICALL resume(JNIEnv* /*jenv*/, jobject /*obj*/) {
   (void)wm;
 
   android.pushMsg( Android::MSG_RESUME );
-  android.isPaused = false;
   }
 
 static void JNICALL pauseA(JNIEnv* /*jenv*/, jobject /*obj*/) {
@@ -1045,12 +880,11 @@ static void JNICALL pauseA(JNIEnv* /*jenv*/, jobject /*obj*/) {
   (void)wm;
 
   android.msg.push_back( Android::MSG_PAUSE );
-  android.isPaused = true;
   }
 
 static void JNICALL setAssets(JNIEnv* jenv, jobject /*obj*/, jobject assets ) {
   Log::i("setAssets");
-  android.assets = jenv->NewGlobalRef(assets);
+  android.assets = Jni::Object(*jenv,assets);
   }
 
 static void JNICALL nativeOnTouch( JNIEnv* , jobject ,
@@ -1065,60 +899,13 @@ static void JNICALL nativeOnTouch( JNIEnv* , jobject ,
     android.pushMsg(m);
   }
 
-static void JNICALL nativeSetSurface( JNIEnv* jenv, jobject /*obj*/, jobject surface) {
-  if( surface ) {
-    android.window = ANativeWindow_fromSurface(jenv, surface);
-    android.graphicsState = SystemAPI::Available;
-    Log::i("Got window ",android.window);
-
-    {
-      Guard g( android.appMutex );
-      (void)g;
-      android.msg.push_back( Android::MSG_WINDOW_SET );
-      if( android.wnd )
-        SystemAPI::activateEvent( android.wnd, android.window!=0);
-      }
-
-    if( android.mainThread==0 ){
-      android.thread_create(&android.mainThread, 0, tempestMainFunc, 0);
-      }
-    } else {
-    Log::i("Releasing window");
-    {
-      Guard g( android.appMutex );
-      (void)g;
-
-      ANativeWindow* wx = android.window;
-      ANativeWindow_release(wx);
-      android.graphicsState = SystemAPI::DestroyedByAndroid;
-      android.window = 0;
-      if( android.wnd )
-        SystemAPI::activateEvent( android.wnd, android.window!=0);
-      }
-    }
-
-  return;
-  }
-
-static void JNICALL onCreate(JNIEnv* , jobject activity ) {
-  Log::i("nativeOnCreate");
-  android.mainThread = 0;
-  android.activity   = activity;
-  }
-
-static void JNICALL onDestroy(JNIEnv* /*jenv*/, jobject /*obj*/) {
-  {
+static void JNICALL nativeSetSurface( JNIEnv* /*jenv*/, jobject /*obj*/, jobject surface) {
   Guard g( android.appMutex );
   (void)g;
-  android.msg.clear();
-  android.msg.push_back( Android::MSG_RENDER_LOOP_EXIT );
-  }
 
-  pthread_join(android.mainThread,0);
-
-  android.msg.clear();
-
-  Log::i("nativeOnDestroy");
+  Android::Message m = Android::MSG_WINDOW_SET;
+  m.data.ptr = surface;
+  android.msg.push_back( m );
   }
 
 static void JNICALL onKeyDownEvent(JNIEnv* , jobject, jint key ) {
@@ -1238,40 +1025,52 @@ static void JNICALL nativeInitLocale( JNIEnv* , jobject,
   }
 
 static void JNICALL setupDpi( JNIEnv* , jobject,
-                              jint d ){
-  android.densityDpi = d;
+                              jfloat d ){
+  android.density = d;
+  }
+
+static void JNICALL invokeMain(JNIEnv* env, jobject, jstring ndkLib ){
+  android.mainFnArgs = env->GetStringUTFChars( ndkLib, 0);
+
+  void* handle = dlopen(android.mainFnArgs.c_str(), RTLD_NOW);
+  if( !handle )
+    return;
+
+  void** pptr=reinterpret_cast<void**>(&android.mainFunc);
+  *pptr = dlsym(handle, "main");
+
+  android.thread_create(&android.mainThread, 0, tempestMainFunc, 0);
   }
 
 extern "C" jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/){
   Log::i("Tempest JNI_OnLoad");
 
-  static JNINativeMethod methodTable[] = {
-    {"nativeOnCreate",  "()V", (void *) onCreate  },
-    {"nativeOnDestroy", "()V", (void *) onDestroy },
+  android.vm = vm;
 
+  static std::initializer_list<JNINativeMethod> appMethodTable = {
+    {"nativeInitLocale",   "(Ljava/lang/String;)V",                   (void *)nativeInitLocale   },
+    {"nativeSetupDpi",     "(F)V",                                    (void *)setupDpi           },
+    {"invokeMainImpl",     "(Ljava/lang/String;)V",                   (void *)invokeMain         },
+    {"nativeSetAssets",    "(Landroid/content/res/AssetManager;)V",   (void *)setAssets          },
+    {"nativeSetupStorage", "(Ljava/lang/String;Ljava/lang/String;)V", (void *)nativeSetupStorage }
+    };
+
+  static std::initializer_list<JNINativeMethod> surfaceMethodTable = {
     {"nativeOnStart",  "()V", (void *) start  },
     {"nativeOnResume", "()V", (void *) resume },
     {"nativeOnPause",  "()V", (void *) pauseA },
     {"nativeOnStop",   "()V", (void *) stop   },
 
-    {"nativeInitLocale",  "(Ljava/lang/String;)V", (void *)nativeInitLocale },
-    {"nativeSetupDpi",    "(I)V",                  (void *)setupDpi         },
-
     {"nativeOnTouch",     "(IIII)V", (void *)nativeOnTouch   },
 
-    {"onKeyDownEvent",    "(I)V",                    (void *)onKeyDownEvent      },
-    {"onKeyUpEvent",      "(I)V",                    (void *)onKeyUpEvent        },
-    {"onKeyCharEvent",    "(Ljava/lang/String;)V",   (void *)onKeyCharEvent      },
+    {"onKeyDownEvent",    "(I)V",                        (void *)onKeyDownEvent     },
+    {"onKeyUpEvent",      "(I)V",                        (void *)onKeyUpEvent       },
+    {"onKeyCharEvent",    "(Ljava/lang/String;)V",       (void *)onKeyCharEvent     },
 
-    {"nativeCloseEvent",  "()I",                                        (void *) nativeCloseEvent  },
-    {"nativeSetSurface",  "(Landroid/view/Surface;)V",                  (void *) nativeSetSurface   },
-    {"nativeOnResize",    "(Landroid/view/Surface;II)V",                (void *) resize            },
-    {"nativeSetAssets",   "(Landroid/content/res/AssetManager;)V",      (void *) setAssets         },
-
-    {"nativeSetupStorage",  "(Ljava/lang/String;Ljava/lang/String;)V",  (void *)nativeSetupStorage }
+    {"nativeCloseEvent",  "()I",                         (void *) nativeCloseEvent  },
+    {"nativeSetSurface",  "(Landroid/view/Surface;)V",   (void *) nativeSetSurface  },
+    {"nativeOnResize",    "(Landroid/view/Surface;II)V", (void *) resize            }
   };
-
-  android.vm = vm;
 
   JNIEnv* env;
   if( vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK ){
@@ -1279,9 +1078,12 @@ extern "C" jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/){
     return -1;
     }
 
-  android.tempestClass = env->FindClass( SystemAPI::androidActivityClass().c_str() );
+  android.tempestClass     = Jni::Class(*env,SystemAPI::androidActivityClass().c_str());
+  android.surfaceClass     = Jni::Class(*env,"com/tempest/engine/WindowSurface");
+  android.applicationClass = Jni::Class(*env,"com/tempest/engine/Application");
 
-  if (!android.tempestClass) {
+  if( !android.surfaceClass    .registerNatives(*env,surfaceMethodTable) |
+      !android.applicationClass.registerNatives(*env,appMethodTable) ) {
     Log::i("failed to get ",SystemAPI::androidActivityClass().c_str()," class reference");
 
     jthrowable err = env->ExceptionOccurred();
@@ -1289,13 +1091,6 @@ extern "C" jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/){
       env->ExceptionDescribe();
       env->ExceptionClear();
       }
-    }
-
-  if( android.tempestClass ){
-    android.tempestClass = (jclass)env->NewGlobalRef(android.tempestClass);
-    env->RegisterNatives( android.tempestClass,
-                          methodTable,
-                          sizeof(methodTable) / sizeof(methodTable[0]) );
     }
 
   Log::i("Tempest ~JNI_OnLoad");
@@ -1308,19 +1103,19 @@ static void* tempestMainFunc(void*){
 
   a.vm->AttachCurrentThread( &a.env, NULL);
 
-  jclass clazz = android.tempestClass;
-  jmethodID invokeMain = a.env->GetStaticMethodID( clazz, "invokeMain", "()V");
-
-  android.initialize();
+  pthread_setname_np(pthread_self(),"main");
   Log::i("Tempest MainFunc[1]");
-  a.env->CallStaticVoidMethod(clazz, invokeMain);
+
+  static char* ch[]={
+    NULL,
+    NULL
+    };
+  ch[0] = &android.mainFnArgs[0];
+  android.mainFunc(1,ch);
 
   Log::i("~Tempest MainFunc");
-  android.destroy(true);
 
   a.vm->DetachCurrentThread();
-
-  android.mainThread = 0;
   pthread_exit(0);
   return 0;
   }

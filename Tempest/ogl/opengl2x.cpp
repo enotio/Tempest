@@ -18,6 +18,8 @@
 #include <GLES/gl.h>
 #include <GLES2/gl2.h>
 #include <android/log.h>
+#include <android/native_window.h>
+#include <android/native_window_jni.h>
 #else
 #ifdef __WINDOWS__
 #include <windows.h>
@@ -48,6 +50,7 @@ using namespace Tempest::GLProc;
 #include <squish.h>
 #include <cstring>
 #include <algorithm>
+#include <thread>
 
 #include "gltypes.h"
 
@@ -86,6 +89,13 @@ static const GLubyte* vstr( const GLubyte* v ){
 using namespace Tempest;
 
 struct Tempest::Opengl2x::ImplDevice : public Detail::ImplDeviceBase {
+  ImplDevice(){
+    AndroidAPI::onSurfaceDestroyed.bind(this,&ImplDevice::surfaceDestroyed);
+    }
+  ~ImplDevice(){
+    AndroidAPI::onSurfaceDestroyed.ubind(this,&ImplDevice::surfaceDestroyed);
+    }
+
   bool isWriteOnly( const RenderState& rs ){
     bool w[4];
     rs.getColorMask( w[0], w[1], w[2], w[3] );
@@ -101,6 +111,18 @@ struct Tempest::Opengl2x::ImplDevice : public Detail::ImplDeviceBase {
         glEnable ( GL_WRITEONLY_RENDERING_QCOM ); else
         glDisable( GL_WRITEONLY_RENDERING_QCOM );
       }
+    }
+
+  void surfaceDestroyed(){
+    surface=EGL_NO_SURFACE;
+    }
+
+  void ajustSurface(Jni::AndroidWindow& window){
+    if(surface!=EGL_NO_SURFACE)
+      return;
+    eglMakeCurrent(disp,EGL_NO_SURFACE,EGL_NO_SURFACE,context);
+    eglDestroySurface(disp,surface);
+    surface = eglCreateWindowSurface( disp, config, window, NULL);
     }
   };
 
@@ -165,9 +187,83 @@ bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
 #endif
 
 #ifdef __ANDROID__
-  dev->disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-  dev->s    = eglGetCurrentSurface(EGL_DRAW);
+  static const EGLint attribs16[] = {
+    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+    EGL_BLUE_SIZE,    5,
+    EGL_GREEN_SIZE,   6,
+    EGL_RED_SIZE,     5,
+    EGL_ALPHA_SIZE,   0,
+    EGL_DEPTH_SIZE,   16,
+    EGL_STENCIL_SIZE, 0,
+    EGL_NONE
+    };
 
+  static const EGLint attribs4[] = {
+    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+    EGL_BLUE_SIZE,    4,
+    EGL_GREEN_SIZE,   4,
+    EGL_RED_SIZE,     4,
+    EGL_NONE
+    };
+
+  const EGLint* attribs = attribs16;
+
+  EGLint         w=0, h=0, format=0;
+  EGLint         numConfigs=0;
+  EGLConfig      ini_config =nullptr;
+  EGLSurface     ini_surface=nullptr;
+  EGLContext     ini_context=nullptr;
+  ANativeWindow* ini_window =nullptr;
+  EGLDisplay     ini_display=nullptr;
+
+  ini_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+  ini_window  = AndroidAPI::nWindow(hwnd);
+
+  if(!eglInitialize(ini_display, 0, 0))
+    Log::e("eglInitialize failed");
+
+  if(!eglChooseConfig(ini_display, attribs, &ini_config, 1, &numConfigs))
+    Log::e("eglChooseConfig failed"); else
+    Log::e("eglChooseConfig = ",ini_config);
+
+  if(numConfigs==0)
+    eglChooseConfig(ini_display, attribs4, &ini_config, 1, &numConfigs);
+
+  Log::d("numConfigs=",numConfigs);
+  eglGetConfigAttrib(ini_display, ini_config, EGL_NATIVE_VISUAL_ID, &format);
+
+  ANativeWindow_setBuffersGeometry( ini_window, 0, 0, format);
+  ini_surface = eglCreateWindowSurface( ini_display, ini_config, ini_window, NULL);
+
+  const EGLint attrib_list[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
+  ini_context = eglCreateContext(ini_display, ini_config, EGL_NO_CONTEXT, attrib_list);
+  if( ini_context==EGL_NO_CONTEXT )
+    Log::e("Unable to create context");
+
+  Log::d("Surface=", ini_surface, " Display=", ini_display, " Context=", ini_context);
+  if( eglMakeCurrent(ini_display, ini_surface, ini_surface, ini_context) == EGL_FALSE ){
+    Log::e("Unable to eglMakeCurrent");
+    return -1;
+    }
+
+  eglQuerySurface(ini_display, ini_surface, EGL_WIDTH,  &w);
+  eglQuerySurface(ini_display, ini_surface, EGL_HEIGHT, &h);
+
+  dev->disp    = ini_display;
+  dev->context = ini_context;
+  dev->surface = ini_surface;
+  dev->config  = ini_config;
+
+  dev->scrW = w;
+  dev->scrH = h;
+
+  /*
+  if( wnd && display != EGL_NO_DISPLAY ){
+    forceToResize = true;
+    }
+  */
   dev->swapEfect = EGL_BUFFER_PRESERVED;
   return 1;
 #endif
@@ -236,28 +332,18 @@ void Opengl2x::freeDevice(AbstractAPI::Device *d) const {
   glXMakeCurrent( dev->dpy, None, NULL);
 #endif
 
+#ifdef __ANDROID__
+  eglMakeCurrent(dev->disp,EGL_NO_SURFACE,EGL_NO_SURFACE,EGL_NO_CONTEXT);
+  eglDestroyContext(dev->disp,dev->context);
+  eglDestroySurface(dev->disp,dev->surface);
+#endif
+
   delete dev;
   }
 
 bool Opengl2x::setDevice( AbstractAPI::Device * d ) const {
   dev = (ImplDevice*)d;
   T_ASSERT_X( errCk(), "OpenGL error" );
-
-#ifdef __ANDROID__
-  SystemAPI::GraphicsContexState state = SystemAPI::NotAvailable;
-  while( state==SystemAPI::NotAvailable )
-    state = SystemAPI::instance().isGraphicsContextAvailable(0);
-
-  if( state==SystemAPI::DestroyedByAndroid ){
-    static bool dbgOnce = true;
-    if( dbgOnce ){
-      __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "context is unavailable - android sucks");
-      dbgOnce = false;
-      }
-    }
-  return state == SystemAPI::Available;
-#endif
-
   return 1;
   }
 
@@ -592,7 +678,7 @@ bool Opengl2x::setupFBO() const {
 #ifndef __ANDROID__
     printf("OpenGL : fbo error %s 0x%X", desc, int(status));
 #else
-    __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "fbo error %s %p", desc, ierr);
+    __android_log_print(ANDROID_LOG_DEBUG, "OpenGL", "fbo error %s 0x%X", desc, int(status));
 #endif
     T_ASSERT_X(status==0, desc);
     return 1;
@@ -792,7 +878,13 @@ void Opengl2x::setDSSurfaceTaget( AbstractAPI::Device *d,
 bool Opengl2x::startRender(AbstractAPI::Device* d,void *hwnd, bool   ) const {
   if( !setDevice(d) ) return false;
 #ifdef  __ANDROID__
-  return AndroidAPI::startRender(0);
+  ImplDevice& degl=*((ImplDevice*)dev);
+
+  if(degl.surface==EGL_NO_SURFACE) {
+    Jni::AndroidWindow window = AndroidAPI::nWindow(hwnd);
+    degl.ajustSurface(window);
+    }
+  return eglMakeCurrent(dev->disp,dev->surface,dev->surface,dev->context)==EGL_TRUE;
 #endif
 #ifdef __LINUX__
   glXMakeCurrent( dev->dpy, dev->window, dev->glc);
@@ -835,10 +927,10 @@ bool Opengl2x::present(AbstractAPI::Device *d, void *hwnd, SwapBehavior b) const
 
   if( dev->swapEfect!=se[b] ){
     dev->swapEfect = se[b];
-    eglSurfaceAttrib( dev->disp, dev->s, EGL_SWAP_BEHAVIOR, dev->swapEfect );
+    eglSurfaceAttrib( dev->disp, dev->surface, EGL_SWAP_BEHAVIOR, dev->swapEfect );
     }
 
-  eglSwapBuffers( dev->disp, dev->s );
+  eglSwapBuffers( dev->disp, dev->surface );
   return AndroidAPI::present(0);
 #endif
 #ifdef __APPLE__
@@ -904,22 +996,23 @@ bool Opengl2x::reset( AbstractAPI::Device *d,
 #endif
 
 #ifdef __ANDROID__
-  (void)hwnd;
   (void)opt;
 
-  EGLDisplay disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-  EGLSurface s    = eglGetCurrentSurface(EGL_DRAW);
+  ImplDevice& degl=*((ImplDevice*)dev);
+
+  EGLDisplay         disp   = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+  Jni::AndroidWindow window = AndroidAPI::nWindow(hwnd);
 
   dev->disp = disp;
-  dev->s    = s;
+  degl.ajustSurface(window);
 
-  EGLint w;
-  EGLint h;
-  eglQuerySurface( disp, s, EGL_WIDTH,  &w );
-  eglQuerySurface( disp, s, EGL_HEIGHT, &h );
+  EGLint w=ANativeWindow_getWidth (window);
+  EGLint h=ANativeWindow_getHeight(window);
   
   dev->scrW = w;
   dev->scrH = h;
+
+  eglMakeCurrent(disp,dev->surface,dev->surface,dev->context);
   glViewport(0,0,w,h);
 #endif  
 
@@ -1705,7 +1798,7 @@ void Opengl2x::setVertexDeclaration( AbstractAPI::Device *d,
 void Opengl2x::bindVertexBuffer( AbstractAPI::Device *d,
                                  AbstractAPI::VertexBuffer* b,
                                  int vsize ) const {
-  if( !setDevice(d) ) return;
+  if( !setDevice(d) || !b ) return;
 
   dev->vbo        = *(GLuint*)b;
   dev->cVBO       = (Detail::GLBuffer*)b;
@@ -1714,10 +1807,10 @@ void Opengl2x::bindVertexBuffer( AbstractAPI::Device *d,
 
 void Opengl2x::bindIndexBuffer( AbstractAPI::Device * d,
                                 AbstractAPI::IndexBuffer * b ) const {
-  if( !setDevice(d) ) return;
+  if( !setDevice(d) || !b ) return;
 
-  dev->ibo = *(GLuint*)b;
-  dev->cIBO       = (Detail::GLBuffer*)b;
+  dev->ibo  = *(GLuint*)b;
+  dev->cIBO = (Detail::GLBuffer*)b;
   }
 
 void Opengl2x::setupBuffers( char* vboOffsetIndex,

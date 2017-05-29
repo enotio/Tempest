@@ -1,5 +1,7 @@
 #include "cgdx9.h"
 
+#ifdef __WINDOWS__
+
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <Cg/Cg.h>
@@ -499,3 +501,4 @@ std::string CgDx9::surfaceShader( AbstractShadingLang::ShaderType t,
 
   return fs_src;
   }
+#endif //__WINDOWS__

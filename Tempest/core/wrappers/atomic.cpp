@@ -6,7 +6,9 @@
 #ifdef __WINDOWS__
 #include <windows.h>
 #else
+#if !defined(__ANDROID__) && !defined(__LINUX__)
 #include <stdatomic.h>
+#endif
 #endif
 
 using namespace Tempest;
@@ -35,8 +37,10 @@ Detail::atomic_counter Detail::atomicInc( volatile Detail::atomic_counter &src,
 #ifdef TEMPEST_M_TREADS
 #  if defined(__WINDOWS__)
      return InterlockedExchangeAdd( &src, add );
-#  elif defined(__OSX__) || defined(__LINUX__) || defined(__ANDROID__) || defined(__IOS__)
+#  elif defined(__OSX__) || defined(__IOS__)
      return __atomic_add_fetch(&src, add, __ATOMIC_SEQ_CST)-add;
+#  elif  defined(__LINUX__) || defined(__ANDROID__)
+     return __sync_fetch_and_add(&src, add)-add;
 #  else
 #    error "Detail::atomicInc not implemented for this platform"
 #  endif

@@ -359,6 +359,7 @@ void SystemAPI::processEvents( Widget *w,
     case Event::Paint:
     case Event::MouseEnter:
     case Event::MouseLeave:
+    case Event::Focus:
       break;
 
     case Event::Gesture:
@@ -428,10 +429,6 @@ void SystemAPI::setShowMode(Tempest::Window *w, int mode) {
 
 void SystemAPI::activateEvent(Tempest::Window *w, bool a) {
   w->isAppActive = a;
-  }
-
-SystemAPI::GraphicsContexState SystemAPI::isGraphicsContextAvailable( Tempest::Window *) {
-  return Available;
   }
 
 std::string SystemAPI::toUtf8(const std::u16string &str) {
@@ -554,7 +551,7 @@ bool SystemAPI::loadImageImpl( Tempest::IDevice &imgBytes,
   }
 
 const std::string &SystemAPI::androidActivityClassImpl() {
-  static const std::string cls = "com/tempest/TempestActivityBase";
+  static const std::string cls = "com/tempest/engine/Activity";
   return cls;
   }
 

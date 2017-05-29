@@ -1,0 +1,70 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.0'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.application'
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+
+    defaultConfig {
+        applicationId "com.example.alexander.myapplication"
+        minSdkVersion 16
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        externalNativeBuild{
+            ndkBuild{
+                abiFilters 'armeabi-v7a'
+                arguments  =['tempestPath=' + tempestPath,'j=4']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs         = ['src', 'java']
+            aidl.srcDirs         = ['src', 'aidl']
+            res.srcDirs          = ['res']
+            resources.srcDirs    = ['src']
+            renderscript.srcDirs = ['src']
+            assets.srcDirs       = ['assets']
+            jniLibs.srcDirs      = ['libs']
+       }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path 'jni/Android.mk'
+        }
+    }
+    android.defaultConfig.externalNativeBuild.ndkBuild.arguments
+}

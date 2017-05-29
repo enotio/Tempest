@@ -22,7 +22,6 @@ SOURCES += \
   $$PWD/jcapistd.c \
   $$PWD/jcarith.c \
   $$PWD/jccoefct.c \
-  $$PWD/jccolext.c \
   $$PWD/jccolor.c \
   $$PWD/jcdctmgr.c \
   $$PWD/jcext.c \
@@ -44,8 +43,6 @@ SOURCES += \
   $$PWD/jdatasrc-tj.c \
   $$PWD/jdatasrc.c \
   $$PWD/jdcoefct.c \
-  $$PWD/jdcol565.c \
-  $$PWD/jdcolext.c \
   $$PWD/jdcolor.c \
   $$PWD/jddctmgr.c \
   $$PWD/jdhuff.c \
@@ -54,8 +51,6 @@ SOURCES += \
   $$PWD/jdmarker.c \
   $$PWD/jdmaster.c \
   $$PWD/jdmerge.c \
-  $$PWD/jdmrg565.c \
-  $$PWD/jdmrgext.c \
   $$PWD/jdphuff.c \
   $$PWD/jdpostct.c \
   $$PWD/jdsample.c \
@@ -73,7 +68,6 @@ SOURCES += \
   $$PWD/jquant1.c \
   $$PWD/jquant2.c \
   $$PWD/jsimd_none.c \
-  $$PWD/jstdhuff.c \
   $$PWD/jutils.c \
   $$PWD/rdcolmap.c \
   $$PWD/rdswitch.c \
@@ -81,6 +75,15 @@ SOURCES += \
   $$PWD/transupp.c \
   $$PWD/turbojpeg.c \
   $$PWD/jcsample.c
+
+OTHER_FILES += \
+  $$PWD/jccolext.inl \
+  $$PWD/jdcolext.inl \
+  $$PWD/jdcol565.inl \
+  $$PWD/jdmrg565.inl \
+  $$PWD/jdmrgext.inl \
+  $$PWD/jstdhuff.inl
+
 
 extra_jpeg: {
     SOURCES += \

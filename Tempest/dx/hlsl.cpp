@@ -1,5 +1,6 @@
 #include "hlsl.h"
 
+#ifdef __WINDOWS__
 #include <d3d9.h>
 #include <d3dx9.h>
 
@@ -408,3 +409,5 @@ void HLSL::deleteShader(GraphicsSubsystem::ProgramObject *s) const {
     data->bindedProg = 0;
     }
   }
+
+#endif

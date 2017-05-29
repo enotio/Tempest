@@ -1,10 +1,13 @@
 #ifndef ANDROIDAPI_H
 #define ANDROIDAPI_H
 
+#include <Tempest/JniExtras>
 #include <Tempest/SystemAPI>
+#include <Tempest/signal>
 
 #ifdef __ANDROID__
 #include <jni.h>
+#include <android/native_window.h>
 
 namespace Tempest{
 
@@ -13,21 +16,27 @@ class WindowOverlay;
 
 class AndroidAPI:public SystemAPI {
   public:
-    static JavaVM *jvm();
-    static JNIEnv *jenvi();
-    static jclass appClass();
-    static jobject activity();
+    static JavaVM*            jvm();
+    static JNIEnv*            jenvi();
+    static Jni::Object        surface(jobject activity);
+    static Jni::AndroidWindow nWindow(void *hwnd);
+
+    static const Jni::Class&  appClass();
+    static Jni::Object        activity();
 
     static const char* internalStorage();
     static const char* externalStorage();
 
-    static int densityDpi();
+    static float       densityDpi();
 
     static void toast( const std::string & s );
     static void showSoftInput();
     static void hideSoftInput();
     static void toggleSoftInput();
     static const std::string& iso3Locale();
+
+    static Tempest::signal<> onSurfaceDestroyed;
+
   protected:
     AndroidAPI();
     ~AndroidAPI();
@@ -39,27 +48,26 @@ class AndroidAPI:public SystemAPI {
     static bool startRender( Window* );
     static bool present( Window* );
 
-    void startApplication( ApplicationInitArgs* );
-    void endApplication();
-    int  nextEvent(bool &qiut);
-    int  nextEvents(bool &qiut);
+    void    startApplication( ApplicationInitArgs* );
+    void    endApplication();
+    int     nextEvent(bool &qiut);
+    int     nextEvents(bool &qiut);
 
     Window* createWindow(int w, int h);
     Window* createWindowMaximized();
     Window* createWindowMinimized();
     Window* createWindowFullScr();
+    void    deleteWindow( Window* );
 
     Widget* addOverlay( WindowOverlay *ov );
 
-    Point windowClientPos ( Window* );
-    Size  windowClientRect( Window* );
+    Point   windowClientPos ( Window* );
+    Size    windowClientRect( Window* );
 
-    void deleteWindow( Window* );
-    void show( Window* );
-    void setGeometry( Window*, int x, int y, int w, int h );
-    void bind(Window*, Tempest::Window * );
+    void    show( Window* );
+    void    setGeometry( Window*, int x, int y, int w, int h );
+    void    bind(Window*hwnd, Tempest::Window * );
 
-    GraphicsContexState isGraphicsContextAvailable( Tempest::Window *w );
     CpuInfo cpuInfoImpl();
 
     struct  DroidFile;
@@ -73,6 +81,7 @@ class AndroidAPI:public SystemAPI {
     bool   eofImpl      ( File* f );
     size_t fsizeImpl    ( File* f );
     void   fcloseImpl   ( File* f );
+
   public:
     friend class SystemAPI;
     friend class Opengl2x;

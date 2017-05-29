@@ -1,5 +1,7 @@
 #include "directx9.h"
 
+#ifdef __WINDOWS__
+
 #include <d3d9.h>
 
 #include <d3dx9.h>
@@ -1148,3 +1150,5 @@ void DirectX9::setRenderState( AbstractAPI::Device *d,
 
   dev->SetRenderState( D3DRS_FILLMODE, fm[ r.frontPolygonRenderMode() ] );
   }
+
+#endif

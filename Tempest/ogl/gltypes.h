@@ -111,9 +111,11 @@ namespace Detail{
     void initExt();
 
   #ifdef __ANDROID__
-    EGLDisplay disp;
-    EGLSurface s;
-    EGLint     swapEfect;
+    EGLConfig      config;
+    EGLDisplay     disp;
+    EGLContext     context;
+    EGLSurface     surface;
+    EGLint         swapEfect;
   #endif
 
   #ifdef __WINDOWS__

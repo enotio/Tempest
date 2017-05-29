@@ -20,7 +20,7 @@ class WindowOverlay;
 
 class DisplaySettings;
 
-class SystemAPI{
+class SystemAPI {
   public:
     virtual ~SystemAPI(){}
 
@@ -95,13 +95,6 @@ class SystemAPI{
     static void sizeEvent( Tempest::Window *w, int cW, int cH);
     static void setShowMode( Tempest::Window *w, int mode );
     static void activateEvent( Tempest::Window*w, bool a );
-
-    enum GraphicsContexState{
-      DestroyedByAndroid,
-      Available,
-      NotAvailable
-      };
-    virtual GraphicsContexState isGraphicsContextAvailable( Tempest::Window *w );
 
     static std::string    toUtf8 ( const std::u16string& str );
     static std::string    toUtf8 ( const char16_t* b, const char16_t* e );

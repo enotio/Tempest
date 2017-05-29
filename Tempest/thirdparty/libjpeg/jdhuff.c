@@ -21,7 +21,7 @@
 #include "jpeglib.h"
 #include "jdhuff.h"             /* Declarations shared with jdphuff.c */
 #include "jpegcomp.h"
-#include "jstdhuff.c"
+#include "jstdhuff.inl"
 
 
 /*

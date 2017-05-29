@@ -1,4 +1,6 @@
-#include "HLSL11.h"
+#include "hlsl11.h"
+
+#if defined(__WINDOWS_PHONE__) || (__WINDOWS__)
 
 #ifndef _MSC_VER
 #define __in
@@ -662,3 +664,5 @@ void Tempest::HLSL11::event(const GraphicsSubsystem::DeleteEvent &e) {
     }
   data->sh.data.resize(nsz);
   }
+
+#endif

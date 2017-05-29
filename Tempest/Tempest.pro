@@ -51,7 +51,7 @@ win32:LIBS += -l"gdi32" -l"user32"
 #DEFINES += D3D_DEBUG_INFO
 
 android:{
-  DEFINES += "sigset_t=\"unsigned int\""
+  #DEFINES += "sigset_t=\"unsigned int\""
   DEFINES += __STDC_INT64__
 
   CONFIG += ogl
@@ -236,7 +236,8 @@ SOURCES += \
     2d/icon.cpp \
     ui/controls/scrollbar.cpp \
     ui/controls/scrollwidget.cpp \
-    ui/controls/label.cpp
+    ui/controls/label.cpp \
+    system/jniextras.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -340,7 +341,8 @@ HEADERS += \
     system/osxapi.h \
     system/appdelegate.h \
     system/iosapi.h \
-    core/langcodes.h
+    core/langcodes.h \
+    system/jniextras.h
 
 mac:!ios: OBJECTIVE_SOURCES += \
     system/osxapi.mm \
@@ -421,4 +423,5 @@ OTHER_FILES += \
 
 DISTFILES += \
     ../appveyor.yml \
-    ../.travis.yml
+    ../.travis.yml \
+    include/Tempest/JniExtras
