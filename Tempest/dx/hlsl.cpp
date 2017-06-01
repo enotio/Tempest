@@ -1,5 +1,7 @@
 #include "hlsl.h"
 
+#include <Tempest/Platform>
+
 #ifdef __WINDOWS__
 #include <d3d9.h>
 #include <d3dx9.h>

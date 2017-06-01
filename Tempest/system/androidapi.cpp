@@ -60,13 +60,12 @@ struct Guard {
   };
 
 static struct Android {
-  //Tempest::Window* wnd=nullptr;
-
   std::unordered_map<jobject, Tempest::Window*> wndWx;
 
   JavaVM     *vm =nullptr;
   JNIEnv     *env=nullptr;
-  Jni::Object assets;
+  //Jni::Object assets;
+  AAssetManager* assets=nullptr;
 
   Jni::Class  tempestClass;
   Jni::Class  surfaceClass;
@@ -74,7 +73,7 @@ static struct Android {
 
   Jni::Object activity;
 
-  pthread_mutex_t appMutex, waitMutex, assetsPreloadedMutex;
+  pthread_mutex_t appMutex, assetsPreloadedMutex;
   pthread_t       mainThread;
 
   int (*mainFunc)(int,char**) = nullptr;
@@ -169,34 +168,12 @@ static struct Android {
 
   std::unordered_map< std::string, std::unique_ptr< std::vector<char>> > asset_files;
 
-  std::vector<char>* preloadAsset( const std::string& ass ){
-    Guard guard(assetsPreloadedMutex);
-    (void)guard;
-
-    auto i = asset_files.find(ass);
-    if( i!=asset_files.end() ){
-      return i->second.get();
-      }
-
+  AAsset* open( const std::string& a ){
     JNIEnv * env = 0;
     vm->AttachCurrentThread( &env, NULL);
 
-    AAssetManager* mgr = AAssetManager_fromJava(env, assets);
-    AAsset* asset = AAssetManager_open(mgr, ass.c_str(), AASSET_MODE_BUFFER);
-
-    if( !asset ){
-      Log::e("not found: \"",ass,'\"');
-      return 0;
-      }
-
-    //T_ASSERT( asset );
-
-    std::unique_ptr< std::vector<char>> vec(new std::vector<char>(AAsset_getLength(asset)));
-    AAsset_read (asset, &((*vec)[0]), vec->size() );
-    AAsset_close(asset);
-
-    asset_files[ass] = std::move(vec);
-    return asset_files[ass].get();
+    AAsset* asset = AAssetManager_open(assets, a.c_str(), AASSET_MODE_UNKNOWN);
+    return asset;
     }
 
   int pointerId( int nid ){
@@ -236,7 +213,6 @@ static struct Android {
     msg.  reserve(256);
     mouse.reserve(8);
 
-    pthread_mutex_init(&waitMutex, 0);
     pthread_mutex_init(&appMutex, 0);
     pthread_mutex_init(&assetsPreloadedMutex, 0);
     }
@@ -244,25 +220,12 @@ static struct Android {
   ~Android(){
     pthread_mutex_destroy(&assetsPreloadedMutex);
     pthread_mutex_destroy(&appMutex);
-    pthread_mutex_destroy(&waitMutex);
     }
 
   SystemAPI::Window *createWindow();
 
   void waitForQueue();
   } android;
-
-struct SyncMethod{
-  SyncMethod():g(android.waitMutex){
-
-    }
-
-  ~SyncMethod(){
-    android.waitForQueue();
-    }
-
-  Guard g;
-  };
 
 using namespace Tempest;
 
@@ -428,11 +391,10 @@ AndroidAPI::CpuInfo AndroidAPI::cpuInfoImpl(){
   return info;
   }
 
-struct AndroidAPI::DroidFile{
-  FILE* h;
-  char * assets_ptr;
-  char * pos;
-  size_t size;
+struct AndroidAPI::DroidFile {
+  FILE*   h    =nullptr;
+  AAsset* asset=nullptr;
+  size_t  size =0;
   };
 
 AndroidAPI::File *AndroidAPI::fopenImpl( const char16_t *fname, const char *mode ) {
@@ -449,98 +411,93 @@ AndroidAPI::File *AndroidAPI::fopenImpl( const char *fname, const char *mode ) {
   DroidFile* f = new DroidFile();
   if( fname[0]=='/'||fname[0]=='.' ){
     f->h = ::fopen(fname, mode);
-    f->assets_ptr = 0;
     } else
   if( !wr ) {
-    f->h = 0;
-    std::vector<char>* vec = android.preloadAsset(fname);
-    if(vec){
-      f->size       = vec->size();
-      f->assets_ptr = &(*vec)[0];
-      f->pos        = f->assets_ptr;
-      } else {
-      f->assets_ptr = 0;
-      }
+    f->asset = android.open(fname);
+    if( f->asset )
+      f->size = size_t(AAsset_getLength64(f->asset));
     }
 
-  if( !f->h && !f->assets_ptr ){
+  if( !f->h && !f->asset ){
     delete f;
     return 0;
     }
 
-  return (SystemAPI::File*)f;
+  return reinterpret_cast<SystemAPI::File*>(f);
   }
 
 size_t AndroidAPI::readDataImpl(SystemAPI::File *f, char *dest, size_t count) {
-  DroidFile *fn = (DroidFile*)f;
+  DroidFile *fn = reinterpret_cast<DroidFile*>(f);
   if( fn->h ){
     return fread(dest, 1, count, fn->h);
     } else {
-    size_t c = std::min(fn->size, count);
-    memcpy(dest, fn->pos, c);
-    fn->pos  += c;
-    fn->size -= c;
-    return c;
+    int rd = AAsset_read(fn->asset,dest,count);
+    if( rd<0 )
+      return 0;
+    return size_t(rd);
     }
   }
 
 size_t AndroidAPI::peekImpl(SystemAPI::File *f, size_t skip, char *dest, size_t count) {
-  DroidFile *fn = (DroidFile*)f;
+  DroidFile *fn = reinterpret_cast<DroidFile*>(f);
   if( fn->h ){
-    size_t pos = ftell( fn->h );
+    off_t pos = ftell( fn->h );
     fseek( fn->h, skip, SEEK_CUR );
     size_t c = fread( dest, 1, count, fn->h );
     fseek( fn->h , pos, SEEK_SET );
     return c;
     } else {
-    if( skip>=fn->size )
-      return 0;
+    size_t pos = size_t(fn->size - AAsset_getRemainingLength64(fn->asset));
+    AAsset_seek(fn->asset,skip,SEEK_CUR);
+    size_t c   = readDataImpl(f,dest,count);
 
-    size_t c = std::min(fn->size-skip, count);
-    memcpy(dest, fn->pos+skip, c);
+    AAsset_seek(fn->asset,pos,SEEK_SET);
     return c;
     }
   }
 
 size_t AndroidAPI::writeDataImpl(SystemAPI::File *f, const char *data, size_t count) {
-  DroidFile *fn = (DroidFile*)f;
+  DroidFile *fn = reinterpret_cast<DroidFile*>(f);
   return fwrite(data, 1, count, fn->h );
   }
 
 void AndroidAPI::flushImpl(SystemAPI::File *f) {
-  DroidFile *fn = (DroidFile*)f;
+  DroidFile *fn = reinterpret_cast<DroidFile*>(f);
   if( fn->h )
     fflush( fn->h );
   }
 
 size_t AndroidAPI::skipImpl(SystemAPI::File *f, size_t count) {
-  DroidFile *fn = (DroidFile*)f;
+  DroidFile *fn = reinterpret_cast<DroidFile*>(f);
 
   if( fn->h ){
-    size_t pos = ftell( fn->h );
-    fseek( fn->h, count, SEEK_CUR );
+    off_t pos = ftell( fn->h );
+    fseek( fn->h, off_t(count), SEEK_CUR );
 
-    return ftell( fn->h ) - pos;
+    return ftell(fn->h) - pos;
     } else {
-    size_t c = std::min(fn->size, count);
+    size_t pos    = size_t(fn->size - AAsset_getRemainingLength64( fn->asset ));
+    off_t  newPos = AAsset_seek(fn->asset,count,SEEK_CUR);
+    if(newPos<0)
+      return 0;
 
-    fn->pos  += c;
-    fn->size -= c;
-    return c;
+    return newPos-pos;
     }
   }
 
 bool AndroidAPI::eofImpl(SystemAPI::File *f) {
-  DroidFile *fn = (DroidFile*)f;
+  DroidFile *fn = reinterpret_cast<DroidFile*>(f);
   if( fn->h ){
     return feof( fn->h );
+    } else {
+    return AAsset_getRemainingLength64(fn->asset)==0;
     }
 
   return fn->size==0;
   }
 
 size_t AndroidAPI::fsizeImpl( File* f ){
-  DroidFile *fn = (DroidFile*)f;
+  DroidFile *fn = reinterpret_cast<DroidFile*>(f);
   if( fn->h ){
     FILE *file = fn->h;
     size_t pos = ftell(file);
@@ -555,15 +512,20 @@ size_t AndroidAPI::fsizeImpl( File* f ){
     return e-s;
     }
 
-  return fn->size + size_t(fn->pos - fn->assets_ptr);
+  if( fn->asset )
+    return fn->size;
+  return 0;
   }
 
 void AndroidAPI::fcloseImpl(SystemAPI::File *f) {
-  DroidFile *fn = (DroidFile*)f;
+  DroidFile *fn = reinterpret_cast<DroidFile*>(f);
 
   if( fn->h ){
     ::fclose( fn->h );
     }
+
+  if( fn->asset )
+    AAsset_close(fn->asset);
 
   delete fn;
   }
@@ -783,7 +745,7 @@ Point AndroidAPI::windowClientPos ( Window* ){
   }
 
 Size AndroidAPI::windowClientRect( Window* hwnd ){
-  ANativeWindow* window = AndroidAPI::nWindow(hwnd);
+  Jni::AndroidWindow window = AndroidAPI::nWindow(hwnd);
   EGLint w=ANativeWindow_getWidth (window);
   EGLint h=ANativeWindow_getHeight(window);
   return Size(w,h);
@@ -868,23 +830,17 @@ static void JNICALL stop(JNIEnv* /*jenv*/, jobject /*obj*/) {
 
 static void JNICALL resume(JNIEnv* /*jenv*/, jobject /*obj*/) {
   Log::i("nativeOnResume");
-  SyncMethod wm;
-  (void)wm;
-
   android.pushMsg( Android::MSG_RESUME );
   }
 
 static void JNICALL pauseA(JNIEnv* /*jenv*/, jobject /*obj*/) {
   Log::i("nativeOnPause");
-  SyncMethod wm;
-  (void)wm;
-
   android.msg.push_back( Android::MSG_PAUSE );
   }
 
-static void JNICALL setAssets(JNIEnv* jenv, jobject /*obj*/, jobject assets ) {
+static void JNICALL setAssets(JNIEnv* jenv, jobject /*obj*/, jobject jassets ) {
   Log::i("setAssets");
-  android.assets = Jni::Object(*jenv,assets);
+  android.assets = AAssetManager_fromJava(jenv, jassets);
   }
 
 static void JNICALL nativeOnTouch( JNIEnv* , jobject ,
@@ -910,9 +866,6 @@ static void JNICALL nativeSetSurface( JNIEnv* /*jenv*/, jobject /*obj*/, jobject
 
 static void JNICALL onKeyDownEvent(JNIEnv* , jobject, jint key ) {
   Log::i("onKeyDownEvent");
-
-  Guard w( android.waitMutex );
-  (void)w;
 
   if( key!=AKEYCODE_BACK ){
     const int K_a = AKEYCODE_A, K_A = 29;
@@ -942,9 +895,6 @@ static void JNICALL onKeyDownEvent(JNIEnv* , jobject, jint key ) {
 
 static void JNICALL onKeyUpEvent(JNIEnv* , jobject, jint key ) {
   Log::i("onKeyUpEvent");
-
-  Guard w( android.waitMutex );
-  (void)w;
 
   if( key!=AKEYCODE_BACK ){
     Android::Message m = Android::MSG_KEYUP_EVENT;

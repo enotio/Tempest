@@ -13,7 +13,7 @@ LOCAL_C_INCLUDES += \
   $(LOCAL_PATH)/thirdparty/squish \
   $(LOCAL_PATH)/thirdparty/libjpeg
 
-SOURCES := $(wildcard $(LOCAL_PATH)*.cpp)
+SOURCES := $(wildcard $*.cpp)
 SOURCES += $(wildcard $(LOCAL_PATH)/**/*.cpp)
 SOURCES += $(wildcard $(LOCAL_PATH)/**/**/*.cpp)
 
@@ -44,7 +44,10 @@ SOURCES += \
   $(LOCAL_PATH)/thirdparty/freetype/src/smooth/smooth.c \
   $(LOCAL_PATH)/thirdparty/freetype/src/truetype/truetype.c
 
-LOCAL_SRC_FILES := $(SOURCES:$(LOCAL_PATH)/%=%)
+#$(info src=$(SOURCES))
+
+LOCAL_SRC_FILES := $(SOURCES)
+#$(SOURCES:$(LOCAL_PATH)/%=%)
 #LOCAL_SRC_FILES    += $(patsubst $(LOCAL_PATH)/%, %, $(wildcard $(LOCAL_PATH)/**/*.cpp))
 #LOCAL_SRC_FILES    += $(patsubst $(LOCAL_PATH)/%, %, $(wildcard $(LOCAL_PATH)/core/**/*.cpp))
 

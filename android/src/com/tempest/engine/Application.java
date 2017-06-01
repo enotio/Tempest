@@ -18,7 +18,7 @@ public class Application extends android.app.Application {
     handler = new Handler();
     app     = new WeakReference<>(this);
 
-    System.loadLibrary("c++_shared");
+    //System.loadLibrary("c++_shared");
 
     System.loadLibrary("Tempest");
     setupEnv();

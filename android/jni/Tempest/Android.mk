@@ -1,3 +1,3 @@
+LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
-include $(tempestPath)/Android.mk
-
+include $(LOCAL_PATH)/$(tempestPath)/Android.mk

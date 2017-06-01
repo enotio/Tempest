@@ -1,6 +1,8 @@
 #include "directx11.h"
 
-#if defined(__WINDOWS_PHONE__) || (__WINDOWS__)
+#include <Tempest/Platform>
+
+#if defined(__WINDOWS_PHONE__) || defined(__WINDOWS__)
 #include "shading/abstractshadinglang.h"
 #include <Tempest/RenderState>
 #include <Tempest/Platform>

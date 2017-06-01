@@ -1,6 +1,8 @@
 #include "hlsl11.h"
 
-#if defined(__WINDOWS_PHONE__) || (__WINDOWS__)
+#include <Tempest/Platform>
+
+#if defined(__WINDOWS_PHONE__) || defined(__WINDOWS__)
 
 #ifndef _MSC_VER
 #define __in

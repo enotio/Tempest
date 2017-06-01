@@ -24,14 +24,18 @@ void Log::flush(Mode m, char *&out, size_t &count) {
     *out = '\0';
 
 #ifdef __ANDROID__
-  if( m==Info )
-     __android_log_print(ANDROID_LOG_INFO, "", "%s", buffer);
-
-  if( m==Error )
-     __android_log_print(ANDROID_LOG_ERROR, "", "%s", buffer);
-
-  if( m==Debug )
-     __android_log_print(ANDROID_LOG_DEBUG, "", "%s", buffer);
+    switch (m) {
+      case Error:
+        __android_log_print(ANDROID_LOG_ERROR, "app", "%s", buffer);
+        break;
+      case Debug:
+        __android_log_print(ANDROID_LOG_DEBUG, "app", "%s", buffer);
+        break;
+      case Info:
+      default:
+        __android_log_print(ANDROID_LOG_INFO,  "app", "%s", buffer);
+        break;
+      }
 #elif defined(__WINDOWS_PHONE__)
 #if !defined(_DEBUG)
   OutputDebugStringA(buffer);

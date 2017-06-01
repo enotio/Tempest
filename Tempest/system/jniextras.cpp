@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#ifdef __ANDROID__
 using namespace Tempest::Jni;
 
 Class::Class() {
@@ -91,3 +92,4 @@ AndroidWindow &AndroidWindow::operator =(const AndroidWindow &other) {
   ptr = other.ptr;
   return *this;
   }
+#endif

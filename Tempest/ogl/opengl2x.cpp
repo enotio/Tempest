@@ -90,10 +90,14 @@ using namespace Tempest;
 
 struct Tempest::Opengl2x::ImplDevice : public Detail::ImplDeviceBase {
   ImplDevice(){
+#ifdef __ANDROID__
     AndroidAPI::onSurfaceDestroyed.bind(this,&ImplDevice::surfaceDestroyed);
+#endif
     }
   ~ImplDevice(){
+#ifdef __ANDROID__
     AndroidAPI::onSurfaceDestroyed.ubind(this,&ImplDevice::surfaceDestroyed);
+#endif
     }
 
   bool isWriteOnly( const RenderState& rs ){
@@ -113,7 +117,12 @@ struct Tempest::Opengl2x::ImplDevice : public Detail::ImplDeviceBase {
       }
     }
 
+#ifdef __ANDROID__
   void surfaceDestroyed(){
+    if(surface==EGL_NO_SURFACE)
+      return;
+    eglMakeCurrent(disp,EGL_NO_SURFACE,EGL_NO_SURFACE,context);
+    eglDestroySurface(disp,surface);
     surface=EGL_NO_SURFACE;
     }
 
@@ -121,9 +130,9 @@ struct Tempest::Opengl2x::ImplDevice : public Detail::ImplDeviceBase {
     if(surface!=EGL_NO_SURFACE)
       return;
     eglMakeCurrent(disp,EGL_NO_SURFACE,EGL_NO_SURFACE,context);
-    eglDestroySurface(disp,surface);
     surface = eglCreateWindowSurface( disp, config, window, NULL);
     }
+#endif
   };
 
 Opengl2x::Opengl2x():dev(0){
@@ -210,13 +219,13 @@ bool Opengl2x::createContext( Detail::ImplDeviceBase* dev,
 
   const EGLint* attribs = attribs16;
 
-  EGLint         w=0, h=0, format=0;
-  EGLint         numConfigs=0;
-  EGLConfig      ini_config =nullptr;
-  EGLSurface     ini_surface=nullptr;
-  EGLContext     ini_context=nullptr;
-  ANativeWindow* ini_window =nullptr;
-  EGLDisplay     ini_display=nullptr;
+  EGLint             w=0, h=0, format=0;
+  EGLint             numConfigs=0;
+  EGLConfig          ini_config =nullptr;
+  EGLSurface         ini_surface=nullptr;
+  EGLContext         ini_context=nullptr;
+  Jni::AndroidWindow ini_window;
+  EGLDisplay         ini_display=nullptr;
 
   ini_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   ini_window  = AndroidAPI::nWindow(hwnd);
@@ -1572,7 +1581,7 @@ AbstractAPI::IndexBuffer *Opengl2x::createIndexBuffer( AbstractAPI::Device *d,
   ibo->vertexCount = size;
   ibo->byteCount   = size*elSize;
 
-  if( dev->useVBA(u) ){
+  if( false && dev->useVBA(u) ){
     ibo->vba.insert( ibo->vba.begin(),
                      (const char*)src, (const char*)src+size*elSize );
     ibo->id = 0;
@@ -1798,7 +1807,7 @@ void Opengl2x::setVertexDeclaration( AbstractAPI::Device *d,
 void Opengl2x::bindVertexBuffer( AbstractAPI::Device *d,
                                  AbstractAPI::VertexBuffer* b,
                                  int vsize ) const {
-  if( !setDevice(d) || !b ) return;
+  if( !setDevice(d) ) return;
 
   dev->vbo        = *(GLuint*)b;
   dev->cVBO       = (Detail::GLBuffer*)b;
@@ -1807,7 +1816,7 @@ void Opengl2x::bindVertexBuffer( AbstractAPI::Device *d,
 
 void Opengl2x::bindIndexBuffer( AbstractAPI::Device * d,
                                 AbstractAPI::IndexBuffer * b ) const {
-  if( !setDevice(d) || !b ) return;
+  if( !setDevice(d) ) return;
 
   dev->ibo  = *(GLuint*)b;
   dev->cIBO = (Detail::GLBuffer*)b;

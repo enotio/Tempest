@@ -283,7 +283,6 @@ HEADERS += \
     scene/abstractlightcollection.h \
     scene/abstractgraphicobject.h \
     scene/abstractcamera.h \
-    shading/fragmentshader.h \
     shading/abstractshadinglang.h \
     utils/tessobject.h \
     utils/cwnptr.h \
