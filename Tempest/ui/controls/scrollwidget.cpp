@@ -446,6 +446,14 @@ void ScrollWidget::scrollV(int v) {
     cen->setPosition(cen->x(), -v);
   }
 
+int ScrollWidget::scrollH() const {
+  return -cen->x();
+  }
+
+int ScrollWidget::scrollV() const {
+  return -cen->y();
+  }
+
 void ScrollWidget::resizeEv(int,int) {
   updateScrolls();
   }

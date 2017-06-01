@@ -60,6 +60,9 @@ class ScrollWidget : public Tempest::Widget {
     void scrollH( int v );
     void scrollV( int v );
 
+    int  scrollH() const;
+    int  scrollV() const;
+
   protected:
     ScrollWidget(bool noUi);
 
