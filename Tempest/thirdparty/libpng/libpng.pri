@@ -2,7 +2,10 @@ HEADERS += \
     $$PWD/config.h \
     $$PWD/png.h \
     $$PWD/pngconf.h \
-    $$PWD/pngpriv.h
+    $$PWD/pngpriv.h \
+    $$PWD/pnglibconf.h \
+    $$PWD/pngstruct.h \
+    $$PWD/pnginfo.h
 
 SOURCES += \
     $$PWD/png.c \
