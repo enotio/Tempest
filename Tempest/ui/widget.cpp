@@ -155,6 +155,10 @@ void Widget::setGeometry(const Rect &r) {
     wrect.w = 0;
   if(wrect.h<0)
     wrect.h = 0;
+  if(wrect.w>SizePolicy::maxWidgetSize().w)
+    wrect.w = SizePolicy::maxWidgetSize().w;
+  if(wrect.h>SizePolicy::maxWidgetSize().h)
+    wrect.h = SizePolicy::maxWidgetSize().h;
 
   if( ox!=r.x && oy!=r.y )
     onPositionChange(ox,oy);

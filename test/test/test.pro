@@ -16,4 +16,5 @@ HEADERS +=
 SOURCES += \
     main.cpp \
     utils_test.cpp \
-    layout_test.cpp
+    layout_test.cpp \
+    signals.cpp
