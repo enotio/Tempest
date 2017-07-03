@@ -42,7 +42,7 @@ build_script:
   - '%make% clean'
   - cd ../test/test
   - qmake test.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
-  - make
+  - '%make%'
   - cd ../../
   - del Makefile* /s /q
 
