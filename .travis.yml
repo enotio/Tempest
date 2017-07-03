@@ -30,6 +30,11 @@ script:
   - qmake Tempest.pro -r -spec macx-clang CONFIG+=x86_64
   - make
   - cd ../
+  - cd test/test
+  - qmake test.pro -r -spec macx-clang CONFIG+=x86_64
+  - make
+  - cd ../../
+  - test/bin/test
 
 before_deploy:
   - zip -r Tempest-osx-v1.0.0.zip ./lib
