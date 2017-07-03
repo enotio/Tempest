@@ -24,6 +24,7 @@ install:
  # clang 3.7
  - if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.7"; fi
  - clang --version
+ - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then export DYLD_LIBRARY_PATH="`pwd`/lib":$DYLD_LIBRARY_PATH; fi
 
 script:
   - cd Tempest
