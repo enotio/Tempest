@@ -39,8 +39,14 @@ build_script:
   - qmake.exe examples.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
   - '%make%'
   - '%make% clean'
-  - cd ../
+  - cd ../test/test
+  - qmake test.pro -r -spec %QMAKE_SPEC% CONFIG+=%CONFIGURATION%
+  - make
+  - cd ../../
   - del Makefile* /s /q
+
+test_script:
+  - test/bin/test.exe
 
 after_build:
   - echo Tempest-win32-v%appveyor_build_version% >> VERSION

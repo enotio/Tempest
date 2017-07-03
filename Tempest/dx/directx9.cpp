@@ -1,5 +1,7 @@
 #include "directx9.h"
 
+#include <Tempest/Platform>
+
 #ifdef __WINDOWS__
 
 #include <d3d9.h>

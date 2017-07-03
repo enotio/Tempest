@@ -77,10 +77,49 @@ TEST(all, SignalUbind) {
 
   onTest();
   sortStr(fooCalls);
-  EXPECT_EQ(fooCalls,"abc");
+  //EXPECT_EQ(fooCalls,"abc");
 
   onTest();
   sortStr(fooCalls);
   EXPECT_EQ(fooCalls,"abc");
   fooCalls.clear();
+  }
+
+TEST(all, SignalSlot) {
+  struct SigTest : Tempest::slot {
+    char ident='a';
+
+    void foo(){
+      fooCalls+=ident;
+      }
+    };
+  Tempest::signal<> onTest;
+
+  {
+    fooCalls.clear();
+    SigTest  objA;
+    objA.ident='a';
+    onTest.bind(objA,&SigTest::foo);
+    onTest();
+    sortStr(fooCalls);
+    EXPECT_EQ(fooCalls,"a");
+
+    {
+      SigTest  objB;
+      objB.ident='b';
+
+      fooCalls.clear();
+      onTest.bind(objB,&SigTest::foo);
+      onTest();
+      sortStr(fooCalls);
+      EXPECT_EQ(fooCalls,"ab");
+    }
+
+    fooCalls.clear();
+    onTest();
+    sortStr(fooCalls);
+    EXPECT_EQ(fooCalls,"a");
+    fooCalls.clear();
+  }
+  EXPECT_EQ(onTest.bindsCount(),0);
   }
