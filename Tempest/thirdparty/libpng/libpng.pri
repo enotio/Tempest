@@ -1,5 +1,4 @@
 HEADERS += \
-    $$PWD/config.h \
     $$PWD/png.h \
     $$PWD/pngconf.h \
     $$PWD/pngpriv.h \

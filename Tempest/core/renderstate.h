@@ -89,7 +89,7 @@ namespace Tempest{
       void  setAlphaTestRef(double v);
 
       void setAlphaTestMode( RenderState::AlphaTestMode::Type mode );
-      AlphaTestMode::Type alphaTestMode() const ;
+      AlphaTestMode::Type alphaTestMode() const;
 
       bool isZWriting() const;
       void setZWriting(bool use);
