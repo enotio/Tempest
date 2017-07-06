@@ -84,19 +84,29 @@ class signalBase : public slot {
 template< class ... Args >
 class signal : Detail::signalBase {
   public:
-    signal():size(0){}
+    signal(){}
     signal(const signal& other);
     ~signal();
     signal& operator = (const signal& sg);
 
     inline void exec( Args ... args ){
-      for(size_t i=0;i<size;++i)
-        at(i)->exec(args...);
+      LGuard g(st);(void)g;
+      for(IEmit* v=st.begin(); v<st.end();) {
+        v->exec(args...);
+        if(st.locked==Storage::LK_Inconsistent)
+           return;
+        v=v->next();
+        }
       }
 
     inline void operator()( Args ... args ){
-      for(size_t i=0;i<size;++i)
-        at(i)->exec(args...);
+      LGuard g(st);(void)g;
+      for(IEmit* v=st.begin(); v<st.end();) {
+        v->exec(args...);
+        if(st.locked==Storage::LK_Inconsistent)
+           return;
+        v=v->next();
+        }
       }
 
     template< class ... FuncArgs >
@@ -104,27 +114,21 @@ class signal : Detail::signalBase {
       bind( t, &signal<FuncArgs...>::operator() );
       }
 
-    template< class ... FuncArgs >
-    void ubind( signal<FuncArgs...> & t ){
-      ubind( t, &signal<FuncArgs...>::operator() );
+    template< class T, class Ret, class TBase, class ... FuncArgs >
+    void bind( T *t, Ret (TBase::*f)( FuncArgs... ) ){
+      if(t!=nullptr)
+        bind(*t, f);
       }
 
     template< class T, class Ret, class TBase, class ... FuncArgs >
     void bind( T &t, Ret (TBase::*f)( FuncArgs... ) ){
       st.add(Emit<T, Ret, TBase, FuncArgs...>(t,f));
-      size++;
       reg(&t);
-      }
-
-    template< class T, class Ret, class TBase, class ... FuncArgs >
-    void bind( T *t, Ret (TBase::*f)( FuncArgs... ) ){
-      bind(*t, f);
       }
 
     template< class Ret, class ... FuncArgs >
     void bind( Ret (&f)( FuncArgs... ) ){
       st.add(EmitFunc<Ret, FuncArgs...>(f));
-      size++;
       }
 
     template< class T, class TBase >
@@ -136,10 +140,14 @@ class signal : Detail::signalBase {
       for(IEmit* v=st.begin(); v<st.end();)
         if( v->isEq(&t,ch,sizeof(f)) ){
           v = st.remove(v);
-          size--;
           unreg(&t);
           }else
           v = v->next();
+      }
+
+    template< class ... FuncArgs >
+    void ubind( signal<FuncArgs...> & t ){
+      ubind( t, &signal<FuncArgs...>::operator() );
       }
 
     template< class T, class TBase >
@@ -148,7 +156,10 @@ class signal : Detail::signalBase {
       }
 
     size_t bindsCount() const{
-      return size;
+      size_t s=0;
+      for(IEmit* v=st.begin(); v<st.end(); v=v->next())
+        ++s;
+      return s;
       }
 
     void removeBinds(){
@@ -165,7 +176,6 @@ class signal : Detail::signalBase {
             }
           sg.resize(size);
           }
-      size=0;
       st.clear();
       }
 
@@ -186,7 +196,6 @@ class signal : Detail::signalBase {
       for(IEmit* v=sg->st.begin(); v<sg->st.end();)
         if( v->toSlot()==this_ptr ){
           v = sg->st.remove(v);
-          sg->size--;
           } else
           v = v->next();
       }
@@ -195,6 +204,8 @@ class signal : Detail::signalBase {
       virtual void   exec( Args& ... args ) = 0;
       virtual IEmit* next()                 = 0;
       virtual size_t size() const           = 0;
+      virtual void   clear()                = 0;
+      virtual bool   empty() const          = 0;
       };
 
     template< class T, class Ret, class TBase, class ... FuncArgs >
@@ -211,7 +222,8 @@ class signal : Detail::signalBase {
         }
 
       void exec( Args& ... args ){
-        (*obj.*func)( args... );
+        if(func)
+          (*obj.*func)( args... );
         }
 
       bool isEq( void *t, char *f, size_t s ){
@@ -245,8 +257,17 @@ class signal : Detail::signalBase {
         return reinterpret_cast<IEmit*>((char*)this+size());
         }
 
-      virtual size_t size() const {
+      size_t size() const {
         return ((sizeof(*this)+align-1)/align)*align;
+        }
+
+      void clear(){
+        obj =nullptr;
+        func=nullptr;
+        }
+
+      bool empty() const {
+        return func==nullptr;
         }
 
       T * obj;
@@ -267,7 +288,8 @@ class signal : Detail::signalBase {
         }
 
       void exec( Args& ... args ){
-        func( args... );
+        if(func)
+          func( args... );
         }
 
       bool isEq( void *t, char *f, size_t s ){
@@ -287,11 +309,19 @@ class signal : Detail::signalBase {
         return reinterpret_cast<IEmit*>((char*)this+size());
         }
 
-      virtual size_t size() const {
+      size_t size() const {
         return ((sizeof(*this)+align-1)/align)*align;
         }
 
-      Ret (&func)( FuncArgs... );
+      void clear(){
+        func=nullptr;
+        }
+
+      bool empty() const {
+        return func==nullptr;
+        }
+
+      Ret (*func)( FuncArgs... );
     };
 
     IEmit* at(size_t pos){
@@ -302,6 +332,11 @@ class signal : Detail::signalBase {
       }
 
     struct Storage {
+      enum LockState {
+        LK_Unlocked    =0,
+        LK_Locked      =1,
+        LK_Inconsistent=2
+        };
       Storage():data(nullptr),size(0){}
       ~Storage(){
         if(data)
@@ -310,29 +345,29 @@ class signal : Detail::signalBase {
 
       Storage(const Storage& other){
         size = other.size;
-        data = size==0 ? nullptr : (char*)malloc(other.size);
+        data = size==0 ? nullptr : (char*)std::malloc(other.size);
         if(!data && size>0)
           T_ASSERT_X(0,"out of memory");
         memcpy(data,other.data,size);
         }
 
       Storage& operator = (const Storage& other){
-        data = (char*)realloc(data,other.size);
+        realloc(other.size);
         if(!data && other.size>0)
           T_ASSERT_X(0,"out of memory");
         size = other.size;
         if(size==0)
           data=nullptr; else
           memcpy(data,other.data,size);
+        if(other.locked!=LK_Unlocked)
+           shrink();
+        if(locked!=LK_Unlocked)
+           locked=LK_Inconsistent;
         return *this;
         }
 
       void expand(size_t sz){
-        size += sz;
-        char* c = (char*)realloc(data,size);
-        if(!c && size>0)
-          T_ASSERT_X(0,"out of memory") else
-          data = c;
+        realloc(size+sz);
         }
 
       template<class T>
@@ -345,6 +380,10 @@ class signal : Detail::signalBase {
       IEmit* remove(IEmit* e){
         char* ep = (char*)e->next();
         char* sp = (char*)e;
+        if(locked) {
+           e->clear();
+           return e->next();
+           }
         return remove(sp-data,ep-sp);
         }
 
@@ -352,12 +391,23 @@ class signal : Detail::signalBase {
         size -= sz;
         for(size_t i=at;i<size;++i)
           data[i] = data[i+sz];
-        char* c = (char*)realloc(data,size);
-        if( c )
-          data = c;
-        if(size==0)
-          data=nullptr;
+        realloc(size);
         return reinterpret_cast<IEmit*>(data+at);
+        }
+
+      void realloc(size_t sz){
+        if(sz==size)
+          return;
+        if(sz==0){
+          free(data);
+          data=nullptr;
+          size=0;
+          } else {
+          char* c = reinterpret_cast<char*>(std::realloc(data,sz));
+          T_ASSERT_X( c, "out of memory" );
+          data = c;
+          size = sz;
+          }
         }
 
       void clear(){
@@ -370,12 +420,47 @@ class signal : Detail::signalBase {
       IEmit* begin(){return reinterpret_cast<IEmit*>(data);}
       void*  end()  {return data+size;}
 
-      char*  data;
-      size_t size;
+      void lock(){
+        locked = LK_Locked;
+        }
+      void unlock(){
+        locked = LK_Unlocked;
+        shrink();
+        }
+
+      void shrink(){
+        IEmit* wr=begin();
+        size_t nsize=0;
+        for(IEmit* i=wr;i<end();i=i->next()) {
+           if(!i->empty()) {
+             memcpy(wr,i,i->size());
+             wr=wr->next();
+             nsize+=i->size();
+             }
+          }
+        realloc(nsize);
+        }
+
+      char*   data;
+      size_t  size;
+      uint8_t locked=LK_Unlocked;
       };
 
-    Storage st;
-    size_t  size;
+    struct LGuard {
+      Storage& s;
+      uint8_t  old;
+      LGuard(Storage& s):s(s),old(s.locked){
+        s.lock();
+        }
+      ~LGuard(){
+        if(s.locked==Storage::LK_Inconsistent && old!=Storage::LK_Unlocked)
+          return;
+        s.unlock();
+        s.locked=old;
+        }
+      };
+
+    mutable Storage st;
   };
 
 template< class ... Args >
@@ -396,7 +481,7 @@ signal<Args...>::~signal() {
   }
 
 template< class ... Args >
-signal<Args...>::signal(const signal<Args...>& other):st(other.st),size(other.size){
+signal<Args...>::signal(const signal<Args...>& other):st(other.st){
   for(IEmit* v=st.begin(); v<st.end(); v=v->next())
     if( slot* s = v->toSlot() )
       reg(s);
@@ -419,8 +504,7 @@ signal<Args...> &signal<Args...>::operator =(const signal<Args...> &sg) {
       }
     }
 
-  st   = sg.st;
-  size = sg.size;
+  st = sg.st;
 
   for(IEmit* v=st.begin(); v<st.end(); v=v->next())
     if( slot* s = v->toSlot() )

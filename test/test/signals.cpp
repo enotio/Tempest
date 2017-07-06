@@ -77,7 +77,7 @@ TEST(all, SignalUbind) {
 
   onTest();
   sortStr(fooCalls);
-  //EXPECT_EQ(fooCalls,"abc");
+  EXPECT_EQ(fooCalls,"abc");
 
   onTest();
   sortStr(fooCalls);
@@ -121,5 +121,80 @@ TEST(all, SignalSlot) {
     EXPECT_EQ(fooCalls,"a");
     fooCalls.clear();
   }
-  EXPECT_EQ(onTest.bindsCount(),0);
+  EXPECT_EQ(onTest.bindsCount(),0u);
+  }
+
+TEST(all, SignalSorageDamage) {
+  struct SigTest {
+    Tempest::signal<>* onTest=nullptr;
+    char ident='a';
+
+    void foo(){
+      Tempest::signal<> empty;
+      fooCalls+=ident;
+      *onTest=empty;
+      }
+    };
+  SigTest  obj[3];
+  obj[0].ident='a';
+  obj[1].ident='b';
+  obj[2].ident='c';
+
+  Tempest::signal<> onTest;
+  onTest.bind(obj[0],&SigTest::foo);
+  onTest.bind(obj[1],&SigTest::foo);
+  onTest.bind(obj[2],&SigTest::foo);
+
+  for(auto& i:obj)
+    i.onTest=&onTest;
+
+  fooCalls.clear();
+  onTest();
+  sortStr(fooCalls);
+  EXPECT_EQ(fooCalls,"a");
+
+  fooCalls.clear();
+  onTest();
+  sortStr(fooCalls);
+  EXPECT_EQ(fooCalls,"");
+  fooCalls.clear();
+  }
+
+TEST(all, SignalRecursive) {
+  struct SigTest {
+    Tempest::signal<>* onTest=nullptr;
+    char ident='a';
+
+    void foo(){
+      Tempest::signal<> empty;
+      fooCalls+=ident;
+      if(fooCalls.size()<4)
+        onTest->exec(); else
+      if(onTest->bindsCount()>0)
+        *onTest=empty;
+      }
+    };
+  SigTest  obj[3];
+  obj[0].ident='a';
+  obj[1].ident='b';
+  obj[2].ident='c';
+
+  Tempest::signal<> onTest;
+  onTest.bind(obj[0],&SigTest::foo);
+  onTest.bind(obj[1],&SigTest::foo);
+  onTest.bind(obj[2],&SigTest::foo);
+
+  for(auto& i:obj)
+    i.onTest=&onTest;
+
+  fooCalls.clear();
+  onTest();
+  sortStr(fooCalls);
+  EXPECT_EQ(fooCalls,"aaaa");
+
+  fooCalls.clear();
+  onTest();
+  sortStr(fooCalls);
+  EXPECT_EQ(fooCalls,"");
+  fooCalls.clear();
   }
