@@ -368,6 +368,8 @@ class signal : Detail::signalBase {
 
       void expand(size_t sz){
         realloc(size+sz);
+        if(locked!=LK_Unlocked)
+           locked=LK_Inconsistent;
         }
 
       template<class T>
@@ -404,7 +406,7 @@ class signal : Detail::signalBase {
           size=0;
           } else {
           char* c = reinterpret_cast<char*>(std::realloc(data,sz));
-          T_ASSERT_X( c, "out of memory" );
+          T_ASSERT_X( c!=nullptr, "out of memory" );
           data = c;
           size = sz;
           }

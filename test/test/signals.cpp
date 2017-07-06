@@ -198,3 +198,28 @@ TEST(all, SignalRecursive) {
   EXPECT_EQ(fooCalls,"");
   fooCalls.clear();
   }
+
+TEST(all, SignalSorageAdd) {
+  struct SigTest {
+    Tempest::signal<>* onTest=nullptr;
+    char ident='a';
+
+    void boo(){}
+
+    void foo(){
+      fooCalls+=ident;
+      onTest->bind(this,&SigTest::boo);
+      }
+    };
+  SigTest  obj;
+  obj.ident='a';
+
+  Tempest::signal<> onTest;
+  onTest.bind(obj,&SigTest::foo);
+  obj.onTest=&onTest;
+
+  fooCalls.clear();
+  onTest();
+  sortStr(fooCalls);
+  EXPECT_EQ(fooCalls,"a");
+  }
