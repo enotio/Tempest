@@ -2,7 +2,7 @@
 
 #include <Tempest/Platform>
 #include <Tempest/SystemAPI>
-#include <TEmpest/Android>
+#include <Tempest/Android>
 #include <Tempest/Event>
 
 #include <Tempest/Timer>
