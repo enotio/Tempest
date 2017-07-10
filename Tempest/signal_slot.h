@@ -435,7 +435,7 @@ class signal : Detail::signalBase {
         size_t nsize=0;
         for(IEmit* i=wr;i<end();i=i->next()) {
            if(!i->empty()) {
-             memcpy(wr,i,i->size());
+             memcpy(reinterpret_cast<char*>(wr),reinterpret_cast<char*>(i),i->size());
              wr=wr->next();
              nsize+=i->size();
              }
