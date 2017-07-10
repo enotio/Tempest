@@ -32,7 +32,7 @@ struct ListBox::ProxyDelegate : public ListDelegate {
     }
   };
 
-class ListBox::ItemBtn:public Button{
+class ListBox::ItemBtn:public Button {
   public:
     ItemBtn( size_t id ):id(id){
       onClicked.bind( this, &ItemBtn::onClick );
@@ -46,6 +46,60 @@ class ListBox::ItemBtn:public Button{
     Tempest::signal<size_t> clickedEx;
   };
 
+class ListBox::BasicButton:public Button {
+  public:
+    BasicButton(size_t id):id(id){}
+
+    void emitClick() {
+      onItemSelected    (id);
+      onItemViewSelected(id,this);
+      }
+
+    size_t                          id;
+    Tempest::signal<size_t>         onItemSelected;
+    Tempest::signal<size_t,Widget*> onItemViewSelected;
+  };
+
+template<class Array>
+class ListBox::BasicDelegate : public ListDelegate {
+  public:
+    BasicDelegate(ListBox& box,const Array& a):box(box),items(a){}
+
+    size_t size() const { return items.size(); }
+
+    Widget* createView(size_t position){
+      return createView(position,R_Default);
+      }
+
+    Widget* createView(size_t position, Role role){
+      Button* b=box.createItemButton(*this,position,role);
+      initializeItem(b,items[position]);
+      return b;
+      }
+
+    Widget* update( Widget* w, size_t position ){
+      Button* b=dynamic_cast<Button*>(w);
+      initializeItem(b,items[position]);
+      return b;
+      }
+
+    template<class T>
+    void initializeItem(Button* c, const T& data){
+      SizePolicy p = c->sizePolicy();
+      p.typeH      = Preferred;
+      p.maxSize.w  = SizePolicy::maxWidgetSize().w;
+      c->setSizePolicy(p);
+
+      c->setText(data);
+      c->setMinimumSize( c->font().textSize(c->text()).w + c->margin().xMargin(),
+                         c->minSize().h );
+      }
+
+    ListBox& box;
+    Array    items;
+  };
+
+
 ListBox::ListBox() : view(0) {
   selected = 0;
   dropListEnabled = true;
@@ -53,6 +107,14 @@ ListBox::ListBox() : view(0) {
 
 ListBox::~ListBox() {
   removeDelegate();
+  }
+
+void ListBox::setItems(const std::vector<std::u16string> &items) {
+  setDelegate(BasicDelegate<std::vector<std::u16string>>(*this,items));
+  }
+
+void ListBox::setItems(const std::vector<std::string> &items) {
+  setDelegate(BasicDelegate<std::vector<std::string>>   (*this,items));
   }
 
 void ListBox::removeDelegate() {
@@ -204,4 +266,11 @@ size_t Tempest::ListBox::currentItem() const {
 
 size_t ListBox::itemsCount() const {
   return listDelegate==nullptr ? 0 : listDelegate->size();
+  }
+
+Tempest::Button *Tempest::ListBox::createItemButton(Tempest::ListDelegate& owner,size_t pos,Tempest::ListDelegate::Role /*r*/) {
+  auto b = new BasicButton(pos);
+  b->onItemSelected    .bind(owner.onItemSelected);
+  b->onItemViewSelected.bind(owner.onItemViewSelected);
+  return b;
   }

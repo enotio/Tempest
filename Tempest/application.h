@@ -49,6 +49,7 @@ class Application {
 
     static uint64_t tickCount();
     static void exit();
+
   private:
     static struct App{
       int  ret;
@@ -64,7 +65,6 @@ class Application {
     static void* execImpl(void*);
 
     friend class Timer;
-    //static bool processMessage();
   };
 /** @}*/
 

@@ -172,3 +172,7 @@ void ListView::Layout::removeAll() {
 
   busy = b;
   }
+
+Tempest::Button *Tempest::ListView::createItemButton(Tempest::ListDelegate::Role /*r*/) {
+  return new Button();
+  }

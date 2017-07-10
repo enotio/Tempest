@@ -8,7 +8,7 @@
 
 namespace Tempest{
 
-class ListDelegate;
+class Button;
 
 /** \addtogroup GUI
  *  @{
@@ -26,6 +26,9 @@ class ListBox : public AbstractListBox {
       setupView(size_t(-1));
       setupDelegateCallback();
       }
+
+    void setItems(const std::vector<std::u16string>& items);
+    void setItems(const std::vector<std::string>&    items);
 
     void removeDelegate();
 
@@ -47,6 +50,8 @@ class ListBox : public AbstractListBox {
     void updateSelectedView();
     const std::shared_ptr<ListDelegate>& delegate();
 
+    Tempest::Button* createItemButton(ListDelegate &owner, size_t pos, Tempest::ListDelegate::Role r);
+
   private:
     size_t selected;
     bool dropListEnabled;
@@ -57,7 +62,12 @@ class ListBox : public AbstractListBox {
 
     class ItemBtn;
 
-    void onItem(size_t id , Widget *view);
+    class BasicButton;
+
+    template<class Array>
+    class BasicDelegate;
+
+    void onItem(size_t id,Widget *view);
     void selectItem( size_t id );
 
     void setupDelegateCallback();

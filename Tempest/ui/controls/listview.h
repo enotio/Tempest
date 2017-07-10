@@ -46,6 +46,8 @@ class ListView : public Widget {
     std::unique_ptr<ListDelegate> delegate;
     ListDelegate::Role defaultRole = ListDelegate::R_ListItem;
 
+    virtual Button* createItemButton(ListDelegate::Role r);
+
     struct Layout : Tempest::LinearLayout {
       Layout( ListView& view,
               ListDelegate& delegate,
