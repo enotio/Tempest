@@ -728,7 +728,7 @@ int AndroidAPI::nextEvent(bool &quit) {
       break;
 
     case Android::MSG_NONE:
-      if( !android.isPaused )
+      if( !android.isPaused && !wnd->showMode()==Tempest::Window::Minimized)
         render(); else
         android.sleep();
       break;

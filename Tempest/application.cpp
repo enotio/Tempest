@@ -2,6 +2,7 @@
 
 #include <Tempest/Platform>
 #include <Tempest/SystemAPI>
+#include <TEmpest/Android>
 #include <Tempest/Event>
 
 #include <Tempest/Timer>
@@ -108,6 +109,9 @@ Tempest::signal<const std::u16string,const Rect&> Application::showHint;
 Application::Application() {
   app.ret  = -1;
   app.quit = false;
+#ifdef __ANDROID__
+  app.uiMetrics.uiScale = AndroidAPI::densityDpi();
+#endif
   SystemAPI::instance().startApplication(0);
   }
 
