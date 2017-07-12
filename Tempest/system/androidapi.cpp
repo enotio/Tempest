@@ -126,18 +126,6 @@ static struct Android {
 
   std::vector<Message> msg;
 
-  static int thread_create( pthread_t *thread, const pthread_attr_t *attr,
-                            void *(*start_routine) (void *), void *arg ){
-    int ret = pthread_create(thread, attr, start_routine, arg);
-
-    while( ret==EAGAIN ){
-      Application::sleep(100);
-      ret=pthread_create(thread, attr, start_routine, arg);
-      }
-
-    return ret;
-    }
-
   void pushMsg( const Message& m ){
     Guard g( appMutex );
     (void)g;
@@ -728,7 +716,7 @@ int AndroidAPI::nextEvent(bool &quit) {
       break;
 
     case Android::MSG_NONE:
-      if( !android.isPaused && !wnd->showMode()==Tempest::Window::Minimized)
+      if( !android.isPaused && wnd->showMode()!=Tempest::Window::Minimized)
         render(); else
         android.sleep();
       break;
@@ -989,7 +977,8 @@ static void JNICALL invokeMain(JNIEnv* env, jobject, jstring ndkLib ){
   void** pptr=reinterpret_cast<void**>(&android.mainFunc);
   *pptr = dlsym(handle, "main");
 
-  android.thread_create(&android.mainThread, 0, tempestMainFunc, 0);
+  tempestMainFunc(nullptr);
+  //android.thread_create(&android.mainThread, 0, tempestMainFunc, 0);
   }
 
 extern "C" jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/){
@@ -1048,10 +1037,8 @@ extern "C" jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/){
   }
 
 static void* tempestMainFunc(void*){
-  Log::i("Tempest MainFunc");
   Android &a = android;
-
-  a.vm->AttachCurrentThread( &a.env, NULL);
+  a.vm->GetEnv(reinterpret_cast<void**>(&a.env),JNI_VERSION_1_6);
 
   pthread_setname_np(pthread_self(),"main");
   Log::i("Tempest MainFunc[1]");
@@ -1064,9 +1051,6 @@ static void* tempestMainFunc(void*){
   android.mainFunc(1,ch);
 
   Log::i("~Tempest MainFunc");
-
-  a.vm->DetachCurrentThread();
-  pthread_exit(0);
   return 0;
   }
 

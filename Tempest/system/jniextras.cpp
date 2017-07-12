@@ -12,6 +12,7 @@ Class::Class(JNIEnv& env, const char *name) : env(&env) {
   cls = env.FindClass(name);
   if( cls )
     cls = reinterpret_cast<jclass>( env.NewGlobalRef(cls) );
+  clearException(env);
   }
 
 Class::Class(Class &&other)  {
@@ -65,7 +66,7 @@ Object &Object::operator =(const Object &other) {
   if( env && self )
     env->DeleteGlobalRef(self);
   env  = other.env;
-  self = env->NewGlobalRef(other.self);
+  self = other.self==NULL ? NULL : env->NewGlobalRef(other.self);
   return *this;
   }
 

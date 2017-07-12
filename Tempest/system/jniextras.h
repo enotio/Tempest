@@ -34,8 +34,7 @@ namespace Jni{
           return;
 
         jmethodID m = env.GetStaticMethodID(cls,func,sig);
-        if( env.ExceptionOccurred() )
-          env.ExceptionDescribe();
+        clearException(env);
         if( m!=nullptr )
           env.CallStaticVoidMethod(cls,m,a...);
         }
@@ -46,8 +45,7 @@ namespace Jni{
           return nullptr;
 
         jmethodID m = env.GetStaticMethodID(cls,func,sig);
-        if( env.ExceptionOccurred() )
-          env.ExceptionDescribe();
+        clearException(env);
         if( m!=nullptr )
           return env.CallStaticObjectMethod(cls,m,a...);
         return nullptr;
@@ -59,8 +57,7 @@ namespace Jni{
           return;
 
         jmethodID m = env.GetMethodID(cls,func,sig);
-        if( env.ExceptionOccurred() )
-          env.ExceptionDescribe();
+        clearException(env);
         if( m!=nullptr )
           env.CallVoidMethod(self,m,a...);
         }
@@ -71,8 +68,7 @@ namespace Jni{
           return nullptr;
 
         jmethodID m = env.GetMethodID(cls,func,sig);
-        if( env.ExceptionOccurred() )
-          env.ExceptionDescribe();
+        clearException(env);
         if( m!=nullptr )
           return env.CallObjectMethod(self,m,a...);
         return nullptr;
@@ -81,6 +77,14 @@ namespace Jni{
     private:
       JNIEnv* env=nullptr;
       jclass  cls=nullptr;
+
+      void clearException(JNIEnv& env){
+        // avoid jni crash
+        if( !env.ExceptionOccurred() )
+          return;
+        env.ExceptionDescribe();
+        env.ExceptionClear();
+        }
     };
 
   class Object {

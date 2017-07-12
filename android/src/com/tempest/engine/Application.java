@@ -10,6 +10,8 @@ import java.util.Locale;
 public class Application extends android.app.Application {
   private static WeakReference<Application> app;
   private Handler handler;
+  private Thread  _mMainThread;
+
 
   @Override
   public void onCreate() {
@@ -26,7 +28,18 @@ public class Application extends android.app.Application {
     System.loadLibrary("main");
 
     final String nativePath=getApplicationInfo().nativeLibraryDir;
-    invokeMainImpl(nativePath+"/libmain.so");
+
+    if(_mMainThread==null) {
+      _mMainThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          invokeMainImpl(nativePath + "/libmain.so");
+          _mMainThread = null;
+          }
+      });
+      _mMainThread.setName("main");
+      _mMainThread.start();
+      }
     }
 
   private void setupEnv(){
