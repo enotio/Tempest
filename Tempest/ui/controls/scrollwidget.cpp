@@ -1,13 +1,13 @@
 #include "scrollwidget.h"
 
+#include <Tempest/Platform>
 #include <Tempest/Layout>
 
 using namespace Tempest;
 
 
 struct ScrollWidget::BoxLayout: public Tempest::LinearLayout {
-  BoxLayout( ScrollWidget* owner,
-             Tempest::Orientation ori ):LinearLayout(ori), sc(owner){}
+  BoxLayout( ScrollWidget* owner,Tempest::Orientation ori ):LinearLayout(ori), sc(owner){}
 
   void applyLayout(){
     if(widgets().size()==0)
@@ -300,8 +300,19 @@ void ScrollWidget::setLayout(Orientation ori) {
     cen->setLayout(new BoxLayout(this,ori));
   }
 
+void ScrollWidget::setLayout(Layout *l) {
+  if(LinearLayout* ll=dynamic_cast<LinearLayout*>(l)) {
+    orient = ll->orientation();
+
+    if(list!=nullptr)
+      list->setOrientation(orient); else
+      cen->setLayout(new BoxLayout(this,orient));
+    }
+  delete l;
+  }
+
 void ScrollWidget::hideScrollBars() {
-  setScrollBarsVisible(0,0);
+  setScrollBarsVisible(false,false);
   }
 
 void ScrollWidget::setScrollBarsVisible(bool vh, bool vv) {
