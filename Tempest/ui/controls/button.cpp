@@ -27,9 +27,7 @@ Button::Button()
 
   setSizePolicy(p);
 
-  pressed  = false;
-  presAnim = false;
-
+  presAnim    = false;
   timePressed = Application::tickCount();
 
   setTextColor(Color(1));
@@ -130,8 +128,8 @@ void Button::showMenu() {
 void Button::mouseDownEvent(Tempest::MouseEvent& e) {
   if(!isEnabled())
     return;
-  pressed     = e.button==Event::ButtonLeft;
-  presAnim    = pressed;
+  setPressed(e.button==Event::ButtonLeft);
+  presAnim    = state().pressed;
   timePressed = Application::tickCount();
 
   update();
@@ -144,13 +142,13 @@ void Button::mouseMoveEvent( Tempest::MouseEvent & ) {
 
 void Button::mouseUpEvent(Tempest::MouseEvent &e) {
   if( e.x<=w() && e.y<=h() &&  e.x>=0 && e.y>=0 && isEnabled() ){
-    if(pressed)
+    if(isPressed())
       emitClick();
     else if(e.button==Event::ButtonRight)
       showMenu();
     }
 
-  pressed = false;
+  setPressed(false);
   update();
   }
 
@@ -221,12 +219,13 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
 
 void Button::gestureEvent(Tempest::AbstractGestureEvent &e) {
   if( e.gestureType()==Tempest::AbstractGestureEvent::gtDragGesture ){
-    Tempest::DragGesture& g = (Tempest::DragGesture&)e;
+    Tempest::DragGesture& g = reinterpret_cast<Tempest::DragGesture&>(e);
 
     if( g.state()==Tempest::DragGesture::GestureUpdated ){
       const Point p = e.hotSpot();
-      pressed  &= (0<=p.x && 0<=p.y && p.x<w() && p.y<h());
-      presAnim &= pressed;
+      if(!(0<=p.x && 0<=p.y && p.x<w() && p.y<h()))
+        setPressed(false);
+      presAnim &= isPressed();
       update();
       }
     e.ignore();
@@ -302,14 +301,27 @@ void Button::emitClick() {
     onClicked();
   }
 
+void Button::setPressed(bool p) {
+  if(state().pressed==p)
+    return;
+  auto st=state();
+  st.pressed=p;
+  setWidgetState(st);
+  }
+
 bool Button::isPressed() const {
   return presAnim;
   }
 
+void Button::setWidgetState(const WidgetState &s) {
+  Widget::setWidgetState(s);
+  update();
+  }
+
 void Button::finishPaint() {
-  if( presAnim != pressed ){
+  if( presAnim != state().pressed ){
     if( Application::tickCount() > timePressed+1000/8 )
-      presAnim = pressed;
+      presAnim = state().pressed;
 
     update();
     }

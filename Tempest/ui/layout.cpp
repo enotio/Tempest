@@ -55,10 +55,8 @@ void Layout::add(Widget *widget, size_t pos) {
   if( hasLeavePtr!=size_t(-1) )
     widget->setupMouseReleasePtr(hasLeavePtr);
 
-  if( owner() ) {
-    widget->setContext( owner()->context() );
+  if( owner() )
     Widget::impl_disableSum(widget,owner()->disableSum);
-    }
 
   if( widget->nToUpdate ){
     widget->nToUpdate    = false;
@@ -238,7 +236,6 @@ void Layout::rebind( Widget* wx) {
   if( ow ){
     for( size_t i=0; i<w.size(); ++i ){
       T_ASSERT_X(w[i]!=ow,"recursive layout detected");
-      w[i]->setContext( ow->context() );
       }
     }
   }

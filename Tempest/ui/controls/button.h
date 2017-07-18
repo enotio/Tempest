@@ -21,7 +21,7 @@ class Button : public Tempest::Widget {
     Button();
     ~Button();
 
-    enum Type{
+    enum Type {
       T_PushButton,
       T_ToolButton,
       T_FlatButton
@@ -86,18 +86,22 @@ class Button : public Tempest::Widget {
     void onShortcut();
     virtual void emitClick();
 
+    void setPressed(bool p);
     bool isPressed() const;
+    void setWidgetState(const WidgetState& s);
+
     void finishPaint();
 
   private:
     uint64_t timePressed;
-    bool pressed, presAnim;
+    bool     presAnim;
+
     std::u16string txt, hnt;
 
     Tempest::Shortcut hotKey;
-    Tempest::Font  fnt;
-    Tempest::Color fntColor;
-    Tempest::Icon  icn;
+    Tempest::Font     fnt;
+    Tempest::Color    fntColor;
+    Tempest::Icon     icn;
 
     std::unique_ptr<Tempest::Menu> btnMenu;
 

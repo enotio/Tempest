@@ -200,7 +200,6 @@ SOURCES += \
     shading/abstractshadinglang.cpp \
     utils/tessobject.cpp \
     utils/color.cpp \
-    dataControl/resourcecontext.cpp \
     core/assert.cpp \
     2d/sprite.cpp \
     2d/spritesholder.cpp \
@@ -237,7 +236,8 @@ SOURCES += \
     ui/controls/scrollbar.cpp \
     ui/controls/scrollwidget.cpp \
     ui/controls/label.cpp \
-    system/jniextras.cpp
+    system/jniextras.cpp \
+    ui/widgetstate.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -287,7 +287,6 @@ HEADERS += \
     utils/tessobject.h \
     utils/cwnptr.h \
     utils/color.h \
-    dataControl/resourcecontext.h \
     core/wrappers/half.h \
     core/assert.h \
     2d/sprite.h \
@@ -341,7 +340,8 @@ HEADERS += \
     system/appdelegate.h \
     system/iosapi.h \
     core/langcodes.h \
-    system/jniextras.h
+    system/jniextras.h \
+    ui/widgetstate.h
 
 mac:!ios: OBJECTIVE_SOURCES += \
     system/osxapi.mm \
@@ -380,7 +380,6 @@ OTHER_FILES += \
     include/Tempest/Layout \
     include/Tempest/Image \
     include/Tempest/Event \
-    include/Tempest/ResourceContext \
     include/Tempest/SystemAPI \
     include/Tempest/SpritesHolder \
     include/Tempest/Sprite \
@@ -423,4 +422,5 @@ OTHER_FILES += \
 DISTFILES += \
     ../appveyor.yml \
     ../.travis.yml \
-    include/Tempest/JniExtras
+    include/Tempest/JniExtras \
+    include/Tempest/WidgetState

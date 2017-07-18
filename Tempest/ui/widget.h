@@ -9,8 +9,7 @@
 #include <Tempest/SizePolicy>
 #include <Tempest/Painter>
 #include <Tempest/Event>
-
-#include <Tempest/ResourceContext>
+#include <Tempest/WidgetState>
 
 namespace Tempest {
 
@@ -36,7 +35,7 @@ class Shortcut;
  */
 class Widget : public slot {
   public:
-    Widget( ResourceContext* context = 0 );
+    Widget();
     virtual ~Widget();
     void deleteLater();
 
@@ -70,7 +69,7 @@ class Widget : public slot {
     signal<bool>     onFocusChange, onChildFocusChange;
     signal<Widget*>  onDestroy;
 
-    const SizePolicy sizePolicy() const;
+    const SizePolicy &sizePolicy() const;
     void setSizePolicy( const SizePolicy& s );
     void setSizePolicy( Tempest::SizePolicyType f );
     void setSizePolicy( Tempest::SizePolicyType f0,
@@ -144,9 +143,6 @@ class Widget : public slot {
     bool isVisible() const;
     void setVisible( bool v );
 
-    ResourceContext* context() const;
-    void setContext( ResourceContext* context );
-
     bool hasMultitouch() const;
     void setMultiTouchTracking( bool multiTouch );
 
@@ -159,6 +155,9 @@ class Widget : public slot {
     void         focusNext();
     void         focusPrevious();
     virtual void focusTraverse(bool forward);
+
+    const WidgetState& state() const { return wstate; }
+    virtual void       setWidgetState(const WidgetState& s);
 
   private:
     Widget( const Widget& ) = delete;
@@ -200,20 +199,17 @@ class Widget : public slot {
 
     void unsetChFocus( Widget* root, Widget* emiter, Event::FocusReason reason );
 
-    Rect wrect;
-    bool wvisible;
-    SizePolicy sp;
+    Rect        wrect;
+    SizePolicy  spolicy;
     FocusPolicy fpolicy;
 
-    bool focus, chFocus, uscissor;
     std::vector<Widget*> mouseReleseReciver, mouseLeaveReciver;
     Layout * mlay;
     Layout * parentLay;
 
-    bool   disabled  =false;
+    WidgetState wstate;
+    bool   chFocus, uscissor;
     int    disableSum=0;
-
-    ResourceContext* rcontext;
 
     bool nToUpdate, deleteLaterFlag, multiTouch;
 

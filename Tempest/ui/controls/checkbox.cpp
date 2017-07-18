@@ -9,7 +9,6 @@ CheckBox::CheckBox() {
   const UiMetrics& m = Application::uiMetrics();
 
   tristate = false;
-  st       = Unchecked;
   Size sz  = checkIconSize();
 
   setMinimumSize( int(sz.w*m.uiScale),
@@ -21,36 +20,52 @@ CheckBox::CheckBox() {
   }
 
 void CheckBox::setChecked( bool c ) {
-  setState(c ? Checked : Unchecked);
+  setState(c ? WidgetState::Checked : WidgetState::Unchecked);
   }
 
 bool CheckBox::isChecked() const {
-  return st==Checked;
+  return Button::state().checked==WidgetState::Checked;
   }
 
 CheckBox::State CheckBox::state() const {
-  return st;
+  return Button::state().checked;
   }
 
 void CheckBox::setState(CheckBox::State s) {
-  bool ck = (st==Checked);
-  if(s==PartiallyChecked && !tristate)
-    s = Unchecked;
-  if(s==st)
+  if(s==WidgetState::PartiallyChecked && !tristate)
+    s = WidgetState::Unchecked;
+  if(s==state())
     return;
 
-  st = s;
-  onStateChanged(s);
-  if(ck!=(st==Checked))
-    onChecked(st==Checked);
-  Button::emitClick();
+  auto st=Button::state();
+  st.checked = s;
+  setWidgetState(st);
+  }
+
+void CheckBox::setWidgetState(const WidgetState &nstate) {
+  const State old = Button::state().checked;
+  const bool  ck  = (old==WidgetState::Checked);
+  WidgetState st  = nstate;
+
+  if(st.checked==WidgetState::PartiallyChecked && !tristate)
+    st.checked = WidgetState::Unchecked;
+
+  Button::setWidgetState(st);
+  const State next=state();
+
+  if(old!=next)
+    onStateChanged(next);
+
+  if(ck!=(next==WidgetState::Checked))
+    onChecked(next==WidgetState::Checked);
+
   update();
   }
 
 void CheckBox::setTristate(bool y) {
   tristate = y;
-  if(!tristate && st==PartiallyChecked)
-    setState(st);
+  if(!tristate && Button::state().checked==WidgetState::PartiallyChecked)
+    setState(Button::state().checked);
   }
 
 bool CheckBox::isTristate() const {
@@ -83,7 +98,7 @@ void CheckBox::paintEvent( Tempest::PaintEvent &e ) {
   Button::drawBack( p, Tempest::Rect{ds,y+ds, sz.w-ds*2, sz.w-ds*2} );
   Button::drawFrame(p, Tempest::Rect{0,y, sz.w, sz.h} );
 
-  if( st==Checked ){
+  if( Button::state().checked==WidgetState::Checked ){
     int x = 0,
         y = (h()- sz.h)/2;
     if( isPressed() ){
@@ -94,7 +109,7 @@ void CheckBox::paintEvent( Tempest::PaintEvent &e ) {
       p.drawLine(x+sz.w, y, x, y+sz.h);
       }
     } else
-  if( st==PartiallyChecked ){
+  if( Button::state().checked==WidgetState::PartiallyChecked ){
     int x = 0,
         y = (h()- sz.h)/2;
     int d = isPressed() ? 2 : 4;
@@ -112,11 +127,17 @@ void CheckBox::paintEvent( Tempest::PaintEvent &e ) {
 void CheckBox::emitClick() {
   if(!isEnabled())
     return;
-  State state;
+  State st=Button::state().checked;
+  const State old = st;
+  const bool  ck  = (old==WidgetState::Checked);
+
   if(tristate)
-    state = State((st+1)%3); else
-    state = State((st+1)%2);
-  setState(state);
+    st = State((st+1)%3); else
+    st = State((st+1)%2);
+  setState(st);
+
+  if( (old!=state() && tristate) || (ck!=(state()==WidgetState::Checked)))
+    Button::emitClick();
   }
 
 Size CheckBox::checkIconSize() const {

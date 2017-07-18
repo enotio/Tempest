@@ -26,12 +26,11 @@ struct Widget::DeleteGuard{
 
 size_t Widget::count = 0;
 
-Widget::Widget(ResourceContext *context):
-  fpolicy(NoFocus), rcontext(context), deleteLaterFlagGuard(0){
+Widget::Widget():
+  fpolicy(NoFocus), deleteLaterFlagGuard(0){
   ++Widget::count;
 
   parentLay    = 0;
-  focus        = false;
   chFocus      = false;
   uscissor     = true;
   nToUpdate    = false;
@@ -45,7 +44,6 @@ Widget::Widget(ResourceContext *context):
   mouseReleseReciver.reserve(1);
 #endif
   mouseLeaveReciver.reserve(1);
-  wvisible = true;
   mlay = 0;
   setLayout( new Layout() );
 
@@ -178,10 +176,10 @@ void Widget::setGeometry(int x, int y, int w, int h) {
   }
 
 void Widget::setMaximumSize(const Size &s) {
-  if(sp.maxSize==s)
+  if(spolicy.maxSize==s)
     return;
 
-  sp.maxSize = s;
+  spolicy.maxSize = s;
 
   if( owner() )
     owner()->layout().applyLayout();
@@ -191,10 +189,10 @@ void Widget::setMaximumSize(const Size &s) {
   }
 
 void Widget::setMinimumSize(const Size &s) {
-  if(sp.minSize==s)
+  if(spolicy.minSize==s)
     return;
 
-  sp.minSize = s;
+  spolicy.minSize = s;
   if( owner() )
     owner()->layout().applyLayout();
 
@@ -218,12 +216,12 @@ Size Widget::maxSize() const {
   return sizePolicy().maxSize;
   }
 
-const SizePolicy Widget::sizePolicy() const {
-  return sp;
+const SizePolicy& Widget::sizePolicy() const {
+  return spolicy;
   }
 
 void Widget::setSizePolicy(const SizePolicy &s) {
-  sp = s;
+  spolicy = s;
 
   if( owner() )
     owner()->layout().applyLayout();
@@ -234,8 +232,8 @@ void Widget::setSizePolicy(SizePolicyType f) {
   }
 
 void Widget::setSizePolicy(SizePolicyType f0, SizePolicyType f1) {
-  sp.typeH = f0;
-  sp.typeV = f1;
+  spolicy.typeH = f0;
+  spolicy.typeV = f1;
 
   if( owner() )
     owner()->layout().applyLayout();
@@ -312,7 +310,7 @@ const Widget *Widget::owner() const {
   }
 
 bool Widget::hasFocus() const {
-  return focus;
+  return wstate.focus;
   }
 
 bool Widget::hasChildFocus() const {
@@ -638,7 +636,7 @@ void Widget::focusEvent(FocusEvent &e) {
   }
 
 void Widget::update() {
-  if( nToUpdate || wvisible==false )
+  if( nToUpdate || wstate.visible==false )
     return;
 
   nToUpdate = wrect.w>0 && wrect.h>0;
@@ -743,7 +741,7 @@ void Widget::paintNested( PaintEvent &p ){
 
   for( size_t i=0; i<w.size(); ++i ){
     Widget *wi = w[i];
-    if( wi->wvisible &&
+    if( wi->isVisible() &&
         !(wi->uscissor &&
           p.painter.scissor().intersected(wi->rect()).isEmpty()) ){
       Tempest::Point pt = wi->pos();
@@ -838,6 +836,14 @@ void Widget::focusTraverse(bool forward) {
       return;
       }
     }
+  }
+
+void Widget::setWidgetState(const WidgetState &s) {
+  setVisible(s.visible);
+  setEnabled(s.enabled);
+  setFocus  (s.focus  );
+
+  wstate=s;
   }
 
 void Widget::rootMouseDownEvent(MouseEvent &e) {
@@ -956,7 +962,7 @@ void Widget::rootKeyDownEvent(KeyEvent &e) {
   DeleteGuard guard(this);
   (void)guard;
 
-  if( chFocus && !focus ){
+  if( chFocus && !wstate.focus ){
     e.accept();
     impl_keyPressEvent( this, e );
     } else {
@@ -973,7 +979,7 @@ void Widget::rootKeyUpEvent(KeyEvent &e) {
   DeleteGuard guard(this);
   (void)guard;
 
-  if( chFocus && !focus ){
+  if( chFocus && !wstate.focus ){
     e.accept();
     impl_keyPressEvent( this, e );
     } else {
@@ -1044,32 +1050,21 @@ Widget* Widget::findRoot(){
   }
 
 bool Widget::isVisible() const {
-  return wvisible;
+  return wstate.visible;
   }
 
 void Widget::setVisible(bool v) {
-  if( wvisible==v )
+  if( wstate.visible==v )
     return;
 
-  wvisible = v;
-  if( !wvisible )
+  wstate.visible = v;
+  if( !wstate.visible )
     nToUpdate = false;
 
   if( owner() ){
     owner()->layout().applyLayout();
     owner()->update();
     }
-  }
-
-ResourceContext *Widget::context() const {
-  return rcontext;
-  }
-
-void Widget::setContext(ResourceContext *context) {
-  rcontext = context;
-
-  if( mlay )
-    mlay->rebind(this);
   }
 
 bool Widget::hasMultitouch() const {
@@ -1090,14 +1085,14 @@ void Widget::impl_disableSum(Widget *root,int diff) {
   }
 
 void Widget::setEnabled(bool e) {
-  if(e!=disabled)
+  if(e==wstate.enabled)
     return;
-  if(disabled) {
-    disabled=false;
-    impl_disableSum(this,-1);
-    } else {
-    disabled=true;
+  if(wstate.enabled) {
+    wstate.enabled=false;
     impl_disableSum(this,+1);
+    } else {
+    wstate.enabled=true;
+    impl_disableSum(this,-1);
     }
   update();
   }
@@ -1109,7 +1104,7 @@ bool Widget::isEnabled() const {
 bool Widget::isEnabledTo(const Widget *ancestor) const {
   const Widget* w = this;
   while( w ){
-    if(w->disabled)
+    if(!w->wstate.enabled)
        return false;
     if( w==ancestor )
        return true;
@@ -1123,77 +1118,77 @@ void Widget::setFocus(bool f) {
   }
 
 void Widget::impl_setFocus(bool f, Event::FocusReason reason) {
+  if( wstate.focus==f )
+    return;
   DeleteGuard g(this);
   (void)g;
 
-  FocusEvent inEv  (true,reason);
+  FocusEvent inEv (true, reason);
   FocusEvent outEv(false,reason);
 
-  if( focus!=f ){
-    if( f ){
-      unsetChFocus( this, this, reason );
+  if( f ){
+    unsetChFocus( this, this, reason );
 
-      Widget * root = this, *proot = this;
+    Widget * root = this, *proot = this;
 
-      while( root && !root->chFocus ){
-        if( root->hasFocus() ){
-          root->focus = false;
-          root->focusEvent(outEv);
-          root->onFocusChange( false );
-          }
-
-        if( !root->chFocus && root!=this ){
-          root->chFocus = true;
-          root->onChildFocusChange(true);
-          }
-
-        if( root->owner() ){
-          proot = root;
-          root  = root->owner();
-          } else {
-          break;
-          }
+    while( root && !root->chFocus ){
+      if( root->hasFocus() ){
+        root->wstate.focus = false;
+        root->focusEvent(outEv);
+        root->onFocusChange( false );
         }
 
-      if( root && root->chFocus ){
-        DeleteGuard g(root);
-        (void)g;
-
-        for( size_t i=0; i<root->layout().widgets().size(); ++i ){
-          if( root->layout().widgets()[i]!=proot )
-            unsetChFocus( root->layout().widgets()[i], root, reason );
-          }
+      if( !root->chFocus && root!=this ){
+        root->chFocus = true;
+        root->onChildFocusChange(true);
         }
 
-      } else {
-      Widget * root = this, *root_owner = root->owner();
-
-      while( root_owner && root_owner->chFocus ){
-        root = root_owner;
-
-        DeleteGuard g(root);
-        (void)g;
-
-        root->chFocus = 0;
-        root->onChildFocusChange(0);
-
-        root_owner = root->owner();
+      if( root->owner() ){
+        proot = root;
+        root  = root->owner();
+        } else {
+        break;
         }
       }
 
-    focus = f;
-    focusEvent(f ? inEv : outEv);
-    onFocusChange(f);
+    if( root && root->chFocus ){
+      DeleteGuard g(root);
+      (void)g;
+
+      for( size_t i=0; i<root->layout().widgets().size(); ++i ){
+        if( root->layout().widgets()[i]!=proot )
+          unsetChFocus( root->layout().widgets()[i], root, reason );
+        }
+      }
+
+    } else {
+    Widget * root = this, *root_owner = root->owner();
+
+    while( root_owner && root_owner->chFocus ){
+      root = root_owner;
+
+      DeleteGuard g(root);
+      (void)g;
+
+      root->chFocus = 0;
+      root->onChildFocusChange(0);
+
+      root_owner = root->owner();
+      }
     }
+
+  wstate.focus = f;
+  focusEvent(f ? inEv : outEv);
+  onFocusChange(f);
   }
 
 void Widget::unsetChFocus( Widget* root, Widget* emiter, Event::FocusReason reason ){
   DeleteGuard g(root);
   (void)g;
 
-  if( root!=emiter && root->focus ){
+  if( root!=emiter && root->wstate.focus ){
     FocusEvent outEv(false,reason);
-    root->focus = false;
+    root->wstate.focus = false;
     root->focusEvent(outEv);
     root->onFocusChange(false);
     }

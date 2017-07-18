@@ -12,11 +12,7 @@ class CheckBox: public Button {
   public:
     CheckBox();
 
-    enum State {
-      Unchecked        = 0,
-      Checked          = 1,
-      PartiallyChecked = 2
-      };
+    using State=Tempest::WidgetState::CheckState;
 
     Tempest::signal<State> onStateChanged;
     Tempest::signal<bool>  onChecked;
@@ -41,8 +37,9 @@ class CheckBox: public Button {
 
     virtual Size checkIconSize() const;
 
+    void setWidgetState(const WidgetState& s);
+
   private:
-    State st;
     bool  tristate;
   };
 /** @}*/

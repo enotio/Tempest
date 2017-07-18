@@ -9,10 +9,10 @@ CONFIG -= qt
 DESTDIR = ../bin
 
 INCLUDEPATH += ../../Tempest/include
-LIBS        += -L../../lib/ -lTempest
+LIBS        += -L../../lib/ -lTempest_gl
 
 win32-g++: {
-  QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++
+  #QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++
   }
 
 win32:{
@@ -27,4 +27,6 @@ SOURCES += \
     main.cpp \
     utils_test.cpp \
     layout_test.cpp \
-    signals.cpp
+    signals.cpp \
+    enable_flag.cpp \
+    widget_state.cpp
