@@ -14,6 +14,10 @@ class CheckBox: public Button {
 
     using State=Tempest::WidgetState::CheckState;
 
+    static constexpr State Unchecked       =State::Unchecked;
+    static constexpr State Checked         =State::Checked;
+    static constexpr State PartiallyChecked=State::PartiallyChecked;
+
     Tempest::signal<State> onStateChanged;
     Tempest::signal<bool>  onChecked;
 
