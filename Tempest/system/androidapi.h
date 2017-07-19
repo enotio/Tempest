@@ -22,7 +22,7 @@ class AndroidAPI:public SystemAPI {
     static Jni::AndroidWindow nWindow(void *hwnd);
 
     static const Jni::Class&  appClass();
-    static Jni::Object        activity();
+    static Jni::Object        app();
 
     static const char* internalStorage();
     static const char* externalStorage();

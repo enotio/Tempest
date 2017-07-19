@@ -17,6 +17,7 @@ namespace Jni{
     public:
       Class();
       Class(JNIEnv& env,const char* name);
+      Class(JNIEnv& env, jclass cls);
       Class(Class &&other);
       ~Class();
 

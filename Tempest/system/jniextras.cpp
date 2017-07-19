@@ -15,7 +15,11 @@ Class::Class(JNIEnv& env, const char *name) : env(&env) {
   clearException(env);
   }
 
-Class::Class(Class &&other)  {
+Class::Class(JNIEnv &env,jclass c) : env(&env) {
+  cls = c;
+  }
+
+Class::Class(Class &&other) : env(other.env) {
   std::swap(cls,other.cls);
   }
 

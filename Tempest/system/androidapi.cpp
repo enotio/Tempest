@@ -67,11 +67,12 @@ static struct Android {
   //Jni::Object assets;
   AAssetManager* assets=nullptr;
 
-  Jni::Class  tempestClass;
+  Jni::Class  activityClass;
   Jni::Class  surfaceClass;
-  Jni::Class  applicationClass;
+  Jni::Class  tempestClass;
 
-  Jni::Object activity;
+  Jni::Class  applicationClass;
+  Jni::Object applicationObject;
 
   pthread_mutex_t appMutex, assetsPreloadedMutex;
   pthread_t       mainThread;
@@ -253,7 +254,7 @@ JNIEnv *AndroidAPI::jenvi() {
 
 Jni::Object AndroidAPI::surface(jobject activity) {
   while( true ) {
-    jobject obj = android.tempestClass.callObject(*android.env,activity,"nativeSurface","()Landroid/view/Surface;");
+    jobject obj = android.activityClass.callObject(*android.env,activity,"nativeSurface","()Landroid/view/Surface;");
     if( obj!=nullptr ) {
       return Jni::Object(*android.env,obj);
       }
@@ -279,11 +280,11 @@ Jni::AndroidWindow AndroidAPI::nWindow(void* hwnd) {
   }
 
 const Jni::Class& AndroidAPI::appClass() {
-  return android.tempestClass;
+  return android.activityClass;
   }
 
-Jni::Object AndroidAPI::activity() {
-  return android.activity;
+Jni::Object AndroidAPI::app() {
+  return android.applicationObject;
   }
 
 const char *AndroidAPI::internalStorage() {
@@ -304,7 +305,7 @@ void AndroidAPI::toast( const std::string &s ) {
   Android &a = android;
 
   jstring str = a.env->NewStringUTF( s.c_str() );
-  a.tempestClass.callStaticVoid(*a.env,"showToast", "(Ljava/lang/String;)V");
+  a.activityClass.callStaticVoid(*a.env,"showToast", "(Ljava/lang/String;)V");
   a.env->DeleteLocalRef(str);
   }
 
@@ -319,12 +320,12 @@ void AndroidAPI::showSoftInput() {
 
 void AndroidAPI::hideSoftInput() {
   Android &a = android;
-  a.tempestClass.callStaticVoid(*a.env,"hideSoftInput", "()V");
+  a.activityClass.callStaticVoid(*a.env,"hideSoftInput", "()V");
   }
 
 void AndroidAPI::toggleSoftInput(){
   Android &a = android;
-  a.tempestClass.callStaticVoid(*a.env,"toggleSoftInput", "()V");
+  a.activityClass.callStaticVoid(*a.env,"toggleSoftInput", "()V");
   }
 
 const std::string &AndroidAPI::iso3Locale() {
@@ -742,7 +743,7 @@ Size AndroidAPI::windowClientRect( Window* hwnd ){
 void AndroidAPI::deleteWindow( Window *w ) {
   if( w!=nullptr ) {
     jobject ptr = reinterpret_cast<jobject>(w);
-    android.tempestClass.callStaticVoid(*android.env,"nativeDelWindow","(Lcom/tempest/engine/Activity;)V",ptr);
+    android.activityClass.callStaticVoid(*android.env,"nativeDelWindow","(Lcom/tempest/engine/Activity;)V",ptr);
     android.env->DeleteGlobalRef(ptr);
     android.wndWx.erase(ptr);
     }
@@ -789,7 +790,7 @@ AndroidAPI::Window* Android::createWindow() {
     return nullptr;
 
   while( true ) {
-    jobject obj = android.tempestClass.callStaticObject(*e,"nativeNewWindow","()Lcom/tempest/engine/Activity;");
+    jobject obj = android.activityClass.callStaticObject(*e,"nativeNewWindow","()Lcom/tempest/engine/Activity;");
     if(!obj)
       continue;
     obj = env->NewGlobalRef(obj);
@@ -946,6 +947,10 @@ static void JNICALL nativeSetupStorage( JNIEnv* , jobject,
   env->ReleaseStringUTFChars( external, str );
   }
 
+static void JNICALL nativeSetApplication(JNIEnv* env, jobject, jobject app){
+  android.applicationObject=Jni::Object(*env,app);
+  android.applicationClass =Jni::Class(*env,env->GetObjectClass(app));
+  }
 
 static void JNICALL nativeInitLocale( JNIEnv* , jobject,
                                       jstring loc ){
@@ -987,11 +992,12 @@ extern "C" jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/){
   android.vm = vm;
 
   static std::initializer_list<JNINativeMethod> appMethodTable = {
-    {"nativeInitLocale",   "(Ljava/lang/String;)V",                   (void *)nativeInitLocale   },
-    {"nativeSetupDpi",     "(F)V",                                    (void *)setupDpi           },
-    {"invokeMainImpl",     "(Ljava/lang/String;)V",                   (void *)invokeMain         },
-    {"nativeSetAssets",    "(Landroid/content/res/AssetManager;)V",   (void *)setAssets          },
-    {"nativeSetupStorage", "(Ljava/lang/String;Ljava/lang/String;)V", (void *)nativeSetupStorage }
+    {"nativeSetApplication", "(Landroid/app/Application;)V",            (void *)nativeSetApplication },
+    {"nativeInitLocale",     "(Ljava/lang/String;)V",                   (void *)nativeInitLocale     },
+    {"nativeSetupDpi",       "(F)V",                                    (void *)setupDpi             },
+    {"invokeMainImpl",       "(Ljava/lang/String;)V",                   (void *)invokeMain           },
+    {"nativeSetAssets",      "(Landroid/content/res/AssetManager;)V",   (void *)setAssets            },
+    {"nativeSetupStorage",   "(Ljava/lang/String;Ljava/lang/String;)V", (void *)nativeSetupStorage   }
     };
 
   static std::initializer_list<JNINativeMethod> surfaceMethodTable = {
@@ -1017,12 +1023,12 @@ extern "C" jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/){
     return -1;
     }
 
-  android.tempestClass     = Jni::Class(*env,SystemAPI::androidActivityClass().c_str());
-  android.surfaceClass     = Jni::Class(*env,"com/tempest/engine/WindowSurface");
-  android.applicationClass = Jni::Class(*env,"com/tempest/engine/Application");
+  android.activityClass = Jni::Class(*env,SystemAPI::androidActivityClass().c_str());
+  android.surfaceClass  = Jni::Class(*env,"com/tempest/engine/WindowSurface");
+  android.tempestClass  = Jni::Class(*env,"com/tempest/engine/Tempest");
 
-  if( !android.surfaceClass    .registerNatives(*env,surfaceMethodTable) |
-      !android.applicationClass.registerNatives(*env,appMethodTable) ) {
+  if( !android.surfaceClass.registerNatives(*env,surfaceMethodTable) |
+      !android.tempestClass.registerNatives(*env,appMethodTable) ) {
     Log::i("failed to get ",SystemAPI::androidActivityClass().c_str()," class reference");
 
     jthrowable err = env->ExceptionOccurred();

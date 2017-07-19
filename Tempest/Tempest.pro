@@ -423,4 +423,8 @@ DISTFILES += \
     ../appveyor.yml \
     ../.travis.yml \
     include/Tempest/JniExtras \
-    include/Tempest/WidgetState
+    include/Tempest/WidgetState \
+    ../android/src/com/tempest/engine/Activity.java \
+    ../android/src/com/tempest/engine/Application.java \
+    ../android/src/com/tempest/engine/WindowSurface.java \
+    ../android/src/com/tempest/engine/Tempest.java
