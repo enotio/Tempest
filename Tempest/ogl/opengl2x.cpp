@@ -121,7 +121,7 @@ struct Tempest::Opengl2x::ImplDevice : public Detail::ImplDeviceBase {
   void surfaceDestroyed(){
     if(surface==EGL_NO_SURFACE)
       return;
-    eglMakeCurrent(disp,EGL_NO_SURFACE,EGL_NO_SURFACE,context);
+    eglMakeCurrent(disp,EGL_NO_SURFACE,EGL_NO_SURFACE,EGL_NO_CONTEXT);
     eglDestroySurface(disp,surface);
     surface=EGL_NO_SURFACE;
     }
@@ -129,7 +129,7 @@ struct Tempest::Opengl2x::ImplDevice : public Detail::ImplDeviceBase {
   void ajustSurface(Jni::AndroidWindow& window){
     if(surface!=EGL_NO_SURFACE)
       return;
-    eglMakeCurrent(disp,EGL_NO_SURFACE,EGL_NO_SURFACE,context);
+    eglMakeCurrent(disp,EGL_NO_SURFACE,EGL_NO_SURFACE,EGL_NO_CONTEXT);
     surface = eglCreateWindowSurface( disp, config, window, NULL);
     }
 #endif
