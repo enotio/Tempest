@@ -5,7 +5,9 @@ using namespace Tempest;
 Icon::Icon() {
   }
 
-Icon::Icon(const Pixmap &pm, SpritesHolder &h) : normal(h.load(pm)) {
+Icon::Icon(const Pixmap &pm, SpritesHolder &h) {
+  set(ST_Normal,h.load(pm));
+
   Pixmap d = Pixmap(pm.width(),pm.height(),pm.hasAlpha());
   const uint8_t* p = pm.const_data();
 
@@ -27,7 +29,43 @@ Icon::Icon(const Pixmap &pm, SpritesHolder &h) : normal(h.load(pm)) {
         }
     }
 
-  disabled = h.load(d);
+  set(ST_Disabled,h.load(d));
   }
 
+const Sprite &Icon::sprite(int w,int h,Icon::State st) const {
+  return val[st].sprite(w,h);
+  }
 
+void Icon::set(Icon::State st,const Sprite &s) {
+  return val[st].set(s);
+  }
+
+const Sprite& Icon::SzArray::sprite(int w, int h) const {
+  if(emplace.w()==w && emplace.h()==h)
+    return emplace;
+
+  const Sprite* ret=&emplace;
+  for(auto& i:data)
+    if( i.w()<=w && i.h()<=h )
+      if( ret->w()<i.w() || (ret->w()==i.w() && ret->h()<i.h()) )
+        ret=&i;
+  if( ret->w()<=w && ret->h()<=h )
+    return *ret;
+
+  static Sprite s;
+  return s;
+  }
+
+void Icon::SzArray::set(const Sprite &s) {
+  if( emplace.size().isEmpty() || emplace.size()==s.size() ) {
+    emplace=s;
+    return;
+    }
+
+  for(auto& i:data)
+    if(i.size()==s.size()){
+      i=s;
+      return;
+      }
+  data.emplace_back(s);
+  }

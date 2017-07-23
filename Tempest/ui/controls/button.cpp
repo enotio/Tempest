@@ -37,8 +37,9 @@ Button::~Button() {
   }
 
 void Button::setIcon(const Sprite &s) {
-  icn.normal   = s;
-  icn.disabled = s;
+  icn=Icon();
+  icn.set(Icon::ST_Normal,  s);
+  icn.set(Icon::ST_Disabled,s);
   }
 
 void Button::setIcon(const Icon &s) {
@@ -183,12 +184,12 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
                              buttonType()!=T_FlatButton;
   if(drawBackFrame)
     drawBack(p);
-  const Sprite icon = isEnabled() ? icn.normal : icn.disabled;
+
+  const int sz = std::min(w(), h());
+  const Sprite icon = icn.sprite(sz,sz,isEnabled() ? Icon::ST_Normal : Icon::ST_Disabled);
 
   if( !icon.size().isEmpty() ){
     p.setTexture( icon );
-
-    int sz = std::min(w(), h());
 
     float k = std::min( sz/float(icon.w()),
                         sz/float(icon.h()) );
