@@ -37,7 +37,7 @@ class IndexBufferHolder : public AbstractHolder
     template< class Index >
     IndexBuffer<Index> load( const std::vector<Index>& ibo,
                              AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags ){
-      return this->load( ibo.data(), ibo.size(), flg );
+      return this->load( ibo.data(), int(ibo.size()), flg );
       }
 
   protected:

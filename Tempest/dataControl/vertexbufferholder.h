@@ -38,7 +38,7 @@ class VertexBufferHolder : public AbstractHolder
     template< class Vertex >
     VertexBuffer<Vertex> load( const std::vector<Vertex>& v,
                                AbstractAPI::BufferFlag flg = AbstractAPI::BF_NoFlags ){
-      return this->load( v.data(), v.size(), flg );
+      return this->load( v.data(), int(v.size()), flg );
       }
 
   protected:

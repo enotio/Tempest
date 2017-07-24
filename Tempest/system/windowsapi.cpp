@@ -846,9 +846,9 @@ void WindowsAPI::setCursor( Tempest::Window &w,
   HWND  hwnd = (HWND)handle(w);
   HCURSOR cr = pixmapToCursor(p, hotSpotX, hotSpotY);
 
-  SetClassLong( hwnd,    // window handle
-                GCL_HCURSOR,      // change cursor
-                (LONG)cr );
+  SetClassLongPtrW( hwnd,         // window handle
+                    GCLP_HCURSOR, // change cursor
+                    reinterpret_cast<LONG_PTR>(cr) );
   DestroyCursor( cr );
   }
 

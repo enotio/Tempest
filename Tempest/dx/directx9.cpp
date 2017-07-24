@@ -354,7 +354,7 @@ void DirectX9::setDSSurfaceTaget( AbstractAPI::Device *d,
     }
   }
 
-bool DirectX9::startRender(AbstractAPI::Device *d, void *hwnd,
+bool DirectX9::startRender(AbstractAPI::Device *d, void* /*hwnd*/,
                             bool isLost  ) const {
 
   if( isLost ){
@@ -367,7 +367,7 @@ bool DirectX9::startRender(AbstractAPI::Device *d, void *hwnd,
   return 1;
   }
 
-bool DirectX9::present(AbstractAPI::Device *d, void *hwnd, SwapBehavior /*b*/ ) const {
+bool DirectX9::present(AbstractAPI::Device *d, void* /*hwnd*/, SwapBehavior /*b*/ ) const {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   return ( D3DERR_DEVICELOST == dev->Present( NULL, NULL, NULL, NULL ) );
