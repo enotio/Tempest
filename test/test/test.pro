@@ -29,4 +29,5 @@ SOURCES += \
     layout_test.cpp \
     signals.cpp \
     enable_flag.cpp \
-    widget_state.cpp
+    widget_state.cpp \
+    pixmap_test.cpp

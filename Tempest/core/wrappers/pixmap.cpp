@@ -463,8 +463,8 @@ void PixEditor::copy(int x, int y, const Pixmap &p) {
 
   if( p.info.bpp==out.info.bpp ){
     for( int r=y; r<ym; ++r, ++py ){
-            unsigned char * ov = &out.mrawPtr[ (x  + r *out.info.w)*out.info.bpp ];
-      const unsigned char * iv = &  p.rawPtr [ (px + py*  p.info.w)*  p.info.bpp ];
+            uint8_t * ov = &out.mrawPtr[ (x  + r *out.info.w)*out.info.bpp ];
+      const uint8_t * iv = &  p.rawPtr [ (px + py*  p.info.w)*  p.info.bpp ];
 
       memcpy(ov, iv, (xm-x)*p.info.bpp );
       }
