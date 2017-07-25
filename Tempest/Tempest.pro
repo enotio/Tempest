@@ -238,7 +238,7 @@ SOURCES += \
     ui/controls/label.cpp \
     system/jniextras.cpp \
     ui/widgetstate.cpp \
-    ui/style.cpp
+    ui/style.cpp \
     ui/textmodel.cpp
 
 HEADERS += \
