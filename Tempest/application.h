@@ -7,6 +7,7 @@
 #include <Tempest/Platform>
 #include <Tempest/Font>
 #include <Tempest/UIMetrics>
+#include <Tempest/Style>
 #include <Tempest/signal>
 
 #ifdef __WINDOWS_PHONE__
@@ -17,7 +18,6 @@
 
 namespace Tempest{
 
-class Font;
 class Timer;
 /**
  * \addtogroup Core
@@ -42,6 +42,9 @@ class Application {
     static void              setUiMetrics(const UiMetrics& u);
     static signal<UiMetrics> uiMetricsChanged;
 
+    static void  setStyle(const Tempest::Style* stl);
+    static const Tempest::Style& style();
+
     int exec();
     static bool isQuit();
     static bool processEvents(bool all = true);
@@ -52,19 +55,22 @@ class Application {
 
   private:
     static struct App{
-      int  ret;
-      bool quit;
+      int                 ret;
+      bool                quit;
 
-      Font mainFont;
-      UiMetrics uiMetrics;
-
+      Font                mainFont;
+      UiMetrics           uiMetrics;
       std::vector<Timer*> timer;
+
+      std::unique_ptr<Tempest::Style> style;
       } app;
+
+    struct Style;
 
     static void processTimers();
     static void* execImpl(void*);
 
-    friend class Timer;
+  friend class Timer;
   };
 /** @}*/
 

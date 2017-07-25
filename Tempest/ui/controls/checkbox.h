@@ -31,20 +31,12 @@ class CheckBox: public Button {
     bool  isTristate() const;
 
   protected:
-    virtual Tempest::Rect viewRect() const;
     void paintEvent(Tempest::PaintEvent &p);
-
-    void drawBack( Tempest::Painter &p );
-    void drawFrame( Tempest::Painter &p );
-
     void emitClick();
-
-    virtual Size checkIconSize() const;
-
     void setWidgetState(const WidgetState& s);
 
   private:
-    bool  tristate;
+    bool tristate = false;
   };
 /** @}*/
 

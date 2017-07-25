@@ -41,10 +41,8 @@ void Panel::mouseDragEvent(Tempest::MouseEvent &e) {
     setPosition( oldPos - (mpos - mapToRoot(e.pos() )) );
   }
 
-void Panel::mouseMoveEvent(Tempest::MouseEvent &) {
-  if( !dragable ){
-    //e.ignore();
-    }
+void Panel::mouseMoveEvent(Tempest::MouseEvent &e) {
+  e.accept();
   }
 
 void Panel::mouseUpEvent(Tempest::MouseEvent &) {
@@ -61,28 +59,7 @@ void Panel::gestureEvent(Tempest::AbstractGestureEvent &e) {
 
 void Panel::paintEvent( Tempest::PaintEvent &e ) {
   Tempest::Painter p(e);
-  p.setBlendMode(alphaBlend);
-  drawBack(p);
-  drawFrame(p);
+  style().draw(p,this,state(),Rect(0,0,w(),h()),Style::Extra(*this));
+
   paintNested(e);
-  }
-
-void Panel::drawFrame( Tempest::Painter &p ){
-  auto vRect = Rect(0,0,w(),h());
-  auto c     = p.color();
-  p.setColor(Color(0.25,0.25,0.25,1));
-
-  p.drawLine(vRect.x,vRect.y,          vRect.x+vRect.w-1,vRect.y);
-  p.drawLine(vRect.x,vRect.y+vRect.h-1,vRect.x+vRect.w-1,vRect.y+vRect.h-1);
-
-  p.drawLine(vRect.x,          vRect.y,vRect.x,          vRect.y+vRect.h-1);
-  p.drawLine(vRect.x+vRect.w-1,vRect.y,vRect.x+vRect.w-1,vRect.y+vRect.h  );
-  p.setColor(c);
-  }
-
-void Panel::drawBack(Painter &p) {
-  auto c = p.color();
-  p.setColor(Color(0.8f,0.8f,0.85f,0.75f));
-  p.drawRect(0,0,w()-1,h()-1);
-  p.setColor(c);
   }

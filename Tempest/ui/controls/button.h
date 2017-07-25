@@ -21,11 +21,11 @@ class Button : public Tempest::Widget {
     Button();
     ~Button();
 
-    enum Type {
-      T_PushButton,
-      T_ToolButton,
-      T_FlatButton
-      };
+    using Type=Tempest::WidgetState::ButtonType;
+
+    static constexpr Type T_PushButton=Type::T_PushButton;
+    static constexpr Type T_ToolButton=Type::T_ToolButton;
+    static constexpr Type T_FlatButton=Type::T_FlatButton;
 
     Tempest::signal<> onClicked;
 
@@ -59,14 +59,6 @@ class Button : public Tempest::Widget {
     void showMenu();
 
   protected:
-    virtual void drawFrame(Tempest::Painter &p, const Tempest::Rect& r );
-    virtual void drawFrame(Tempest::Painter &p);
-
-    virtual void drawBack(Tempest::Painter &p, const Tempest::Rect& r );
-    virtual void drawBack(Tempest::Painter &p);
-
-    virtual Tempest::Rect viewRect() const;
-
     void mouseDownEvent(Tempest::MouseEvent &e);
     void mouseMoveEvent(Tempest::MouseEvent &e);
     void mouseUpEvent(Tempest::MouseEvent &e);
@@ -88,25 +80,19 @@ class Button : public Tempest::Widget {
 
     void setPressed(bool p);
     bool isPressed() const;
+
     void setWidgetState(const WidgetState& s);
 
-    void finishPaint();
-
   private:
-    uint64_t timePressed;
-    bool     presAnim;
-
-    std::u16string txt, hnt;
+    std::u16string    txt, hnt;
 
     Tempest::Shortcut hotKey;
-    Tempest::Font     fnt;
-    Tempest::Color    fntColor;
     Tempest::Icon     icn;
 
-    std::unique_ptr<Tempest::Menu> btnMenu;
+    Tempest::Font     fnt;
+    Tempest::Color    fntColor;
 
-    Type           type       =T_PushButton;
-    bool           isMouseOver=false;
+    std::unique_ptr<Tempest::Menu> btnMenu;
   };
 /** @}*/
 

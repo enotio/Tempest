@@ -106,6 +106,12 @@ Tempest::signal<Font>                             Application::fontChanged;
 Tempest::signal<UiMetrics>                        Application::uiMetricsChanged;
 Tempest::signal<const std::u16string,const Rect&> Application::showHint;
 
+struct Application::Style : public Tempest::Style {
+  ~Style(){
+    app.style.release();
+    }
+  };
+
 Application::Application() {
   app.ret  = -1;
   app.quit = false;
@@ -117,7 +123,6 @@ Application::Application() {
 
 Application::~Application() {
   SystemAPI::instance().endApplication();
-
   T_ASSERT_X( Widget::count==0, "not all widgets was destroyed");
   }
 
@@ -137,6 +142,18 @@ const UiMetrics &Application::uiMetrics() {
 void Application::setUiMetrics(const UiMetrics &u) {
   app.uiMetrics = u;
   uiMetricsChanged(u);
+  }
+
+void Application::setStyle(const Tempest::Style *stl) {
+  if(app.style==nullptr)
+    app.style.reset(new Application::Style());
+  app.style->setParent(stl);
+  }
+
+const Tempest::Style& Application::style() {
+  if(app.style==nullptr)
+    app.style.reset(new Application::Style());
+  return *app.style;
   }
 
 int Application::exec() {

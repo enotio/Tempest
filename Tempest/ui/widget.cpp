@@ -4,6 +4,7 @@
 #include <Tempest/Painter>
 #include <Tempest/Shortcut>
 #include <Tempest/Assert>
+#include <Tempest/Application>
 
 #include <algorithm>
 #include <functional>
@@ -11,7 +12,7 @@
 using namespace Tempest;
 
 /// \cond HIDDEN_SYMBOLS
-struct Widget::DeleteGuard{
+struct Widget::DeleteGuard {
   DeleteGuard( Widget* w):w(w){
     w->lockDelete();
     }
@@ -47,6 +48,9 @@ Widget::Widget():
   mlay = 0;
   setLayout( new Layout() );
 
+  wstyle=&Application::style();
+  wstyle->addRef();
+
   update();
   }
 
@@ -54,8 +58,12 @@ Widget::~Widget() {
   T_ASSERT_X( deleteLaterFlagGuard<=0, "bad time to delete, use deleteLater");
   deleteLaterFlagGuard = -1;
 
+  onDestroy( this );
   if( parentLayout() )
     parentLayout()->take(this);
+
+  wstyle->decRef();
+  wstyle=nullptr;
 
   for( size_t i=0; i<skuts.size(); ++i ){
     Shortcut *s = skuts[i];
@@ -63,7 +71,6 @@ Widget::~Widget() {
     delete s;
     }
 
-  onDestroy( this );
   delete mlay;
 
   --Widget::count;
@@ -525,46 +532,84 @@ void Widget::setupMouseReleasePtr(size_t mouseID) {
     }
   }
 
-void Widget::detachMouseReleasePtr() {
+size_t Widget::detachMouseReleasePtr() {
   Widget* widget = this;
+  size_t  id=size_t(-1);
 
   while( widget->owner() ){
     bool hasNext = false;
     std::vector<Widget*> & mr = widget->owner()->mouseReleseReciver;
     for( size_t i=0; i<mr.size(); ++i )
       if( mr[i]==widget ){
-        mr[i] = nullptr;
+        mr[i]   = nullptr;
+        id      = i;
         hasNext = true;
         }
     if(!hasNext)
-      return;
+      return id;
     widget = widget->owner();
     }
+  return id;
   }
 
-void Widget::detachMouseLeavePtr() {
+size_t Widget::detachMouseLeavePtr() {
   Widget* widget = this;
+  size_t  id=size_t(-1);
 
   while( widget->owner() ){
     bool hasNext = false;
     std::vector<Widget*> & mr = widget->owner()->mouseLeaveReciver;
     for( size_t i=0; i<mr.size(); ++i )
       if( mr[i]==widget ){
-        mr[i] = nullptr;
+        mr[i]   = nullptr;
+        id      = i;
         hasNext = true;
         }
     if(!hasNext)
-      return;
+      return id;
     widget = widget->owner();
+    }
+  return id;
+  }
+
+void Widget::attach(Layout *ow,size_t mouseReleaseId,size_t leaveId) {
+  T_ASSERT(parentLay==nullptr);
+
+  parentLay = ow;
+  if( mouseReleaseId!=size_t(-1) )
+    setupMouseReleasePtr(mouseReleaseId);
+
+  if( leaveId!=size_t(-1) )
+    setupMouseReleasePtr(leaveId);
+
+  if( owner() )
+    Widget::impl_disableSum(this,owner()->disableSum);
+
+  if( nToUpdate ){
+    nToUpdate = false;
+    update();
+    }
+  }
+
+void Widget::detach(size_t& mouseReleaseId,size_t& leaveId) {
+  mouseReleaseId = detachMouseReleasePtr();
+  leaveId        = detachMouseLeavePtr();
+
+  if(Widget* w = owner())
+    impl_disableSum(this,-w->disableSum);
+
+  if( hasFocus() || hasChildFocus() )
+    unsetChFocus(this, 0, Event::UnknownReason);
+
+  if(leaveId!=size_t(-1)) {
+    MouseEvent e;
+    impl_enterLeaveEvent(this,e,false);
     }
   }
 
 void Widget::detach() {
-  detachMouseReleasePtr();
-  detachMouseLeavePtr();
-
-  if(Widget* w = owner())
-    impl_disableSum(this,-w->disableSum);
+  size_t empty0=0,empty1=0;
+  detach(empty0,empty1);
   }
 
 void Widget::lockDelete() {
@@ -1113,6 +1158,24 @@ bool Widget::isEnabledTo(const Widget *ancestor) const {
   return true;
   }
 
+const Style& Widget::style() const {
+  return *wstyle;
+  }
+
+void Widget::setStyle(const Style* stl) {
+  if( stl==nullptr )
+    stl=&Application::style();
+
+  const Style* old=wstyle;
+  stl->addRef();
+
+  impl_setStyle(stl);
+
+  if(old)
+    old->decRef();
+  wstyle=stl;
+  }
+
 void Widget::setFocus(bool f) {
   impl_setFocus(f,Event::UnknownReason);
   }
@@ -1201,6 +1264,26 @@ void Widget::unsetChFocus( Widget* root, Widget* emiter, Event::FocusReason reas
   const std::vector<Widget*>& lx = root->layout().widgets();
   for( size_t i=0; i<lx.size(); ++i )
     unsetChFocus( lx[i], emiter, reason );
+  }
+
+void Widget::clearParent(size_t& mouseReleaseId,size_t& leaveId) {
+  if(!parentLay)
+    return;
+
+  detach(mouseReleaseId,leaveId);
+
+  parentLay->take(this);
+  parentLay = nullptr;
+  }
+
+void Widget::setParent(Layout *ow, size_t mouseReleaseId, size_t leaveId) {
+  attach(ow,mouseReleaseId,leaveId);
+  }
+
+void Widget::impl_setStyle(const Style *s) {
+  wstyle->unpolish(*this);
+  wstyle=s;
+  s->polish(*this);
   }
 
 void Widget::deleteLater() {

@@ -10,6 +10,7 @@
 #include <Tempest/Painter>
 #include <Tempest/Event>
 #include <Tempest/WidgetState>
+#include <Tempest/Style>
 
 namespace Tempest {
 
@@ -109,27 +110,28 @@ class Widget : public slot {
     virtual void paintEvent      ( Tempest::PaintEvent & e );
     virtual void multiPaintEvent ( Tempest::PaintEvent & e );
 
-    virtual void mouseMoveEvent ( Tempest::MouseEvent & e );
-    virtual void mouseDragEvent ( Tempest::MouseEvent & e );
-    virtual void mouseDownEvent ( Tempest::MouseEvent & e );
-    virtual void mouseUpEvent   ( Tempest::MouseEvent & e );
+    virtual void mouseMoveEvent ( Tempest::MouseEvent  & e );
+    virtual void mouseDragEvent ( Tempest::MouseEvent  & e );
+    virtual void mouseDownEvent ( Tempest::MouseEvent  & e );
+    virtual void mouseUpEvent   ( Tempest::MouseEvent  & e );
 
-    virtual void mouseEnterEvent( Tempest::MouseEvent & e );
-    virtual void mouseLeaveEvent( Tempest::MouseEvent & e );
+    virtual void mouseEnterEvent( Tempest::MouseEvent  & e );
+    virtual void mouseLeaveEvent( Tempest::MouseEvent  & e );
 
-    virtual void mouseWheelEvent( Tempest::MouseEvent & e );
+    virtual void mouseWheelEvent( Tempest::MouseEvent  & e );
 
-    virtual void keyDownEvent( Tempest::KeyEvent    & e );
-    virtual void keyUpEvent  ( Tempest::KeyEvent    & e );
-    virtual void customEvent ( Tempest::CustomEvent & e );
-    virtual void closeEvent  ( Tempest::CloseEvent  & e );
+    virtual void keyDownEvent   ( Tempest::KeyEvent    & e );
+    virtual void keyUpEvent     ( Tempest::KeyEvent    & e );
+    virtual void customEvent    ( Tempest::CustomEvent & e );
+    virtual void closeEvent     ( Tempest::CloseEvent  & e );
 
-    virtual void focusEvent(Tempest::FocusEvent& e);
-    virtual void shortcutEvent( Tempest::KeyEvent & e );
-    virtual void resizeEvent( Tempest::SizeEvent& e );
+    virtual void focusEvent     ( Tempest::FocusEvent  & e );
+    virtual void shortcutEvent  ( Tempest::KeyEvent    & e );
+    virtual void resizeEvent    ( Tempest::SizeEvent   & e );
 
-    virtual void gestureEvent( Tempest::AbstractGestureEvent & e );
-    virtual void event( Tempest::Event & e );
+    virtual void gestureEvent   ( Tempest::AbstractGestureEvent & e );
+
+    virtual void event          ( Tempest::Event       & e );
 
     signal<> intentToUpdate;
     void update();
@@ -149,6 +151,9 @@ class Widget : public slot {
     void setEnabled(bool e);
     bool isEnabled() const;
     bool isEnabledTo(const Widget* ancestor) const;
+
+    const Style& style() const;
+    void  setStyle(const Style *stl);
 
   protected:
     virtual void paintNested( Tempest::PaintEvent & p );
@@ -197,19 +202,26 @@ class Widget : public slot {
     static void    impl_gestureEvent( Widget *w, Tempest::AbstractGestureEvent & e );
     void           impl_setFocus(bool f,Event::FocusReason reason);
 
-    void unsetChFocus( Widget* root, Widget* emiter, Event::FocusReason reason );
+    void           unsetChFocus( Widget* root, Widget* emiter, Event::FocusReason reason );
+
+    void           clearParent(size_t& mouseReleaseId,size_t& leaveId);
+    void           setParent(Layout *ow, size_t mouseReleaseId, size_t leaveId);
+
+    void           impl_setStyle(const Style *s);
 
     Rect        wrect;
     SizePolicy  spolicy;
     FocusPolicy fpolicy;
 
     std::vector<Widget*> mouseReleseReciver, mouseLeaveReciver;
-    Layout * mlay;
-    Layout * parentLay;
+    Layout *    mlay;
+    Layout *    parentLay;
 
     WidgetState wstate;
-    bool   chFocus, uscissor;
-    int    disableSum=0;
+    bool        chFocus, uscissor;
+    int         disableSum=0;
+
+    const Style* wstyle=nullptr;
 
     bool nToUpdate, deleteLaterFlag, multiTouch;
 
@@ -217,10 +229,13 @@ class Widget : public slot {
     void lockDelete();
     void unlockDelete();
 
-    void setupMouseReleasePtr(size_t mouseID);
-    void detachMouseReleasePtr();
-    void detachMouseLeavePtr();
-    void detach();
+    void   setupMouseReleasePtr(size_t mouseID);
+    size_t detachMouseReleasePtr();
+    size_t detachMouseLeavePtr();
+
+    void   attach(Layout *ow,size_t  mouseReleaseId, size_t  leaveId);
+    void   detach(           size_t& mouseReleaseId, size_t& leaveId);
+    void   detach();
 
     std::vector<Shortcut*> skuts;
 

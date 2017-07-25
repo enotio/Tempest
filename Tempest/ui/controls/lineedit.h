@@ -16,11 +16,11 @@ class LineEdit : public Tempest::Widget {
     LineEdit();
     ~LineEdit();
 
-    enum EchoMode {
-      Normal,
-      NoEcho,
-      Password
-      };
+    using EchoMode=WidgetState::EchoMode;
+
+    static constexpr EchoMode Normal  =WidgetState::Normal;
+    static constexpr EchoMode NoEcho  =WidgetState::NoEcho;
+    static constexpr EchoMode Password=WidgetState::Password;
 
     void setEchoMode(EchoMode m);
     EchoMode echoMode() const;
@@ -47,12 +47,13 @@ class LineEdit : public Tempest::Widget {
     Tempest::signal<const std::u16string&> onEditingFinished;
     Tempest::signal<const std::u16string&> onEnter;
 
-    size_t selectionBegin();
-    size_t selectionEnd();
+    size_t       selectionBegin() const;
+    size_t       selectionEnd()   const;
+
     virtual void setSelectionBounds( size_t begin, size_t end );
     void         resetSelection();
 
-    bool isEditable() const;
+    bool         isEditable() const;
     virtual void setEditable( bool e );
 
     class Validator {
@@ -65,7 +66,7 @@ class LineEdit : public Tempest::Widget {
         virtual void assign(std::u16string& string, const std::u16string& arg) const;
       };
 
-    class IntValidator : public Validator{
+    class IntValidator : public Validator {
       public:
         void insert(std::u16string& string, size_t& cursor, size_t &ecursor, const std::u16string& data) const;
         void insert(std::u16string& string, size_t& cursor, size_t &ecursor, char16_t data) const;
@@ -99,10 +100,7 @@ class LineEdit : public Tempest::Widget {
     mutable std::unique_ptr<Validator> mvalidator;
 
     Color tColor;
-    bool editable;
-    bool anim;
-    bool tabChFocus;
-    EchoMode emode=Normal;
+    bool  tabChFocus;
 
     size_t sedit, eedit;
     size_t oldSedit, oldEedit;
@@ -110,15 +108,12 @@ class LineEdit : public Tempest::Widget {
     int scroll;
 
     Tempest::Font  fnt;
-    Tempest::Timer timer;
 
     bool isEdited;
     void updateSel();
 
     void storeText();
-    void setupTimer(bool);
-
-    void animation();
+    void setWidgetState(const WidgetState& s);
 
     static const int      cursorFlashTime;
     static const char16_t passChar;

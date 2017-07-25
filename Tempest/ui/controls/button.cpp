@@ -26,10 +26,6 @@ Button::Button()
   setMargin(int(m.margin*m.uiScale));
 
   setSizePolicy(p);
-
-  presAnim    = false;
-  timePressed = Application::tickCount();
-
   setTextColor(Color(1));
   }
 
@@ -105,12 +101,13 @@ const Color& Button::textColor() const {
   }
 
 void Button::setButtonType(Button::Type t) {
-  type = t;
-  update();
+  auto st = state();
+  st.button = t;
+  setWidgetState(st);
   }
 
 Button::Type Button::buttonType() const {
-  return type;
+  return state().button;
   }
 
 void Button::setMenu(Menu* m) {
@@ -130,9 +127,6 @@ void Button::mouseDownEvent(Tempest::MouseEvent& e) {
   if(!isEnabled())
     return;
   setPressed(e.button==Event::ButtonLeft);
-  presAnim    = state().pressed;
-  timePressed = Application::tickCount();
-
   update();
   }
 
@@ -158,64 +152,29 @@ void Button::mouseDragEvent(Tempest::MouseEvent &e) {
   }
 
 void Button::mouseEnterEvent(MouseEvent &) {
-  isMouseOver = true;
+  auto st = state();
+  st.highlighted = true;
+  setWidgetState(st);
+
   update();
   }
 
 void Button::mouseLeaveEvent(MouseEvent &) {
-  isMouseOver = false;
-  update();
+  auto st = state();
+  st.highlighted = false;
+  setWidgetState(st);
   }
 
-void Button::focusEvent(FocusEvent&) {
+void Button::focusEvent(FocusEvent& e) {
+  Widget::focusEvent(e);
   update();
   }
 
 void Button::paintEvent( Tempest::PaintEvent &e ) {
   Tempest::Painter p(e);
-  p.setBlendMode( Tempest::alphaBlend );
-
-  Tempest::Rect vRect = viewRect();
-  Tempest::Rect r     = p.scissor();
-
-  p.setScissor( r.intersected( vRect ) );
-
-  const bool drawBackFrame = (buttonType()!=T_ToolButton || isMouseOver) &&
-                             buttonType()!=T_FlatButton;
-  if(drawBackFrame)
-    drawBack(p);
-
-  const int sz = std::min(w(), h());
-  const Sprite icon = icn.sprite(sz,sz,isEnabled() ? Icon::ST_Normal : Icon::ST_Disabled);
-
-  if( !icon.size().isEmpty() ){
-    p.setTexture( icon );
-
-    float k = std::min( sz/float(icon.w()),
-                        sz/float(icon.h()) );
-    k = std::min(k,1.f);
-
-    int icW = int(icon.w()*k),
-        icH = int(icon.h()*k);
-
-    int x = std::min( ( txt.size()>0 ? margin().left:(w()-icW)/2+3), (w()-icW)/2 );
-
-    p.drawRect( x, (h()-icH)/2, icW, icH,
-                0, 0, icon.w(), icon.h() );
-    }
-
-  p.setScissor(r);
-
-  if(drawBackFrame)
-    drawFrame( p );
-
-  p.setFont(fnt);
-  p.setColor(fntColor);
-  p.drawText(0, 0, w()-1, h()-1, txt,
-             Tempest::AlignHCenter|Tempest::AlignVCenter );
+  style().draw(p,this,state(),Rect(0,0,w(),h()),Style::Extra(*this));
 
   paintNested(e);
-  finishPaint();
   }
 
 void Button::gestureEvent(Tempest::AbstractGestureEvent &e) {
@@ -226,7 +185,7 @@ void Button::gestureEvent(Tempest::AbstractGestureEvent &e) {
       const Point p = e.hotSpot();
       if(!(0<=p.x && 0<=p.y && p.x<w() && p.y<h()))
         setPressed(false);
-      presAnim &= isPressed();
+      //presAnim &= isPressed();
       update();
       }
     e.ignore();
@@ -235,56 +194,10 @@ void Button::gestureEvent(Tempest::AbstractGestureEvent &e) {
     }
   }
 
-void Button::drawBack(Tempest::Painter &p){
-  drawBack(p, viewRect());
-  }
-
-void Button::drawBack(Tempest::Painter &p, const Tempest::Rect& r ){
-  auto c = p.color();
-  p.setColor(Color(0.8f,0.8f,0.85f,0.75f));
-  p.drawRect(Rect(r.x,r.y,r.w,r.h));
-  p.setColor(c);
-  }
-
-void Button::drawFrame( Tempest::Painter &p ) {
-  drawFrame(p, viewRect());
-  }
-
-void Button::drawFrame(Tempest::Painter & p, const Tempest::Rect &vRect) {
-  auto c = p.color();
-  p.setColor(Color(0.25,0.25,0.25,1));
-  p.unsetTexture();
-
-  p.drawLine(vRect.x,vRect.y,          vRect.x+vRect.w-1,vRect.y);
-  p.drawLine(vRect.x,vRect.y+vRect.h-1,vRect.x+vRect.w-1,vRect.y+vRect.h-1);
-
-  p.drawLine(vRect.x,          vRect.y,vRect.x,          vRect.y+vRect.h-1);
-  p.drawLine(vRect.x+vRect.w-1,vRect.y,vRect.x+vRect.w-1,vRect.y+vRect.h  );
-  p.setColor(c);
-  }
-
-Tempest::Rect Button::viewRect() const {
-  int px = 0, py = 0,
-      pw = w(), ph = h();
-
-  if( presAnim ){
-    const int s = 2;
-    px += s;
-    py += s;
-
-    pw -= 2*s;
-    ph -= 2*s;
-    }
-
-  return Tempest::Rect(px, py, pw, ph);
-  }
-
 void Button::keyUpEvent(Tempest::KeyEvent &e) {
   if( hasFocus() &&
       (e.key==Tempest::KeyEvent::K_Return || e.u16==32) ){
     emitClick();
-    presAnim    = true;
-    timePressed = Application::tickCount();
     update();
     } else {
     Widget::keyUpEvent(e);
@@ -292,8 +205,6 @@ void Button::keyUpEvent(Tempest::KeyEvent &e) {
   }
 
 void Button::onShortcut() {
-  presAnim    = true;
-  timePressed = Application::tickCount();
   update();
   }
 
@@ -311,19 +222,10 @@ void Button::setPressed(bool p) {
   }
 
 bool Button::isPressed() const {
-  return presAnim;
+  return state().pressed;
   }
 
 void Button::setWidgetState(const WidgetState &s) {
   Widget::setWidgetState(s);
   update();
-  }
-
-void Button::finishPaint() {
-  if( presAnim != state().pressed ){
-    if( Application::tickCount() > timePressed+1000/8 )
-      presAnim = state().pressed;
-
-    update();
-    }
   }

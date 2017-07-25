@@ -14,7 +14,7 @@ static const KeyEvent::KeyType cmdKey = KeyEvent::K_Control;
 
 const int LineEdit::cursorFlashTime=500;
 
-LineEdit::LineEdit(): anim(0) {
+LineEdit::LineEdit() {
   sedit    = 0;
   eedit    = 0;
   oldSedit = 0;
@@ -22,7 +22,6 @@ LineEdit::LineEdit(): anim(0) {
 
   resize(100,27);
 
-  editable   = 1;
   isEdited   = false;
   tabChFocus = true;
 
@@ -40,9 +39,6 @@ LineEdit::LineEdit(): anim(0) {
   p.typeV = FixedMax;
 
   setSizePolicy(p);
-
-  timer.setRepeatCount(0);
-  timer.timeout.bind( this, &LineEdit::animation );
   }
 
 LineEdit::~LineEdit() {
@@ -50,12 +46,13 @@ LineEdit::~LineEdit() {
   }
 
 void LineEdit::setEchoMode(LineEdit::EchoMode m) {
-  emode = m;
-  update();
+  auto st=state();
+  st.echo = m;
+  setWidgetState(st);
   }
 
 LineEdit::EchoMode LineEdit::echoMode() const {
-  return emode;
+  return state().echo;
   }
 
 void LineEdit::setTabChangesFocus(bool ch) {
@@ -120,11 +117,11 @@ const std::u16string &LineEdit::hint() const {
   return hnt;
   }
 
-size_t LineEdit::selectionBegin() {
+size_t LineEdit::selectionBegin() const {
   return sedit;
   }
 
-size_t LineEdit::selectionEnd() {
+size_t LineEdit::selectionEnd()   const {
   return eedit;
   }
 
@@ -144,8 +141,9 @@ void LineEdit::resetSelection() {
   }
 
 void LineEdit::setEditable(bool e) {
-  editable = e;
-  setFocusPolicy( e ? WheelFocus : NoFocus );
+  auto st = state();
+  st.editable=e;
+  setWidgetState(st);
   }
 
 void LineEdit::setValidator(LineEdit::Validator *v) {
@@ -160,11 +158,11 @@ const LineEdit::Validator &LineEdit::validator() const {
   }
 
 bool LineEdit::isEditable() const {
-  return editable;
+  return state().editable;
   }
 
 void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
-  if(!editable){
+  if(!isEditable()){
     e.ignore();
     return;
     }
@@ -178,7 +176,7 @@ void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
   update();
 
 #ifdef __ANDROID__
-  if( editable )
+  if( isEditable() )
     AndroidAPI::toggleSoftInput();
 #endif
   }
@@ -202,71 +200,11 @@ void LineEdit::mouseDragEvent(MouseEvent &e) {
   update();
   }
 
-void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
-  if(emode==NoEcho)
-    return;
-  Painter p(pe);
+void LineEdit::paintEvent( PaintEvent &e ) {
+  Painter p(e);
+  style().draw(p,this,state(),Rect(0,0,w(),h()),Style::Extra(*this));
 
-  p.setFont( fnt );
-
-  const Margin& m = margin();
-  int x = m.left, y = 0;
-
-  size_t s = std::min( sedit, eedit );
-  size_t e = std::max( sedit, eedit );
-
-  for( size_t i=0; i<s && i<txt.size(); ++i ){
-    const Font::Letter& l = emode==Normal ? p.letter(fnt, txt[i]) : p.letter(fnt,passChar);
-    x+= l.advance.x;
-    y+= l.advance.y;
-    }
-
-  int sx = x;
-
-  for( size_t i=s; i<e && i<txt.size(); ++i ){
-    const Font::Letter& l = emode==Normal ? p.letter(fnt, txt[i]) : p.letter(fnt,passChar);
-    x+= l.advance.x;
-    y+= l.advance.y;
-    }
-
-  int oldSc = scroll;
-  if( editable && sx==x ){
-    --sx;
-    int clientW = w()-m.xMargin();
-    int delta = 0;
-    if( x+oldSc > clientW ){
-      delta = clientW - (x+oldSc);
-      }
-
-    if( x+oldSc < m.left ){
-      delta = -(x+oldSc-m.left);
-      }
-
-    scroll += delta;
-    sx     += delta;
-    x      += delta;
-    x += 1;
-    }
-
-  drawCursor(p,sx+oldSc,x-sx,anim);
-
-  p.setColor(tColor);
-  int dY = (h()-fnt.size()-m.yMargin())/2;
-  Rect sc = p.scissor();
-  p.setScissor(sc.intersected(Rect(m.left, 0, w()-m.xMargin(), h())));
-  if(emode==Normal){
-    p.drawText( scroll+m.left, m.top+dY, w()-m.xMargin()-scroll, fnt.size(),
-                txt, AlignBottom );
-    } else {
-    const Font::Letter& l = p.letter(fnt,passChar);
-    int x=scroll+m.left, y = m.top+dY;
-    char16_t ch[2]={passChar,'\0'};
-    for(size_t i=0;i<txt.size();++i){
-      p.drawText(x,y,ch);
-      x+= l.advance.x;
-      y+= l.advance.y;
-      }
-    }
+  paintNested(e);
   }
 
 void LineEdit::storeOldText(){
@@ -296,7 +234,7 @@ void LineEdit::redo() {
   }
 
 void LineEdit::drawCursor(Painter &p,int x1,int x2, bool animState) {
-  if( editable && ((animState || selectionBegin()!=selectionEnd()) && hasFocus()) ){
+  if( isEditable() && ((animState || selectionBegin()!=selectionEnd()) && hasFocus()) ){
     p.setBlendMode(noBlend);
     p.unsetTexture();
     p.setColor( 0,0,1,1 );
@@ -325,7 +263,7 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
     }
 
   const Validator& v = validator();
-  if( e.key==KeyEvent::K_NoKey && editable ){
+  if( e.key==KeyEvent::K_NoKey && isEditable() ){
     if( sedit < eedit && eedit-sedit==txt.size() ){
       std::u16string tmp;
       tmp.resize(1);
@@ -370,7 +308,7 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
     return;
     }
 
-  if( e.key==KeyEvent::K_Back && editable ){    
+  if( e.key==KeyEvent::K_Back && isEditable() ){
     v.erase( txt, sedit, eedit );
     isEdited = true;
     onTextChanged( txt );
@@ -379,7 +317,7 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
     return;
     }
 
-  if( e.key==KeyEvent::K_Delete && editable ){
+  if( e.key==KeyEvent::K_Delete && isEditable() ){
     if(sedit==eedit){
       ++sedit;
       ++eedit;
@@ -407,14 +345,13 @@ void LineEdit::keyUpEvent(KeyEvent &e) {
 
 void LineEdit::focusEvent(FocusEvent &e) {
   storeText();
-  setupTimer(e.in);
   if( e.reason==Event::TabReason && e.in ){
     setSelectionBounds(0,text().size());
     }
   }
 
 void LineEdit::updateSel() {
-  if(emode==NoEcho){
+  if(echoMode()==NoEcho){
     sedit = txt.size();
     eedit = sedit;
     return;
@@ -430,7 +367,7 @@ void LineEdit::updateSel() {
   b.x = std::max(b.x,x);
 
   for( size_t i=0; i<txt.size(); ++i ){
-    const Font::LetterGeometry& l = fnt.letterGeometry(emode==Normal ? txt[i] : passChar);
+    const Font::LetterGeometry& l = fnt.letterGeometry(echoMode()==Normal ? txt[i] : passChar);
 
     if( Tempest::Rect( x, 0,
                        l.advance.x, h() ).contains(a,true) ){
@@ -463,7 +400,7 @@ void LineEdit::updateSel() {
 
   eedit = sedit;
   for( size_t i=0; i<txt.size(); ++i ){
-    const Font::LetterGeometry& l = fnt.letterGeometry(emode==Normal ? txt[i] : passChar);
+    const Font::LetterGeometry& l = fnt.letterGeometry(echoMode()==Normal ? txt[i] : passChar);
 
     if( Rect( x, 0,
               l.advance.x, h() ).contains(b,true) ){
@@ -490,22 +427,9 @@ void LineEdit::storeText() {
     }
   }
 
-void LineEdit::setupTimer( bool f ) {
-  if( f ){
-    anim=true;
-    timer.start(cursorFlashTime);
-    } else {
-    timer.stop();
-    anim = false;
-    }
-
-  update();
-  }
-
-void LineEdit::animation() {
-  if(!(isEnabled() && editable) && !anim)
-    return;
-  anim = !anim;
+void LineEdit::setWidgetState(const WidgetState &s) {
+  setFocusPolicy( s.editable ? WheelFocus : NoFocus );
+  Widget::setWidgetState(s);
   update();
   }
 

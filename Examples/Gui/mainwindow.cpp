@@ -12,6 +12,8 @@
 #include <Tempest/ListView>
 #include <Tempest/ListBox>
 #include <Tempest/ScrollWidget>
+#include <Tempest/CheckBox>
+#include <Tempest/Label>
 
 using namespace Tempest;
 
@@ -43,13 +45,23 @@ void MainWindow::setupUi() {
   Panel *panel = new Panel();
   panel->setDragable(true);
   panel->setLayout(Vertical);
-  /*
+
   Button* button = new Button();
   button->setText("Button");
   button->setHint("button hint");
   button->setIcon(Icon("data/icon.png",spHolder));
   button->onClicked.bind(this,&MainWindow::buttonClick);
   panel->layout().add(button);
+
+  button = new CheckBox();
+  button->setText("Checkbox");
+  button->setHint("checkbox hint");
+  button->setIcon(Icon("data/icon.png",spHolder));
+  panel->layout().add(button);
+
+  Label* label = new Label();
+  label->setText("Label");
+  panel->layout().add(label);
 
   LineEdit* edit = new LineEdit();
   edit->setText("LineEdit");
@@ -65,8 +77,9 @@ void MainWindow::setupUi() {
   ListView* list = new ListView();
   list->setDelegate(listViewDelegate);
   scroll->centralWidget().layout().add(list);
-  panel->layout().add(scroll);*/
+  panel->layout().add(scroll);
 
+  /*
   LineEdit* edit1 = new LineEdit();
   edit1->setText("LineEdit1");
   edit1->setHint("some edit");
@@ -76,6 +89,7 @@ void MainWindow::setupUi() {
   edit2->setText("LineEdit2");
   edit2->setHint("some edit");
   panel->layout().add(edit2);
+  */
 
   layout().add(panel);
   }

@@ -48,17 +48,9 @@ void Label::setText(const std::u16string &t) {
 
 void Label::paintEvent(PaintEvent &e) {
   Painter p(e);
+  style().draw(p,this,state(),Rect(0,0,w(),h()),Style::Extra(*this));
 
-  p.setFont( fnt );
-
-  const Margin& m = margin();
-
-  p.setColor(tColor);
-  int dY = (h()-fnt.size()-m.yMargin())/2;
-  Rect sc = p.scissor();
-  p.setScissor(sc.intersected(Rect(m.left, 0, w()-m.xMargin(), h())));
-  p.drawText( m.left, m.top+dY, w()-m.xMargin(), fnt.size(),
-              txt, AlignBottom );
+  paintNested(e);
   }
 
 const std::u16string &Label::text() const {

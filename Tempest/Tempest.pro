@@ -237,7 +237,8 @@ SOURCES += \
     ui/controls/scrollwidget.cpp \
     ui/controls/label.cpp \
     system/jniextras.cpp \
-    ui/widgetstate.cpp
+    ui/widgetstate.cpp \
+    ui/style.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -341,7 +342,8 @@ HEADERS += \
     system/iosapi.h \
     core/langcodes.h \
     system/jniextras.h \
-    ui/widgetstate.h
+    ui/widgetstate.h \
+    ui/style.h
 
 mac:!ios: OBJECTIVE_SOURCES += \
     system/osxapi.mm \
@@ -427,4 +429,5 @@ DISTFILES += \
     ../android/src/com/tempest/engine/Activity.java \
     ../android/src/com/tempest/engine/Application.java \
     ../android/src/com/tempest/engine/WindowSurface.java \
-    ../android/src/com/tempest/engine/Tempest.java
+    ../android/src/com/tempest/engine/Tempest.java \
+    include/Tempest/Style

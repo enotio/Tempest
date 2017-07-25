@@ -26,42 +26,13 @@ void Layout::add(Widget *widget, size_t pos) {
     return;
 
   size_t hasReleaseReciver = size_t(-1), hasLeavePtr = size_t(-1);
-  if(widget->parentLay){
-    Widget* ow = widget->parentLay->owner();
-
-    for(size_t i=0; i<ow->mouseReleseReciver.size(); ++i)
-      if(widget==ow->mouseReleseReciver[i])
-        hasReleaseReciver=i;
-
-    for(size_t i=0; i<ow->mouseLeaveReciver.size(); ++i)
-      if(widget==ow->mouseLeaveReciver[i])
-        hasLeavePtr=i;
-
-    widget->parentLay->take(widget);
-    }
+  widget->clearParent(hasReleaseReciver,hasLeavePtr);
 
   if(pos>=w.size())
     pos=w.size();
-
-  if( widget->hasFocus() || widget->hasChildFocus() )
-    widget->unsetChFocus(widget, 0, Event::UnknownReason);
-
   w.insert(w.begin()+pos,widget);
 
-  widget->parentLay = this;
-  if( hasReleaseReciver!=size_t(-1) )
-    widget->setupMouseReleasePtr(hasReleaseReciver);
-
-  if( hasLeavePtr!=size_t(-1) )
-    widget->setupMouseReleasePtr(hasLeavePtr);
-
-  if( owner() )
-    Widget::impl_disableSum(widget,owner()->disableSum);
-
-  if( widget->nToUpdate ){
-    widget->nToUpdate    = false;
-    widget->update();
-    }
+  widget->setParent(this,hasReleaseReciver,hasLeavePtr);
 
   applyLayout();
   }
@@ -74,9 +45,9 @@ void Layout::del(Widget *widget) {
   if(widget->parentLay!=this)
     return;
 
+  widget->detach();
   w.resize( std::remove( w.begin(), w.end(), widget ) - w.begin() );
   widget->deleteLater();
-  widget->detach();
 
   applyLayout();
 
@@ -141,14 +112,7 @@ Widget *Layout::take(Widget *widget) {
   if(widget->parentLay!=this)
     return widget;
 
-  if( widget->hasFocus() )
-    widget->setFocus(0);
-
-  MouseEvent e;
-  Widget::impl_enterLeaveEvent(widget,e,false);
-
   widget->detach();
-
   w.resize( std::remove( w.begin(), w.end(), widget ) - w.begin() );
   widget->parentLay = 0;
 
@@ -350,7 +314,7 @@ void LinearLayout::applyLayoutPrivate( int (*w)( const Size& wd ),
       if( exCount==0 ) // TESTME
         spacePref = w(owner()->size()) - spacing - fixedSize - wmarg;
 
-      size_t nVisible=0;
+      int nVisible=0;
       for( size_t i=0; i<wd.size(); ++i )
         if( wd[i]->isVisible() ){
           int sp = 0, hw = h(owner()->size()) - hmarg;
