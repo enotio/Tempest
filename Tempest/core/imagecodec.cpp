@@ -394,14 +394,13 @@ struct JpegCodec:ImageCodec {
     longjmp(src->jmpErr,1);
     }
 
-  void make_stream (jpeg_decompress_struct* cinfo, IDevice* in) {
+  void make_stream (jpeg_decompress_struct* cinfo, IDevice* in, JpegStream& stream) {
     JpegStream * src;
 
-    if (cinfo->src == NULL) {
-      cinfo->src = (jpeg_source_mgr *)
-          (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-                                      sizeof(JpegStream));
+    if( cinfo->src==NULL ){
+      cinfo->src=&stream;
       src = reinterpret_cast<JpegStream*> (cinfo->src);
+      memset(src,0,sizeof(*src));
       cinfo->client_data = src;
       }
 
@@ -433,13 +432,14 @@ struct JpegCodec:ImageCodec {
   bool load( IDevice &d,
              ImgInfo &info,
              std::vector<uint8_t> &out ) {
-    compress cInfo;
+    compress       cInfo;
     jpeg_error_mgr cErrMgr;
+    JpegStream     stream;
 
     cInfo.err = jpeg_std_error(&cErrMgr);
     cInfo.err->error_exit = handleLibJpegFatalError;
     cInfo.start();
-    make_stream(&cInfo, &d);
+    make_stream(&cInfo, &d, stream);
 
     JpegStream * src = reinterpret_cast<JpegStream*>(cInfo.src);
     int errorCode = setjmp(src->jmpErr);
@@ -465,13 +465,12 @@ struct JpegCodec:ImageCodec {
     // Decoding loop:
     //
     size_t i = 0;
-    while (cInfo.output_scanline < cInfo.output_height)
-    {
+    while (cInfo.output_scanline < cInfo.output_height) {
       // Decode it !
       pRows[0] = (JSAMPROW)( out.data() + iRowStride * i);  // set row buffer
       (void) jpeg_read_scanlines(&cInfo, pRows, 1);  // decode
       i++;
-    }
+      }
 
     info.w      = cInfo.image_width;
     info.h      = cInfo.image_height;
@@ -479,6 +478,7 @@ struct JpegCodec:ImageCodec {
     info.alpha  = info.bpp==4;
     info.format = info.bpp==3 ? Pixmap::Format_RGB : Pixmap::Format_RGBA;
 
+    //cInfo.src=NULL;
     if( !jpeg_finish_decompress(&cInfo) )
       Log::e("jpeg_finish_decompress error");
 
