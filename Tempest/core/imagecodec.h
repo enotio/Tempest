@@ -20,29 +20,27 @@ class ImageCodec {
     virtual bool canConvertTo(const ImgInfo &, Pixmap::Format fout ) const;
 
     virtual void toRGB( ImgInfo &info,
-                        std::vector<unsigned char> &inout,
+                        std::vector<uint8_t> &inout,
                         bool alpha );
 
     virtual void fromRGB( ImgInfo &info,
-                          std::vector<unsigned char> &inout );
+                          std::vector<uint8_t> &inout );
 
     virtual bool load( IDevice& imgBytes,
                        ImgInfo &info,
-                       std::vector<unsigned char> &out );
+                       std::vector<uint8_t> &out );
 
     virtual bool save( ODevice &file,
                        const ImgInfo &info,
-                       const std::vector<unsigned char> &img );
+                       const std::vector<uint8_t> &img );
 
     static void installStdCodecs( SystemAPI& s );
 
   //protected:
-    static void addAlpha   (ImgInfo &info, std::vector<unsigned char>& rgb );
-    static void removeAlpha(ImgInfo &info, std::vector<unsigned char>& rgba );
-
-    static void resize( ImgInfo &info, std::vector<unsigned char>& rgb,
-                        int nw, int nh );
-    static void downsample(ImgInfo &info, std::vector<unsigned char>& rgb );
+    static void addAlpha   (ImgInfo &info, std::vector<uint8_t>& rgb );
+    static void removeAlpha(ImgInfo &info, std::vector<uint8_t>& rgba );
+    static void resize     (ImgInfo &info, std::vector<uint8_t> &rgb,int nw, int nh );
+    static void downsample (ImgInfo &info, std::vector<uint8_t>& rgb );
   };
 
 }

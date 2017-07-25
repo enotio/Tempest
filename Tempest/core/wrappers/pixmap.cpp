@@ -40,7 +40,7 @@ struct Pixmap::MemPool{
       }
 
     for( size_t i=0; i<data.size(); ++i ){
-      std::vector<unsigned char>& b = data[i]->bytes;
+      std::vector<uint8_t>& b = data[i]->bytes;
       if( b.size()<=sz64 && sz64<=b.capacity()  ){
         Pixmap::Data* r = data[i];
         data[i] = data.back();
@@ -51,7 +51,7 @@ struct Pixmap::MemPool{
       }
 
     for( size_t i=0; i<ldata.size(); ++i ){
-      std::vector<unsigned char>& b = ldata[i]->bytes;
+      std::vector<uint8_t>& b = ldata[i]->bytes;
       if( b.size()<=sz64 && sz64<=b.capacity() ){
         Pixmap::Data* r = ldata[i];
         ldata[i] = ldata.back();
@@ -268,11 +268,11 @@ void Pixmap::addAlpha() {
   makeEditable();
 
   data.value()->bytes.resize( info.w*info.h*4);
-  unsigned char * v = &data.value()->bytes[0];
+  uint8_t * v = &data.value()->bytes[0];
 
   for( size_t i=info.w*info.h; i>0; --i ){
-    unsigned char * p = &v[ 4*i-4 ];
-    unsigned char * s = &v[ 3*i-3 ];
+    uint8_t * p = &v[ 4*i-4 ];
+    uint8_t * s = &v[ 3*i-3 ];
     for( int r=0; r<3; ++r )
       p[r] = s[r];
     p[3] = 255;
@@ -289,11 +289,11 @@ void Pixmap::removeAlpha() {
     return;
   makeEditable();
 
-  unsigned char * v = &data.value()->bytes[0];
+  uint8_t * v = &data.value()->bytes[0];
 
   for( int i=0; i<info.w*info.h; ++i ){
-    unsigned char * p = &v[ 3*i ];
-    unsigned char * s = &v[ 4*i ];
+    uint8_t * p = &v[ 3*i ];
+    uint8_t * s = &v[ 4*i ];
     for( int r=0; r<3; ++r )
       p[r] = s[r];
     }
@@ -413,7 +413,7 @@ void Pixmap::fill(const Pixmap::Pixel &p) {
   mrawPtr   = &data.value()->bytes[0];
   rawPtr    = mrawPtr;
 
-  unsigned char px[] = {p.r, p.g, p.b, p.a};
+  uint8_t px[] = {p.r, p.g, p.b, p.a};
 
   if( !info.alpha ){
     for( size_t i=0; i<sz; i+=3 ){
