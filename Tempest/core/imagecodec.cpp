@@ -32,14 +32,12 @@ struct PngCodec:ImageCodec {
            (ext==nullptr || strcmp(ext,"PNG")==0);
     }
 
-  bool load( IDevice &d,
-             ImgInfo &info,
-             std::vector<unsigned char> &out ) {
+  bool load( IDevice &d, ImgInfo &info, std::vector<uint8_t> &out ) {
     char head[8];
     if( d.readData( head, 8 )!=8 )
       return false;
 
-    if(png_sig_cmp( (unsigned char*)head, 0, 8))
+    if(png_sig_cmp( (png_const_bytep)head, 0, 8))
       return false;
 
     png_structp png_ptr;
@@ -168,7 +166,7 @@ struct PngCodec:ImageCodec {
     f->flush();
     }
 
-  bool save( ODevice & file, const ImgInfo &info, const std::vector<unsigned char> &img){
+  bool save( ODevice & file, const ImgInfo &info, const std::vector<uint8_t> &img){
     png_structp png_ptr = png_create_write_struct( PNG_LIBPNG_VER_STRING,
                                                    NULL, NULL, NULL );
 
@@ -239,7 +237,7 @@ struct TgaCodec:ImageCodec {
 
   bool load( IDevice &d,
              ImgInfo &info,
-             std::vector<unsigned char> &out ) {
+             std::vector<uint8_t> &out ) {
     Header h;
     if(d.readData((char*)&h,sizeof(h))!=sizeof(h))
       return false;
@@ -308,7 +306,7 @@ struct TgaCodec:ImageCodec {
 
   bool save( ODevice & file,
              const ImgInfo &info,
-             const std::vector<unsigned char> &img){
+             const std::vector<uint8_t> &img){
     Header h;
     memset(&h,0,sizeof(h));
     h.bitsPerPel = info.bpp*8;
@@ -368,7 +366,7 @@ struct JpegCodec:ImageCodec {
     IDevice*        stream;
 
     static const size_t bufferSize = 4096;
-    unsigned char buffer [bufferSize];
+    uint8_t             buffer [bufferSize];
     };
 
   static void init_source( j_decompress_ptr ) {}
@@ -434,7 +432,7 @@ struct JpegCodec:ImageCodec {
 
   bool load( IDevice &d,
              ImgInfo &info,
-             std::vector<unsigned char> &out ) {
+             std::vector<uint8_t> &out ) {
     compress cInfo;
     jpeg_error_mgr cErrMgr;
 
@@ -493,7 +491,7 @@ struct JpegCodec:ImageCodec {
 struct S3TCCodec:ImageCodec {
   bool load( IDevice &img,
              ImgInfo &info,
-             std::vector<unsigned char> &out ) {
+             std::vector<uint8_t> &out ) {
     using namespace Tempest::Detail;
 
     DDSURFACEDESC2 ddsd;
@@ -580,9 +578,9 @@ struct S3TCCodec:ImageCodec {
     }
 
   void fromRGB( ImageCodec::ImgInfo &info,
-                std::vector<unsigned char> &bytes ) {
+                std::vector<uint8_t> &bytes ) {
     squish::u8 px[4][4][4];
-    unsigned char* p  = &bytes[0];
+    uint8_t* p  = &bytes[0];
 
     std::vector<squish::u8> d;
     d.resize( info.w*info.h/2 );
@@ -606,7 +604,7 @@ struct S3TCCodec:ImageCodec {
     }
 
   void toRGB( ImageCodec::ImgInfo &info,
-              std::vector<unsigned char> &bytes,
+              std::vector<uint8_t> &bytes,
               bool a ) {
     squish::u8 pixels[4][4][4];
     int compressType = squish::kDxt1;
@@ -622,11 +620,11 @@ struct S3TCCodec:ImageCodec {
       s *= 4;
       }
 
-    std::vector<unsigned char> ddsv = bytes;
+    std::vector<uint8_t> ddsv = bytes;
     bytes.resize(s);
 
-    unsigned char* px  = &bytes[0];
-    unsigned char* dds = &ddsv[0];
+    uint8_t* px  = &bytes[0];
+    uint8_t* dds = &ddsv[0];
     info.bpp = 4;
 
     for( int i=0; i<info.w; i+=4 )
@@ -637,7 +635,7 @@ struct S3TCCodec:ImageCodec {
 
         for( int x=0; x<4; ++x )
           for( int y=0; y<4; ++y ){
-            unsigned char * v = &px[ (i+x + (r+y)*info.w)*info.bpp ];
+            uint8_t * v = &px[ (i+x + (r+y)*info.w)*info.bpp ];
             memcpy( v, pixels[y][x], 4 );
             }
         }
@@ -664,14 +662,14 @@ struct ETCCodec:ImageCodec{
     return etcFrm(inf.format) && (ext==nullptr || strcmp(ext,"KTX")==0);
     }
 
-  void compressLayer( std::vector<unsigned char> &img,
-                      std::vector<unsigned char> &out,
+  void compressLayer( std::vector<uint8_t> &img,
+                      std::vector<uint8_t> &out,
                       int w, int h ){
     uint32_t block[2];
     uint8_t  bytes[4];
 
     std::unique_ptr<uint8_t[]> imgdec;
-    imgdec.reset( new unsigned char[w*h*3] );
+    imgdec.reset( new uint8_t[w*h*3] );
 
     out.resize( out.size()+ (w/4)*(h/4)*8 );
     uint8_t *pix = &out[ out.size() - (w/4)*(h/4)*8 ];
@@ -698,14 +696,14 @@ struct ETCCodec:ImageCodec{
         }
     }
 
-  void fromRGB(ImgInfo &info, std::vector<unsigned char> &img){
+  void fromRGB(ImgInfo &info, std::vector<uint8_t> &img){
     if( info.format==Pixmap::Format_RGBA )
       removeAlpha(info, img);
 
     int expandedwidth  = ((info.w+3)/4)*4,
         expandedheight = ((info.h+3)/4)*4;
 
-    std::vector<unsigned char> out;
+    std::vector<uint8_t> out;
     compressLayer(img, out, expandedwidth, expandedheight);
 
     bool isPot = ((expandedwidth  & (expandedwidth-1) )==0) &&
@@ -732,7 +730,7 @@ struct ETCCodec:ImageCodec{
     }
 
   void toRGB( ImgInfo &info,
-              std::vector<unsigned char> &inout,
+              std::vector<uint8_t> &inout,
               bool alpha ){
     uint8_t *bytes = ((uint8_t*)(&inout[0]));
     std::vector<uint8_t> img;
@@ -770,7 +768,7 @@ struct ETCCodec:ImageCodec{
 
   bool save( ODevice& file,
              const ImgInfo &info,
-             const std::vector<unsigned char> &img){
+             const std::vector<uint8_t> &img){
     if( info.format!=Pixmap::Format_ETC1_RGB8 )
       return 0;
 
@@ -811,7 +809,7 @@ struct ETCCodec:ImageCodec{
 
   bool load( IDevice &data,
              ImgInfo &info,
-             std::vector<unsigned char> & out ) {
+             std::vector<uint8_t> & out ) {
     KTX_header h;
     uint32_t tmp = 0;
     if( data.readData((char*)&h, sizeof(h)) != sizeof(h) )
@@ -866,26 +864,26 @@ bool ImageCodec::canConvertTo(const ImageCodec::ImgInfo &, Pixmap::Format ) cons
   }
 
 void ImageCodec::toRGB( ImageCodec::ImgInfo &/*info*/,
-                        std::vector<unsigned char> &/*inout*/,
+                        std::vector<uint8_t> &/*inout*/,
                         bool /*alpha*/ ) {
   T_WARNING_X(0, "overload for ImageCodec::toRGB is unimplemented");
   }
 
 void ImageCodec::fromRGB( ImageCodec::ImgInfo &/*info*/,
-                          std::vector<unsigned char> &/*inout*/ ) {
+                          std::vector<uint8_t> &/*inout*/ ) {
   T_WARNING_X(0, "overload for ImageCodec::fromRGB is unimplemented");
   }
 
 bool ImageCodec::load( IDevice &,
                        ImageCodec::ImgInfo &,
-                       std::vector<unsigned char> &) {
+                       std::vector<uint8_t> &) {
   T_WARNING_X(0, "overload for ImageCodec::load is unimplemented");
   return false;
   }
 
 bool ImageCodec::save( ODevice& ,
                        const ImageCodec::ImgInfo &,
-                       const std::vector<unsigned char> & ) {
+                       const std::vector<uint8_t> & ) {
   T_WARNING_X(0, "overload for ImageCodec::save is unimplemented");
   return false;
   }
@@ -898,13 +896,13 @@ void ImageCodec::installStdCodecs(SystemAPI &s) {
   s.installImageCodec( new JpegCodec() );
   }
 
-void ImageCodec::addAlpha( ImgInfo& info, std::vector<unsigned char> &rgb) {
+void ImageCodec::addAlpha(ImgInfo& info, std::vector<uint8_t> &rgb) {
   rgb.resize( info.w*info.h*4);
-  unsigned char * v = &rgb[0];
+  uint8_t * v = &rgb[0];
 
   for( size_t i=info.w*info.h; i>0; --i ){
-    unsigned char * p = &v[ 4*i-4 ];
-    unsigned char * s = &v[ 3*i-3 ];
+    uint8_t * p = &v[ 4*i-4 ];
+    uint8_t * s = &v[ 3*i-3 ];
     for( int r=0; r<3; ++r )
       p[r] = s[r];
     p[3] = 255;
@@ -915,12 +913,12 @@ void ImageCodec::addAlpha( ImgInfo& info, std::vector<unsigned char> &rgb) {
   info.format = Pixmap::Format_RGBA;
   }
 
-void ImageCodec::removeAlpha(ImageCodec::ImgInfo &info, std::vector<unsigned char> &rgba) {
-  unsigned char * v = &rgba[0];
+void ImageCodec::removeAlpha(ImageCodec::ImgInfo &info, std::vector<uint8_t> &rgba) {
+  uint8_t * v = &rgba[0];
 
   for( int i=0; i<info.w*info.h; ++i ){
-    unsigned char * p = &v[ 3*i ];
-    unsigned char * s = &v[ 4*i ];
+    uint8_t * p = &v[ 3*i ];
+    uint8_t * s = &v[ 4*i ];
     for( int r=0; r<3; ++r )
       p[r] = s[r];
     }
@@ -932,7 +930,7 @@ void ImageCodec::removeAlpha(ImageCodec::ImgInfo &info, std::vector<unsigned cha
   }
 
 void ImageCodec::resize( ImageCodec::ImgInfo &info,
-                         std::vector<unsigned char> &rgb,
+                         std::vector<uint8_t> &rgb,
                          int w, int h ) {
   T_ASSERT( w<=info.w && h<=info.h );
   T_ASSERT( info.format==Pixmap::Format_RGB || info.format==Pixmap::Format_RGBA );
@@ -944,11 +942,11 @@ void ImageCodec::resize( ImageCodec::ImgInfo &info,
   if( w*h*bpp > rgb.size() )
     rgb.resize( w*h*bpp );
 
-  unsigned char *p = &rgb[0];
+  uint8_t *p = &rgb[0];
   for( int r=0; r<h; ++r)
     for( int i=0; i<w; ++i ){
       //size_t  pix[4] = {};
-      unsigned char *pix = &p[ (i + r*w)*bpp ];
+      uint8_t *pix = &p[ (i + r*w)*bpp ];
       size_t  x0 = (i*iw)/w,
               y0 = (r*ih)/h;
 
@@ -963,7 +961,7 @@ void ImageCodec::resize( ImageCodec::ImgInfo &info,
   }
 
 void ImageCodec::downsample( ImageCodec::ImgInfo &info,
-                             std::vector<unsigned char> &rgb ) {
+                             std::vector<uint8_t> &rgb ) {
   //T_ASSERT( info.w%2==0 && info.h%2==0 );
   T_ASSERT( info.format==Pixmap::Format_RGB || info.format==Pixmap::Format_RGBA );
 
@@ -972,7 +970,7 @@ void ImageCodec::downsample( ImageCodec::ImgInfo &info,
       w  = std::max(info.w/2, 1),
       h  = std::max(info.h/2, 1);
 
-  unsigned char *p = &rgb[0];
+  uint8_t *p = &rgb[0];
   for( int r=0; r<h; ++r)
     for( int i=0; i<w; ++i ){
       int pix[4] = {};

@@ -239,6 +239,7 @@ SOURCES += \
     system/jniextras.cpp \
     ui/widgetstate.cpp \
     ui/style.cpp
+    ui/textmodel.cpp
 
 HEADERS += \
     system/windowsapi.h \
@@ -344,6 +345,7 @@ HEADERS += \
     system/jniextras.h \
     ui/widgetstate.h \
     ui/style.h
+    ui/textmodel.h
 
 mac:!ios: OBJECTIVE_SOURCES += \
     system/osxapi.mm \
@@ -418,14 +420,15 @@ OTHER_FILES += \
     include/Tempest/StackedWidget \
     include/Tempest/Icon \
     include/Tempest/Label \
+    include/Tempest/JniExtras \
+    include/Tempest/WidgetState \
+    include/Tempest/TextModel \
     include/Tempest/IOS \
     include/Tempest/OSX
 
 DISTFILES += \
     ../appveyor.yml \
     ../.travis.yml \
-    include/Tempest/JniExtras \
-    include/Tempest/WidgetState \
     ../android/src/com/tempest/engine/Activity.java \
     ../android/src/com/tempest/engine/Application.java \
     ../android/src/com/tempest/engine/WindowSurface.java \

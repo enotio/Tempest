@@ -46,7 +46,7 @@ class Pixmap {
     inline int width()  const { return info.w; }
     inline int height() const { return info.h; }
 
-    inline Size size() const { return Size(info.w, info.h); }
+    inline Size size()  const { return Size(info.w, info.h); }
 
     inline bool isEmpty() const {
       return info.w==0||0==info.h;
@@ -58,13 +58,13 @@ class Pixmap {
     void toPOT( int maxSize );
 
     struct Pixel{
-      unsigned char r,g,b,a;
+      uint8_t r,g,b,a;
 
-      unsigned char* data(){
+      uint8_t* data(){
         return &r;
         }
 
-      const unsigned char* data() const {
+      const uint8_t* data() const {
         return &r;
         }
 
@@ -77,7 +77,7 @@ class Pixmap {
         }
       };
 
-    inline const unsigned char* const_data() const {
+    inline const uint8_t* const_data() const {
       if(data.const_value()==nullptr ||
          data.const_value()->bytes.size()==0)
         return nullptr;
@@ -89,7 +89,7 @@ class Pixmap {
     inline Pixel at( int x, int y ) const {
       verifyFormatEditable();
 
-      const unsigned char * p = &rawPtr[ (x + y*info.w)*info.bpp ];
+      const uint8_t * p = &rawPtr[ (x + y*info.w)*info.bpp ];
       Pixel r;
 
       r.r = p[0];
@@ -115,7 +115,7 @@ class Pixmap {
 
     inline void  set(int x, int y, const Pixel & p ) {
       setupRawPtrs();
-      unsigned char * v = &mrawPtr[ (x + y*info.w)*info.bpp ];
+      uint8_t * v = &mrawPtr[ (x + y*info.w)*info.bpp ];
 
       v[0] = p.r;
       v[1] = p.g;
@@ -148,9 +148,8 @@ class Pixmap {
       Pixmap::Format format;
       };
   private:
-    struct Data{
-      std::vector<unsigned char> bytes;
-      // std::vector<unsigned char> dxt;
+    struct Data {
+      std::vector<uint8_t> bytes;
       };
 
     ImgInfo info;
@@ -181,8 +180,8 @@ class Pixmap {
       };
 
     mutable Detail::Ptr<Data*, DbgManip> data;
-    mutable const unsigned char * rawPtr;
-    mutable unsigned char * mrawPtr;
+    mutable const uint8_t * rawPtr;
+    mutable uint8_t       * mrawPtr;
 
     void verifyFormatEditable() const {
       if( info.format==Format_RGB || info.format==Format_RGBA )
@@ -192,7 +191,7 @@ class Pixmap {
       p->makeEditable();
       }
 
-    void makeEditable();
+    void  makeEditable();
 
     void  addAlpha();
     void  removeAlpha();
