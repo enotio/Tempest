@@ -52,8 +52,7 @@ const Sprite& Icon::SzArray::sprite(int w, int h) const {
   if( ret->w()<=w && ret->h()<=h )
     return *ret;
 
-  static Sprite s;
-  return s;
+  return emplace;
   }
 
 void Icon::SzArray::set(const Sprite &s) {
