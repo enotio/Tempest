@@ -15,23 +15,14 @@ static const KeyEvent::KeyType cmdKey = KeyEvent::K_Control;
 const int LineEdit::cursorFlashTime=500;
 
 LineEdit::LineEdit() {
-  sedit    = 0;
-  eedit    = 0;
-  oldSedit = 0;
-  oldEedit = 0;
-
   resize(100,27);
-
-  isEdited   = false;
-  tabChFocus = true;
-
   setFocusPolicy( WheelFocus );
 
-  scroll = 0;
-
   const UiMetrics& uiMetrics = Application::uiMetrics();
-  fnt = Application::mainFont();
+
+  Font fnt = Application::mainFont();
   fnt.setSize( int(uiMetrics.normalTextSize*uiMetrics.uiScale) );
+  txt.setDefaultFont(fnt);
 
   SizePolicy p = sizePolicy();
   p.maxSize.h = fnt.size() + fnt.size()/2;
@@ -64,12 +55,12 @@ bool LineEdit::tabChangesFocus() const {
   }
 
 void LineEdit::setFont(const Font &f) {
-  fnt = f;
+  txt.setDefaultFont(f);
   update();
   }
 
 const Font &LineEdit::font() const {
-  return fnt;
+  return txt.defaultFont();
   }
 
 void LineEdit::setText( const std::string &t ) {
@@ -79,15 +70,16 @@ void LineEdit::setText( const std::string &t ) {
   }
 
 void LineEdit::setText(const std::u16string &t) {
-  if( txt!=t ){
+  if( txt.text()!=t ){
     const Validator& v = validator();
     v.assign(txt,t);
+    txt.clearSteps();
 
     sedit = std::max<size_t>(0, std::min(sedit, txt.size() ));
     eedit = std::max<size_t>(0, std::min(eedit, txt.size() ));
 
     scroll = 0;
-    onTextChanged(txt);
+    onTextChanged(txt.text());
     update();
     }
   }
@@ -102,7 +94,7 @@ const Color& LineEdit::textColor() const {
   }
 
 const std::u16string &LineEdit::text() const {
-  return txt;
+  return txt.text();
   }
 
 void LineEdit::setHint(const std::u16string &str) {
@@ -148,7 +140,8 @@ void LineEdit::setEditable(bool e) {
 
 void LineEdit::setValidator(LineEdit::Validator *v) {
   mvalidator.reset(v);
-  validator().assign(txt,txt);
+  validator().assign(txt,txt.text());
+  txt.clearSteps();
   }
 
 const LineEdit::Validator &LineEdit::validator() const {
@@ -169,8 +162,9 @@ void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
   if(!isEnabled())
     return;
 
-  sp = e.pos();
-  ep = e.pos();
+  pressPos = txt.cursorForPosition(e.pos(),echoMode());
+  sedit    = pressPos;
+  eedit    = pressPos;
 
   updateSel();
   update();
@@ -181,23 +175,29 @@ void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
 #endif
   }
 
+void LineEdit::mouseDragEvent(MouseEvent &e) {
+  if(!isEnabled())
+    return;
+  size_t pos = txt.cursorForPosition(e.pos(),echoMode());
+  if( pressPos<=pos ){
+    sedit = pressPos;
+    eedit = pos;
+    } else {
+    sedit = pos;
+    eedit = pressPos;
+    }
+  updateSel();
+  update();
+  }
+
 void LineEdit::mouseUpEvent(Tempest::MouseEvent &) {
-  if( sedit > eedit )
-    std::swap( sedit, eedit );
+  updateSel();
   update();
   }
 
 void LineEdit::mouseMoveEvent(MouseEvent &) {
   Tempest::Point p = mapToRoot(Tempest::Point());
   Application::showHint(hnt, Tempest::Rect(p.x, p.y, w(), h()));
-  }
-
-void LineEdit::mouseDragEvent(MouseEvent &e) {
-  if(!isEnabled())
-    return;
-  ep = e.pos();
-  updateSel();
-  update();
   }
 
 void LineEdit::paintEvent( PaintEvent &e ) {
@@ -207,30 +207,31 @@ void LineEdit::paintEvent( PaintEvent &e ) {
   paintNested(e);
   }
 
-void LineEdit::storeOldText(){
-  oldTxt   = text();
-  oldSedit = sedit;
-  oldEedit = eedit;
+void LineEdit::resizeEvent(SizeEvent&) {
+  txt.setViewport(size());
   }
 
-void LineEdit::undo() {
-  std::swap(oldTxt,   txt  );
-  std::swap(oldSedit, sedit);
-  std::swap(oldEedit, eedit);
 
+void LineEdit::undo() {
+  txt.undo();
   setSelectionBounds(sedit,eedit);
   isEdited = 0;
-  onEditingFinished( txt );
+
+  onTextChanged    (txt.text());
+  onEditingFinished(txt.text());
+
+  update();
   }
 
 void LineEdit::redo() {
-  std::swap(oldTxt,txt);
-  std::swap(oldSedit, sedit);
-  std::swap(oldEedit, eedit);
-
+  txt.redo();
   setSelectionBounds(sedit,eedit);
   isEdited = 0;
-  onEditingFinished( txt );
+
+  onTextChanged    (txt.text());
+  onEditingFinished(txt.text());
+
+  update();
   }
 
 void LineEdit::drawCursor(Painter &p,int x1,int x2, bool animState) {
@@ -255,12 +256,10 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
     return;
     }
 
-  if(!isEdited)
-    storeOldText();
-
+  /*
   if( e.u16==' ' ){
     storeOldText();
-    }
+    }*/
 
   const Validator& v = validator();
   if( e.key==KeyEvent::K_NoKey && isEditable() ){
@@ -278,15 +277,15 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
       }
 
     isEdited = true;
-    onTextChanged( txt );
-    onTextEdited(txt);
+    onTextChanged( txt.text() );
+    onTextEdited ( txt.text() );
     update();
     return;
     }
 
   if( e.key==KeyEvent::K_Return ){
     storeText();
-    onEnter(txt);
+    onEnter(txt.text());
     return;
     }
 
@@ -311,8 +310,8 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
   if( e.key==KeyEvent::K_Back && isEditable() ){
     v.erase( txt, sedit, eedit );
     isEdited = true;
-    onTextChanged( txt );
-    onTextEdited(txt);
+    onTextChanged( txt.text() );
+    onTextEdited ( txt.text() );
     update();
     return;
     }
@@ -325,8 +324,8 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
     v.erase( txt, sedit, eedit );
 
     isEdited = true;
-    onTextChanged( txt );
-    onTextEdited(txt);
+    onTextChanged( txt.text() );
+    onTextEdited ( txt.text() );
     update();
     return;
     }
@@ -356,7 +355,7 @@ void LineEdit::updateSel() {
     eedit = sedit;
     return;
     }
-
+/*
   Tempest::Point a = sp, b = ep;
 
   if( a.x > b.x )
@@ -416,14 +415,13 @@ void LineEdit::updateSel() {
   if( Rect( x, y,
             w(), h() ).contains(b) ){
     eedit = txt.size();
-    }
+    }*/
   }
 
 void LineEdit::storeText() {
   if( isEdited ){
     isEdited = 0;
-    storeOldText();
-    onEditingFinished( txt );
+    onEditingFinished( txt.text() );
     }
   }
 
@@ -434,20 +432,20 @@ void LineEdit::setWidgetState(const WidgetState &s) {
   }
 
 
-void LineEdit::Validator::insert(std::u16string &string, size_t &ecursor, size_t &cursor, const std::u16string &data) const {
+void LineEdit::Validator::insert(TextModel &string, size_t &ecursor, size_t &cursor, const std::u16string &data) const {
   string.insert(cursor,data);
   ++cursor;
   ++ecursor;
   }
 
-void LineEdit::Validator::insert(std::u16string &string, size_t &cursor, size_t &ecursor, char16_t data) const {
+void LineEdit::Validator::insert(TextModel &string, size_t &cursor, size_t &ecursor, char16_t data) const {
   char16_t ch[2] = { char16_t(data), 0 };
   string.insert(cursor,ch);
   ++cursor;
   ++ecursor;
   }
 
-void LineEdit::Validator::erase(std::u16string &string, size_t &scursor, size_t &ecursor) const {
+void LineEdit::Validator::erase(TextModel &string, size_t &scursor, size_t &ecursor) const {
   if( scursor < ecursor )
     string.erase( scursor, ecursor-scursor ); else
   if( scursor > 0 ){
@@ -458,31 +456,27 @@ void LineEdit::Validator::erase(std::u16string &string, size_t &scursor, size_t 
   ecursor = scursor;
   }
 
-void LineEdit::Validator::assign(std::u16string &string,
-                                 const std::u16string &arg) const{
-  string = arg;
+void LineEdit::Validator::assign(TextModel &string, const std::u16string &arg) const{
+  string.assign(arg);
   }
 
-void LineEdit::IntValidator::insert(std::u16string &string,
-                                    size_t &cursor, size_t &ecursor,
-                                    const std::u16string &data) const {
+void LineEdit::IntValidator::insert(TextModel &string,size_t &cursor, size_t &ecursor,const std::u16string &data) const {
   for(auto i:data)
     insert(string,cursor,ecursor,i);
   }
 
-void LineEdit::IntValidator::insert(std::u16string &string,
-                                    size_t &cursor, size_t &ecursor,
-                                    char16_t data) const {
+void LineEdit::IntValidator::insert(TextModel &string,size_t &cursor, size_t &ecursor,char16_t data) const {
+  const std::u16string& chars=string.text();
   if( cursor==0 ){
-    if(!string.empty() && string[0]=='-')
+    if(!chars.empty() && chars[0]=='-')
       return;
 
-    if(data=='-' && !(string.size()>=1 && string[0]=='0')){
+    if(data=='-' && !(chars.size()>=1 && chars[0]=='0')){
       Validator::insert(string,cursor,ecursor,data);
       return;
       }
 
-    if(data=='0' && ((string.size()==1 && string[0]=='-') || string.size()==0)){
+    if(data=='0' && ((chars.size()==1 && chars[0]=='-') || chars.size()==0)){
       Validator::insert(string,cursor,ecursor,data);
       return;
       }
@@ -496,40 +490,39 @@ void LineEdit::IntValidator::insert(std::u16string &string,
 
   const size_t pos = cursor-1;
   if( data=='0'
-      && !(pos<string.size() && string[pos]=='-')
-      && !(string.size()==1 && string[0]=='0') ){
+      && !(pos<chars.size() && chars[pos]=='-')
+      && !(chars.size()==1  && chars[0  ]=='0') ){
     Validator::insert(string,cursor,ecursor,data);
     return;
     }
 
   if('1'<=data && data<='9'){
-    if(string.size()==1 && string[0]=='0'){
+    if(chars.size()==1 && chars[0]=='0'){
       string.clear();
       cursor  = 0;
-      ecursor = cursor;
+      ecursor = 0;
       }
     Validator::insert(string,cursor,ecursor,data);
     return;
     }
   }
 
-void LineEdit::IntValidator::erase(std::u16string &string,
-                                   size_t &scursor,
-                                   size_t &ecursor) const {
+void LineEdit::IntValidator::erase(TextModel &string,
+                                   size_t    &scursor,
+                                   size_t    &ecursor) const {
   Validator::erase(string,scursor,ecursor);
-  if(string.size()==1 && string[0]=='-')
-    string[0] = '0';
+  if(string.size()==1 && string.text()[0]=='-')
+    string.assign(u"0");
 
   if(string.empty())
-    string.push_back('0');
+    string.insert(0,u'0');
   }
 
-void LineEdit::IntValidator::assign(std::u16string &string,
+void LineEdit::IntValidator::assign(TextModel &string,
                                     const std::u16string &arg) const {
   if(arg.size()==0){
     if(string.size()==0){
-      string.resize(1);
-      string[0] = '0';
+      string.assign(u"0");
       }
     return;
     }
@@ -556,11 +549,10 @@ void LineEdit::IntValidator::assign(std::u16string &string,
     }
 
   if(good){
-    string = arg;
+    string.assign(arg);
     } else {
     if(string.size()==0){
-      string.resize(1);
-      string[0] = '0';
+      string.assign(u"0");
       }
     }
   }

@@ -3,7 +3,8 @@
 
 #include <Tempest/Widget>
 #include <Tempest/Font>
-#include <Tempest/Timer>
+#include <Tempest/TextModel>
+
 #include <string>
 
 namespace Tempest{
@@ -60,18 +61,18 @@ class LineEdit : public Tempest::Widget {
       public:
         virtual ~Validator(){}
 
-        virtual void insert(std::u16string& string, size_t& cursor, size_t &ecursor, const std::u16string& data) const;
-        virtual void insert(std::u16string& string, size_t& cursor, size_t &ecursor, char16_t data) const;
-        virtual void erase(std::u16string& string, size_t& scursor, size_t& ecursor) const;
-        virtual void assign(std::u16string& string, const std::u16string& arg) const;
+        virtual void insert(TextModel& string, size_t& cursor, size_t &ecursor, const std::u16string& data) const;
+        virtual void insert(TextModel& string, size_t& cursor, size_t &ecursor, char16_t data) const;
+        virtual void erase (TextModel& string, size_t& scursor, size_t& ecursor) const;
+        virtual void assign(TextModel& string, const std::u16string& arg) const;
       };
 
     class IntValidator : public Validator {
       public:
-        void insert(std::u16string& string, size_t& cursor, size_t &ecursor, const std::u16string& data) const;
-        void insert(std::u16string& string, size_t& cursor, size_t &ecursor, char16_t data) const;
-        void erase(std::u16string& string, size_t& scursor, size_t& ecursor) const;
-        void assign(std::u16string& string, const std::u16string &arg) const;
+        void insert(TextModel& string, size_t& cursor, size_t &ecursor, const std::u16string& data) const;
+        void insert(TextModel& string, size_t& cursor, size_t &ecursor, char16_t data) const;
+        void erase (TextModel& string, size_t& scursor, size_t& ecursor) const;
+        void assign(TextModel& string, const std::u16string &arg) const;
       };
 
     void setValidator(Validator* v);
@@ -84,30 +85,32 @@ class LineEdit : public Tempest::Widget {
     void mouseDragEvent(Tempest::MouseEvent &e);
 
     void paintEvent(Tempest::PaintEvent &p);
+    void resizeEvent(Tempest::SizeEvent& e);
 
     void keyDownEvent(Tempest::KeyEvent &e);
     void keyUpEvent(Tempest::KeyEvent &e);
 
     void focusEvent(Tempest::FocusEvent& e);
 
-    virtual void storeOldText();
     virtual void undo();
     virtual void redo();
     virtual void drawCursor(Painter& p, int x1, int x2, bool animState);
 
   private:
-    std::u16string txt, oldTxt, hnt;
+    TextModel      txt;
+    std::u16string hnt;
     mutable std::unique_ptr<Validator> mvalidator;
 
     Color tColor;
-    bool  tabChFocus;
+    bool  tabChFocus=0;
 
-    size_t sedit, eedit;
-    size_t oldSedit, oldEedit;
-    Tempest::Point sp, ep;
-    int scroll;
+    size_t pressPos =0;
+    size_t sedit    =0;
+    size_t eedit    =0;
 
-    Tempest::Font  fnt;
+    //Tempest::Point sp, ep;
+
+    int           scroll=0;
 
     bool isEdited;
     void updateSel();

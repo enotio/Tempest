@@ -1,48 +1,74 @@
 #ifndef TEXTMODEL_H
 #define TEXTMODEL_H
 
+#include <Tempest/Font>
+#include <Tempest/Utility>
+#include <Tempest/WidgetState>
+
 #include <string>
 #include <memory>
 
 namespace Tempest {
 
-class TextModel {
+class Font;
+
+class AbstractTextModel {
   public:
     enum {
       DefaultUndoStackLength=128
       };
-    TextModel();
-    virtual ~TextModel();
+    AbstractTextModel();
+    virtual ~AbstractTextModel();
 
-    const std::u16string& text() const;
+    virtual const std::u16string& text()  const = 0;
+    virtual size_t                size()  const;
+    inline  bool                  empty() const { return size()==0; }
 
-    void insert(size_t pos,const char16_t  ch);
-    void insert(size_t pos,const char16_t* ch);
-    void append(const char16_t* ch);
-    void erase (size_t pos,size_t sz);
+    void insert (size_t pos,const char16_t        ch );
+    void insert (size_t pos,const char16_t*       str);
+    void insert (size_t pos,const std::u16string& str);
+    void append (const char16_t* str);
+    void erase  (size_t pos,size_t sz);
+    void clear  ();
+    void replace(size_t pos,size_t sz,const char16_t*       str);
+    void replace(size_t pos,size_t sz,const std::u16string& str);
+    void assign (const char16_t*       str);
+    void assign (const std::u16string& str);
 
     void setMaxUndoSteps(size_t sz);
     bool undo();
+    bool redo();
+
+    void clearSteps();
+
+    const Font& defaultFont() const;
+    void        setDefaultFont(const Font& font);
+
+    void        setViewport(const Size& sz);
+    const Size& viewport() const;
+
+    size_t      cursorForPosition(const Point& pos, const WidgetState::EchoMode m) const;
+
+  protected:
+    virtual void rawInsert(size_t pos,const std::u16string& str)       = 0;
+    virtual void rawErase (size_t pos, size_t count, char16_t *outbuf) = 0;
 
   private:
-    struct Cmd;
-    struct InsChar;
-    struct RmChar;
-
     struct Cmd {
       virtual ~Cmd(){}
-      virtual void redo(TextModel& m) = 0;
-      virtual void undo(TextModel& m) = 0;
+      virtual void redo(AbstractTextModel& m) = 0;
+      virtual void undo(AbstractTextModel& m) = 0;
 
       std::unique_ptr<Cmd> next;
       };
 
     struct InsChar : Cmd {
-      InsChar(size_t pos,const char16_t  c);
-      InsChar(size_t pos,const char16_t* c);
+      InsChar(size_t pos,const char16_t        c);
+      InsChar(size_t pos,const char16_t*       c);
+      InsChar(size_t pos,const std::u16string& c);
 
-      void redo(TextModel& m);
-      void undo(TextModel& m);
+      void redo(AbstractTextModel& m) override;
+      void undo(AbstractTextModel& m) override;
 
       std::u16string val;
       size_t         pos;
@@ -51,10 +77,22 @@ class TextModel {
     struct RmChar : Cmd {
       RmChar(size_t pos,size_t sz);
 
-      void redo(TextModel& m);
-      void undo(TextModel& m);
+      void redo(AbstractTextModel& m) override;
+      void undo(AbstractTextModel& m) override;
 
       std::u16string val;
+      size_t         pos;
+      };
+
+    struct Replace : Cmd {
+      Replace(size_t pos,size_t sz,const char16_t*       str);
+      Replace(size_t pos,size_t sz,const std::u16string& str);
+
+      void redo(AbstractTextModel& m) override;
+      void undo(AbstractTextModel& m) override;
+
+      std::u16string val;
+      std::u16string old;
       size_t         pos;
       };
 
@@ -71,12 +109,26 @@ class TextModel {
 
     void exec(Cmd* c);
 
-    std::u16string data;
-    UndoQueue      undoList, redoList;
+    //InsChar*  insChain=nullptr;
+    UndoQueue undoList, redoList;
+    size_t    maxUndo=DefaultUndoStackLength;
 
-    size_t               maxUndo     =DefaultUndoStackLength;
+    Font      fnt;
+    Size      sz;
+    static const char16_t passChar;
   };
 
+class TextModel:public AbstractTextModel {
+  public:
+    const std::u16string& text() const override;
+
+  protected:
+    void rawInsert(size_t pos,const std::u16string& str) override;
+    void rawErase (size_t pos,size_t count,char16_t *outbuf) override;
+
+  private:
+    std::u16string data;
+  };
 }
 
 #endif // TEXTMODEL_H
