@@ -215,7 +215,7 @@ int WindowsAPI::nextEvents(bool &quit) {
       DispatchMessage ( &uMsg );
 
       if( uMsg.message==WM_QUIT )
-        r = uMsg.wParam;
+        r = int(uMsg.wParam);
       } else {
       for( auto i=wndWx.begin(); i!=wndWx.end(); ++i )
         render( i->second );
