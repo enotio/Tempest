@@ -159,10 +159,10 @@ namespace Detail{
 
     std::vector<bool> vAttrLoc;
 
-    int   vertexSize;
-    char* curVboOffsetIndex;
-    int   curIboOffsetIndex;
-    bool  isPainting;
+    GLsizei vertexSize;
+    char*   curVboOffsetIndex;
+    int     curIboOffsetIndex;
+    bool    isPainting;
 
     Tempest::RenderState renderState;
 

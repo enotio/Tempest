@@ -752,7 +752,7 @@ void Opengl2x::startTiledRender() const {
       }
 
     if(p-flg>0)
-      dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, p-flg, flg);
+      dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, GLsizei(p-flg), flg);
     errCk();
     } else
   if( dev->hasQCOMTiles ){
@@ -815,7 +815,7 @@ void Opengl2x::endTiledRender() const {
         }
 
       if(p-flg>0)
-        dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, p-flg, flg);
+        dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, GLsizei(p-flg), flg);
       errCk();
       }
     //dev->glDiscardFrameBuffer(GL_FRAMEBUFFER, 0,0);
@@ -1798,20 +1798,20 @@ void Opengl2x::setVertexDeclaration( AbstractAPI::Device *d,
     return;
 
   dev->decl       = (VertexDeclaration::Declarator*)de;
-  dev->vertexSize = vsize;
+  dev->vertexSize = GLsizei(vsize);
 
   if( dev->isPainting )
     setupAttrPtr( *dev->decl, 0, true, true, true );
   }
 
-void Opengl2x::bindVertexBuffer( AbstractAPI::Device *d,
+void Opengl2x::bindVertexBuffer(AbstractAPI::Device *d,
                                  AbstractAPI::VertexBuffer* b,
-                                 int vsize ) const {
+                                 size_t vsize ) const {
   if( !setDevice(d) ) return;
 
   dev->vbo        = *(GLuint*)b;
   dev->cVBO       = (Detail::GLBuffer*)b;
-  dev->vertexSize = vsize;
+  dev->vertexSize = GLsizei(vsize);
   }
 
 void Opengl2x::bindIndexBuffer( AbstractAPI::Device * d,
@@ -1888,7 +1888,7 @@ void Opengl2x::setupAttrPtr( const Tempest::VertexDeclaration::Declarator& vd,
       loc = vd.size()+vd[i].index;
       } else
     if( vd[i].attrName.size() ){
-      loc = vd.size()+vd.texCoordCount()+usrAttr;
+      loc = vd.size()+int( vd.texCoordCount() )+usrAttr;
       ++usrAttr;
       }
 

@@ -245,10 +245,10 @@ class AbstractAPI: public GraphicsSubsystem {
 
     virtual void bindVertexBuffer( AbstractAPI::Device *d,
                                    AbstractAPI::VertexBuffer*,
-                                   int vsize  ) const  = 0;
+                                   size_t vsize  ) const  = 0;
 
     virtual void bindIndexBuffer( AbstractAPI::Device *d,
-                                   AbstractAPI::IndexBuffer* ) const  = 0;
+                                  AbstractAPI::IndexBuffer* ) const  = 0;
 
     virtual AbstractShadingLang*
                  createShadingLang( AbstractAPI::Device * d    ) const = 0;

@@ -1155,9 +1155,9 @@ void DirectX11::setVertexDeclaration(AbstractAPI::Device *,
                                      size_t) const {
   }//NOP
 
-void DirectX11::bindVertexBuffer( AbstractAPI::Device *d,
+void DirectX11::bindVertexBuffer(AbstractAPI::Device *d,
                                   AbstractAPI::VertexBuffer *v,
-                                  int vsize ) const {
+                                  size_t vsize ) const {
 
   Device* dev = (Device*)d;
   ID3D11Buffer* b = (ID3D11Buffer*)v;

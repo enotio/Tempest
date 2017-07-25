@@ -134,7 +134,7 @@ class Opengl2x : public OpenGLBase {
 
     void bindVertexBuffer( AbstractAPI::Device *d,
                            AbstractAPI::VertexBuffer*,
-                           int vsize  ) const;
+                           size_t vsize  ) const;
     void bindIndexBuffer( AbstractAPI::Device *d,
                           AbstractAPI::IndexBuffer* ) const;
 

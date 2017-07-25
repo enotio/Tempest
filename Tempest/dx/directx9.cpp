@@ -744,7 +744,7 @@ AbstractAPI::VertexBuffer*
   int c = 100;
   // avoid false out of memory alarm
   while( !vbo && c>0 ){
-    if( FAILED( dev->CreateVertexBuffer( size*elSize,
+    if( FAILED( dev->CreateVertexBuffer( UINT(size*elSize),
                                          D3DUSAGE_WRITEONLY,
                                          0,
                                          D3DPOOL_DEFAULT,
@@ -776,7 +776,7 @@ AbstractAPI::IndexBuffer*
   int c = 100;
   // avoid false out of memory alarm
   while( !index && c>0 ){
-    if( FAILED( dev->CreateIndexBuffer( size*elSize,
+    if( FAILED( dev->CreateIndexBuffer( UINT(size*elSize),
                                         D3DUSAGE_WRITEONLY,
                                         D3DFMT_INDEX16,
                                         D3DPOOL_DEFAULT,
@@ -976,9 +976,9 @@ void DirectX9::setVertexDeclaration( AbstractAPI::Device *d,
   dev->SetVertexDeclaration( decl );
   }
 
-void DirectX9::bindVertexBuffer( AbstractAPI::Device *d,
+void DirectX9::bindVertexBuffer(AbstractAPI::Device *d,
                                  AbstractAPI::VertexBuffer* b,
-                                 int vsize ) const {
+                                 size_t vsize ) const {
   LPDIRECT3DDEVICE9 dev = Data::dev(d);
 
   HRESULT re =

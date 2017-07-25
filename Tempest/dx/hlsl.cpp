@@ -57,7 +57,7 @@ struct HLSL::Data{
     HRESULT result;
 
     result = D3DXCompileShader( src.data(),
-                                src.size(),
+                                UINT(src.size()),
                                 NULL,           //macro's
                                 NULL,           //includes
                                 "main",         //main function
