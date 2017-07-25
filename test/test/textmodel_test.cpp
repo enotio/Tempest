@@ -6,7 +6,6 @@
 using namespace testing;
 using namespace Tempest;
 
-
 TEST(all,TextModel0) {
   TextModel md;
   md.insert(0,u"some text");

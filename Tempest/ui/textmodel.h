@@ -21,6 +21,7 @@ class TextModel {
     void append(const char16_t* ch);
     void erase (size_t pos,size_t sz);
 
+    void setMaxUndoSteps(size_t sz);
     bool undo();
 
   private:
@@ -57,12 +58,22 @@ class TextModel {
       size_t         pos;
       };
 
-    void exec(Cmd* c);
-    void cutUndo(size_t max);
+    struct UndoQueue {
+      std::unique_ptr<Cmd> list;
+      size_t               size=0;
 
-    std::u16string       data;
-    std::unique_ptr<Cmd> undoList;
-    size_t               undoListSize=0;
+      void push(Cmd* c);
+      Cmd* pop();
+
+      void cut(size_t sz);
+      void clear();
+      };
+
+    void exec(Cmd* c);
+
+    std::u16string data;
+    UndoQueue      undoList, redoList;
+
     size_t               maxUndo     =DefaultUndoStackLength;
   };
 
