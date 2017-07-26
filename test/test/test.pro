@@ -9,7 +9,7 @@ CONFIG -= qt
 DESTDIR = ../bin
 
 INCLUDEPATH += ../../Tempest/include
-LIBS        += -L../../lib/ -lTempest
+LIBS        += -L../../lib/ -lTempest_gl
 
 win32-g++: {
   #QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++

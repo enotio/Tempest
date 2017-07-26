@@ -1,6 +1,7 @@
 #include "textmodel.h"
 
 #include <Tempest/Application>
+#include <locale>
 
 using namespace Tempest;
 
@@ -31,6 +32,7 @@ void AbstractTextModel::UndoQueue::cut(size_t max) {
     return;
     }
 
+  size=max;
   Cmd* cmd=list.get();
   for(size_t i=1;i<max;++i)
     cmd=cmd->next.get();
@@ -54,14 +56,36 @@ size_t AbstractTextModel::size() const {
   return text().size();
   }
 
-void AbstractTextModel::exec(AbstractTextModel::Cmd *c) {
+
+void AbstractTextModel::exec(AbstractTextModel::InsChar *c) {
+  if(exec(reinterpret_cast<Cmd*>(c)))
+    insChain=c;
+  }
+
+void AbstractTextModel::exec(AbstractTextModel::RmChar *c) {
+  if(exec(reinterpret_cast<Cmd*>(c)))
+    rmChain =c;
+  }
+
+bool AbstractTextModel::exec(AbstractTextModel::Cmd *c) {
+  clearChains();
+  redoList.clear();
+
   if(maxUndo>0) {
     undoList.cut(maxUndo-1);
     undoList.push(c);
     }
   c->redo(*this);
-  if(maxUndo==0)
+  if(maxUndo==0) {
     delete c;
+    return false;
+    }
+  return true;
+  }
+
+void AbstractTextModel::clearChains() {
+  insChain=nullptr;
+  rmChain =nullptr;
   }
 
 void AbstractTextModel::append(const char16_t *str) {
@@ -69,18 +93,39 @@ void AbstractTextModel::append(const char16_t *str) {
   }
 
 void AbstractTextModel::insert(size_t pos,const char16_t ch) {
+  if(insChain!=nullptr) {
+    if(insChain->patch(*this,pos,ch))
+      return;
+    insChain=nullptr;
+    }
   exec(new InsChar(pos,ch));
   }
 
 void AbstractTextModel::insert(size_t pos,const char16_t *str) {
+  if(str[0]=='\0')
+    return;
+  if(str[1]=='\0')
+    return insert(pos,str[0]);
   exec(new InsChar(pos,str));
   }
 
 void AbstractTextModel::insert(size_t pos, const std::u16string &str) {
+  if(str.size()==0)
+    return;
+  if(str.length()==1)
+    return insert(pos,str[0]);
   exec(new InsChar(pos,str));
   }
 
 void AbstractTextModel::erase(size_t pos, size_t sz) {
+  if(sz==0)
+    return;
+
+  if(rmChain!=nullptr) {
+    if(rmChain->patch(*this,pos,sz))
+      return;
+    rmChain=nullptr;
+    }
   exec(new RmChar(pos,sz));
   }
 
@@ -89,10 +134,14 @@ void AbstractTextModel::clear() {
   }
 
 void AbstractTextModel::replace(size_t pos, size_t sz, const char16_t *str) {
+  if(sz==0)
+    return insert(pos,str);
   exec(new Replace(pos,sz,str));
   }
 
 void AbstractTextModel::replace(size_t pos, size_t sz, const std::u16string &str) {
+  if(sz==0)
+    return insert(pos,str);
   exec(new Replace(pos,sz,str));
   }
 
@@ -108,6 +157,8 @@ void AbstractTextModel::setMaxUndoSteps(size_t sz) {
   maxUndo=sz;
   undoList.cut(maxUndo);
   redoList.cut(maxUndo);
+  if(maxUndo==0)
+    clearChains();
   }
 
 bool AbstractTextModel::undo() {
@@ -115,6 +166,7 @@ bool AbstractTextModel::undo() {
   if(!c)
     return false;
 
+  clearChains();
   c->undo(*this);
   redoList.cut(maxUndo-1);
   redoList.push(c);
@@ -126,15 +178,27 @@ bool AbstractTextModel::redo() {
   if(!c)
     return false;
 
+  clearChains();
   c->redo(*this);
   undoList.cut(maxUndo-1);
   undoList.push(c);
   return true;
   }
 
+size_t AbstractTextModel::availableUndoSteps() const {
+  return undoList.size;
+  }
+
+size_t AbstractTextModel::availableRedoSteps() const {
+  return redoList.size;
+  }
+
 void AbstractTextModel::clearSteps() {
   undoList.clear();
   redoList.clear();
+
+  insChain=nullptr;
+  rmChain =nullptr;
   }
 
 const Font &AbstractTextModel::defaultFont() const {
@@ -179,6 +243,14 @@ size_t AbstractTextModel::cursorForPosition(const Point &pos, const WidgetState:
   return txt.size();
   }
 
+AbstractTextModel::CharCategory AbstractTextModel::charCategory(const char16_t c) {
+  if(c==' ' || c=='\t')
+    return CC_Space;
+  if(c=='\r' || c=='\n')
+    return CC_LineBreak;
+  return CC_Normal;
+  }
+
 
 AbstractTextModel::InsChar::InsChar(size_t pos, const char16_t c) : pos(pos){
   val.push_back(c);
@@ -198,6 +270,18 @@ void AbstractTextModel::InsChar::undo(AbstractTextModel &m) {
   m.rawErase(pos,val.size(),nullptr);
   }
 
+bool AbstractTextModel::InsChar::patch(AbstractTextModel &m, size_t npos, const char16_t c) {
+  if(charCategory(c)!=charCategory(val.back()))
+    return false;
+
+  if(pos+val.size()==npos){
+    m.rawInsert(pos+val.size(),c);
+    val.push_back(c);
+    return true;
+    }
+  return false;
+  }
+
 AbstractTextModel::RmChar::RmChar(size_t pos, size_t sz) : pos(pos) {
   val.resize(sz);
   }
@@ -208,6 +292,25 @@ void AbstractTextModel::RmChar::redo(AbstractTextModel &m) {
 
 void AbstractTextModel::RmChar::undo(AbstractTextModel &m) {
   m.rawInsert(pos,val);
+  }
+
+bool AbstractTextModel::RmChar::patch(AbstractTextModel &m,size_t npos, size_t nsz) {
+  if(nsz!=1)
+    return false;
+
+  if(pos==npos) {
+    size_t oldSize=val.size();
+    val.resize(oldSize+nsz,'\0');
+    m.rawErase(pos,nsz,&val[oldSize]);
+    return true;
+    }
+  if(npos+nsz==pos){
+    val.insert(0,nsz,'\0');
+    m.rawErase(npos,nsz,&val[0]);
+    pos-=nsz;
+    return true;
+    }
+  return false;
   }
 
 AbstractTextModel::Replace::Replace(size_t pos,size_t sz,const char16_t *str) : val(str), old(sz,'\0'), pos(pos) {
@@ -229,6 +332,10 @@ void AbstractTextModel::Replace::undo(AbstractTextModel &m) {
 
 const std::u16string &TextModel::text() const {
   return data;
+  }
+
+void TextModel::rawInsert(size_t pos, const char16_t str) {
+  data.insert(pos,1,str);
   }
 
 void TextModel::rawInsert(size_t pos, const std::u16string &str) {
