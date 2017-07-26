@@ -24,22 +24,26 @@ class AbstractTextModel {
     virtual size_t                size()  const;
     inline  bool                  empty() const { return size()==0; }
 
-    void insert (size_t pos,const char16_t        ch );
-    void insert (size_t pos,const char16_t*       str);
-    void insert (size_t pos,const std::u16string& str);
-    void append (const char16_t* str);
-    void erase  (size_t pos,size_t sz);
-    void clear  ();
-    void replace(size_t pos,size_t sz,const char16_t*       str);
-    void replace(size_t pos,size_t sz,const std::u16string& str);
-    void assign (const char16_t*       str);
-    void assign (const std::u16string& str);
+    void        insert (size_t pos,const char16_t        ch );
+    void        insert (size_t pos,const char16_t*       str);
+    void        insert (size_t pos,const std::u16string& str);
+    void        append (const char16_t* str);
+    void        erase  (size_t pos,size_t sz);
+    void        clear  ();
+    void        replace(size_t pos,size_t sz,const char16_t*       str);
+    void        replace(size_t pos,size_t sz,const std::u16string& str);
+    void        assign (const char16_t*       str);
+    void        assign (const std::u16string& str);
 
-    void setMaxUndoSteps(size_t sz);
-    bool undo();
-    bool redo();
+    void        setMaxUndoSteps(size_t sz);
+    bool        undo();
+    bool        redo();
 
-    void clearSteps();
+    size_t      availableUndoSteps() const;
+    size_t      availableRedoSteps() const;
+
+    void        clearSteps();
+    void        clearChains();
 
     const Font& defaultFont() const;
     void        setDefaultFont(const Font& font);
@@ -50,6 +54,7 @@ class AbstractTextModel {
     size_t      cursorForPosition(const Point& pos, const WidgetState::EchoMode m) const;
 
   protected:
+    virtual void rawInsert(size_t pos,const char16_t        str)       = 0;
     virtual void rawInsert(size_t pos,const std::u16string& str)       = 0;
     virtual void rawErase (size_t pos, size_t count, char16_t *outbuf) = 0;
 
@@ -70,6 +75,8 @@ class AbstractTextModel {
       void redo(AbstractTextModel& m) override;
       void undo(AbstractTextModel& m) override;
 
+      bool patch(AbstractTextModel &m,size_t pos,const char16_t c);
+
       std::u16string val;
       size_t         pos;
       };
@@ -79,6 +86,8 @@ class AbstractTextModel {
 
       void redo(AbstractTextModel& m) override;
       void undo(AbstractTextModel& m) override;
+
+      bool patch(AbstractTextModel &m,size_t pos,size_t sz);
 
       std::u16string val;
       size_t         pos;
@@ -107,9 +116,19 @@ class AbstractTextModel {
       void clear();
       };
 
-    void exec(Cmd* c);
+    enum CharCategory {
+       CC_Normal,
+       CC_Space,
+       CC_LineBreak
+       };
+    static CharCategory charCategory(const char16_t c);
 
-    //InsChar*  insChain=nullptr;
+    void exec(InsChar* c);
+    void exec(RmChar*  c);
+    bool exec(Cmd*     c);
+
+    InsChar*  insChain=nullptr;
+    RmChar*   rmChain =nullptr;
     UndoQueue undoList, redoList;
     size_t    maxUndo=DefaultUndoStackLength;
 
@@ -123,7 +142,8 @@ class TextModel:public AbstractTextModel {
     const std::u16string& text() const override;
 
   protected:
-    void rawInsert(size_t pos,const std::u16string& str) override;
+    void rawInsert(size_t pos,const char16_t        str)     override;
+    void rawInsert(size_t pos,const std::u16string& str)     override;
     void rawErase (size_t pos,size_t count,char16_t *outbuf) override;
 
   private:
