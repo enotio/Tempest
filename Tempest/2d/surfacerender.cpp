@@ -548,6 +548,6 @@ void SurfaceRender::TextEngine::drawText(int x, int y, int w, int h,
   dText(x, y, w, h, s, align);
   }
 
-const Font::Letter &SurfaceRender::TextEngine::letter(const Font &f, wchar_t c) {
+const Font::Letter &SurfaceRender::TextEngine::letter(const Font &f, char16_t c) {
   return f.letter(c, p.sp);
   }

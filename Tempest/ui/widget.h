@@ -155,13 +155,14 @@ class Widget : public slot {
     const Style& style() const;
     void  setStyle(const Style *stl);
 
+    const WidgetState& state() const { return wstate; }
+
   protected:
     virtual void paintNested( Tempest::PaintEvent & p );
     void         focusNext();
     void         focusPrevious();
     virtual void focusTraverse(bool forward);
 
-    const WidgetState& state() const { return wstate; }
     virtual void       setWidgetState(const WidgetState& s);
 
   private:

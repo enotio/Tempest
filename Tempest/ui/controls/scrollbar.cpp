@@ -20,21 +20,6 @@ ScrollBar::ScrollBar(Tempest::Orientation ori) {
   alignCenBtn(-1, -1);
   }
 
-ScrollBar::ScrollBar(bool noUi, Tempest::Orientation ori) {
-  mvalue = 0;
-  msmallStep = 10;
-  mlargeStep = 20;
-
-  setRange(0, 100);
-  orient = Tempest::Orientation(-1);
-  setOrientation( ori );
-
-  if(!noUi)
-    setupUi();
-
-  onResize.bind( *this, &ScrollBar::alignCenBtn );
-  }
-
 void ScrollBar::setOrientation( Tempest::Orientation ori ) {
   if(orient==ori)
     return;
@@ -137,6 +122,40 @@ int ScrollBar::centralAreaSize() const {
     return w->w();
   }
 
+void ScrollBar::hideArrowButtons() {
+  arrUp->setVisible(false);
+  arrDw->setVisible(false);
+  }
+
+void ScrollBar::showArrawButtons() {
+  arrUp->setVisible(true);
+  arrDw->setVisible(true);
+  }
+
+void ScrollBar::paintEvent(PaintEvent &e) {
+  if(arrUp->isVisible()) {
+    Painter p(e);
+    if( orientation()==Vertical )
+      style().draw(p,this,Style::E_ArrowUp,  arrUp->state(),arrUp->rect(),Style::Extra(*arrUp)); else
+      style().draw(p,this,Style::E_ArrowLeft,arrUp->state(),arrUp->rect(),Style::Extra(*arrUp));
+    }
+
+  if(arrDw->isVisible()) {
+    Painter p(e);
+    if( orientation()==Vertical )
+      style().draw(p,this,Style::E_ArrowDown, arrDw->state(),arrDw->rect(),Style::Extra(*arrDw)); else
+      style().draw(p,this,Style::E_ArrowRight,arrDw->state(),arrDw->rect(),Style::Extra(*arrDw));
+    }
+
+  if(cenBtn->isVisible()) {
+    Painter p(e);
+    Rect r=cenBtn->rect();
+    r.x += cenBtn->owner()->x();
+    r.y += cenBtn->owner()->y();
+    style().draw(p,this,Style::E_CentralButton,cenBtn->state(),r,Style::Extra(*cenBtn));
+    }
+  }
+
 void ScrollBar::resizeEvent(Tempest::SizeEvent &) {
   updateView();
   }
@@ -151,47 +170,28 @@ void ScrollBar::mouseWheelEvent(MouseEvent &e) {
     incL();
   }
 
-Sprite ScrollBar::buttonIcon(bool /*inc*/) const {
-  return Sprite();
-  }
-
-Button *ScrollBar::createMoveButton(bool inc) {
-  MoveBtn* b = new MoveBtn(*this,inc);
-  onOrientationChanged.bind(b,&MoveBtn::setupIcon);
-  return b;
-  }
-
-Widget *ScrollBar::createCentralWidget() {
-  return new CentralWidget(*this);
-  }
-
-Widget *ScrollBar::createCentralButton() {
-  return new CentralButton();
-  }
-
 void ScrollBar::setupUi() {
   Tempest::SizePolicy p;
   p.typeH   = Tempest::FixedMax;
   p.typeV   = Tempest::FixedMax;
   p.maxSize = Tempest::Size(linearSize());
 
-  Widget* cen;
-  Button* btn[2];
-  btn[0] = createMoveButton(false);
-  btn[1] = createMoveButton(true);
-  cen    = createCentralWidget();
+  Widget*  cen;
 
-  for(int i=0; i<2; ++i){
-    btn[i]->setSizePolicy(p);
-    }
+  arrUp = new MoveBtn(*this,false);
+  arrDw = new MoveBtn(*this,true );
+  cen   = new CentralWidget(*this);
+
+  arrUp->setSizePolicy(p);
+  arrDw->setSizePolicy(p);
 
   layout().removeAll();
   layout().setMargin(0);
-  layout().add( btn[0] );
-  layout().add( cen );
-  layout().add( btn[1] );
+  layout().add( arrUp );
+  layout().add( cen   );
+  layout().add( arrDw );
 
-  cenBtn = createCentralButton();
+  cenBtn = new CentralButton();
   cenBtn->onPositionChange.bind( *this, &ScrollBar::updateValueFromView );
   cen->layout().add( cenBtn );
   }
@@ -232,11 +232,6 @@ void ScrollBar::updateValueFromView(int, int) {
     mvalue = nvalue;
     onValueChanged(nvalue);
     }
-  }
-
-void ScrollBar::assignCentralButton(Widget *btn) {
-  cenBtn = btn;
-  updateView();
   }
 
 int ScrollBar::linearSize() const {
@@ -301,6 +296,7 @@ void ScrollBar::CentralButton::mouseDownEvent(Tempest::MouseEvent &e) {
 
   mpos   = mapToRoot( e.pos() );
   oldPos = pos();
+  update();
   }
 
 void ScrollBar::CentralButton::mouseDragEvent(Tempest::MouseEvent &e) {
@@ -331,6 +327,7 @@ ScrollBar::CentralWidget::CentralWidget(ScrollBar &owner):owner(owner) {
   }
 
 void ScrollBar::CentralWidget::mouseDownEvent(Tempest::MouseEvent &) {
+  update();
   }
 
 void ScrollBar::CentralWidget::mouseUpEvent(Tempest::MouseEvent &e) {
@@ -361,8 +358,4 @@ void ScrollBar::MoveBtn::mouseDownEvent(MouseEvent &e) {
 void ScrollBar::MoveBtn::mouseUpEvent(MouseEvent &e) {
   Button::mouseUpEvent(e);
   owner.buttonScrollStop();
-  }
-
-void ScrollBar::MoveBtn::setupIcon(Orientation /*scrollBarOrientation*/) {
-  setIcon( owner.buttonIcon(dir) );
   }

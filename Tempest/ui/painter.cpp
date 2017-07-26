@@ -366,7 +366,7 @@ Font Painter::font() const {
   return dev.textEngine().font();
   }
 
-const Font::Letter &Painter::letter(const Font &f, wchar_t c) {
+const Font::Letter &Painter::letter(const Font &f, char16_t c) {
   return dev.textEngine().letter(f,c);
   }
 

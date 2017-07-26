@@ -25,9 +25,9 @@ LineEdit::LineEdit() {
   txt.setDefaultFont(fnt);
 
   SizePolicy p = sizePolicy();
-  p.maxSize.h = fnt.size() + fnt.size()/2;
-  p.minSize.h = p.maxSize.h;
-  p.typeV = FixedMax;
+  p.maxSize.h  = fnt.size() + fnt.size()/2;
+  p.minSize.h  = p.maxSize.h;
+  p.typeV      = FixedMax;
 
   setSizePolicy(p);
   }
@@ -75,9 +75,6 @@ void LineEdit::setText(const std::u16string &t) {
     v.assign(txt,t);
     txt.clearSteps();
 
-    sedit = std::max<size_t>(0, std::min(sedit, txt.size() ));
-    eedit = std::max<size_t>(0, std::min(eedit, txt.size() ));
-
     scroll = 0;
     onTextChanged(txt.text());
     update();
@@ -110,26 +107,24 @@ const std::u16string &LineEdit::hint() const {
   }
 
 size_t LineEdit::selectionBegin() const {
-  return sedit;
+  return txt.selectionBegin();
   }
 
 size_t LineEdit::selectionEnd()   const {
-  return eedit;
+  return txt.selectionEnd();
   }
 
 void LineEdit::setSelectionBounds(size_t begin, size_t end) {
-  if( begin > end )
-    std::swap(begin, end);
-
-  begin = std::min( txt.size(), begin );
-  end   = std::min( txt.size(), end   );
-
-  sedit = begin;
-  eedit = end;
+  txt.setSelectionBounds(begin,end);
   }
 
 void LineEdit::resetSelection() {
-  setSelectionBounds(sedit,sedit);
+  setSelectionBounds(selectionBegin(),selectionBegin());
+  }
+
+size_t LineEdit::cursorForPosition(const Point &pos) const {
+  const Margin& m = margin();
+  return txt.cursorForPosition(pos+Point(m.left,m.top),echoMode());
   }
 
 void LineEdit::setEditable(bool e) {
@@ -162,9 +157,8 @@ void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
   if(!isEnabled())
     return;
 
-  pressPos = txt.cursorForPosition(e.pos(),echoMode());
-  sedit    = pressPos;
-  eedit    = pressPos;
+  pressPos = cursorForPosition(e.pos());
+  txt.setSelectionBounds(pressPos,pressPos);
 
   updateSel();
   update();
@@ -178,14 +172,12 @@ void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
 void LineEdit::mouseDragEvent(MouseEvent &e) {
   if(!isEnabled())
     return;
-  size_t pos = txt.cursorForPosition(e.pos(),echoMode());
-  if( pressPos<=pos ){
-    sedit = pressPos;
-    eedit = pos;
-    } else {
-    sedit = pos;
-    eedit = pressPos;
-    }
+  const size_t pos = cursorForPosition(e.pos());
+
+  if( pressPos<=pos )
+    txt.setSelectionBounds(pressPos,pos);else
+    txt.setSelectionBounds(pos,pressPos);
+
   updateSel();
   update();
   }
@@ -202,8 +194,16 @@ void LineEdit::mouseMoveEvent(MouseEvent &) {
 
 void LineEdit::paintEvent( PaintEvent &e ) {
   Painter p(e);
-  style().draw(p,this,state(),Rect(0,0,w(),h()),Style::Extra(*this));
+  const Margin& m  = margin();
+  const Rect    sc = p.scissor();
 
+  p.setScissor(sc.intersected(Rect(m.left, 0, w()-m.xMargin(), h())));
+  p.translate(m.left,m.right);
+  txt.paint(p,textColor(),Color(0,0,1),state().echo);
+  p.translate(-m.left,-m.right);
+  p.setScissor(sc);
+
+  style().draw(p,this,Style::E_Background,state(),Rect(0,0,w(),h()),Style::Extra(*this));
   paintNested(e);
   }
 
@@ -214,8 +214,7 @@ void LineEdit::resizeEvent(SizeEvent&) {
 
 void LineEdit::undo() {
   txt.undo();
-  setSelectionBounds(sedit,eedit);
-  isEdited = 0;
+  isEdited = false;
 
   onTextChanged    (txt.text());
   onEditingFinished(txt.text());
@@ -225,8 +224,7 @@ void LineEdit::undo() {
 
 void LineEdit::redo() {
   txt.redo();
-  setSelectionBounds(sedit,eedit);
-  isEdited = 0;
+  isEdited = false;
 
   onTextChanged    (txt.text());
   onEditingFinished(txt.text());
@@ -256,24 +254,22 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
     return;
     }
 
-  /*
-  if( e.u16==' ' ){
-    storeOldText();
-    }*/
+  size_t sedit = txt.selectionBegin();
+  size_t eedit = txt.selectionEnd();
 
   const Validator& v = validator();
   if( e.key==KeyEvent::K_NoKey && isEditable() ){
-    if( sedit < eedit && eedit-sedit==txt.size() ){
+    if( eedit-sedit==txt.size() ){
       std::u16string tmp;
       tmp.resize(1);
       tmp[0] = e.u16;
       v.assign(txt,tmp);
-      sedit = txt.size();
-      eedit = sedit;
+      txt.setSelectionBounds(txt.size());
       } else {
       if( sedit < eedit )
-        v.erase(txt, sedit, eedit);
-      v.insert(txt,sedit, eedit,e.u16);
+        v.erase(txt,sedit,eedit);
+      v.insert(txt,sedit,eedit,e.u16);
+      txt.setSelectionBounds(sedit);
       }
 
     isEdited = true;
@@ -291,24 +287,22 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
 
   if( e.key==KeyEvent::K_Left ){
     if( sedit>0 )
-      --sedit;
-
-    eedit = sedit;
+      txt.setSelectionBounds(sedit-1);
     update();
     return;
     }
 
   if( e.key==KeyEvent::K_Right ){
     if( sedit<txt.size() )
-      ++sedit;
-
-    eedit = sedit;
+      txt.setSelectionBounds(sedit+1);
     update();
     return;
     }
 
   if( e.key==KeyEvent::K_Back && isEditable() ){
     v.erase( txt, sedit, eedit );
+    txt.setSelectionBounds(sedit,eedit);
+
     isEdited = true;
     onTextChanged( txt.text() );
     onTextEdited ( txt.text() );
@@ -322,6 +316,7 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
       ++eedit;
       }
     v.erase( txt, sedit, eedit );
+    txt.setSelectionBounds(sedit,eedit);
 
     isEdited = true;
     onTextChanged( txt.text() );
@@ -350,77 +345,13 @@ void LineEdit::focusEvent(FocusEvent &e) {
   }
 
 void LineEdit::updateSel() {
-  if(echoMode()==NoEcho){
-    sedit = txt.size();
-    eedit = sedit;
-    return;
-    }
-/*
-  Tempest::Point a = sp, b = ep;
-
-  if( a.x > b.x )
-    std::swap(a,b);
-
-  int x = scroll+margin().left, y = 0;
-  a.x = std::max(a.x,x);
-  b.x = std::max(b.x,x);
-
-  for( size_t i=0; i<txt.size(); ++i ){
-    const Font::LetterGeometry& l = fnt.letterGeometry(echoMode()==Normal ? txt[i] : passChar);
-
-    if( Tempest::Rect( x, 0,
-                       l.advance.x, h() ).contains(a,true) ){
-      if( a.x < x+l.advance.x/2 )
-        sedit = i; else
-        sedit = i+1;
-      }
-
-    x+= l.advance.x;
-    y+= l.advance.y;
-    }
-
-  if( Rect( x, y, w(), h() ).contains(a) ){
-    sedit = txt.size();
-    }
-
-  if( a.x >= w() ){
-    sedit = txt.size();
-    eedit = txt.size();
-    return;
-    }
-
-  x = scroll+margin().left;
-  y = 0;
-
-  if( b.x >= w() ){
-    eedit = txt.size();
-    return;
-    }
-
-  eedit = sedit;
-  for( size_t i=0; i<txt.size(); ++i ){
-    const Font::LetterGeometry& l = fnt.letterGeometry(echoMode()==Normal ? txt[i] : passChar);
-
-    if( Rect( x, 0,
-              l.advance.x, h() ).contains(b,true) ){
-      if( b.x < x+l.advance.x/2 )
-        eedit = i; else
-        eedit = i+1;
-      }
-
-    x+= l.advance.x;
-    y+= l.advance.y;
-    }
-
-  if( Rect( x, y,
-            w(), h() ).contains(b) ){
-    eedit = txt.size();
-    }*/
+  if(echoMode()==NoEcho)
+    txt.setSelectionBounds(txt.size(),txt.size());
   }
 
 void LineEdit::storeText() {
   if( isEdited ){
-    isEdited = 0;
+    isEdited = false;
     onEditingFinished( txt.text() );
     }
   }

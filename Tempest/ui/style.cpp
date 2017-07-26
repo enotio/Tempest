@@ -62,12 +62,12 @@ void Style::unpolish(Widget&) const {
   polished--;
   }
 
-void Style::draw(Painter& ,Widget*, const WidgetState&, const Rect &, const Extra&) const {
+void Style::draw(Painter& ,Widget*, Element, const WidgetState&, const Rect &, const Extra&) const {
   }
 
-void Style::draw(Painter &p, Panel* w, const WidgetState &st, const Rect &r, const Extra& extra) const {
+void Style::draw(Painter &p, Panel* w, Element e, const WidgetState &st, const Rect &r, const Extra& extra) const {
   if(parent)
-    return parent->draw(p,w,st,r,extra);
+    return parent->draw(p,w,e,st,r,extra);
 
   p.setBlendMode(alphaBlend);
   p.translate(r.x,r.y);
@@ -86,9 +86,9 @@ void Style::draw(Painter &p, Panel* w, const WidgetState &st, const Rect &r, con
   p.translate(-r.x,-r.y);
   }
 
-void Style::draw(Painter& p, Button *w, const WidgetState &st, const Rect &r, const Extra &extra) const {
+void Style::draw(Painter& p, Button *w, Element e, const WidgetState &st, const Rect &r, const Extra &extra) const {
   if(parent)
-    return parent->draw(p,w,st,r,extra);
+    return parent->draw(p,w,e,st,r,extra);
 
   p.setBlendMode( Tempest::alphaBlend );
   p.translate(r.x,r.y);
@@ -102,7 +102,7 @@ void Style::draw(Painter& p, Button *w, const WidgetState &st, const Rect &r, co
     if( st.pressed )
       p.setColor(Color(0.4f,0.4f,0.45f,0.75f)); else
       p.setColor(Color(0.8f,0.8f,0.85f,0.75f));
-    p.drawRect(r);
+    p.drawRect(0,0,r.w,r.h);
     p.setColor(c);
     }
 
@@ -146,9 +146,9 @@ void Style::draw(Painter& p, Button *w, const WidgetState &st, const Rect &r, co
   p.translate(r.x,r.y);
   }
 
-void Style::draw(Painter &p, CheckBox *w, const WidgetState &st, const Rect &r, const Style::Extra &extra) const {
+void Style::draw(Painter &p, CheckBox *w, Element e, const WidgetState &st, const Rect &r, const Style::Extra &extra) const {
   if(parent)
-    return parent->draw(p,w,st,r,extra);
+    return parent->draw(p,w,e,st,r,extra);
 
   const int  s  = std::min(r.w,r.h);
   const Size sz = Size(s,s);
@@ -193,9 +193,9 @@ void Style::draw(Painter &p, CheckBox *w, const WidgetState &st, const Rect &r, 
              Tempest::AlignHCenter|Tempest::AlignVCenter );
   }
 
-void Style::draw(Painter &p, Label *w, const WidgetState &st, const Rect &r, const Style::Extra &extra) const {
+void Style::draw(Painter &p, Label *w, Element e, const WidgetState &st, const Rect &r, const Style::Extra &extra) const {
   if(parent)
-    return parent->draw(p,w,st,r,extra);
+    return parent->draw(p,w,e,st,r,extra);
 
   const Margin& m   = extra.margin;
 
@@ -213,83 +213,14 @@ void Style::draw(Painter &p, Label *w, const WidgetState &st, const Rect &r, con
   p.translate(-r.x,-r.y);
   }
 
-void Style::draw(Painter &p, LineEdit *w, const WidgetState &st, const Rect &r, const Style::Extra &extra) const {
+void Style::draw(Painter &p, LineEdit *w, Element e, const WidgetState &st, const Rect &r, const Style::Extra &extra) const {
   if(parent)
-    return parent->draw(p,w,st,r,extra);
+    return parent->draw(p,w,e,st,r,extra);
+  // drawCursor(p,(ssel==esel),st,sx+oldSc,x-sx,r.h,anim);
+  }
 
-  const char16_t passChar='*';
-
-  const bool editable=st.editable;
-  const auto emode   =st.echo;
-  const bool anim    =true;
-  const int  scroll  =0;
-
-  if(emode==LineEdit::NoEcho)
-    return;
-
-  p.setFont( extra.font );
-
-  const Margin& m = extra.margin;
-  int x = m.left, y = 0;
-
-  size_t ssel = w ? w->selectionBegin() : 0;
-  size_t esel = w ? w->selectionEnd()   : 0;
-
-  if( ssel>esel )
-    std::swap(ssel,esel);
-
-  for( size_t i=0; i<ssel && i<extra.txt.size(); ++i ){
-    const Font::Letter& l = emode==LineEdit::Normal ? p.letter(extra.font,extra.txt[i]) : p.letter(extra.font,passChar);
-    x+= l.advance.x;
-    y+= l.advance.y;
-    }
-
-  int sx = x;
-
-  for( size_t i=ssel;i<esel && i<extra.txt.size(); ++i ){
-    const Font::Letter& l = emode==LineEdit::Normal ? p.letter(extra.font,extra.txt[i]) : p.letter(extra.font,passChar);
-    x+= l.advance.x;
-    y+= l.advance.y;
-    }
-
-  int oldSc = scroll;
-  if( editable && sx==x ){
-    --sx;
-    int clientW = r.w-m.xMargin();
-    int delta = 0;
-    if( x+oldSc > clientW ){
-      delta = clientW - (x+oldSc);
-      }
-
-    if( x+oldSc < m.left ){
-      delta = -(x+oldSc-m.left);
-      }
-
-    //scroll += delta;
-    sx     += delta;
-    x      += delta;
-    x += 1;
-    }
-
-  drawCursor(p,(ssel==esel),st,sx+oldSc,x-sx,r.h,anim);
-
-  p.setColor(extra.fontColor);
-  int dY = (r.h-extra.font.size()-m.yMargin())/2;
-  Rect sc = p.scissor();
-  p.setScissor(sc.intersected(Rect(m.left, 0, r.w-m.xMargin(), r.h)));
-  if(emode==LineEdit::Normal){
-    p.drawText( scroll+m.left, m.top+dY, r.w-m.xMargin()-scroll, extra.font.size(),
-                extra.txt, AlignBottom );
-    } else {
-    const Font::Letter& l = p.letter(extra.font,passChar);
-    int x=scroll+m.left, y = m.top+dY;
-    char16_t ch[2]={passChar,'\0'};
-    for(size_t i=0;i<extra.txt.size();++i){
-      p.drawText(x,y,ch);
-      x+= l.advance.x;
-      y+= l.advance.y;
-      }
-    }
+void Style::draw(Painter &p, ScrollBar*, Element e, const WidgetState &st, const Rect &r, const Style::Extra &extra) const {
+  draw(p,static_cast<Button*>(nullptr),e,st,r,extra);
   }
 
 void Style::drawCursor(Painter &p,bool emptySel, const WidgetState &st,int x1,int x2,int h,bool animState) {

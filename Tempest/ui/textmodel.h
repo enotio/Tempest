@@ -11,6 +11,7 @@
 namespace Tempest {
 
 class Font;
+class Painter;
 
 class AbstractTextModel {
   public:
@@ -51,7 +52,15 @@ class AbstractTextModel {
     void        setViewport(const Size& sz);
     const Size& viewport() const;
 
+    size_t      selectionBegin() const;
+    size_t      selectionEnd()   const;
+
+    void        setSelectionBounds( size_t both ){ setSelectionBounds(both,both); }
+    void        setSelectionBounds( size_t begin, size_t end );
+
     size_t      cursorForPosition(const Point& pos, const WidgetState::EchoMode m) const;
+    Point       positionForCursor(size_t i, const WidgetState::EchoMode m) const;
+    void        paint(Tempest::Painter& p, const Color &fcolor, const Color &sel, const WidgetState::EchoMode echoMode) const;
 
   protected:
     virtual void rawInsert(size_t pos,const char16_t        str)       = 0;
@@ -59,11 +68,17 @@ class AbstractTextModel {
     virtual void rawErase (size_t pos, size_t count, char16_t *outbuf) = 0;
 
   private:
+    struct Sel {
+      size_t b=0;
+      size_t e=0;
+      };
+
     struct Cmd {
       virtual ~Cmd(){}
       virtual void redo(AbstractTextModel& m) = 0;
       virtual void undo(AbstractTextModel& m) = 0;
 
+      Sel                  sel;
       std::unique_ptr<Cmd> next;
       };
 
@@ -121,6 +136,7 @@ class AbstractTextModel {
        CC_Space,
        CC_LineBreak
        };
+
     static CharCategory charCategory(const char16_t c);
 
     void exec(InsChar* c);
@@ -129,11 +145,13 @@ class AbstractTextModel {
 
     InsChar*  insChain=nullptr;
     RmChar*   rmChain =nullptr;
-    UndoQueue undoList, redoList;
     size_t    maxUndo=DefaultUndoStackLength;
+    UndoQueue undoList, redoList;
 
     Font      fnt;
     Size      sz;
+
+    Sel       selection;
     static const char16_t passChar;
   };
 

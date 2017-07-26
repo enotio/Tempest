@@ -53,6 +53,7 @@ class LineEdit : public Tempest::Widget {
 
     virtual void setSelectionBounds( size_t begin, size_t end );
     void         resetSelection();
+    size_t       cursorForPosition(const Point &pos) const ;
 
     bool         isEditable() const;
     virtual void setEditable( bool e );
@@ -101,22 +102,17 @@ class LineEdit : public Tempest::Widget {
     std::u16string hnt;
     mutable std::unique_ptr<Validator> mvalidator;
 
-    Color tColor;
-    bool  tabChFocus=0;
+    Color  tColor;
+    bool   tabChFocus=0;
 
-    size_t pressPos =0;
-    size_t sedit    =0;
-    size_t eedit    =0;
+    size_t pressPos=0;
+    int    scroll  =0;
 
-    //Tempest::Point sp, ep;
+    bool   isEdited=false;
+    void   updateSel();
 
-    int           scroll=0;
-
-    bool isEdited;
-    void updateSel();
-
-    void storeText();
-    void setWidgetState(const WidgetState& s);
+    void   storeText();
+    void   setWidgetState(const WidgetState& s);
 
     static const int      cursorFlashTime;
     static const char16_t passChar;

@@ -22,45 +22,42 @@ class ScrollBar : public Tempest::Widget {
     void    setRange( int min, int max );
     int64_t range() const;
 
-    int minValue() const;
-    int maxValue() const;
+    int     minValue() const;
+    int     maxValue() const;
 
-    void setValue( int v );
-    int  value() const;
+    void    setValue( int v );
+    int     value() const;
 
-    int smallStep() const;
-    int largeStep() const;
+    int     smallStep() const;
+    int     largeStep() const;
 
-    void setSmallStep(int step);
-    void setLargeStep(int step);
+    void    setSmallStep(int step);
+    void    setLargeStep(int step);
 
-    void setCentralButtonSize( int sz );
-    int  centralAreaSize() const;
+    void    setCentralButtonSize( int sz );
+    int     centralAreaSize() const;
+
+    void    hideArrowButtons();
+    void    showArrawButtons();
 
     Tempest::signal<int> onValueChanged;
 
   protected:
-    ScrollBar(bool noUi, Tempest::Orientation ori = Tempest::Vertical);
+    void paintEvent     ( Tempest::PaintEvent& e );
+    void resizeEvent    ( Tempest::SizeEvent&  e );
+    void mouseWheelEvent( Tempest::MouseEvent& e );
 
-    void resizeEvent( Tempest::SizeEvent& e );
-    void mouseWheelEvent(Tempest::MouseEvent& e);
+    virtual int linearSize() const;
 
-    virtual Sprite  buttonIcon(bool inc) const;
-    virtual Button* createMoveButton(bool inc);
-    virtual Widget* createCentralWidget();
-    virtual Widget* createCentralButton();
-    virtual void    setupUi();
+  private:
+    void            setupUi();
     void            updateValueFromView(int,int);
-    void            assignCentralButton(Widget* btn);
-    virtual int     linearSize() const;
 
     struct MoveBtn: Button {
       MoveBtn(ScrollBar& owner, bool dir):owner(owner), dir(dir){}
 
       void mouseDownEvent(Tempest::MouseEvent& e);
       void mouseUpEvent(Tempest::MouseEvent& e);
-
-      void setupIcon(Tempest::Orientation scrollBarOrientation);
 
       ScrollBar& owner;
       const bool dir;
@@ -103,7 +100,9 @@ class ScrollBar : public Tempest::Widget {
     void alignCenBtn(int, int);
 
     Widget * cenBtn = nullptr;
-    int cenBtnSize = 40;
+    Widget * arrUp  = nullptr;
+    Widget * arrDw  = nullptr;
+    int      cenBtnSize = 40;
 
     void buttonScrollStart(bool up);
     void buttonScrollStop();

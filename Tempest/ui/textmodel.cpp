@@ -1,6 +1,7 @@
 #include "textmodel.h"
 
 #include <Tempest/Application>
+#include <Tempest/Painter>
 #include <locale>
 
 using namespace Tempest;
@@ -80,6 +81,7 @@ bool AbstractTextModel::exec(AbstractTextModel::Cmd *c) {
     delete c;
     return false;
     }
+  c->sel = selection;
   return true;
   }
 
@@ -168,6 +170,8 @@ bool AbstractTextModel::undo() {
 
   clearChains();
   c->undo(*this);
+  selection=c->sel;
+
   redoList.cut(maxUndo-1);
   redoList.push(c);
   return true;
@@ -213,13 +217,37 @@ void AbstractTextModel::setViewport(const Size &s) {
   sz = s;
   }
 
-const Size &AbstractTextModel::viewport() const {
+const Size& AbstractTextModel::viewport() const {
   return sz;
+  }
+
+size_t AbstractTextModel::selectionBegin() const {
+  const size_t sz=size();
+  if(selection.b<=sz)
+    return selection.b;
+  return sz;
+  }
+
+size_t AbstractTextModel::selectionEnd() const {
+  const size_t sz=size();
+  if(selection.e<=sz)
+    return selection.e;
+  return sz;
+  }
+
+void AbstractTextModel::setSelectionBounds(size_t begin, size_t end) {
+  if( begin<end ){
+    selection.b=begin;
+    selection.e=end;
+    } else {
+    selection.b=end;
+    selection.e=begin;
+    }
   }
 
 size_t AbstractTextModel::cursorForPosition(const Point &pos, const WidgetState::EchoMode echoMode) const {
   const std::u16string& txt=text();
-  int    x=0,y=0;
+  int   x=0,y=0;
 
   if(pos.x<=0)
     return 0;
@@ -228,7 +256,8 @@ size_t AbstractTextModel::cursorForPosition(const Point &pos, const WidgetState:
     return txt.size();
 
   for( size_t i=0; i<txt.size(); ++i ) {
-    const Font::LetterGeometry& l = fnt.letterGeometry(echoMode==WidgetState::Normal ? txt[i] : passChar);
+    const char16_t              ch = echoMode==WidgetState::Normal ? txt[i] : passChar;
+    const Font::LetterGeometry& l  = fnt.letterGeometry(ch);
 
     if( x<=pos.x && pos.x<=x+l.advance.x ){ //Tempest::Rect(x,0,l.advance.x,fnt.size()).contains(pos,true) ){
       if( pos.x < x+l.advance.x/2 )
@@ -241,6 +270,65 @@ size_t AbstractTextModel::cursorForPosition(const Point &pos, const WidgetState:
     }
 
   return txt.size();
+  }
+
+Point AbstractTextModel::positionForCursor(size_t id, const WidgetState::EchoMode echoMode) const {
+  const std::u16string& txt=text();
+  int   x=0,y=0;
+
+  if( id>txt.size() )
+    id=txt.size();
+
+  for( size_t i=0; i<id; ++i ) {
+    const char16_t              ch = echoMode==WidgetState::Normal ? txt[i] : passChar;
+    const Font::LetterGeometry& l  = fnt.letterGeometry(ch);
+
+    x+= l.advance.x;
+    y+= l.advance.y;
+    }
+
+  return Point(x,y);
+  }
+
+void AbstractTextModel::paint(Painter &p,const Color& fcolor,const Color& sel,const WidgetState::EchoMode echoMode) const {
+  const std::u16string& txt=text();
+  if(echoMode==WidgetState::NoEcho || txt.size()==0)
+    return;
+
+  const int invR=int(fcolor.r()*255)^int(sel.r()*255);
+  const int invG=int(fcolor.g()*255)^int(sel.g()*255);
+  const int invB=int(fcolor.b()*255)^int(sel.b()*255);
+
+  const Color inv=Color(invR/255.f,invG/255.f,invB/255.f,fcolor.a());
+
+  const int lineHeight = fnt.size();
+  int x=0,y=0;
+
+  p.setBlendMode(alphaBlend);
+
+  const int selX=positionForCursor(selection.b,echoMode).x;
+  const int selW=positionForCursor(selection.e,echoMode).x-selX;
+
+  p.unsetTexture();
+  p.setColor(sel);
+  p.drawRect(selX,0,selW,lineHeight);
+
+  p.setColor(fcolor);
+  for( size_t i=0; i<txt.size(); ++i ) {
+    const char16_t      ch = echoMode==WidgetState::Normal ? txt[i] : passChar;
+    const Font::Letter& lt = p.letter(fnt,ch);
+
+    if( selection.b<=i && i<selection.e )
+      p.setColor(inv); else
+      p.setColor(fcolor);
+
+    p.setTexture(lt.surf);
+    p.drawRect(x+lt.dpos.x,y+lt.dpos.y,lt.size.w,lt.size.h);
+
+    x+= lt.advance.x;
+    y+= lt.advance.y;
+    }
+
   }
 
 AbstractTextModel::CharCategory AbstractTextModel::charCategory(const char16_t c) {

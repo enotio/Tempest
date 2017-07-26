@@ -112,7 +112,7 @@ class SurfaceRender {
       void drawText( int x, int y, int w, int h,
                      const char*,
                      int align = Tempest::NoAlign );
-      const Font::Letter& letter( const Font &f, wchar_t c );
+      const Font::Letter& letter( const Font &f, char16_t c );
       PaintDev & p;
       Tempest::Font fnt;
       std::vector<Tempest::Font> state_stk;

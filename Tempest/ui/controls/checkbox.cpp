@@ -64,7 +64,7 @@ bool CheckBox::isTristate() const {
 
 void CheckBox::paintEvent( Tempest::PaintEvent &e ) {
   Tempest::Painter p(e);
-  style().draw(p,this,Button::state(),Rect(0,0,w(),h()),Style::Extra(*this));
+  style().draw(p,this,Style::E_Background,Button::state(),Rect(0,0,w(),h()),Style::Extra(*this));
 
   paintNested(e);
   }

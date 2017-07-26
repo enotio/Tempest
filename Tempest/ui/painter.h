@@ -160,7 +160,7 @@ class Painter {
     void setFont( const std::string & f, int sz );
     void setFont( const Font &f );
     Font font() const;
-    const Font::Letter& letter( const Font &f, wchar_t c );
+    const Font::Letter& letter( const Font &f, char16_t c );
 
     void drawText( int x, int y, int w, int h,
                    const char* str,

@@ -22,6 +22,8 @@ class  Panel;
 class  Label;
 class  LineEdit;
 
+class  ScrollBar;
+
 class Style {
   public:
     Style();
@@ -49,14 +51,27 @@ class Style {
         static const Tempest::Color  emptyColor;
       };
 
+    enum Element {
+      E_Background,
+      E_ArrowUp,
+      E_ArrowDown,
+      E_ArrowLeft,
+      E_ArrowRight,
+      E_CentralButton
+      };
+
     void setParent(const Style* stl);
 
-    virtual void draw(Painter& p, Widget*   w, const WidgetState& st, const Rect& r, const Extra& extra) const;
-    virtual void draw(Painter& p, Panel *   w, const WidgetState& st, const Rect& r, const Extra& extra) const;
-    virtual void draw(Painter& p, Button*   w, const WidgetState& st, const Rect& r, const Extra& extra) const;
-    virtual void draw(Painter& p, CheckBox* w, const WidgetState& st, const Rect& r, const Extra& extra) const;
-    virtual void draw(Painter& p, Label*    w, const WidgetState& st, const Rect& r, const Extra& extra) const;
-    virtual void draw(Painter& p, LineEdit* w, const WidgetState& st, const Rect& r, const Extra& extra) const;
+    virtual void draw(Painter& p, Widget*   w, Element e, const WidgetState& st, const Rect& r, const Extra& extra) const;
+    virtual void draw(Painter& p, Panel *   w, Element e, const WidgetState& st, const Rect& r, const Extra& extra) const;
+    virtual void draw(Painter& p, Button*   w, Element e, const WidgetState& st, const Rect& r, const Extra& extra) const;
+    virtual void draw(Painter& p, CheckBox* w, Element e, const WidgetState& st, const Rect& r, const Extra& extra) const;
+    virtual void draw(Painter& p, Label*    w, Element e, const WidgetState& st, const Rect& r, const Extra& extra) const;
+    virtual void draw(Painter& p, LineEdit* w, Element e, const WidgetState& st, const Rect& r, const Extra& extra) const;
+
+    // complex
+    virtual void draw(Painter& p, ScrollBar* w, Element e, const WidgetState& st, const Rect& r, const Extra& extra) const;
+
 
   protected:
     virtual void polish  (Widget& w) const;
