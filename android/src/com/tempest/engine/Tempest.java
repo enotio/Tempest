@@ -43,6 +43,7 @@ public class Tempest {
       @Override
       public void run() {
         invokeMainImpl(nativePath + "/libmain.so");
+        System.exit(0);
         }
       });
     _mMainThread.setName("main");

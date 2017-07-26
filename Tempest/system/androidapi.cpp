@@ -75,7 +75,6 @@ static struct Android {
   Jni::Object applicationObject;
 
   pthread_mutex_t appMutex, assetsPreloadedMutex;
-  pthread_t       mainThread;
 
   int (*mainFunc)(int,char**) = nullptr;
   std::string mainFnArgs;
@@ -139,6 +138,14 @@ static struct Android {
     return msg.size();
     }
 
+  void waitForQueue(){
+    while(true){
+      if(msgSize()==0)
+        return;
+      sleep();
+      }
+    }
+
   Message takeMsg(){
     Guard g( appMutex );
     (void)g;
@@ -158,8 +165,8 @@ static struct Android {
   std::unordered_map< std::string, std::unique_ptr< std::vector<char>> > asset_files;
 
   AAsset* open( const std::string& a ){
-    JNIEnv * env = 0;
-    vm->AttachCurrentThread( &env, NULL);
+    //JNIEnv * env = 0;
+    //vm->AttachCurrentThread( &env, NULL);
 
     AAsset* asset = AAssetManager_open(assets, a.c_str(), AASSET_MODE_UNKNOWN);
     return asset;
@@ -212,8 +219,6 @@ static struct Android {
     }
 
   SystemAPI::Window *createWindow();
-
-  void waitForQueue();
   } android;
 
 using namespace Tempest;
@@ -551,14 +556,6 @@ static Tempest::KeyEvent makeKeyEvent( int32_t k, bool scut = false ){
 
 static void render();
 
-void Android::waitForQueue() {
-  while( android.wndWx.empty() ){
-    size_t s = android.msgSize();
-    if( s==0 )
-      return;
-    }
-  }
-
 int AndroidAPI::nextEvents(bool &quit) {
   int r = 0;
   while( !quit ){
@@ -894,11 +891,8 @@ static void JNICALL onKeyUpEvent(JNIEnv* , jobject, jint key ) {
     }
   }
 
-static void JNICALL onKeyCharEvent( JNIEnv* , jobject,
+static void JNICALL onKeyCharEvent( JNIEnv* env, jobject,
                                     jstring k ) {
-  JNIEnv * env = 0;
-  android.vm->AttachCurrentThread( &env, NULL);
-
   const char* str = env->GetStringUTFChars( k, 0);
   if( str ){
     std::u16string s16 = SystemAPI::toUtf16(str);
@@ -915,6 +909,7 @@ static void JNICALL onKeyCharEvent( JNIEnv* , jobject,
 
 static jint JNICALL nativeCloseEvent( JNIEnv* , jobject ){
   android.pushMsg( Android::MSG_CLOSE );
+  android.waitForQueue();
   return 1;
   }
 
