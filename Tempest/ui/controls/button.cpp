@@ -172,7 +172,8 @@ void Button::focusEvent(FocusEvent& e) {
 
 void Button::paintEvent( Tempest::PaintEvent &e ) {
   Tempest::Painter p(e);
-  style().draw(p,this,Style::E_Background,state(),Rect(0,0,w(),h()),Style::Extra(*this));
+  style().draw(p,this,  Style::E_Background,  state(),Rect(0,0,w(),h()),Style::Extra(*this));
+  style().draw(p,text(),Style::TE_ButtonTitle,state(),Rect(0,0,w(),h()),Style::Extra(*this));
 
   paintNested(e);
   }

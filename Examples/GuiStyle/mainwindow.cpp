@@ -31,8 +31,6 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
   Application::showHint.bind(*this,&MainWindow::setHint);
   Application::setMainFont(Font("data/arial",16));
 
-  texture = texHolder.load("data/texture.png");
-
   for(int i=0; i<5; ++i )
     listBoxItems.emplace_back("item "+std::to_string(i));
 
@@ -69,7 +67,6 @@ Widget *MainWindow::createPage() {
   button = new CheckBox();
   button->setText("Checkbox");
   button->setHint("checkbox hint");
-  button->setIcon(Icon("data/icon.png",spHolder));
   panel->layout().add(button);
 
   Label* label = new Label();
@@ -98,9 +95,6 @@ Widget *MainWindow::createPage() {
 void MainWindow::paintEvent(PaintEvent &e) {
   Painter p(e);
 
-  p.setTexture(texture);
-  p.drawRect( Rect(100,100, 256, 256), texture.rect() );
-
   p.setFont( Application::mainFont() );
   p.drawText(100, 80, hint);
 
@@ -118,7 +112,7 @@ void MainWindow::render() {
   if( needToUpdate() )
     uiRender.buildWindowVbo(*this, vboHolder, iboHolder, spHolder);
 
-  device.clear( Color(0,0,1), 1 );
+  device.clear( Color(225/255.0f), 1 );
 
   device.beginPaint();
   device.draw( uiRender );

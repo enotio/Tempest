@@ -3,6 +3,7 @@
 
 #include <Tempest/Style>
 #include <Tempest/Color>
+#include <Tempest/Font>
 
 class CustomStyle : public Tempest::Style {
   public:
@@ -14,8 +15,14 @@ class CustomStyle : public Tempest::Style {
 
     void draw(Tempest::Painter& p, Tempest::Button *w, Element e, const Tempest::WidgetState &st,
               const Tempest::Rect &r, const Extra &extra) const;
+    void draw(Tempest::Painter& p, Tempest::CheckBox *w, Element e, const Tempest::WidgetState &st,
+              const Tempest::Rect &r, const Extra &extra) const;
     void draw(Tempest::Painter& p, Tempest::Panel *w, Element e, const Tempest::WidgetState &st,
               const Tempest::Rect &r, const Extra &extra) const;
+
+    void draw(Tempest::Painter& p, const std::u16string& text,TextElement te,
+              const Tempest::WidgetState& st,
+              const Tempest::Rect& r, const Extra& extra) const;
 
   private:
     enum {
@@ -27,6 +34,8 @@ class CustomStyle : public Tempest::Style {
     Tempest::Color prime [ClCount];
     Tempest::Color second[ClCount];
     Tempest::Color border;
+
+    Tempest::Font  font;
 
     void mkColor(Tempest::Color* dest,const Tempest::Color& src);
   };

@@ -48,7 +48,8 @@ void Label::setText(const std::u16string &t) {
 
 void Label::paintEvent(PaintEvent &e) {
   Painter p(e);
-  style().draw(p,this,Style::E_Background,state(),Rect(0,0,w(),h()),Style::Extra(*this));
+  style().draw(p,this,  Style::E_Background, state(),Rect(0,0,w(),h()),Style::Extra(*this));
+  style().draw(p,text(),Style::TE_LabelTitle,state(),Rect(0,0,w(),h()),Style::Extra(*this));
 
   paintNested(e);
   }

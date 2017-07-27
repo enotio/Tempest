@@ -32,8 +32,6 @@ class MainWindow:public Tempest::Window {
 
     Tempest::ShaderProgramHolder  shHolder;
 
-    Tempest::Texture2d            texture;
-
     Tempest::SpritesHolder        spHolder;
     Tempest::SurfaceRender        uiRender;
 
