@@ -262,6 +262,21 @@ void Style::draw(Painter &p, const std::u16string &text, Style::TextElement e,
   p.translate(-r.x,-r.y);
   }
 
+void Style::draw(Painter &p, const TextModel &text, Style::TextElement e,
+                 const WidgetState &st, const Rect &r, const Style::Extra &extra) const {
+  if(parent)
+    return parent->draw(p,text,e,st,r,extra);
+
+  const Margin& m  = extra.margin;
+  const Rect    sc = p.scissor();
+
+  p.setScissor(sc.intersected(Rect(m.left, 0, r.w-m.xMargin(), r.h)));
+  p.translate(m.left,m.right);
+  text.paint(p,extra.fontColor,Color(0,0,1),st.echo);
+  p.translate(-m.left,-m.right);
+  p.setScissor(sc);
+  }
+
 void Style::drawCursor(Painter &p,bool emptySel, const WidgetState &st,int x1,int x2,int h,bool animState) {
   if( st.editable && ((animState || emptySel) && st.focus) ){
     p.setBlendMode(noBlend);

@@ -14,6 +14,7 @@ class  Color;
 class  Icon;
 class  Sprite;
 
+class  TextModel;
 class  WidgetState;
 
 class  Widget;
@@ -62,7 +63,8 @@ class Style {
     enum TextElement {
       TE_ButtonTitle,
       TE_CheckboxTitle,
-      TE_LabelTitle
+      TE_LabelTitle,
+      TE_LineEditContent
       };
 
     void setParent(const Style* stl);
@@ -80,6 +82,7 @@ class Style {
 
     // text
     virtual void draw(Painter& p, const std::u16string& text, TextElement e, const WidgetState& st, const Rect& r, const Extra& extra) const;
+    virtual void draw(Painter& p, const TextModel&      text, TextElement e, const WidgetState& st, const Rect& r, const Extra& extra) const;
 
   protected:
     virtual void polish  (Widget& w) const;

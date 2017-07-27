@@ -12,9 +12,8 @@ ScrollBar::ScrollBar(Tempest::Orientation ori) {
 
   setRange(0, 100);  
   orient = Tempest::Orientation(-1);
-  setOrientation( ori );
 
-  setupUi();
+  setupUi(ori);
 
   onResize.bind( *this, &ScrollBar::alignCenBtn );
   alignCenBtn(-1, -1);
@@ -27,7 +26,6 @@ void ScrollBar::setOrientation( Tempest::Orientation ori ) {
   const int ls = linearSize();
 
   setLayout( ori );
-  layout().setMargin(0);
   orient = ori;
 
   Tempest::SizePolicy p;
@@ -38,8 +36,7 @@ void ScrollBar::setOrientation( Tempest::Orientation ori ) {
     p.maxSize.h = ls;
     p.typeV     = Tempest::FixedMax;
     }
-
-  p.minSize = Tempest::Size(ls);
+  p.minSize=Size(ls);
   setSizePolicy(p);
 
   onOrientationChanged(ori);
@@ -132,6 +129,40 @@ void ScrollBar::showArrawButtons() {
   arrDw->setVisible(true);
   }
 
+void ScrollBar::setLinearSize(int sz) {
+  if(sz<=0 || sz==linSz)
+    return;
+
+  linSz = sz;
+  Tempest::SizePolicy p;
+  p.maxSize.w = sz;
+  p.maxSize.h = sz;
+  p.typeH   = Tempest::FixedMax;
+  p.typeV   = Tempest::FixedMax;
+  p.maxSize = Tempest::Size(sz);
+  p.minSize = Tempest::Size(sz);
+
+  arrUp->setSizePolicy(p);
+  arrDw->setSizePolicy(p);
+
+  p = Tempest::SizePolicy();
+  if( orientation()==Tempest::Vertical ){
+    p.maxSize.w = sz;
+    p.typeH     = Tempest::FixedMax;
+    } else {
+    p.maxSize.h = sz;
+    p.typeV     = Tempest::FixedMax;
+    }
+  p.minSize=Size(sz);
+  setSizePolicy(p);
+
+  updateView();
+  }
+
+int ScrollBar::linearSize() const {
+  return linSz;
+  }
+
 void ScrollBar::paintEvent(PaintEvent &e) {
   if(arrUp->isVisible()) {
     Painter p(e);
@@ -154,6 +185,8 @@ void ScrollBar::paintEvent(PaintEvent &e) {
     r.y += cenBtn->owner()->y();
     style().draw(p,this,Style::E_CentralButton,cenBtn->state(),r,Style::Extra(*cenBtn));
     }
+
+  paintNested(e);
   }
 
 void ScrollBar::resizeEvent(Tempest::SizeEvent &) {
@@ -170,20 +203,12 @@ void ScrollBar::mouseWheelEvent(MouseEvent &e) {
     incL();
   }
 
-void ScrollBar::setupUi() {
-  Tempest::SizePolicy p;
-  p.typeH   = Tempest::FixedMax;
-  p.typeV   = Tempest::FixedMax;
-  p.maxSize = Tempest::Size(linearSize());
-
-  Widget*  cen;
+void ScrollBar::setupUi(Orientation ori) {
+  Widget* cen;
 
   arrUp = new MoveBtn(*this,false);
   arrDw = new MoveBtn(*this,true );
   cen   = new CentralWidget(*this);
-
-  arrUp->setSizePolicy(p);
-  arrDw->setSizePolicy(p);
 
   layout().removeAll();
   layout().setMargin(0);
@@ -194,6 +219,10 @@ void ScrollBar::setupUi() {
   cenBtn = new CentralButton();
   cenBtn->onPositionChange.bind( *this, &ScrollBar::updateValueFromView );
   cen->layout().add( cenBtn );
+
+  const UiMetrics& metric = Application::uiMetrics();
+  setLinearSize(int(metric.scrollButtonSize*metric.uiScale));
+  setOrientation( ori );
   }
 
 void ScrollBar::inc() {
@@ -232,11 +261,6 @@ void ScrollBar::updateValueFromView(int, int) {
     mvalue = nvalue;
     onValueChanged(nvalue);
     }
-  }
-
-int ScrollBar::linearSize() const {
-  const UiMetrics& metric = Application::uiMetrics();
-  return int(metric.scrollButtonSize*metric.uiScale);
   }
 
 void ScrollBar::updateView() {
@@ -312,6 +336,10 @@ void ScrollBar::CentralButton::keyPressEvent(Tempest::KeyEvent &e) {/*
   e.ignore();
   }
 
+void ScrollBar::CentralButton::paintEvent(PaintEvent &e) {
+  paintNested(e);
+  }
+
 void ScrollBar::CentralButton::moveTo( Tempest::Point p ) {
   p.x = std::max(p.x, 0);
   p.y = std::max(p.y, 0);
@@ -358,4 +386,8 @@ void ScrollBar::MoveBtn::mouseDownEvent(MouseEvent &e) {
 void ScrollBar::MoveBtn::mouseUpEvent(MouseEvent &e) {
   Button::mouseUpEvent(e);
   owner.buttonScrollStop();
+  }
+
+void ScrollBar::MoveBtn::paintEvent(PaintEvent &e) {
+  paintNested(e);
   }

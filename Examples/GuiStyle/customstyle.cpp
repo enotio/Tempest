@@ -2,6 +2,7 @@
 
 #include <Tempest/Button>
 #include <Tempest/ScrollBar>
+#include <Tempest/TextModel>
 
 using namespace Tempest;
 
@@ -26,8 +27,10 @@ void CustomStyle::polish(Widget &w) const {
     btn->setMaximumSize(btn->maxSize().w,48);
     }
 
-  if(ScrollBar* sc=dynamic_cast<ScrollBar*>(&w))
+  if(ScrollBar* sc=dynamic_cast<ScrollBar*>(&w)) {
     sc->hideArrowButtons();
+    sc->setLinearSize(8);
+    }
   }
 
 void CustomStyle::mkColor(Color *dest, const Color &src) {
@@ -158,4 +161,21 @@ void CustomStyle::draw(Painter &p, const std::u16string &text, Style::TextElemen
   p.drawText( m.left+dX+(r.w-dX-m.xMargin()-txtSz.w)/2, (r.h-txtSz.h)/2, r.w-m.xMargin(), txtSz.h, text, AlignBottom );
 
   p.translate(-r.x,-r.y);
+  }
+
+void CustomStyle::draw(Painter &p, const TextModel &text, Style::TextElement elt,
+                       const WidgetState &st, const Rect &r, const Style::Extra &extra) const {
+
+  const Margin& m  = extra.margin;
+  const Rect    sc = p.scissor();
+  Color         cl = extra.fontColor;
+
+  if( elt==TE_LineEditContent )
+    cl = Color(0,0,0,1);
+
+  p.setScissor(sc.intersected(Rect(m.left, 0, r.w-m.xMargin(), r.h)));
+  p.translate(m.left,m.right);
+  text.paint(p,cl,second[Normal],st.echo);
+  p.translate(-m.left,-m.right);
+  p.setScissor(sc);
   }

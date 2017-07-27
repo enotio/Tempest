@@ -194,16 +194,9 @@ void LineEdit::mouseMoveEvent(MouseEvent &) {
 
 void LineEdit::paintEvent( PaintEvent &e ) {
   Painter p(e);
-  const Margin& m  = margin();
-  const Rect    sc = p.scissor();
 
-  p.setScissor(sc.intersected(Rect(m.left, 0, w()-m.xMargin(), h())));
-  p.translate(m.left,m.right);
-  txt.paint(p,textColor(),Color(0,0,1),state().echo);
-  p.translate(-m.left,-m.right);
-  p.setScissor(sc);
-
-  style().draw(p,this,Style::E_Background,state(),Rect(0,0,w(),h()),Style::Extra(*this));
+  style().draw(p,this,Style::E_Background,      state(),Rect(0,0,w(),h()),Style::Extra(*this));
+  style().draw(p,txt, Style::TE_LineEditContent,state(),Rect(0,0,w(),h()),Style::Extra(*this));
   paintNested(e);
   }
 

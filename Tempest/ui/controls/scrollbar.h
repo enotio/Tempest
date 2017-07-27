@@ -40,6 +40,9 @@ class ScrollBar : public Tempest::Widget {
     void    hideArrowButtons();
     void    showArrawButtons();
 
+    void    setLinearSize(int sz);
+    int     linearSize() const;
+
     Tempest::signal<int> onValueChanged;
 
   protected:
@@ -47,17 +50,16 @@ class ScrollBar : public Tempest::Widget {
     void resizeEvent    ( Tempest::SizeEvent&  e );
     void mouseWheelEvent( Tempest::MouseEvent& e );
 
-    virtual int linearSize() const;
-
   private:
-    void            setupUi();
+    void            setupUi(Orientation ori);
     void            updateValueFromView(int,int);
 
     struct MoveBtn: Button {
       MoveBtn(ScrollBar& owner, bool dir):owner(owner), dir(dir){}
 
       void mouseDownEvent(Tempest::MouseEvent& e);
-      void mouseUpEvent(Tempest::MouseEvent& e);
+      void mouseUpEvent  (Tempest::MouseEvent& e);
+      void paintEvent    (Tempest::PaintEvent& e);
 
       ScrollBar& owner;
       const bool dir;
@@ -66,7 +68,8 @@ class ScrollBar : public Tempest::Widget {
     struct CentralButton: public Button {
       void mouseDownEvent(Tempest::MouseEvent &e);
       void mouseDragEvent(Tempest::MouseEvent &e);
-      void keyPressEvent(Tempest::KeyEvent &e);
+      void keyPressEvent (Tempest::KeyEvent   &e);
+      void paintEvent    (Tempest::PaintEvent& e);
 
       void moveTo( Tempest::Point p );
 
@@ -96,6 +99,7 @@ class ScrollBar : public Tempest::Widget {
     int mvalue;
 
     Tempest::Orientation orient=Tempest::Vertical;
+    int                  linSz;
 
     void alignCenBtn(int, int);
 

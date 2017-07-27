@@ -23,6 +23,9 @@ class CustomStyle : public Tempest::Style {
     void draw(Tempest::Painter& p, const std::u16string& text,TextElement te,
               const Tempest::WidgetState& st,
               const Tempest::Rect& r, const Extra& extra) const;
+    void draw(Tempest::Painter& p, const Tempest::TextModel& text, TextElement e,
+              const Tempest::WidgetState& st,
+              const Tempest::Rect& r, const Extra& extra) const;
 
   private:
     enum {

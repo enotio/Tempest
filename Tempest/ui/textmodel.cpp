@@ -295,13 +295,13 @@ void AbstractTextModel::paint(Painter &p,const Color& fcolor,const Color& sel,co
   if(echoMode==WidgetState::NoEcho || txt.size()==0)
     return;
 
-  const int invR=int(fcolor.r()*255)^int(sel.r()*255);
-  const int invG=int(fcolor.g()*255)^int(sel.g()*255);
-  const int invB=int(fcolor.b()*255)^int(sel.b()*255);
+  const int invR=int(255)^int(sel.r()*255);
+  const int invG=int(255)^int(sel.g()*255);
+  const int invB=int(255)^int(sel.b()*255);
 
   const Color inv=Color(invR/255.f,invG/255.f,invB/255.f,fcolor.a());
 
-  const int lineHeight = fnt.size();
+  const int lineHeight = sz.h;
   int x=0,y=0;
 
   p.setBlendMode(alphaBlend);
