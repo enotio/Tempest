@@ -48,8 +48,9 @@ Widget::Widget():
   mlay = 0;
   setLayout( new Layout() );
 
-  wstyle=&Application::style();
-  wstyle->addRef();
+  solvedStl=&Application::style();
+  solvedStl->addRef();
+  solvedStl->polish(*this);
 
   update();
   }
@@ -62,8 +63,8 @@ Widget::~Widget() {
   if( parentLayout() )
     parentLayout()->take(this);
 
-  wstyle->decRef();
-  wstyle=nullptr;
+  solvedStl->unpolish(*this);
+  solvedStl->decRef();
 
   for( size_t i=0; i<skuts.size(); ++i ){
     Shortcut *s = skuts[i];
@@ -585,6 +586,7 @@ void Widget::attach(Layout *ow,size_t mouseReleaseId,size_t leaveId) {
   if( owner() )
     Widget::impl_disableSum(this,owner()->disableSum);
 
+  solveStyle();
   if( nToUpdate ){
     nToUpdate = false;
     update();
@@ -1159,21 +1161,20 @@ bool Widget::isEnabledTo(const Widget *ancestor) const {
   }
 
 const Style& Widget::style() const {
-  return *wstyle;
+  return *solvedStl;
   }
 
 void Widget::setStyle(const Style* stl) {
-  if( stl==nullptr )
-    stl=&Application::style();
+  if(selfStl==stl)
+    return;
 
-  const Style* old=wstyle;
-  stl->addRef();
+  if(stl)
+    stl    ->addRef();
+  if(selfStl)
+    selfStl->decRef();
 
-  impl_setStyle(stl);
-
-  if(old)
-    old->decRef();
-  wstyle=stl;
+  selfStl=stl;
+  solveStyle();
   }
 
 void Widget::setFocus(bool f) {
@@ -1274,6 +1275,7 @@ void Widget::clearParent(size_t& mouseReleaseId,size_t& leaveId) {
 
   parentLay->take(this);
   parentLay = nullptr;
+  solveStyle();
   }
 
 void Widget::setParent(Layout *ow, size_t mouseReleaseId, size_t leaveId) {
@@ -1281,9 +1283,35 @@ void Widget::setParent(Layout *ow, size_t mouseReleaseId, size_t leaveId) {
   }
 
 void Widget::impl_setStyle(const Style *s) {
-  wstyle->unpolish(*this);
-  wstyle=s;
-  s->polish(*this);
+  if(solvedStl==s)
+    return;
+  solvedStl->unpolish(*this);
+  solvedStl->decRef();
+  solvedStl=s;
+  solvedStl->addRef();
+  solvedStl->polish(*this);
+  solveStyle(layout());
+  }
+
+void Widget::solveStyle() {
+  const Style* solved=solvedStl;
+
+  if( selfStl ){
+    solved=selfStl;
+    } else
+  if(Widget* ow=owner()){
+    solved=ow->solvedStl;
+    } else {
+    solved=&Application::style();
+    }
+
+  impl_setStyle(solved);
+  }
+
+void Widget::solveStyle(Layout &l) {
+  for(Widget* w:l.widgets()) {
+    w->solveStyle();
+    }
   }
 
 void Widget::deleteLater() {

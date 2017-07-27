@@ -222,7 +222,11 @@ class Widget : public slot {
     bool        chFocus, uscissor;
     int         disableSum=0;
 
-    const Style* wstyle=nullptr;
+    const Style* solvedStl=nullptr;
+    const Style* selfStl  =nullptr;
+
+    void solveStyle();
+    static void solveStyle(Layout& l);
 
     bool nToUpdate, deleteLaterFlag, multiTouch;
 
