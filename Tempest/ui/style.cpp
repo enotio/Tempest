@@ -1,5 +1,7 @@
 #include "style.h"
 
+#include <Tempest/Platform>
+
 #include <Tempest/Widget>
 #include <Tempest/Button>
 #include <Tempest/CheckBox>
@@ -40,6 +42,14 @@ Style::~Style() {
   T_ASSERT(counter ==0);
   T_ASSERT(polished==0);
   setParent(nullptr);
+  }
+
+Style::UIIntefaceIdiom Style::idiom() const {
+#ifdef __MOBILE_PLATFORM__
+  return UIIntefaceIdiom(UIIntefacePhone);
+#else
+  return UIIntefaceIdiom(UIIntefaceUnspecified);
+#endif
   }
 
 void Style::setParent(const Style *stl) {
@@ -284,4 +294,8 @@ void Style::drawCursor(Painter &p,bool emptySel, const WidgetState &st,int x1,in
     p.setColor( 0,0,1,1 );
     p.drawRect( x1, 0, x2, h );
     }
+  }
+
+Style::UIIntefaceIdiom::UIIntefaceIdiom(Style::UIIntefaceCategory category):category(category){
+  touch=(category==UIIntefacePad || category==UIIntefacePhone);
   }

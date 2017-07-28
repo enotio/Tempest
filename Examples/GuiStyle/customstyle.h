@@ -11,6 +11,7 @@ class CustomStyle : public Tempest::Style {
     CustomStyle(const Tempest::Color& prime,const Tempest::Color& second);
 
   protected:
+    UIIntefaceIdiom idiom() const;
     void polish(Tempest::Widget& w) const;
 
     void draw(Tempest::Painter& p, Tempest::Button *w, Element e, const Tempest::WidgetState &st,

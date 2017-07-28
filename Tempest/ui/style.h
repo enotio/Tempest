@@ -67,6 +67,20 @@ class Style {
       TE_LineEditContent
       };
 
+    enum UIIntefaceCategory {
+      UIIntefaceUnspecified=0,
+      UIIntefacePC,
+      UIIntefacePhone,
+      UIIntefacePad
+      };
+
+    struct UIIntefaceIdiom {
+      UIIntefaceIdiom(UIIntefaceCategory category);
+      UIIntefaceCategory category;
+      bool               touch;
+      };
+    virtual UIIntefaceIdiom idiom() const;
+
     void setParent(const Style* stl);
 
     // common

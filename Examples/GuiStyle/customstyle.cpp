@@ -19,6 +19,10 @@ CustomStyle::CustomStyle(const Color &p, const Color &s) {
   font.setBold(true);
   }
 
+Style::UIIntefaceIdiom CustomStyle::idiom() const {
+  return UIIntefacePhone;
+  }
+
 void CustomStyle::polish(Widget &w) const {
   Style::polish(w);
 

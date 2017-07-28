@@ -148,10 +148,6 @@ ScrollWidget::ScrollWidget()
   layout().add(sbH);
   layout().add(sbV);
 
-#ifdef __MOBILE_PLATFORM__
-  hideScrollBars();
-#endif
-
   cen   ->setLayout(new BoxLayout(this,orient));
   helper. setLayout(new HelperLayout(this));
   Widget::setLayout(new MainLayout(this));
@@ -238,14 +234,19 @@ bool ScrollWidget::updateScrolls(bool noRetry) {
   }
 
 void ScrollWidget::emplace(Widget &cen, Widget *scH, Widget *scV, const Rect& place) {
-  const int dx=scV==nullptr ? 0 : scV->minSize().w;
-  const int dy=scH==nullptr ? 0 : scH->minSize().h;
+  int sp=spacing();
+  int dx=scV==nullptr ? 0 : (scV->minSize().w);
+  int dy=scH==nullptr ? 0 : (scH->minSize().h);
 
   if(scH)
     scH->setGeometry(place.x,place.y+place.h-dy,place.w-dx,dy);
   if(scV)
     scV->setGeometry(place.x+place.w-dx,place.y,dx,place.h-dy);
 
+  if(dx>0)
+    dx+=sp;
+  if(dy>0)
+    dy+=sp;
   cen.setGeometry(place.x,place.y,place.w-dx,place.h-dy);
   }
 
@@ -416,7 +417,7 @@ void ScrollWidget::gestureEvent(Tempest::AbstractGestureEvent &e) {
 
   if( e.gestureType()==Tempest::AbstractGestureEvent::gtDragGesture ){
     Tempest::DragGesture &d = reinterpret_cast<Tempest::DragGesture&>(e);
-    if(sbH!=nullptr && sbH->range()>w() && !sbH->isVisible()){
+    if(sbH!=nullptr && sbH->range()>w() && style().idiom().touch){
       int v = sbH->value();
       int dpos = d.dpos.x;
 
@@ -424,7 +425,7 @@ void ScrollWidget::gestureEvent(Tempest::AbstractGestureEvent &e) {
       if( v!=sbH->value() )
         e.accept();
       }
-    if(sbV!=nullptr && sbV->range()>h() && !sbV->isVisible()){
+    if(sbV!=nullptr && sbV->range()>h() && style().idiom().touch){
       int v = sbV->value();
       int dpos = d.dpos.y;
 
