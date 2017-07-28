@@ -31,10 +31,10 @@ class ScrollWidget : public Tempest::Widget {
       initializeList();
       list->setDelegate(d);
       helper.layout().applyLayout();
-      resizeEv( w(), h() );
+      layout().applyLayout();
       }
 
-    ListView* asListView();
+          ListView* asListView();
     const ListView* asListView() const;
     void removeList();
 
@@ -65,17 +65,10 @@ class ScrollWidget : public Tempest::Widget {
     int  scrollV() const;
 
   protected:
-    ScrollWidget(bool noUi);
-
     void mouseWheelEvent(Tempest::MouseEvent &e);
     void mouseMoveEvent(Tempest::MouseEvent &e);
 
     void gestureEvent(Tempest::AbstractGestureEvent &e);
-    void resizeEvent(Tempest::SizeEvent& e);
-
-    virtual ScrollBar* createScrollBar(Tempest::Orientation ori);
-    virtual void setScrollBars(Tempest::ScrollBar* hor,
-                               Tempest::ScrollBar* vert , bool deleteOld);
 
   private:
     Widget     helper;
@@ -94,7 +87,12 @@ class ScrollWidget : public Tempest::Widget {
 
     Tempest::Orientation orient = Tempest::Vertical;
     void initializeList();
-    void updateScrolls();
+    void recalcLayout();
+    bool updateScrolls(bool noRetry);
+    void emplace(Widget& cen, Widget* scH, Widget* scV, const Rect &place);
+
+    Widget* findFirst();
+    Widget* findLast();
 
     struct Box:Widget {
       ScrollWidget* owner;
@@ -102,8 +100,8 @@ class ScrollWidget : public Tempest::Widget {
 
     struct BoxLayout;
     struct HelperLayout;
+    struct MainLayout;
 
-    void   resizeEv(int w, int h);
     static Tempest::Size sizeHint( const Widget *w );
 
     using Tempest::Widget::layout;
