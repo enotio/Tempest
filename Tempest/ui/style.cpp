@@ -63,11 +63,15 @@ void Style::setParent(const Style *stl) {
   parent=stl;
   }
 
-void Style::polish  (Widget&) const {
+void Style::polish  (Widget& w) const {
   polished++;
+  if(parent)
+    parent->polish(w);
   }
 
-void Style::unpolish(Widget&) const {
+void Style::unpolish(Widget& w) const {
+  if(parent)
+    parent->unpolish(w);
   polished--;
   }
 
