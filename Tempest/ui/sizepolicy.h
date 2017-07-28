@@ -18,6 +18,9 @@ struct SizePolicy {
   Size minSize, maxSize;
   SizePolicyType typeH, typeV;
 
+  bool operator ==( const SizePolicy & other ) const;
+  bool operator !=( const SizePolicy & other ) const;
+
   static Size maxWidgetSize();
   };
 

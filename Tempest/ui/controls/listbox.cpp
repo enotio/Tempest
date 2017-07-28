@@ -216,6 +216,7 @@ Tempest::Widget* ListBox::createDropList() {
     return nullptr;
 
   Panel *box = new Panel();
+  box->setStyle(&style());
 
   box->setLayout( Tempest::Horizontal );
   box->layout().setMargin(6);
@@ -228,8 +229,8 @@ Tempest::Widget* ListBox::createDropList() {
 
   sw->centralWidget().layout().add(list);
   int wx = std::max(w(), list->minSize().w+box->margin().xMargin());
-  box->resize(wx, list->h()+box->margin().yMargin());
   box->layout().add(sw);
+  box->resize(wx, list->h()+box->margin().yMargin());
 
   return box;
   }

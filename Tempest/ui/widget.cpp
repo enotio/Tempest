@@ -229,8 +229,10 @@ const SizePolicy& Widget::sizePolicy() const {
   }
 
 void Widget::setSizePolicy(const SizePolicy &s) {
-  spolicy = s;
+  if(spolicy==s)
+    return;
 
+  spolicy = s;
   if( owner() )
     owner()->layout().applyLayout();
   }

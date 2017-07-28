@@ -146,7 +146,7 @@ void Style::draw(Painter& p, Button *w, Element e, const WidgetState &st, const 
       p.drawLine(cx,cy, cx+dx,cy-dy);
       } else
     if(e==E_ArrowLeft) {
-      cx+=dx/2;
+      cx-=dx/2;
       p.drawLine(cx+dx,cy-dy, cx,cy);
       p.drawLine(cx,cy, cx+dx,cy+dy);
       } else

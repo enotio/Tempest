@@ -28,7 +28,7 @@ void Layout::add(Widget *widget, size_t pos) {
   size_t hasReleaseReciver = size_t(-1), hasLeavePtr = size_t(-1);
   widget->clearParent(hasReleaseReciver,hasLeavePtr);
 
-  if(pos>=w.size())
+  if(pos>w.size())
     pos=w.size();
   w.insert(w.begin()+pos,widget);
 
