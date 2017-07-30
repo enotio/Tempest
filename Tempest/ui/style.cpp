@@ -271,7 +271,11 @@ void Style::draw(Painter &p, const std::u16string &text, Style::TextElement e,
   p.setFont (extra.font);
   p.setColor(extra.fontColor);
   const int h=extra.font.textSize(text).h;
-  p.drawText( m.left+dX, (r.h-h)/2, r.w-m.xMargin()-dX, h, text, AlignBottom );
+  int flag=AlignBottom;
+  if(e==TE_ButtonTitle)
+    flag |= AlignHCenter;
+
+  p.drawText( m.left+dX, (r.h-h)/2, r.w-m.xMargin()-dX, h, text, flag );
 
   p.translate(-r.x,-r.y);
   }

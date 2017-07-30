@@ -152,7 +152,7 @@ class Widget : public slot {
     bool isEnabled() const;
     bool isEnabledTo(const Widget* ancestor) const;
 
-    const Style& style() const;
+    const Style& style();
     void  setStyle(const Style *stl);
 
     const WidgetState& state() const { return wstate; }
@@ -223,7 +223,7 @@ class Widget : public slot {
     int         disableSum=0;
 
     const Style* solvedStl=nullptr;
-    const Style* selfStl  =nullptr;
+    const Style* selfStl=nullptr;
 
     void solveStyle();
     static void solveStyle(Layout& l);

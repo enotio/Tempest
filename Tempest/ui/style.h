@@ -57,14 +57,16 @@ class Style {
       E_ArrowDown,
       E_ArrowLeft,
       E_ArrowRight,
-      E_CentralButton
+      E_CentralButton,
+      E_Last
       };
 
     enum TextElement {
       TE_ButtonTitle,
       TE_CheckboxTitle,
       TE_LabelTitle,
-      TE_LineEditContent
+      TE_LineEditContent,
+      TE_Last
       };
 
     enum UIIntefaceCategory {
@@ -113,6 +115,9 @@ class Style {
     void    decRef() const { counter--; if(counter==0) delete this; }
 
     static void drawCursor(Painter &p, bool emptySel, const WidgetState &st, int x1, int x2, int h, bool animState);
+
+    Style(const Style& )=delete;
+    Style& operator=(const Style&)=delete;
 
   friend class Widget;
   };

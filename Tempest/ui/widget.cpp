@@ -48,10 +48,6 @@ Widget::Widget():
   mlay = 0;
   setLayout( new Layout() );
 
-  solvedStl=&Application::style();
-  solvedStl->addRef();
-  solvedStl->polish(*this);
-
   update();
   }
 
@@ -63,8 +59,10 @@ Widget::~Widget() {
   if( parentLayout() )
     parentLayout()->take(this);
 
-  solvedStl->unpolish(*this);
-  solvedStl->decRef();
+  if( solvedStl ){
+    solvedStl->unpolish(*this);
+    solvedStl->decRef();
+    }
 
   for( size_t i=0; i<skuts.size(); ++i ){
     Shortcut *s = skuts[i];
@@ -1162,7 +1160,9 @@ bool Widget::isEnabledTo(const Widget *ancestor) const {
   return true;
   }
 
-const Style& Widget::style() const {
+const Style &Widget::style() {
+  if(!solvedStl)
+    solveStyle();
   return *solvedStl;
   }
 
@@ -1277,7 +1277,7 @@ void Widget::clearParent(size_t& mouseReleaseId,size_t& leaveId) {
 
   parentLay->take(this);
   parentLay = nullptr;
-  solveStyle();
+  solvedStl = nullptr;
   }
 
 void Widget::setParent(Layout *ow, size_t mouseReleaseId, size_t leaveId) {
@@ -1287,8 +1287,10 @@ void Widget::setParent(Layout *ow, size_t mouseReleaseId, size_t leaveId) {
 void Widget::impl_setStyle(const Style *s) {
   if(solvedStl==s)
     return;
-  solvedStl->unpolish(*this);
-  solvedStl->decRef();
+  if(solvedStl) {
+    solvedStl->unpolish(*this);
+    solvedStl->decRef();
+    }
   solvedStl=s;
   solvedStl->addRef();
   solvedStl->polish(*this);
@@ -1303,7 +1305,9 @@ void Widget::solveStyle() {
     } else
   if(Widget* ow=owner()){
     solved=ow->solvedStl;
-    } else {
+    }
+
+  if(solved==nullptr){
     solved=&Application::style();
     }
 
