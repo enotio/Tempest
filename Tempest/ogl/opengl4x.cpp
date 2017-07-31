@@ -37,6 +37,9 @@ using namespace Tempest;
 #endif
 
 static void* getAddr( const char* name ){
+#ifdef __APPLE__
+  (void)name;
+#endif
 #ifdef __WINDOWS__
   return (void*)wglGetProcAddress(name);
 #endif
@@ -135,6 +138,7 @@ bool Opengl4x::createContext( Detail::ImplDeviceBase * dev,
                               void *hwnd,
                               const AbstractAPI::Options & ) const {
   (void)hwnd;
+  (void)dev;
 
 #ifdef __WINDOWS__
   int attribs[] =

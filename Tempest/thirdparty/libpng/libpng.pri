@@ -1,3 +1,5 @@
+mac: QMAKE_CFLAGS += -Wno-self-assign
+
 HEADERS += \
     $$PWD/png.h \
     $$PWD/pngconf.h \

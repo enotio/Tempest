@@ -1,6 +1,8 @@
 DEFINES += "FT2_BUILD_LIBRARY=1"
 INCLUDEPATH += $$PWD/include
 
+mac: QMAKE_CFLAGS += -Wno-deprecated-declarations
+
 HEADERS += \
 
 SOURCES += \
