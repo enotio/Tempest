@@ -118,6 +118,7 @@ struct ScrollWidget::MainLayout : public Tempest::Layout {
       return;
 
     busy=true;
+    sc->helper.setGeometry(0,0,sc->w(),sc->h());
     static const int tryCound=3;
     for(int i=1;i<=tryCound;++i)
       if(sc->updateScrolls(i==tryCound))
