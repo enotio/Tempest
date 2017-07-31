@@ -415,7 +415,7 @@ void ScrollWidget::mouseMoveEvent(Tempest::MouseEvent &e) {
 void ScrollWidget::gestureEvent(Tempest::AbstractGestureEvent &e) {
   e.ignore();
 
-  if( e.gestureType()==Tempest::AbstractGestureEvent::gtDragGesture ){
+  if( e.gestureType()==Tempest::AbstractGestureEvent::gtDragGesture && helper.rect().contains(e.hotSpot()) ){
     Tempest::DragGesture &d = reinterpret_cast<Tempest::DragGesture&>(e);
     if(sbH!=nullptr && sbH->range()>w() && style().idiom().touch){
       int v = sbH->value();
