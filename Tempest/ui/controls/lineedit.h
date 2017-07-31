@@ -41,7 +41,7 @@ class LineEdit : public Tempest::Widget {
 
     const std::u16string &hint() const;
     void  setHint( const std::u16string & str );
-    void  setHint( const std::string & str    );
+    void  setHint( const std::string &    str );
 
     Tempest::signal<const std::u16string&> onTextChanged;
     Tempest::signal<const std::u16string&> onTextEdited;

@@ -124,7 +124,7 @@ void LineEdit::resetSelection() {
 
 size_t LineEdit::cursorForPosition(const Point &pos) const {
   const Margin& m = margin();
-  return txt.cursorForPosition(pos+Point(m.left,m.top),echoMode());
+  return txt.cursorForPosition(pos-Point(m.left,m.top),echoMode());
   }
 
 void LineEdit::setEditable(bool e) {
@@ -201,7 +201,10 @@ void LineEdit::paintEvent( PaintEvent &e ) {
   }
 
 void LineEdit::resizeEvent(SizeEvent&) {
-  txt.setViewport(size());
+  Size sz = size();
+  sz.w -= margin().xMargin();
+  sz.h -= margin().yMargin();
+  txt.setViewport(sz);
   }
 
 

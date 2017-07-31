@@ -195,6 +195,19 @@ bool ScrollWidget::updateScrolls(bool noRetry) {
       return false;
     }
 
+  if( !hasScH && !hasScV ) {
+    sbH->setValue(0);
+    sbV->setValue(0);
+    cen->setPosition(0,0);
+    } else
+  if( !hasScH ) {
+    sbH->setValue(0);
+    cen->setPosition(0,cen->y());
+    } else
+  if( !hasScV ) {
+    sbV->setValue(0);
+    cen->setPosition(cen->x(),0);
+    }
   sbH->setVisible(hasScH);
   sbV->setVisible(hasScV);
   cen->layout().applyLayout();

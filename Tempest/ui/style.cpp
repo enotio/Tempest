@@ -63,11 +63,15 @@ void Style::setParent(const Style *stl) {
   parent=stl;
   }
 
-void Style::polish  (Widget&) const {
+void Style::polish  (Widget& w) const {
   polished++;
+  if(parent)
+    parent->polish(w);
   }
 
-void Style::unpolish(Widget&) const {
+void Style::unpolish(Widget& w) const {
+  if(parent)
+    parent->unpolish(w);
   polished--;
   }
 
@@ -267,7 +271,11 @@ void Style::draw(Painter &p, const std::u16string &text, Style::TextElement e,
   p.setFont (extra.font);
   p.setColor(extra.fontColor);
   const int h=extra.font.textSize(text).h;
-  p.drawText( m.left+dX, (r.h-h)/2, r.w-m.xMargin()-dX, h, text, AlignBottom );
+  int flag=AlignBottom;
+  if(e==TE_ButtonTitle)
+    flag |= AlignHCenter;
+
+  p.drawText( m.left+dX, (r.h-h)/2, r.w-m.xMargin()-dX, h, text, flag );
 
   p.translate(-r.x,-r.y);
   }
