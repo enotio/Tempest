@@ -5,14 +5,11 @@
 
 using namespace Tempest;
 
-const char16_t LineEdit::passChar='*';
 #ifdef __OSX__
 static const KeyEvent::KeyType cmdKey = KeyEvent::K_Command;
 #else
 static const KeyEvent::KeyType cmdKey = KeyEvent::K_Control;
 #endif
-
-const int LineEdit::cursorFlashTime=500;
 
 LineEdit::LineEdit() {
   resize(100,27);

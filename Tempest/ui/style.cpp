@@ -33,6 +33,8 @@ Style::Extra::Extra(const LineEdit &owner)
 
 
 Style::Style() {
+  anim.setRepeatCount(0);
+  anim.timeout.bind(this,&Style::processAnimation);
   }
 
 Style::Style(const Style *parent):parent(parent) {
@@ -67,12 +69,22 @@ void Style::polish  (Widget& w) const {
 void Style::unpolish(Widget& w) const {
   if(parent)
     parent->unpolish(w);
+  if(&w==focused) {
+    focused=nullptr;
+    anim.stop();
+    }
   polished--;
   }
 
 const Tempest::Sprite &Style::iconSprite(const Icon& icon,const WidgetState &st, const Rect &r) {
   const int sz = std::min(r.w,r.h);
   return icon.sprite(sz,sz,st.enabled ? Icon::ST_Normal : Icon::ST_Disabled);
+  }
+
+void Style::processAnimation() {
+  cursorState=!cursorState;
+  if(focused)
+    focused->update();
   }
 
 void Style::draw(Painter& ,Widget*, Element, const WidgetState&, const Rect &, const Extra&) const {
@@ -223,7 +235,17 @@ void Style::draw(Painter &p, Label *w, Element e, const WidgetState &st, const R
 void Style::draw(Painter &p, LineEdit *w, Element e, const WidgetState &st, const Rect &r, const Style::Extra &extra) const {
   if(parent)
     return parent->draw(p,w,e,st,r,extra);
-  // drawCursor(p,(ssel==esel),st,sx+oldSc,x-sx,r.h,anim);
+  if(!st.focus && focused==w){
+    focused=nullptr;
+    anim.stop();
+    return;
+    }
+
+  if(st.focus && focused!=w) {
+    focused=w;
+    cursorState=true;
+    anim.start(cursorFlashTime);
+    }
   }
 
 void Style::draw(Painter &p, ScrollBar*, Element e, const WidgetState &st, const Rect &r, const Style::Extra &extra) const {
@@ -286,16 +308,22 @@ void Style::draw(Painter &p, const TextModel &text, Style::TextElement e,
   p.setScissor(sc.intersected(Rect(m.left, 0, r.w-m.xMargin(), r.h)));
   p.translate(m.left,m.right);
   text.paint(p,extra.fontColor,Color(0,0,1),st.echo);
+
+  if( st.focus && text.selectionBegin()==text.selectionEnd() ) {
+    const int x=text.positionForCursor(text.selectionBegin(),st.echo).x;
+    drawCursor(p,st,x,r.h,cursorState);
+    }
   p.translate(-m.left,-m.right);
   p.setScissor(sc);
   }
 
-void Style::drawCursor(Painter &p,bool emptySel, const WidgetState &st,int x1,int x2,int h,bool animState) {
-  if( st.editable && ((animState || emptySel) && st.focus) ){
+void Style::drawCursor(Painter &p,const WidgetState &st,int x,int h,bool animState) const {
+  if( st.editable && animState && st.focus ){
     p.setBlendMode(noBlend);
     p.unsetTexture();
     p.setColor( 0,0,1,1 );
-    p.drawRect( x1, 0, x2, h );
+    p.drawRect( x-1, 0, 2, h );
+    return;
     }
   }
 

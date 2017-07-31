@@ -1,6 +1,7 @@
 #ifndef STYLE_H
 #define STYLE_H
 
+#include <Tempest/Timer>
 #include <Tempest/Utility>
 #include <string>
 #include <memory>
@@ -50,6 +51,10 @@ class Style {
         static const Tempest::Icon   emptyIcon;
         static const Tempest::Font   emptyFont;
         static const Tempest::Color  emptyColor;
+      };
+
+    enum {
+      cursorFlashTime=500
       };
 
     enum Element {
@@ -111,7 +116,12 @@ class Style {
     mutable uint32_t polished=0;
     std::shared_ptr<const Style> parent;
 
-    static void drawCursor(Painter &p, bool emptySel, const WidgetState &st, int x1, int x2, int h, bool animState);
+    mutable bool               cursorState=false;
+    mutable Tempest::LineEdit* focused=nullptr;
+    mutable Tempest::Timer     anim;
+
+    void processAnimation();
+    void drawCursor(Painter &p, const WidgetState &st, int x, int h, bool animState) const;
 
     Style(const Style& )=delete;
     Style& operator=(const Style&)=delete;

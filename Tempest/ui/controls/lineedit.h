@@ -113,9 +113,6 @@ class LineEdit : public Tempest::Widget {
 
     void   storeText();
     void   setWidgetState(const WidgetState& s);
-
-    static const int      cursorFlashTime;
-    static const char16_t passChar;
   };
 /** @}*/
 
