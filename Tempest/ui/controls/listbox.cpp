@@ -216,7 +216,7 @@ Tempest::Widget* ListBox::createDropList() {
     return nullptr;
 
   Panel *box = new Panel();
-  box->setStyle(&style());
+  box->setStyle(stylePointer());
 
   box->setLayout( Tempest::Horizontal );
   box->layout().setMargin(6);

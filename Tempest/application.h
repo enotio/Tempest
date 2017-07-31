@@ -42,8 +42,8 @@ class Application {
     static void              setUiMetrics(const UiMetrics& u);
     static signal<UiMetrics> uiMetricsChanged;
 
-    static void  setStyle(const Tempest::Style* stl);
-    static const Tempest::Style& style();
+    static void  setStyle(const std::shared_ptr<const Style>& stl);
+    static std::shared_ptr<const Style> style();
 
     int exec();
     static bool isQuit();
@@ -62,7 +62,7 @@ class Application {
       UiMetrics           uiMetrics;
       std::vector<Timer*> timer;
 
-      std::unique_ptr<Tempest::Style> style;
+      std::shared_ptr<Tempest::Style> style;
       } app;
 
     struct Style;

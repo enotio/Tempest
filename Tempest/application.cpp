@@ -108,7 +108,6 @@ Tempest::signal<const std::u16string,const Rect&> Application::showHint;
 
 struct Application::Style : public Tempest::Style {
   ~Style(){
-    app.style.release();
     }
   };
 
@@ -144,16 +143,16 @@ void Application::setUiMetrics(const UiMetrics &u) {
   uiMetricsChanged(u);
   }
 
-void Application::setStyle(const Tempest::Style *stl) {
+void Application::setStyle(const std::shared_ptr<const Tempest::Style> &stl) {
   if(app.style==nullptr)
-    app.style.reset(new Application::Style());
+    app.style=std::make_shared<Application::Style>();
   app.style->setParent(stl);
   }
 
-const Tempest::Style& Application::style() {
+std::shared_ptr<const Tempest::Style> Application::style() {
   if(app.style==nullptr)
     app.style.reset(new Application::Style());
-  return *app.style;
+  return app.style;
   }
 
 int Application::exec() {

@@ -114,8 +114,8 @@ Widget *Layout::take(Widget *widget) {
 
   widget->detach();
   w.resize( std::remove( w.begin(), w.end(), widget ) - w.begin() );
-  widget->parentLay = 0;
-  widget->solvedStl = nullptr;
+  widget->parentLay   = 0;
+  widget->recalcStyle = true;
 
   applyLayout();
 

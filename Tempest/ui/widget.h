@@ -153,7 +153,8 @@ class Widget : public slot {
     bool isEnabledTo(const Widget* ancestor) const;
 
     const Style& style();
-    void  setStyle(const Style *stl);
+    const std::shared_ptr<const Style>& stylePointer();
+    void  setStyle(const std::shared_ptr<const Style> &stl);
 
     const WidgetState& state() const { return wstate; }
 
@@ -208,7 +209,7 @@ class Widget : public slot {
     void           clearParent(size_t& mouseReleaseId,size_t& leaveId);
     void           setParent(Layout *ow, size_t mouseReleaseId, size_t leaveId);
 
-    void           impl_setStyle(const Style *s);
+    void           impl_setStyle(const std::shared_ptr<const Style> &s);
 
     Rect        wrect;
     SizePolicy  spolicy;
@@ -222,8 +223,9 @@ class Widget : public slot {
     bool        chFocus, uscissor;
     int         disableSum=0;
 
-    const Style* solvedStl=nullptr;
-    const Style* selfStl=nullptr;
+    bool                         recalcStyle=false;
+    std::shared_ptr<const Style> solvedStl;
+    std::shared_ptr<const Style> selfStl;
 
     void solveStyle();
     static void solveStyle(Layout& l);

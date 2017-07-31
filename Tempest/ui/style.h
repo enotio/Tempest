@@ -3,6 +3,7 @@
 
 #include <Tempest/Utility>
 #include <string>
+#include <memory>
 #include <cstdint>
 
 namespace Tempest {
@@ -83,7 +84,7 @@ class Style {
       };
     virtual UIIntefaceIdiom idiom() const;
 
-    void setParent(const Style* stl);
+    void setParent(const std::shared_ptr<const Style>& stl);
 
     // common
     virtual void draw(Painter& p, Widget*   w, Element e, const WidgetState& st, const Rect& r, const Extra& extra) const;
@@ -108,11 +109,7 @@ class Style {
 
   private:
     mutable uint32_t polished=0;
-    mutable int32_t  counter =0;
-    const   Style*   parent  =nullptr;
-
-    void    addRef() const { counter++;                             }
-    void    decRef() const { counter--; if(counter==0) delete this; }
+    std::shared_ptr<const Style> parent;
 
     static void drawCursor(Painter &p, bool emptySel, const WidgetState &st, int x1, int x2, int h, bool animState);
 

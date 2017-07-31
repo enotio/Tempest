@@ -39,9 +39,7 @@ Style::Style(const Style *parent):parent(parent) {
   }
 
 Style::~Style() {
-  T_ASSERT(counter ==0);
   T_ASSERT(polished==0);
-  setParent(nullptr);
   }
 
 Style::UIIntefaceIdiom Style::idiom() const {
@@ -52,14 +50,11 @@ Style::UIIntefaceIdiom Style::idiom() const {
 #endif
   }
 
-void Style::setParent(const Style *stl) {
-  if( stl==this )
-    stl=nullptr;
-
-  if(stl)
-    stl->addRef();
-  if(parent)
-    parent->decRef();
+void Style::setParent(const std::shared_ptr<const Style> &stl) {
+  if( stl.get()==this ) {
+    parent=nullptr;
+    return;
+    }
   parent=stl;
   }
 

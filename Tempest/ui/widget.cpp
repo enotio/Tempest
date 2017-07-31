@@ -61,7 +61,7 @@ Widget::~Widget() {
 
   if( solvedStl ){
     solvedStl->unpolish(*this);
-    solvedStl->decRef();
+    solvedStl=nullptr;
     }
 
   for( size_t i=0; i<skuts.size(); ++i ){
@@ -1161,20 +1161,18 @@ bool Widget::isEnabledTo(const Widget *ancestor) const {
   }
 
 const Style &Widget::style() {
-  if(!solvedStl)
-    solveStyle();
-  return *solvedStl;
+  return *stylePointer();
   }
 
-void Widget::setStyle(const Style* stl) {
+const std::shared_ptr<const Style> &Widget::stylePointer() {
+  if(!solvedStl || recalcStyle)
+    solveStyle();
+  return solvedStl;
+  }
+
+void Widget::setStyle(const std::shared_ptr<const Style>& stl) {
   if(selfStl==stl)
     return;
-
-  if(stl)
-    stl    ->addRef();
-  if(selfStl)
-    selfStl->decRef();
-
   selfStl=stl;
   solveStyle();
   }
@@ -1276,29 +1274,27 @@ void Widget::clearParent(size_t& mouseReleaseId,size_t& leaveId) {
   detach(mouseReleaseId,leaveId);
 
   parentLay->take(this);
-  parentLay = nullptr;
-  solvedStl = nullptr;
+  parentLay   = nullptr;
+  recalcStyle = true;
   }
 
 void Widget::setParent(Layout *ow, size_t mouseReleaseId, size_t leaveId) {
   attach(ow,mouseReleaseId,leaveId);
   }
 
-void Widget::impl_setStyle(const Style *s) {
+void Widget::impl_setStyle(const std::shared_ptr<const Style>& s) {
   if(solvedStl==s)
     return;
-  if(solvedStl) {
+  if(solvedStl)
     solvedStl->unpolish(*this);
-    solvedStl->decRef();
-    }
+
   solvedStl=s;
-  solvedStl->addRef();
   solvedStl->polish(*this);
   solveStyle(layout());
   }
 
 void Widget::solveStyle() {
-  const Style* solved=solvedStl;
+  std::shared_ptr<const Style> solved=solvedStl;
 
   if( selfStl ){
     solved=selfStl;
@@ -1308,7 +1304,7 @@ void Widget::solveStyle() {
     }
 
   if(solved==nullptr){
-    solved=&Application::style();
+    solved=Application::style();
     }
 
   impl_setStyle(solved);

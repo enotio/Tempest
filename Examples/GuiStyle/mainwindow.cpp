@@ -42,13 +42,14 @@ MainWindow::MainWindow(Tempest::AbstractAPI &api)
 
 void MainWindow::setupUi() {
   Widget* a=createPage();
-  a->setStyle(new CustomStyle(Color(74/255.f,20/255.f,140/255.f),
-                              Color(48/255.f,49/255.f,254/255.f)));
+  a->setStyle(std::make_shared<CustomStyle>(
+                Color(74/255.f,20/255.f,140/255.f),
+                Color(48/255.f,49/255.f,254/255.f)));
   layout().add(a);
 
   Widget* b=createPage();
   b->setPosition(300,0);
-  b->setStyle(new Tempest::Style());
+  b->setStyle(std::make_shared<Tempest::Style>());
   layout().add(b);
   }
 
