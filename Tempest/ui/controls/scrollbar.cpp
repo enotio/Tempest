@@ -210,6 +210,10 @@ void ScrollBar::setupUi(Orientation ori) {
   arrDw = new MoveBtn(*this,true );
   cen   = new CentralWidget(*this);
 
+  const UiMetrics& metric = Application::uiMetrics();
+  setLinearSize(int(metric.scrollButtonSize*metric.uiScale));
+  setOrientation( ori );
+
   layout().removeAll();
   layout().setMargin(0);
   layout().add( arrUp );
@@ -219,10 +223,6 @@ void ScrollBar::setupUi(Orientation ori) {
   cenBtn = new CentralButton();
   cenBtn->onPositionChange.bind( *this, &ScrollBar::updateValueFromView );
   cen->layout().add( cenBtn );
-
-  const UiMetrics& metric = Application::uiMetrics();
-  setLinearSize(int(metric.scrollButtonSize*metric.uiScale));
-  setOrientation( ori );
   }
 
 void ScrollBar::inc() {
