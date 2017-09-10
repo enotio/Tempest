@@ -44,7 +44,12 @@ const Sprite& Icon::SzArray::sprite(int w, int h) const {
   if(emplace.w()==w && emplace.h()==h)
     return emplace;
 
-  const Sprite* ret=&emplace;
+  const Sprite* ret=data.size() ? &data.back() : &emplace;
+
+  if( emplace.w()<=w && emplace.h()<=h )
+    if( ret->w()<emplace.w() || (ret->w()==emplace.w() && ret->h()<emplace.h()) )
+      ret=&emplace;
+
   for(auto& i:data)
     if( i.w()<=w && i.h()<=h )
       if( ret->w()<i.w() || (ret->w()==i.w() && ret->h()<i.h()) )
