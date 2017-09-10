@@ -132,6 +132,12 @@ static struct Android {
     msg.push_back(m);
     }
 
+  void msgClear(){
+    Guard g( appMutex );
+    (void)g;
+    msg.clear();
+    }
+
   size_t msgSize(){
     Guard g( appMutex );
     (void)g;
@@ -908,7 +914,12 @@ static void JNICALL onKeyCharEvent( JNIEnv* env, jobject,
   }
 
 static jint JNICALL nativeCloseEvent( JNIEnv* , jobject ){
-  android.pushMsg( Android::MSG_CLOSE );
+  {
+    Guard g( android.appMutex );
+    (void)g;
+    android.msg.push_back( Android::MSG_CLOSE );
+    android.msg.push_back( Android::MSG_WAIT  );
+  }
   android.waitForQueue();
   return 1;
   }
@@ -1050,6 +1061,7 @@ static void* tempestMainFunc(void*){
     };
   ch[0] = &android.mainFnArgs[0];
   android.mainFunc(1,ch);
+  android.msgClear();
 
   Log::i("~Tempest MainFunc");
   return 0;

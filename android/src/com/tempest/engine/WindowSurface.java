@@ -104,8 +104,7 @@ public class WindowSurface extends SurfaceView
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     if( keyCode==KeyEvent.KEYCODE_BACK ){
-      onClose(2);
-      return true;
+      return super.onKeyUp(keyCode,event);
       } else {
       onKeyDownEvent(keyCode);
       return true;
@@ -115,21 +114,11 @@ public class WindowSurface extends SurfaceView
   @Override
   public boolean onKeyUp(int keyCode, KeyEvent event) {
     if( keyCode==KeyEvent.KEYCODE_BACK ){
-      onClose(0);
-      return true;
+      return super.onKeyUp(keyCode,event);
       } else {
       onKeyUpEvent(keyCode);
       return true;
       }
-    }
-
-  private int closeEventId = -1;
-  private void onClose( int eid ){
-    if( closeEventId==-1 )
-      closeEventId = eid;
-
-    if( closeEventId==eid )
-      nativeCloseEvent();
     }
 
   @Override
@@ -146,6 +135,11 @@ public class WindowSurface extends SurfaceView
 
   @Override
   public void surfaceDestroyed(SurfaceHolder holder) {
+    final Context context=getContext();
+    if(context instanceof Activity){
+      if(((Activity) context).isFinishing())
+        nativeCloseEvent();
+      }
     surface=null;
     nativeSetSurface(null);
     }
@@ -201,7 +195,7 @@ public class WindowSurface extends SurfaceView
   private static native void nativeOnPause();
   private static native void nativeOnStop();
 
-  private static native int  nativeCloseEvent();
+  public static native int   nativeCloseEvent();
 
   private static native void nativeOnTouch   ( int x, int y, int act, int pid );
   private static native void onKeyDownEvent  ( int k );
