@@ -2,6 +2,7 @@ package com.tempest.engine;
 
 import android.os.Bundle;
 import android.view.Surface;
+import android.view.Window;
 
 import java.util.ArrayList;
 
@@ -11,6 +12,8 @@ public class Activity extends android.app.Activity {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
     super.onCreate(savedInstanceState);
     surface=new WindowSurface(this);
     setContentView(surface);
@@ -23,6 +26,8 @@ public class Activity extends android.app.Activity {
 
   @Override
   protected void onDestroy(){
+    if(surface!=null)
+      ;//surface.nativeCloseEvent();
     super.onDestroy();
     }
 

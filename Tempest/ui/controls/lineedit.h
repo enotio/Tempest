@@ -95,7 +95,6 @@ class LineEdit : public Tempest::Widget {
 
     virtual void undo();
     virtual void redo();
-    virtual void drawCursor(Painter& p, int x1, int x2, bool animState);
 
   private:
     TextModel      txt;

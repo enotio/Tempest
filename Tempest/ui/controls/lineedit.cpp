@@ -225,15 +225,6 @@ void LineEdit::redo() {
   update();
   }
 
-void LineEdit::drawCursor(Painter &p,int x1,int x2, bool animState) {
-  if( isEditable() && ((animState || selectionBegin()!=selectionEnd()) && hasFocus()) ){
-    p.setBlendMode(noBlend);
-    p.unsetTexture();
-    p.setColor( 0,0,1,1 );
-    p.drawRect( x1, 0, x2, h() );
-    }
-  }
-
 void LineEdit::keyDownEvent( KeyEvent &e ) {
   if(!isEnabled())
     return;
@@ -281,13 +272,17 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
   if( e.key==KeyEvent::K_Left ){
     if( sedit>0 )
       txt.setSelectionBounds(sedit-1);
+    else
+      txt.setSelectionBounds(0);
     update();
     return;
     }
 
   if( e.key==KeyEvent::K_Right ){
-    if( sedit<txt.size() )
-      txt.setSelectionBounds(sedit+1);
+    if( eedit<txt.size() )
+      txt.setSelectionBounds(eedit+1);
+    else
+      txt.setSelectionBounds(txt.size());
     update();
     return;
     }

@@ -89,6 +89,9 @@ Detail::GLContext Detail::createContext(void *hdc) {
   }
 
 static void* getAddr( const char* name ){
+#ifdef __APPLE__
+  (void)name;
+#endif
 #ifdef __WINDOWS__
   return (void*)wglGetProcAddress(name);
 #endif
