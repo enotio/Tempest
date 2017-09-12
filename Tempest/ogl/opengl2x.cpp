@@ -516,6 +516,42 @@ void Opengl2x::endPaint  ( AbstractAPI::Device * d ) const{
   dev->decl = 0;
   }
 
+bool Opengl2x::readPixels(AbstractAPI::Device * d, Pixmap &output, int rt, int x, int y, int w, int h) const {
+  if( !setDevice(d) ) return false;
+
+  if( dev->scrW<=x || dev->scrH<=y || rt>=dev->caps.maxRTCount)
+    return false;
+
+  if( dev->scrW<x+w)
+    w=dev->scrW-x;
+  if( dev->scrH<y+h)
+    y=dev->scrH-y;
+
+  if(output.width()!=w || output.height()!=h)
+    output=Pixmap(w,h,output.hasAlpha());
+
+  uint8_t* ptr=reinterpret_cast<uint8_t*>(output.data());
+
+#ifndef __MOBILE_PLATFORM__
+  glReadBuffer(GLenum(GL_COLOR_ATTACHMENT0+rt));
+#endif
+  glReadPixels(x,dev->scrH-y-h,w,h,output.hasAlpha() ? GL_RGBA : GL_RGB,GL_UNSIGNED_BYTE,ptr);
+  T_ASSERT_X( errCk(), "OpenGL error" );
+
+  const int bpp =output.hasAlpha() ? 4 : 3;
+  const int wbpp=w*bpp;
+  for(int i=h/2;i>=0;--i){
+    uint8_t* a=&ptr[i*wbpp];
+    uint8_t* b=&ptr[(h-i-1)*wbpp];
+    for(int i=0;i<wbpp;++i) {
+      uint8_t c=a[i];
+      a[i]=b[i];
+      b[i]=c;
+      }
+    }
+  return true;
+  }
+
 AbstractAPI::Texture *Opengl2x::createDepthStorage( AbstractAPI::Device *d,
                                                     int w, int h,
                                                     AbstractTexture::Format::Type f)
@@ -656,7 +692,7 @@ bool Opengl2x::setupFBO() const {
     {
       GLenum buf[32];
       for( int i=0; i<mrtSize && i<32; ++i )
-        buf[i] = GL_COLOR_ATTACHMENT0+i;
+        buf[i] = GLenum(GL_COLOR_ATTACHMENT0+i);
       glDrawBuffers(mrtSize, buf);
     }
 #endif

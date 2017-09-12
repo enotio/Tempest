@@ -260,6 +260,103 @@ void DirectX9::endPaint  ( AbstractAPI::Device *d ) const{
   dev->EndScene();
   }
 
+bool DirectX9::readPixels(GraphicsSubsystem::Device *d, Pixmap &output, int rt, int x, int y, int w, int h) const {
+  LPDIRECT3DDEVICE9  dev   = Data::dev(d);
+  LPDIRECT3DSURFACE9 surf  = 0;
+  LPDIRECT3DSURFACE9 plain = 0;
+  D3DSURFACE_DESC    desc  = {};
+
+  if(FAILED(dev->GetRenderTarget(rt,&surf)))
+     return false;
+  surf->GetDesc(&desc);
+
+  if( desc.Width<=UINT(x) || desc.Height<=UINT(y) ) {
+    surf->Release();
+    return false;
+    }
+
+  if( desc.Width<UINT(x+w))
+    w=int(desc.Width)-x;
+  if( desc.Height<UINT(y+h))
+    y=int(desc.Height)-y;
+
+  bool done=false;
+  if(SUCCEEDED(dev->CreateOffscreenPlainSurface(desc.Width,desc.Height,desc.Format,D3DPOOL_SYSTEMMEM,
+                                      &plain,NULL))) {
+    RECT rect={};
+    rect.left  =x;
+    rect.top   =y;
+    rect.right =x+w;
+    rect.bottom=y+h;
+
+    if(SUCCEEDED(dev->GetRenderTargetData(surf,plain))) {
+      D3DLOCKED_RECT lk ={};
+      HRESULT        ret=plain->LockRect(&lk,&rect,D3DLOCK_NO_DIRTY_UPDATE|D3DLOCK_READONLY);
+      if(SUCCEEDED(ret)){
+        done=mkImage(output,w,h,desc.Format,lk.Pitch,lk.pBits);
+        plain->UnlockRect();
+        }
+      plain->Release();
+      }
+    }
+  surf->Release();
+  return done;
+  }
+
+bool DirectX9::mkImage(Pixmap &out,int w,int h,int desc, int pitch, void *praw) {
+  const uint8_t* raw=reinterpret_cast<uint8_t*>(praw);
+
+  if(desc==D3DFMT_A8R8G8B8/* || desc==D3DFMT_X8R8G8B8*/) {
+    if(out.width()!=w || out.height()!=h || out.hasAlpha()!=true)
+      out = Pixmap(w,h,true);
+    uint8_t* img=reinterpret_cast<uint8_t*>(out.data());
+    for(int i=0;i<h;++i)
+      for(int r=0;r<w;++r){
+              uint8_t* px=&img[(i*w    +r)*4];
+        const uint8_t* in=&raw[i*pitch+r*4];
+
+        px[0]=in[2];
+        px[1]=in[1];
+        px[2]=in[0];
+        px[3]=in[3];
+        }
+    return true;
+    }
+
+  if(desc==D3DFMT_X8R8G8B8) {
+    if(out.width()!=w || out.height()!=h || out.hasAlpha()!=false)
+      out = Pixmap(w,h,false);
+    uint8_t* img=reinterpret_cast<uint8_t*>(out.data());
+    for(int i=0;i<h;++i)
+      for(int r=0;r<w;++r){
+              uint8_t* px=&img[(i*w+r)*3];
+        const uint8_t* in=&raw[i*pitch+r*4];
+
+        px[0]=in[2];
+        px[1]=in[1];
+        px[2]=in[0];
+        }
+    return true;
+    }
+
+  if(desc==D3DFMT_R8G8B8) {
+    out = Pixmap(w,h,false);
+    uint8_t* img=reinterpret_cast<uint8_t*>(out.data());
+    for(int i=0;i<h;++i)
+      for(int r=0;r<w;++r){
+              uint8_t* px=&img[(i*w+r)*3];
+        const uint8_t* in=&raw[i*pitch+r*3];
+
+        px[0]=in[2];
+        px[1]=in[1];
+        px[2]=in[0];
+        }
+    return true;
+    }
+
+  return false;
+  }
+
 void DirectX9::setRenderTaget( AbstractAPI::Device *d,
                                AbstractAPI::Texture   *t, int mip,
                                int mrtSlot ) const {

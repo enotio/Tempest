@@ -1,5 +1,9 @@
 #include "directx11.h"
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#endif
+
 #include <Tempest/Platform>
 
 #if defined(__WINDOWS_PHONE__) || defined(__WINDOWS__)
@@ -237,7 +241,7 @@ struct DirectX11::Device{
     if(bpp==4){
       return pix;
       } else {
-      size_t count=w*h;
+      size_t count=size_t(w*h);
       for( size_t i=0; i<count; ++i ){
         tx[0] = pix[0];
         tx[1] = pix[1];
@@ -252,7 +256,7 @@ struct DirectX11::Device{
     if(mips){
       tx = &texFlipped[0];
       while( w>1|| h>1 ){
-        uint8_t* mip = tx+w*h*4;
+        //uint8_t* mip = tx+w*h*4;
         if( w>0 )
           w/=2;
         if( h>0 )
@@ -677,6 +681,88 @@ void DirectX11::endPaint(AbstractAPI::Device *d) const {
   dev->renderToTexture = false;
   dev->vbo = 0;
   dev->ibo = 0;
+  }
+
+bool DirectX11::readPixels(GraphicsSubsystem::Device *d, Pixmap &output,
+                           int rt, int x, int y, int w, int h) const {
+  Device* dev = (Device*)d;
+  bool ret=false;
+
+  ID3D11RenderTargetView* view=NULL;
+  dev->immediateContext->OMGetRenderTargets(1,&view,NULL);
+
+  ID3D11Resource* res=NULL;
+  if(view!=NULL) {
+    view->GetResource(&res);
+    ID3D11Texture2D* tex = NULL;
+    if(SUCCEEDED(res->QueryInterface(IID_ID3D11Texture2D,reinterpret_cast<void**>(&tex)))) {
+      D3D11_TEXTURE2D_DESC desc={};
+      tex->GetDesc(&desc);
+
+      if( desc.Width<=UINT(x) || desc.Height<=UINT(y) ) {
+        tex->Release();
+        view->Release();
+        return false;
+        }
+
+      if( desc.Width<UINT(x+w))
+        w=int(desc.Width)-x;
+      if( desc.Height<UINT(y+h))
+        y=int(desc.Height)-y;
+
+      desc.BindFlags      = 0;
+      desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+      desc.Usage          = D3D11_USAGE_STAGING;
+      desc.Width          = UINT(w);
+      desc.Height         = UINT(h);
+
+      ID3D11Texture2D* stage = NULL;
+      if(SUCCEEDED(dev->device->CreateTexture2D(&desc,NULL,&stage))) {
+        D3D11_MAPPED_SUBRESOURCE resource={};
+
+        D3D11_BOX box={};
+        box.left =UINT(x);
+        box.top  =UINT(y);
+        box.right=UINT(x+w);
+        box.back =UINT(y+h);
+        box.front=0;
+        box.back =1;
+
+        dev->immediateContext->CopySubresourceRegion(stage,0,0,0,0,tex,0,&box);
+        if(SUCCEEDED(dev->immediateContext->Map(stage,0,D3D11_MAP_READ_WRITE,0,&resource))){
+          ret=mkImage(output,w,h,desc.Format,resource.RowPitch,resource.pData);
+          dev->immediateContext->Unmap(stage,0);
+          }
+        stage->Release();
+        }
+      }
+    res->Release();
+    }
+  view->Release();
+  return ret;
+  }
+
+bool DirectX11::mkImage(Pixmap &out,int w,int h,int desc, int pitch, void *praw) {
+  const uint8_t* raw=reinterpret_cast<uint8_t*>(praw);
+
+  if(desc==DXGI_FORMAT_R8G8B8A8_UNORM) {
+    if(out.width()!=w || out.height()!=h || out.hasAlpha()!=true)
+      out = Pixmap(w,h,true);
+    uint8_t* img=reinterpret_cast<uint8_t*>(out.data());
+    for(int i=0;i<h;++i)
+      for(int r=0;r<w;++r){
+              uint8_t* px=&img[(i*w    +r)*4];
+        const uint8_t* in=&raw[i*pitch+r*4];
+
+        px[0]=in[0];
+        px[1]=in[1];
+        px[2]=in[2];
+        px[3]=in[3];
+        }
+    return true;
+    }
+
+  return false;
   }
 
 void DirectX11::setRenderTaget( AbstractAPI::Device *d,

@@ -115,7 +115,7 @@ ogl:{
 directx: {
   INCLUDEPATH += "$$(DXSDK_DIR)/include"
   LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9"  -l"d3dx9"
-  LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d11" -l"d3dx11" -l"d3dcompiler"
+  LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d11" -l"d3dx11" -l"d3dcompiler" -l"dxguid"
 
   HEADERS += \
     dx/hlsl.h \

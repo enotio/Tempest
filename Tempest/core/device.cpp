@@ -535,6 +535,13 @@ void Device::endPaint  (){
   //forceEndPaint();
   }
 
+bool Device::readPixels(Pixmap &output, int x, int y, int w, int h) {
+  if(x<0|| y<0 || w<=0 || h<=0)
+    return false;
+  assertPaint();
+  return api.readPixels(impl,output,0,x,y,w,h);
+  }
+
 void Device::beginPaintImpl() const {
   data->mrtSize   = data->paintTaget.mrt.size();
 

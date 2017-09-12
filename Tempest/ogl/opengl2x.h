@@ -36,6 +36,8 @@ class Opengl2x : public OpenGLBase {
     void beginPaint( AbstractAPI::Device *d ) const;
     void endPaint  ( AbstractAPI::Device *d ) const;
 
+    bool readPixels(AbstractAPI::Device * d,Pixmap& output,int rt,int x,int y,int w,int h) const;
+
     void setRenderState( Device *d, const RenderState & ) const;
 
     void setRenderTaget( AbstractAPI::Device *d,

@@ -34,6 +34,8 @@ class DirectX11 : public AbstractAPI {
     void beginPaint( AbstractAPI::Device *d ) const;
     void endPaint  ( AbstractAPI::Device *d ) const;
 
+    bool readPixels(AbstractAPI::Device * d,Pixmap& output,int rt,int x,int y,int w,int h) const;
+
     void setRenderState( Device *d, const RenderState & ) const;
 
     void setRenderTaget( AbstractAPI::Device  *d,
@@ -168,6 +170,7 @@ class DirectX11 : public AbstractAPI {
     struct Device;
 
     void makePresentParams( void * p, void *hwnd, const Options &opt ) const;
+    static bool mkImage(Pixmap &out,int w,int h,int desc, int pitch, void *praw);
   };
 
 }

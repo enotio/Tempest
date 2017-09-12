@@ -156,32 +156,32 @@ Pixmap::Pixmap(int iw, int ih, bool alpha) {
 
   info.alpha = alpha;
 
-  data.value() = pool.alloc(info.w,info.h,info.bpp);
+  imgData.value() = pool.alloc(info.w,info.h,info.bpp);
 
   //data.value() = new Data();
   //data.value()->bytes.resize(mw*mh*bpp);
-  if(data.const_value()->bytes.size()>0)
-    rawPtr = &data.const_value()->bytes[0];
+  if(imgData.const_value()->bytes.size()>0)
+    rawPtr = &imgData.const_value()->bytes[0];
   mrawPtr = 0;
 
   T_ASSERT( sizeof(Pixel)==4 );
   }
 
-Pixmap::Pixmap(const Pixmap &p):data(p.data) {
+Pixmap::Pixmap(const Pixmap &p):imgData(p.imgData) {
   info   = p.info;
 
   if( info.w>0 && info.h>0 )
-    rawPtr = &data.const_value()->bytes[0]; else
+    rawPtr = &imgData.const_value()->bytes[0]; else
     rawPtr = 0;
   mrawPtr = 0;
   }
 
 Pixmap &Pixmap::operator = (const Pixmap &p) {
-  data = p.data;
-  info = p.info;
+  imgData = p.imgData;
+  info    = p.info;
 
   if( info.w>0 && info.h>0 )
-    rawPtr = &data.const_value()->bytes[0]; else
+    rawPtr = &imgData.const_value()->bytes[0]; else
     rawPtr = 0;
   mrawPtr = 0;
 
@@ -225,14 +225,14 @@ bool Pixmap::load(const char *f) {
   }
 
 bool Pixmap::save( ODevice& f, const char* ext ) const {
-  if( data.const_value()==0 )
+  if( imgData.const_value()==0 )
     return false;
 
-  Tempest::Detail::GuardBase< Detail::Ptr<Data*, DbgManip> > guard( data );
+  Tempest::Detail::GuardBase< Detail::Ptr<Data*, DbgManip> > guard( imgData );
   (void)guard;
 
   bool ok = SystemAPI::saveImage( f, info, ext,
-                                  data.const_value()->bytes );
+                                  imgData.const_value()->bytes );
   return ok;
   }
 
@@ -248,11 +248,11 @@ bool Pixmap::load( IDevice& file ) {
     }
 
   info = tmpInfo;
-  this->data = Detail::Ptr<Data*, DbgManip>();
-  this->data.value() = image;
+  imgData = Detail::Ptr<Data*, DbgManip>();
+  imgData.value() = image;
 
   if( info.w>0 && info.h>0 )
-    rawPtr = &this->data.const_value()->bytes[0]; else
+    rawPtr = &imgData.const_value()->bytes[0]; else
     rawPtr = 0;
   mrawPtr = 0;
   return true;
@@ -267,8 +267,8 @@ void Pixmap::addAlpha() {
     return;
   makeEditable();
 
-  data.value()->bytes.resize( info.w*info.h*4);
-  uint8_t * v = &data.value()->bytes[0];
+  imgData.value()->bytes.resize( info.w*info.h*4);
+  uint8_t * v = &imgData.value()->bytes[0];
 
   for( size_t i=info.w*info.h; i>0; --i ){
     uint8_t * p = &v[ 4*i-4 ];
@@ -278,7 +278,7 @@ void Pixmap::addAlpha() {
     p[3] = 255;
     }
 
-  rawPtr   = &data.const_value()->bytes[0];
+  rawPtr   = &imgData.const_value()->bytes[0];
   mrawPtr  = 0;
   info.bpp = 4;
   info.alpha = true;
@@ -289,7 +289,7 @@ void Pixmap::removeAlpha() {
     return;
   makeEditable();
 
-  uint8_t * v = &data.value()->bytes[0];
+  uint8_t * v = &imgData.value()->bytes[0];
 
   for( int i=0; i<info.w*info.h; ++i ){
     uint8_t * p = &v[ 3*i ];
@@ -298,8 +298,8 @@ void Pixmap::removeAlpha() {
       p[r] = s[r];
     }
 
-  data.value()->bytes.resize(info.w*info.h*3);
-  rawPtr   = &data.const_value()->bytes[0];
+  imgData.value()->bytes.resize(info.w*info.h*3);
+  rawPtr   = &imgData.const_value()->bytes[0];
   mrawPtr  = 0;
   info.bpp = 3;
   info.alpha = true;
@@ -309,7 +309,7 @@ void Pixmap::setupRawPtrs() const {
   verifyFormatEditable();
 
   if( true || !mrawPtr ){
-    mrawPtr = &data.value()->bytes[0];
+    mrawPtr = &imgData.value()->bytes[0];
     rawPtr  = mrawPtr;
     }
   }
@@ -318,12 +318,12 @@ void Pixmap::setFormat( Pixmap::Format f ) {
   if( info.format==f )
     return;
 
-  if( data.isNull() ){
+  if( imgData.isNull() ){
     info.format = f;
     return;
     }
 
-  (void)data.value();
+  (void)imgData.value();
 
   if( info.format==Format_RGB && f==Format_RGBA ){
     addAlpha();
@@ -365,7 +365,7 @@ void Pixmap::setFormat( Pixmap::Format f ) {
   if( info.format==Format_RGB || info.format==Format_RGBA ){
     for( size_t i=0; i<api.imageCodecCount(); ++i ){
       if( api.imageCodec(i).canConvertTo(info, f) ){
-        api.imageCodec(i).fromRGB(info, data.value()->bytes);
+        api.imageCodec(i).fromRGB(info, imgData.value()->bytes);
         return;
         }
       }
@@ -375,7 +375,7 @@ void Pixmap::setFormat( Pixmap::Format f ) {
   }
 
 void Pixmap::makeEditable() {
-  (void)data.value();
+  (void)imgData.value();
 
   if( info.format==Format_RGB ||
       info.format==Format_RGBA ){
@@ -386,14 +386,14 @@ void Pixmap::makeEditable() {
   SystemAPI& api = SystemAPI::instance();
   for( size_t i=0; i<api.imageCodecCount(); ++i ){
     if( api.imageCodec(i).canConvertTo(info, Format_RGB) ){
-      api.imageCodec(i).toRGB(info, data.value()->bytes, false);
+      api.imageCodec(i).toRGB(info, imgData.value()->bytes, false);
       info.mipLevels = 0;
       setupRawPtrs();
       return;
       }
 
     if( api.imageCodec(i).canConvertTo(info, Format_RGBA) ){
-      api.imageCodec(i).toRGB(info, data.value()->bytes, true);
+      api.imageCodec(i).toRGB(info, imgData.value()->bytes, true);
       info.mipLevels = 0;
       setupRawPtrs();
       return;
@@ -409,8 +409,8 @@ void Pixmap::fill(const Pixmap::Pixel &p) {
 
   verifyFormatEditable();
 
-  size_t sz = data.value()->bytes.size();
-  mrawPtr   = &data.value()->bytes[0];
+  size_t sz = imgData.value()->bytes.size();
+  mrawPtr   = &imgData.value()->bytes[0];
   rawPtr    = mrawPtr;
 
   uint8_t px[] = {p.r, p.g, p.b, p.a};
@@ -508,7 +508,7 @@ void PixEditor::draw(int x, int y, const Pixmap &p) {
 
 void Tempest::Pixmap::downsample() {
   verifyFormatEditable();
-  ImageCodec::downsample(info, data.value()->bytes);
+  ImageCodec::downsample(info,imgData.value()->bytes);
   }
 
 inline static uint32_t nextPot( uint32_t v ){
@@ -528,7 +528,7 @@ void Pixmap::toPOT(int maxSize) {
 
   uint32_t sz = maxSize;
   ImageCodec::resize( info,
-                      data.value()->bytes,
+                      imgData.value()->bytes,
                       std::min( nextPot(info.w)/2, sz ),
                       std::min( nextPot(info.h)/2, sz ) );
   }

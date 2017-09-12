@@ -78,10 +78,17 @@ class Pixmap {
       };
 
     inline const uint8_t* const_data() const {
-      if(data.const_value()==nullptr ||
-         data.const_value()->bytes.size()==0)
+      if(imgData.const_value()==nullptr ||
+         imgData.const_value()->bytes.size()==0)
         return nullptr;
-      return &data.const_value()->bytes[0];
+      return &imgData.const_value()->bytes[0];
+      }
+
+    inline void* data() {
+      if(imgData.value()==nullptr ||
+         imgData.value()->bytes.size()==0)
+        return nullptr;
+      return &imgData.value()->bytes[0];
       }
 
     void fill( const Pixel& p );
@@ -179,7 +186,7 @@ class Pixmap {
       static Tempest::MemPool<Ref> ref_pool;
       };
 
-    mutable Detail::Ptr<Data*, DbgManip> data;
+    mutable Detail::Ptr<Data*, DbgManip> imgData;
     mutable const uint8_t * rawPtr;
     mutable uint8_t       * mrawPtr;
 

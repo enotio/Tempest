@@ -139,6 +139,7 @@ class AbstractAPI: public GraphicsSubsystem {
 
     virtual void unsetRenderTagets( AbstractAPI::Device *d,
                                     int count ) const = 0;
+    virtual bool readPixels(AbstractAPI::Device* d,Pixmap& output,int rt,int x,int y,int w,int h) const = 0;
 
     virtual bool startRender( AbstractAPI::Device *d, void* hwnd, bool isLost ) const = 0;
     virtual bool present( AbstractAPI::Device *d, void *hwnd, SwapBehavior b      ) const = 0;
