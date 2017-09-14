@@ -535,8 +535,15 @@ bool Opengl2x::readPixels(AbstractAPI::Device * d, Pixmap &output, int rt, int x
 #ifndef __MOBILE_PLATFORM__
   glReadBuffer(GLenum(GL_COLOR_ATTACHMENT0+rt));
 #endif
-  glReadPixels(x,dev->scrH-y-h,w,h,output.hasAlpha() ? GL_RGBA : GL_RGB,GL_UNSIGNED_BYTE,ptr);
+  int readY=dev->scrH-y-h;
+  if(dev->target.color[0])
+    readY=dev->target.color[0]->h-y-h;
+
+  glReadPixels(x,readY,w,h,output.hasAlpha() ? GL_RGBA : GL_RGB,GL_UNSIGNED_BYTE,ptr);
   T_ASSERT_X( errCk(), "OpenGL error" );
+
+  if(dev->target.color[0])
+    return true;
 
   const int bpp =output.hasAlpha() ? 4 : 3;
   const int wbpp=w*bpp;

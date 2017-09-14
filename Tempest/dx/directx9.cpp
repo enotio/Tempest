@@ -266,7 +266,8 @@ bool DirectX9::readPixels(GraphicsSubsystem::Device *d, Pixmap &output, int rt, 
   LPDIRECT3DSURFACE9 plain = 0;
   D3DSURFACE_DESC    desc  = {};
 
-  if(FAILED(dev->GetRenderTarget(rt,&surf)))
+  HRESULT hr=dev->GetRenderTarget(rt,&surf);
+  if(FAILED(hr))
      return false;
   surf->GetDesc(&desc);
 
@@ -282,7 +283,7 @@ bool DirectX9::readPixels(GraphicsSubsystem::Device *d, Pixmap &output, int rt, 
 
   bool done=false;
   if(SUCCEEDED(dev->CreateOffscreenPlainSurface(desc.Width,desc.Height,desc.Format,D3DPOOL_SYSTEMMEM,
-                                      &plain,NULL))) {
+                                                &plain,NULL))) {
     RECT rect={};
     rect.left  =x;
     rect.top   =y;
@@ -371,8 +372,10 @@ void DirectX9::setRenderTaget( AbstractAPI::Device *d,
   //for (int i=0; i<16; i++)
     //dev->SetTexture(i, 0);
 
-  dev->SetRenderTarget(mrtSlot, surf);
+  HRESULT hr=dev->SetRenderTarget(mrtSlot, surf);
   tex->Release();
+
+  T_ASSERT(SUCCEEDED(hr));
   }
 
 void DirectX9::unsetRenderTagets( AbstractAPI::Device *d,

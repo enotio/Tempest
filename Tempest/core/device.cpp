@@ -536,10 +536,14 @@ void Device::endPaint  (){
   }
 
 bool Device::readPixels(Pixmap &output, int x, int y, int w, int h) {
-  if(x<0|| y<0 || w<=0 || h<=0)
+  return readPixels(output,x,y,w,h,0);
+  }
+
+bool Device::readPixels(Pixmap &output, int x, int y, int w, int h, int mrtSlot) {
+  if(x<0|| y<0 || w<=0 || h<=0 || mrtSlot<0)
     return false;
   assertPaint();
-  return api.readPixels(impl,output,0,x,y,w,h);
+  return api.readPixels(impl,output,mrtSlot,x,y,w,h);
   }
 
 void Device::beginPaintImpl() const {

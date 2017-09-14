@@ -689,7 +689,18 @@ bool DirectX11::readPixels(GraphicsSubsystem::Device *d, Pixmap &output,
   bool ret=false;
 
   ID3D11RenderTargetView* view=NULL;
-  dev->immediateContext->OMGetRenderTargets(1,&view,NULL);
+  if( dev->rt.size() ){
+    if(rt>=0 && rt<dev->rt.size()){
+      view = dev->rt[rt];
+      view->AddRef();
+      } else {
+      return false;
+      }
+    } else {
+    if(rt!=0)
+      return false;
+    dev->immediateContext->OMGetRenderTargets(1,&view,NULL);
+    }
 
   ID3D11Resource* res=NULL;
   if(view!=NULL) {
@@ -715,21 +726,24 @@ bool DirectX11::readPixels(GraphicsSubsystem::Device *d, Pixmap &output,
       desc.Usage          = D3D11_USAGE_STAGING;
       desc.Width          = UINT(w);
       desc.Height         = UINT(h);
+      desc.MipLevels      = 1;
+      desc.MiscFlags      = 0;
 
       ID3D11Texture2D* stage = NULL;
       if(SUCCEEDED(dev->device->CreateTexture2D(&desc,NULL,&stage))) {
         D3D11_MAPPED_SUBRESOURCE resource={};
 
         D3D11_BOX box={};
-        box.left =UINT(x);
-        box.top  =UINT(y);
-        box.right=UINT(x+w);
-        box.back =UINT(y+h);
+        box.left  =UINT(x);
+        box.top   =UINT(y);
+        box.right =UINT(x+w);
+        box.bottom=UINT(y+h);
         box.front=0;
         box.back =1;
 
+        //dev->immediateContext->CopyResource(stage,tex);
         dev->immediateContext->CopySubresourceRegion(stage,0,0,0,0,tex,0,&box);
-        if(SUCCEEDED(dev->immediateContext->Map(stage,0,D3D11_MAP_READ_WRITE,0,&resource))){
+        if(SUCCEEDED(dev->immediateContext->Map(stage,0,D3D11_MAP_READ,0,&resource))){
           ret=mkImage(output,w,h,desc.Format,resource.RowPitch,resource.pData);
           dev->immediateContext->Unmap(stage,0);
           }

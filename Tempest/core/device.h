@@ -64,6 +64,7 @@ class Device {
     void endPaint  ();
 
     bool readPixels(Pixmap &output, int x, int y, int w, int h);
+    bool readPixels(Pixmap &output, int x, int y, int w, int h, int mrtSlot);
     void generateMipMaps( Texture2d& target );
 
     void setRenderState( const RenderState & ) const;
