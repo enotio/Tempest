@@ -706,7 +706,7 @@ bool DirectX11::readPixels(GraphicsSubsystem::Device *d, Pixmap &output,
   if(view!=NULL) {
     view->GetResource(&res);
     ID3D11Texture2D* tex = NULL;
-    if(SUCCEEDED(res->QueryInterface(IID_ID3D11Texture2D,reinterpret_cast<void**>(&tex)))) {
+    if(SUCCEEDED(res->QueryInterface(ID3D11Texture2D_uuid,reinterpret_cast<void**>(&tex)))) {
       D3D11_TEXTURE2D_DESC desc={};
       tex->GetDesc(&desc);
 
