@@ -44,6 +44,7 @@ void Label::setText( const std::string &t ) {
 
 void Label::setText(const std::u16string &t) {
   txt = t;
+  update();
   }
 
 void Label::paintEvent(PaintEvent &e) {
