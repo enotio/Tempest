@@ -1723,8 +1723,12 @@ void Opengl2x::updateBuffer(AbstractAPI::Device* d,
 
   Detail::GLBuffer *vbo = (Detail::GLBuffer*)v;
 
-  if( vbo->id==0 )
+  if( vbo->id==0 ) {
+    if( vbo->vba.size()>=offset+size ){
+      memcpy(&vbo->vba[offset],data,size);
+      }
     return;
+    }
 
   glBindBuffer( GL_ARRAY_BUFFER, vbo->id );
   glBufferSubData( GL_ARRAY_BUFFER, offset, size, data );
