@@ -576,6 +576,9 @@ size_t Widget::detachMouseLeavePtr() {
 void Widget::attach(Layout *ow,size_t mouseReleaseId,size_t leaveId) {
   T_ASSERT(parentLay==nullptr);
 
+  if( ow->owner()->hasChildFocus() )
+    unsetChFocus(ow->owner(),this,Event::UnknownReason);
+
   parentLay = ow;
   if( mouseReleaseId!=size_t(-1) )
     setupMouseReleasePtr(mouseReleaseId);
@@ -587,6 +590,15 @@ void Widget::attach(Layout *ow,size_t mouseReleaseId,size_t leaveId) {
     Widget::impl_disableSum(this,owner()->disableSum);
 
   solveStyle();
+
+  if( chFocus ) {
+    Widget * root = owner();
+    while( root && !root->chFocus ){
+      root->chFocus = true;
+      root->onChildFocusChange( true );
+      }
+    }
+
   if( nToUpdate ){
     nToUpdate = false;
     update();

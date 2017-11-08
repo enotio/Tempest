@@ -135,6 +135,12 @@ ScrollWidget::ScrollWidget()
   : sbH(nullptr), sbV(nullptr), vert(AsNeed), hor(AsNeed) {
   cen = new Widget();
 
+  const Style::UIIntefaceCategory cat=style().idiom().category;
+  if( cat==Style::UIIntefacePhone || cat==Style::UIIntefacePC ){
+    vert=AlwaysOff;
+    hor =AlwaysOff;
+    }
+
   sbH = new ScrollBar(Horizontal);
   sbV = new ScrollBar(Vertical  );
 
@@ -180,8 +186,8 @@ bool ScrollWidget::updateScrolls(bool noRetry) {
 
   Size content=cenLay.wrapContent(false);
 
-  bool hasScH = (hor ==AlwaysOn || content.w>helper.w());
-  bool hasScV = (vert==AlwaysOn || content.h>helper.h());
+  bool hasScH = (hor ==AlwaysOn || content.w>helper.w()) && (hor !=AlwaysOff);
+  bool hasScV = (vert==AlwaysOn || content.h>helper.h()) && (vert!=AlwaysOff);
 
   emplace(helper,
           hasScH ? sbH : nullptr,
@@ -190,9 +196,9 @@ bool ScrollWidget::updateScrolls(bool noRetry) {
 
   const Size hsize=helper.size();
   if( !noRetry ) {
-    if(hasScH != (hor ==AlwaysOn || content.w>hsize.w))
+    if(hasScH != (hor ==AlwaysOn || content.w>hsize.w) && (hor!=AlwaysOff))
       return false;
-    if(hasScV != (vert==AlwaysOn || content.h>hsize.h))
+    if(hasScV != (vert==AlwaysOn || content.h>hsize.h) && (vert!=AlwaysOff))
       return false;
     }
 

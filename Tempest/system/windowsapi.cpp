@@ -154,7 +154,7 @@ Size WindowsAPI::implScreenSize() {
   }
 
 void WindowsAPI::startApplication(ApplicationInitArgs *) {
-  WNDCLASSEX winClass;
+  WNDCLASSEX winClass={};
 
   winClass.lpszClassName = L"Tempest_Window_Class";
   winClass.cbSize        = sizeof(WNDCLASSEX);
@@ -164,7 +164,7 @@ void WindowsAPI::startApplication(ApplicationInitArgs *) {
   winClass.hIcon         = LoadIcon( GetModuleHandle(0), (LPCTSTR)MAKEINTRESOURCE(32512) );
   winClass.hIconSm       = LoadIcon( GetModuleHandle(0), (LPCTSTR)MAKEINTRESOURCE(32512) );
   winClass.hCursor       = LoadCursor(NULL, IDC_ARROW);
-  winClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+  winClass.hbrBackground = NULL;// (HBRUSH)GetStockObject(BLACK_BRUSH);
   winClass.lpszMenuName  = NULL;
   winClass.cbClsExtra    = 0;
   winClass.cbWndExtra    = 0;
@@ -685,6 +685,14 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
           SystemAPI::moveEvent( w, rpos.left, rpos.top );
           }
         break;
+      case WM_ERASEBKGND:  {
+        render(w);
+        return TRUE;
+        }
+      case WM_SIZING:{
+        render(w);
+        }
+        break;
       case WM_SIZE:{
           RECT rpos = {0,0,0,0};
           GetWindowRect( hWnd, &rpos );
@@ -715,9 +723,16 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
               //GetWindowRect( HWND(hWnd), &rectWindow );
               SystemAPI::moveEvent( w, rpos.left, rpos.top );
               }
+            render(w);
             }
           }
         break;
+      case WM_PAINT:
+      {
+        render(w);
+        return DefWindowProc( hWnd, msg, wParam, lParam );
+      }
+      break;
 
       case WM_ACTIVATEAPP:
       {
