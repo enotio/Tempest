@@ -18,9 +18,14 @@ class RFile : public IDevice {
 
     RFile( const char* name,     Mode m = Default );
     RFile( const char16_t* name, Mode m = Default );
+
+    RFile( const std::string&    name, Mode m = Default );
+    RFile( const std::u16string& name, Mode m = Default );
+
     RFile( RFile&& mov );
-    RFile& operator = ( RFile&& mov );
     virtual ~RFile();
+
+    RFile& operator = ( RFile&& mov );
 
     size_t readData(char *dest, size_t count);
     void   skip(size_t count);
@@ -47,6 +52,10 @@ class WFile : public ODevice {
 
     WFile( const char* name,     Mode m = Default );
     WFile( const char16_t* name, Mode m = Default );
+
+    WFile( const std::string&    name, Mode m = Default );
+    WFile( const std::u16string& name, Mode m = Default );
+
     WFile( WFile&& mov );
     virtual ~WFile();
 

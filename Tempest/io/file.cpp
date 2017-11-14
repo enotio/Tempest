@@ -45,6 +45,14 @@ RFile::RFile(const char16_t *name, RFile::Mode m) {
   impl = SystemAPI::fopen(name, md);
   }
 
+RFile::RFile(const std::string &name, RFile::Mode m)
+  : RFile(name.c_str(),m){
+  }
+
+RFile::RFile(const std::u16string &name, RFile::Mode m)
+  : RFile(name.c_str(),m){
+  }
+
 bool RFile::isOpen() const {
   return impl!=0;
   }
@@ -86,6 +94,14 @@ WFile::WFile(const char16_t *name, WFile::Mode m) {
   makeMode(md, m|2|8);
 
   impl = SystemAPI::fopen(name, md);
+  }
+
+WFile::WFile(const std::string &name, WFile::Mode m)
+  :WFile(name.c_str(),m) {
+  }
+
+WFile::WFile(const std::u16string &name, WFile::Mode m)
+  :WFile(name.c_str(),m) {
   }
 
 WFile::WFile( WFile && mov) {
