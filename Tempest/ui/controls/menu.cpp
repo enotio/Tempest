@@ -59,6 +59,7 @@ int Menu::exec(Widget& owner, const Point &pos, bool alignWidthToOwner) {
     close();  
 
   overlay = new Overlay();
+  overlay->setStyle(owner.stylePointer());
   T_ASSERT( SystemAPI::instance().addOverlay( overlay )!=0 );
 
   overlay->owner = &owner;
@@ -98,13 +99,14 @@ Widget *Menu::createDropList( Widget& owner,
   ScrollWidget *sw = new ScrollWidget();
   Widget*   list   = createItems(items);
 
+  box->layout().add(sw);
   sw->centralWidget().layout().add(list);
+
   int wx = list->minSize().w+box->margin().xMargin();
   if(alignWidthToOwner){
     wx = std::max(owner.w(),wx);
     }
   box->resize(wx, list->h()+box->margin().yMargin());
-  box->layout().add(sw);
 
   return box;
   }
@@ -118,6 +120,8 @@ Widget *Menu::createItems(const std::vector<Item>& items) {
 Widget *Menu::createItem(const Menu::Item &decl) {
   ItemButton* b = new ItemButton(decl.items);
 
+  b->setStyle(overlay->stylePointer());
+
   b->setText(decl.text);
   b->onClicked = decl.activated;
   b->onClicked.bind(this,&Menu::close);
@@ -129,8 +133,9 @@ Widget *Menu::createItem(const Menu::Item &decl) {
   p.maxSize.w  = SizePolicy::maxWidgetSize().w;
   b->setSizePolicy(p);
 
-  b->setMinimumSize( b->font().textSize(b->text()).w + b->margin().xMargin(),
-                     b->minSize().h );
+  Size textSz=b->font().textSize(b->text());
+  b->setMinimumSize( textSz.w + b->margin().xMargin(),
+                     std::max(textSz.h + b->margin().yMargin(),b->minSize().h) );
 
   return b;
   }
