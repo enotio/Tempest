@@ -59,6 +59,8 @@ class Style {
 
     enum Element {
       E_Background,
+      E_MenuBackground,
+      E_MenuItemBackground,
       E_ArrowUp,
       E_ArrowDown,
       E_ArrowLeft,

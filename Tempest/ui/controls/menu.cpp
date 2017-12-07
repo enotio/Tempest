@@ -91,7 +91,7 @@ void Menu::close() {
 Widget *Menu::createDropList( Widget& owner,
                               bool alignWidthToOwner,
                               const std::vector<Item>& items ) {
-  Panel *box = new Panel();
+  Panel *box = new MenuPanel();
 
   box->setLayout( Tempest::Horizontal );
   box->layout().setMargin(6);
@@ -218,4 +218,18 @@ Menu::ItemButton::ItemButton(const Declarator &item):item(item){
 
 void Menu::ItemButton::mouseEnterEvent(MouseEvent &) {
   onMouseEnter(item,*this);
+  }
+
+void Menu::ItemButton::paintEvent(PaintEvent &e) {
+  Tempest::Painter p(e);
+  style().draw(p,this,  Style::E_MenuItemBackground,state(),Rect(0,0,w(),h()),Style::Extra(*this));
+  style().draw(p,text(),Style::TE_ButtonTitle,      state(),Rect(0,0,w(),h()),Style::Extra(*this));
+
+  paintNested(e);
+  }
+
+void Menu::MenuPanel::paintEvent(PaintEvent &e) {
+  Tempest::Painter p(e);
+  style().draw(p,this,Style::E_MenuBackground,state(),Rect(0,0,w(),h()),Style::Extra(*this));
+  paintNested(e);
   }

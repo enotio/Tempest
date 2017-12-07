@@ -22,12 +22,7 @@ std::u16string UiFactory::tr(const char *src) {
 int UiFactory::metric(int x) {
   if(x==SizePolicy::maxWidgetSize().w || x==SizePolicy::maxWidgetSize().h)
     return x;
-#ifdef __ANDROID__
-  float dpy=Tempest::AndroidAPI::densityDpi();
-  return int(float(x)*dpy);
-#else
-  return x;
-#endif
+  return UiMetrics::scaledSize(x);
   }
 
 Widget *UiFactory::widget() {

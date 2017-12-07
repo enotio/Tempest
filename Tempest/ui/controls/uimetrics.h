@@ -10,6 +10,8 @@ namespace Tempest {
       UiMetrics();
       virtual ~UiMetrics() = default;
 
+      static int scaledSize(int x);
+
       int   buttonWidth      = 128;
       int   buttonHeight     = 27;
       float uiScale          = 1.0;

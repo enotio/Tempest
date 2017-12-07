@@ -6,6 +6,7 @@
 #include <Tempest/Window>
 #include <Tempest/Icon>
 #include <Tempest/Button>
+#include <Tempest/Panel>
 
 namespace Tempest {
 
@@ -29,7 +30,7 @@ class Menu : public slot {
     int  exec(Widget& owner, const Point &pos, bool alignWidthToOwner = true);
     void close();
 
-    struct Declarator{
+    struct Declarator {
       template<class Str, class ... Args>
       Declarator& item(const Str& text, Args... a){
         items.emplace_back();
@@ -93,9 +94,15 @@ class Menu : public slot {
     virtual Widget* createItems(const std::vector<Item> &items);
     virtual Widget* createItem(const Item& decl);
 
+    struct MenuPanel:Tempest::Panel {
+      void paintEvent(Tempest::PaintEvent& e);
+      };
+
     struct ItemButton:Tempest::Button {
       ItemButton(const Declarator& item);
+
       void mouseEnterEvent(MouseEvent& e);
+      void paintEvent(Tempest::PaintEvent& e);
 
       Tempest::signal<const Declarator&,Widget&> onMouseEnter;
       private:
