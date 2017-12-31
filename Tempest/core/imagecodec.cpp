@@ -254,7 +254,7 @@ struct TgaCodec:ImageCodec {
 
     int bpp = h.bitsPerPel/8;
     if( h.dataType==RawRGB ){
-      out.resize(h.width*h.height*bpp);
+      out.resize(size_t(h.width)*size_t(h.height)*size_t(info.bpp));
 
       char* p = (char*)out.data();
       if(d.readData(p,out.size())!=out.size())
@@ -273,7 +273,7 @@ struct TgaCodec:ImageCodec {
       unsigned long index=0;
       uint8_t pCur=0;
 
-      out.resize(h.width*h.height*info.bpp);
+      out.resize(size_t(h.width)*size_t(h.height)*size_t(info.bpp));
       // Decode
       while( index<out.size() ) {
         uint8_t px[4]={};
@@ -287,14 +287,18 @@ struct TgaCodec:ImageCodec {
           if(int(d.readData((char*)px,info.bpp))!=info.bpp)
             return false;
 
+          std::swap(px[0],px[2]);
           for(uint8_t i=0; i!=length; ++i, index+=info.bpp)
             memcpy(&out[index],px,info.bpp);
           } else { // Raw chunk
           uint8_t length=pCur+1;
 
-          for(uint8_t i=0; i!=length; ++i, index+=info.bpp)
-            if(int(d.readData((char*)&out[index],info.bpp))!=info.bpp)
+          for(uint8_t i=0; i!=length; ++i, index+=info.bpp) {
+            if(int(d.readData((char*)&px,info.bpp))!=info.bpp)
               return false;
+            std::swap(px[0],px[2]);
+            memcpy(&out[index],px,info.bpp);
+            }
           }
         }
 
