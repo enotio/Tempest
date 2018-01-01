@@ -447,11 +447,15 @@ size_t AndroidAPI::peekImpl(SystemAPI::File *f, size_t skip, char *dest, size_t 
     fseek( fn->h , pos, SEEK_SET );
     return c;
     } else {
+    if( skip+count>fn->size )
+      return 0;
     size_t pos = size_t(fn->size - AAsset_getRemainingLength64(fn->asset));
-    AAsset_seek(fn->asset,skip,SEEK_CUR);
-    size_t c   = readDataImpl(f,dest,count);
+    if(pos!=skip)
+       AAsset_seek(fn->asset,skip,SEEK_CUR);
+    size_t c = readDataImpl(f,dest,count);
 
-    AAsset_seek(fn->asset,pos,SEEK_SET);
+    if(pos!=skip)
+      AAsset_seek(fn->asset,pos,SEEK_SET);
     return c;
     }
   }
@@ -477,6 +481,8 @@ size_t AndroidAPI::skipImpl(SystemAPI::File *f, size_t count) {
     return ftell(fn->h) - pos;
     } else {
     size_t pos    = size_t(fn->size - AAsset_getRemainingLength64( fn->asset ));
+    if(pos==count)
+      return 0;
     off_t  newPos = AAsset_seek(fn->asset,count,SEEK_CUR);
     if(newPos<0)
       return 0;
