@@ -126,7 +126,7 @@ struct GLSL::Data{
     return false;
     }
 
-  struct ShProgram{
+  struct ShProgram {
     GLuint vs;
     GLuint fs;
     GLuint gs = 0;
@@ -174,10 +174,12 @@ struct GLSL::Data{
   LinkedProg  curLinked;
   GLuint      bindedProg;
   std::shared_ptr<std::vector<AbstractShadingLang::UBO>> curUbo;
+  bool        invalidateIds=false;
 
   void setupId( GLuint prog ){
     for( AbstractShadingLang::UBO& u:*curUbo )
       setupId(prog,u);
+    invalidateIds=false;
     }
 
   void setupId(GLuint prog, AbstractShadingLang::UBO& ux){
@@ -326,8 +328,10 @@ struct GLSL::Data{
     if( bindedProg!=curLinked.linked ){
       glUseProgram(curLinked.linked);
       bindedProg = curLinked.linked;
-      setupId(curLinked.linked);
+      invalidateIds=true;
       }
+    if(invalidateIds)
+      setupId(curLinked.linked);
     }
   };
 /// \endcond
@@ -543,11 +547,13 @@ void GLSL::bind(const Tempest::ShaderProgram &p) const {
   if( data->curProgram != (Data::ShProgram*)get(p) ){
     data->curProgram = (Data::ShProgram*)get(p);
     data->curLinked.linked = 0;
+    data->invalidateIds    = true;
     }
 
   auto& u = inputOf(p);
   if( data->curUbo!=u ){
-    data->curUbo = u;
+    data->curUbo        = u;
+    data->invalidateIds = true;
     for( UBO& u:*data->curUbo )
       u.updated=false;
     }

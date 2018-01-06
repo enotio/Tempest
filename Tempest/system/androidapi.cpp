@@ -454,8 +454,7 @@ size_t AndroidAPI::peekImpl(SystemAPI::File *f, size_t skip, char *dest, size_t 
        AAsset_seek(fn->asset,skip,SEEK_CUR);
     size_t c = readDataImpl(f,dest,count);
 
-    if(pos!=skip)
-      AAsset_seek(fn->asset,pos,SEEK_SET);
+    AAsset_seek(fn->asset,pos,SEEK_SET);
     return c;
     }
   }
