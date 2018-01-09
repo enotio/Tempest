@@ -267,21 +267,26 @@ void Pixmap::addAlpha() {
     return;
   makeEditable();
 
-  imgData.value()->bytes.resize( info.w*info.h*4);
-  uint8_t * v = &imgData.value()->bytes[0];
+  auto& vec = imgData.value()->bytes;
+  vec.resize(info.w*info.h*4);
+  uint8_t * v = &vec[0];
 
-  for( size_t i=info.w*info.h; i>0; --i ){
-    uint8_t * p = &v[ 4*i-4 ];
-    uint8_t * s = &v[ 3*i-3 ];
-    for( int r=0; r<3; ++r )
-      p[r] = s[r];
+  for( size_t i=vec.size()/4; i>0; ){
+    --i;
+    uint8_t * p = &v[ 4*i ];
+    uint8_t * s = &v[ 3*i ];
+
+    p[0] = s[0];
+    p[1] = s[1];
+    p[2] = s[2];
     p[3] = 255;
     }
 
-  rawPtr   = &imgData.const_value()->bytes[0];
-  mrawPtr  = 0;
-  info.bpp = 4;
-  info.alpha = true;
+  rawPtr      = &vec[0];
+  mrawPtr     = 0;
+  info.bpp    = 4;
+  info.format = Format_RGBA;
+  info.alpha  = true;
   }
 
 void Pixmap::removeAlpha() {
@@ -302,6 +307,7 @@ void Pixmap::removeAlpha() {
   rawPtr   = &imgData.const_value()->bytes[0];
   mrawPtr  = 0;
   info.bpp = 3;
+  info.format = Format_RGB;
   info.alpha = true;
   }
 

@@ -27,6 +27,7 @@ LineEdit::LineEdit() {
   p.typeV      = FixedMax;
 
   setSizePolicy(p);
+  setTabChangesFocus(true);
   }
 
 LineEdit::~LineEdit() {

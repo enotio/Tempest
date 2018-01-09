@@ -38,7 +38,7 @@ using namespace Tempest;
 #include <android/obb.h>
 
 #ifdef __arm__
-#include <machine/cpu-features.h>
+//#include <machine/cpu-features.h>
 //extern int android_getCpuCount(void);
 #endif
 

@@ -27,7 +27,7 @@
 #define CLOCK_MONOTONIC 1
 #endif
 
-#if !defined(_INC_TYPES) && !defined(_LINUX_TIME_H) && !defined(_TIME_H) && !defined(__APPLE__) && !defined(_INC_TIME)
+#if !defined(_INC_TYPES) && !defined(_LINUX_TIME_H) && !defined(_TIME_H) && !defined(__APPLE__) && !defined(_INC_TIME) && defined(__WINDOWS_PHONE__)
 /// \cond HIDDEN_SYMBOLS
 struct timespec {
   long tv_sec;
@@ -214,6 +214,17 @@ uint64_t Application::tickCount() {
   // Convert the mach time to milliseconds
   uint64_t millis = ((machTime / 1000000) * timeInfo.numer) / timeInfo.denom;
   return millis;
+#elif defined(__ANDROID__)
+  auto now = std::chrono::steady_clock::now();
+  auto ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+  return uint64_t(ms.time_since_epoch().count())-uint64_t(INT64_MIN);
+  /*
+  timespec now;
+  clock_gettime(CLOCK_BOOTTIME, &now);
+  uint64_t t = (uint8_t)now.tv_sec;
+  t *= 1000;
+  t += now.tv_nsec/1000000;
+  return t;*/
 #else
   timespec now;
   clock_gettime(CLOCK_MONOTONIC_RAW, &now);

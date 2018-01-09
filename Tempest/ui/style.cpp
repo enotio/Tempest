@@ -235,6 +235,7 @@ void Style::draw(Painter &p, Label *w, Element e, const WidgetState &st, const R
 void Style::draw(Painter &p, LineEdit *w, Element e, const WidgetState &st, const Rect &r, const Style::Extra &extra) const {
   if(parent)
     return parent->draw(p,w,e,st,r,extra);
+
   if(!st.focus && focused==w){
     focused=nullptr;
     anim.stop();
