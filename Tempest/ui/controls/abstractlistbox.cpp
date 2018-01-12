@@ -9,6 +9,12 @@
 using namespace Tempest;
 
 AbstractListBox::AbstractListBox() {
+  SizePolicy p = sizePolicy();
+  p.typeH      = Preferred;
+  p.typeV      = FixedMax;
+  p.maxSize.h  = Application::uiMetrics().buttonHeight;
+  setSizePolicy(p);
+
   overlay = 0;
   setMargin(0);
   Widget::setLayout(new WrapLayout());
@@ -86,7 +92,7 @@ void AbstractListBox::WrapLayout::applyLayout() {
     Widget* ow = owner();
     const Margin m = owner()->margin();
     ow->setMinimumSize(w->minSize().w+m.xMargin(), w->minSize().h+m.yMargin());
-    ow->setMaximumSize(w->maxSize().w+m.xMargin(), w->maxSize().h+m.yMargin());
+    //ow->setMaximumSize(w->maxSize().w+m.xMargin(), w->maxSize().h+m.yMargin());
 
     Size sz = {ow->w()-m.xMargin(),ow->h()-m.yMargin()};
     if(w->sizePolicy().typeH==FixedMin)

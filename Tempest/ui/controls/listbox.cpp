@@ -87,7 +87,8 @@ class ListBox::BasicDelegate : public ListDelegate {
     void initializeItem(Button* c, const T& data){
       SizePolicy p = c->sizePolicy();
       p.typeH      = Preferred;
-      p.maxSize.w  = SizePolicy::maxWidgetSize().w;
+      p.typeV      = Preferred;
+      p.maxSize    = SizePolicy::maxWidgetSize();
       c->setSizePolicy(p);
 
       c->setText(data);
