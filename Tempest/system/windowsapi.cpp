@@ -523,7 +523,7 @@ void WindowsAPI::fcloseImpl(SystemAPI::File *f) {
   delete ((WinFile*)f);
   }
 
-static Event::MouseButton toButton( UINT msg ){
+static Event::MouseButton toButton( UINT msg, DWORD wParam ){
   if( msg==WM_LBUTTONDOWN ||
       msg==WM_LBUTTONUP )
     return Event::ButtonLeft;
@@ -535,6 +535,15 @@ static Event::MouseButton toButton( UINT msg ){
   if( msg==WM_MBUTTONDOWN ||
       msg==WM_MBUTTONUP )
     return Event::ButtonMid;
+
+  if( msg==WM_XBUTTONDOWN ||
+      msg==WM_XBUTTONUP ) {
+    const WORD btn = GET_XBUTTON_WPARAM(wParam);
+    if(btn==XBUTTON1)
+      return Event::ButtonBack;
+    if(btn==XBUTTON2)
+      return Event::ButtonForward;
+    }
 
   return Event::ButtonNone;
   }
@@ -616,14 +625,14 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
       }
       break;
 
-
+      case WM_XBUTTONDOWN:
       case WM_LBUTTONDOWN:
       case WM_MBUTTONDOWN:
       case WM_RBUTTONDOWN: {
         SetCapture(hWnd);
         MouseEvent e( GET_X_LPARAM(lParam),
                       GET_Y_LPARAM(lParam),
-                      toButton(msg),
+                      toButton(msg,wParam),
                       0,
                       0,
                       Event::MouseDown );
@@ -631,13 +640,14 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         }
         break;
 
+      case WM_XBUTTONUP:
       case WM_LBUTTONUP:
       case WM_RBUTTONUP:
       case WM_MBUTTONUP: {
         ReleaseCapture();
         MouseEvent e( GET_X_LPARAM(lParam),
                       GET_Y_LPARAM(lParam),
-                      toButton(msg),
+                      toButton(msg,wParam),
                       0,
                       0,
                       Event::MouseUp  );

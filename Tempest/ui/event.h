@@ -50,14 +50,16 @@ class Event {
       Custom = 512
       };
 
-    enum MouseButton{
+    enum MouseButton {
       ButtonNone = 0,
       ButtonLeft,
       ButtonRight,
-      ButtonMid
+      ButtonMid,
+      ButtonBack,
+      ButtonForward
       };
 
-    enum KeyType{
+    enum KeyType {
       K_NoKey = 0,
       K_ESCAPE,
 
