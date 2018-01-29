@@ -77,6 +77,7 @@ class Window : public Widget {
       }
 
     bool isActive() const;
+
   protected:
     SystemAPI::Window *handle();
 

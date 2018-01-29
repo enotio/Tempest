@@ -36,7 +36,18 @@ struct ModelBounds{
   float diameter() const;
   float radius() const;
 
+  bool  isEmpty() const {
+    return min[0]==max[0] &&
+           min[1]==max[1] &&
+           min[2]==max[2];
+    }
+
   ModelBounds operator | (const ModelBounds& b) const {
+    if(b.isEmpty())
+      return *this;
+    if(isEmpty())
+      return b;
+
     ModelBounds xb;
     for(int i=0; i<3; ++i){
       xb.min[i] = std::min(min[i],b.min[i]);
