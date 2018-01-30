@@ -446,7 +446,8 @@ size_t AndroidAPI::peekImpl(SystemAPI::File *f, size_t skip, char *dest, size_t 
     size_t c = fread( dest, 1, count, fn->h );
     fseek( fn->h , pos, SEEK_SET );
     return c;
-    } else {
+    }
+  else if(fn->asset) {
     if( skip+count>fn->size )
       return 0;
     size_t pos = size_t(fn->size - AAsset_getRemainingLength64(fn->asset));
@@ -457,6 +458,7 @@ size_t AndroidAPI::peekImpl(SystemAPI::File *f, size_t skip, char *dest, size_t 
     AAsset_seek(fn->asset,pos,SEEK_SET);
     return c;
     }
+  return 0;
   }
 
 size_t AndroidAPI::writeDataImpl(SystemAPI::File *f, const char *data, size_t count) {

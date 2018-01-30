@@ -25,6 +25,7 @@ namespace Tempest {
 struct PngCodec:ImageCodec {
   PngCodec(){
     rows.reserve(2048);
+    prows_lock.store(false);
     }
 
   bool canSave(const ImgInfo &inf, const char* ext) const{
@@ -130,8 +131,8 @@ struct PngCodec:ImageCodec {
       png_set_interlace_handling(png_ptr);
       png_read_update_info(png_ptr, info_ptr);
 
-      Detail::Guard guard(spin);
-      (void)guard;
+      RowsDat rows(this,info);
+      png_bytep* imgRows=rows.imgRows;
 
       if(setjmp(png_jmpbuf(png_ptr)))
         return false;
@@ -139,12 +140,10 @@ struct PngCodec:ImageCodec {
       if( !(info.bpp==3 || info.bpp==4 ) )
         return false;
 
-      rows.resize( info.h );
-
       for( int y=0; y<info.h; y++ )
-        rows[y] = &out[ y*info.w*info.bpp ];
+        imgRows[y] = &out[ y*info.w*info.bpp ];
 
-      png_read_image(png_ptr, &rows[0]);
+      png_read_image(png_ptr,imgRows);
       if( !r.err )
         png_read_end(png_ptr, info_ptr);
 
@@ -200,26 +199,49 @@ struct PngCodec:ImageCodec {
       return 0;
 
     {
-      Detail::Guard guard(spin);
-      (void)guard;
-
-      rows.resize( info.h );
+      RowsDat rows(this,info);
+      png_bytep* imgRows=rows.imgRows;
 
       for( int y=0; y<info.h; y++ )
-        rows[y] = (png_bytep)&img[ y*info.w*info.bpp ];
-      png_write_image(png_ptr, &rows[0]);
+        imgRows[y] = png_bytep(&img[ size_t(y*info.w*info.bpp) ]);
+      png_write_image(png_ptr,imgRows);
 
       if (setjmp(png_jmpbuf(png_ptr)))
         return 0;
-
       png_write_end(png_ptr, NULL);
     }
 
     return 1;
     }
 
-  std::vector<png_bytep> rows;
-  Detail::Spin spin;
+  using Rows=std::vector<png_bytep>;
+  Rows             rows;
+  std::atomic_bool prows_lock;
+  
+  struct RowsDat {
+    std::atomic_bool& prows_lock;
+    png_bytep*        imgRows=nullptr;
+    png_bytep*        imgFree=nullptr;
+
+    RowsDat(PngCodec* c,const ImgInfo &info):prows_lock(c->prows_lock) {
+      bool       expect =false;
+      if(prows_lock.compare_exchange_strong(expect,true)) {
+        c->rows.resize( size_t(info.h) );
+        imgRows=c->rows.data();
+        } else {
+        imgRows=new png_bytep[info.h];
+        imgFree=imgRows;
+        }
+      }
+
+    ~RowsDat(){
+      if( imgFree ) {
+        delete[] imgFree;
+        } else {
+        prows_lock.store(false);
+        }
+      }
+    };
   };
 
 struct TgaCodec:ImageCodec {

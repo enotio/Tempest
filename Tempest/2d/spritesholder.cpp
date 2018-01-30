@@ -37,6 +37,8 @@ Sprite SpritesHolder::load(const std::string &f) {
   }
 
 Sprite SpritesHolder::load(const Tempest::Pixmap &p) {
+  if(p.isEmpty())
+    return Sprite();
   SpriteData* data = new SpriteData();
   data->p      = p;
   data->sq     = p.width()*p.height();
