@@ -183,10 +183,8 @@ void Button::gestureEvent(Tempest::AbstractGestureEvent &e) {
     Tempest::DragGesture& g = reinterpret_cast<Tempest::DragGesture&>(e);
 
     if( g.state()==Tempest::DragGesture::GestureUpdated ){
-      const Point p = e.hotSpot();
-      if(!(0<=p.x && 0<=p.y && p.x<w() && p.y<h()))
-        setPressed(false);
-      //presAnim &= isPressed();
+      //const Point p = e.hotSpot();
+      setPressed(false);
       update();
       }
     e.ignore();

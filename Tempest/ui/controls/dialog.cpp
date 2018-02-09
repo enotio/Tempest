@@ -50,10 +50,16 @@ struct Dialog::Overlay : public Tempest::WindowOverlay {
 
   void keyDownEvent(Tempest::KeyEvent& e){
     dlg->keyDownEvent(e);
+    e.accept();
     }
 
   void keyUpEvent(Tempest::KeyEvent& e){
     dlg->keyUpEvent(e);
+    e.accept();
+    }
+
+  void gestureEvent(Tempest::AbstractGestureEvent &e) {
+    e.accept();
     }
   };
 
