@@ -186,8 +186,10 @@ bool ScrollWidget::updateScrolls(bool noRetry) {
 
   Size content=cenLay.wrapContent(false);
 
-  bool hasScH = (hor ==AlwaysOn || content.w>helper.w()) && (hor !=AlwaysOff);
-  bool hasScV = (vert==AlwaysOn || content.h>helper.h()) && (vert!=AlwaysOff);
+  bool needScH = (hor ==AlwaysOn || content.w>helper.w());
+  bool needScV = (vert==AlwaysOn || content.h>helper.h());
+  bool hasScH  = needScH && (hor !=AlwaysOff);
+  bool hasScV  = needScV && (vert!=AlwaysOff);
 
   emplace(helper,
           hasScH ? sbH : nullptr,
@@ -202,16 +204,16 @@ bool ScrollWidget::updateScrolls(bool noRetry) {
       return false;
     }
 
-  if( !hasScH && !hasScV ) {
+  if( !needScH && !needScV ) {
     sbH->setValue(0);
     sbV->setValue(0);
     cen->setPosition(0,0);
     } else
-  if( !hasScH ) {
+  if( !needScH ) {
     sbH->setValue(0);
     cen->setPosition(0,cen->y());
     } else
-  if( !hasScV ) {
+  if( !needScV ) {
     sbV->setValue(0);
     cen->setPosition(cen->x(),0);
     }
@@ -437,7 +439,7 @@ void ScrollWidget::gestureEvent(Tempest::AbstractGestureEvent &e) {
 
   if( e.gestureType()==Tempest::AbstractGestureEvent::gtDragGesture && helper.rect().contains(e.hotSpot()) ){
     Tempest::DragGesture &d = reinterpret_cast<Tempest::DragGesture&>(e);
-    if(sbH!=nullptr && sbH->range()>w() && style().idiom().touch){
+    if(sbH!=nullptr && cen->w()>w() && style().idiom().touch){
       int v = sbH->value();
       int dpos = d.dpos.x;
 
@@ -445,7 +447,7 @@ void ScrollWidget::gestureEvent(Tempest::AbstractGestureEvent &e) {
       if( v!=sbH->value() )
         e.accept();
       }
-    if(sbV!=nullptr && sbV->range()>h() && style().idiom().touch){
+    if(sbV!=nullptr && cen->h()>h() && style().idiom().touch){
       int v = sbV->value();
       int dpos = d.dpos.y;
 
