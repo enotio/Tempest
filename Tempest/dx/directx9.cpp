@@ -86,6 +86,7 @@ AbstractAPI::Caps DirectX9::caps( AbstractAPI::Device *d ) const {
                                dx->caps.MaxTextureHeight );
   c.maxVaryingVectors    = 8;
   c.maxVaryingComponents = c.maxVaryingVectors*4;
+  c.maxUniformVectors    = 512; //FIXME
   c.hasHalf2 = 1;
   c.hasHalf4 = 1;
 

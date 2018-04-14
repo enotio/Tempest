@@ -106,7 +106,7 @@ struct HLSL11::Data{
 
   ID3D11Buffer* createUBO( UINT size ){
     if(size==0)
-      return 0;
+      return nullptr;
     D3D11_BUFFER_DESC desc;
     ZeroMemory(&desc,sizeof(desc));
 
@@ -115,10 +115,10 @@ struct HLSL11::Data{
     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     desc.CPUAccessFlags = 0;
 
-    ID3D11Buffer* ret = 0;
-    HRESULT hr = dev->CreateBuffer( &desc, NULL, &ret );
+    ID3D11Buffer* ret = nullptr;
+    HRESULT hr = dev->CreateBuffer( &desc, nullptr, &ret );
     if( FAILED( hr ) )
-      return 0;
+      return nullptr;
     return ret;
     }
 
@@ -162,10 +162,10 @@ struct HLSL11::Data{
 
     sampDesc.MaxAnisotropy = 16;
 
-    ID3D11SamplerState* ret = 0;
+    ID3D11SamplerState* ret = nullptr;
     HRESULT hr = dev->CreateSamplerState( &sampDesc, &ret );
     if( FAILED(hr) )
-      return 0;
+      return nullptr;
 
     samplers2d[s] = ret;
     return ret;
@@ -174,14 +174,14 @@ struct HLSL11::Data{
   HRESULT createShader(ID3DBlob* code, ID3D11VertexShader*& sh ){
     return dev->CreateVertexShader( code->GetBufferPointer(),
                                     code->GetBufferSize(),
-                                    NULL,
+                                    nullptr,
                                     &sh );
     }
 
   HRESULT createShader(ID3DBlob* code, ID3D11PixelShader*& sh ){
     return dev->CreatePixelShader( code->GetBufferPointer(),
                                    code->GetBufferSize(),
-                                   NULL,
+                                   nullptr,
                                    &sh );
     }
    

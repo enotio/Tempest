@@ -31,4 +31,5 @@ SOURCES += \
     enable_flag.cpp \
     widget_state.cpp \
     pixmap_test.cpp \
-    textmodel_test.cpp
+    textmodel_test.cpp \
+    uniforms.cpp

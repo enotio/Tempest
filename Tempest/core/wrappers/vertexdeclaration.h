@@ -14,7 +14,7 @@ class Device;
 
 namespace Decl{
 
-enum ComponentType{
+enum ComponentType {
   float0 = 0, // just trick
   float1 = 1,
   float2 = 2,

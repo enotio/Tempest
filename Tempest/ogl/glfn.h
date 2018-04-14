@@ -78,14 +78,15 @@
 
 #define GL_CLAMP_TO_EDGE                  0x812F
 
-#define GL_MAX_VARYING_COMPONENTS 0x8B4B
+#define GL_MAX_VARYING_COMPONENTS         0x8B4B
+#define GL_MAX_FRAGMENT_UNIFORM_VECTORS    0x8DFD
 
 #define GL_COMPILE_STATUS                 0x8B81
 #define GL_INFO_LOG_LENGTH                0x8B84
 
-#define GL_FRAGMENT_SHADER                  0x8B30
-#define GL_VERTEX_SHADER                    0x8B31
-#define GL_LINK_STATUS                      0x8B82
+#define GL_FRAGMENT_SHADER                0x8B30
+#define GL_VERTEX_SHADER                  0x8B31
+#define GL_LINK_STATUS                    0x8B82
 
 #ifndef GLAPIENTRY
 #define GLAPIENTRY APIENTRY
@@ -93,7 +94,7 @@
 
 typedef ptrdiff_t GLintptr;
 typedef ptrdiff_t GLsizeiptr;
-typedef char             GLchar;
+typedef char      GLchar;
 #endif
 
 namespace Tempest{

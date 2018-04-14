@@ -589,6 +589,7 @@ void GLSL::setUniforms( unsigned int /*prog*/,
                         int& slot ) const {
   const char*  name      = ux.names.data();
   intptr_t const* fields = ux.fields.data();
+  size_t const*   count  = ux.count.data();
   void* const * tex      = ux.tex.data();
   uintptr_t*    id       = ux.id.data();
   Texture2d::Sampler* smp2d = (Texture2d::Sampler*)ux.smp[0].data();
@@ -596,21 +597,23 @@ void GLSL::setUniforms( unsigned int /*prog*/,
 
   for( int t: ux.desc ){
     const char* v = ux.data.data() + fields[0];
+    size_t len=count[0];
     ++fields;
+    ++count;
 
     if(*id!=uintptr_t(-1))
       switch(t){
         case Decl::float1:
-          glUniform1fv( *id, 1, (GLfloat*)v );
+          glUniform1fv( *id, len, (GLfloat*)v );
           break;
         case Decl::float2:
-          glUniform2fv( *id, 1, (GLfloat*)v );
+          glUniform2fv( *id, len, (GLfloat*)v );
           break;
         case Decl::float3:
-          glUniform3fv( *id, 1, (GLfloat*)v );
+          glUniform3fv( *id, len, (GLfloat*)v );
           break;
         case Decl::float4:
-          glUniform4fv( *id, 1, (GLfloat*)v );
+          glUniform4fv( *id, len, (GLfloat*)v );
           break;
         case Decl::Texture2d:{
           Detail::GLTexture* t = *(Detail::GLTexture**)tex;
@@ -625,7 +628,7 @@ void GLSL::setUniforms( unsigned int /*prog*/,
           }
           break;
         case Decl::Matrix4x4:
-          glUniformMatrix4fv( *id, 1, false, (GLfloat*)v );
+          glUniformMatrix4fv( *id, len, false, (GLfloat*)v );
           break;
         }
     if(t==Decl::Texture2d){

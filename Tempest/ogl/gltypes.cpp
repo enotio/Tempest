@@ -124,6 +124,7 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
   glGetIntegerv( GL_MAX_VARYING_COMPONENTS,   &caps.maxVaryingComponents );
   caps.maxVaryingVectors = caps.maxVaryingComponents/4;
 #endif
+  glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS,&caps.maxUniformVectors );
   //T_ASSERT_X( errCk(), "OpenGL error" );
 
 #ifdef __MOBILE_PLATFORM__

@@ -58,6 +58,7 @@ class AbstractShadingLang : public GraphicsSubsystem {
       std::vector<char>     names;
       std::vector<int>      desc;
       std::vector<intptr_t> fields;
+      std::vector<size_t>   count;
 
       std::vector<void*>    tex;
       std::vector<char*>    smp[2];

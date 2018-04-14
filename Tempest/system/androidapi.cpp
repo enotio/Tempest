@@ -392,9 +392,13 @@ AndroidAPI::CpuInfo AndroidAPI::cpuInfoImpl(){
   }
 
 struct AndroidAPI::DroidFile {
-  FILE*   h    =nullptr;
-  AAsset* asset=nullptr;
-  size_t  size =0;
+  std::vector<char> preAsset;
+  FILE*             h    =nullptr;
+  AAsset*           asset=nullptr;
+  char*             buf  =nullptr;
+  size_t            remSize=0;
+  size_t            size =0;
+  bool              isSmall() const { return size<1024*1024; }
   };
 
 AndroidAPI::File *AndroidAPI::fopenImpl( const char16_t *fname, const char *mode ) {
@@ -416,6 +420,12 @@ AndroidAPI::File *AndroidAPI::fopenImpl( const char *fname, const char *mode ) {
     f->asset = android.open(fname);
     if( f->asset )
       f->size = size_t(AAsset_getLength64(f->asset));
+    if(f->isSmall() && f->size>0) {
+      f->preAsset.resize(f->size);
+      f->buf=&f->preAsset[0];
+      f->remSize=f->size;
+      AAsset_read(f->asset,f->buf,f->size);
+      }
     }
 
   if( !f->h && !f->asset ){
@@ -428,18 +438,34 @@ AndroidAPI::File *AndroidAPI::fopenImpl( const char *fname, const char *mode ) {
 
 size_t AndroidAPI::readDataImpl(SystemAPI::File *f, char *dest, size_t count) {
   DroidFile *fn = reinterpret_cast<DroidFile*>(f);
+  if( fn->buf ) {
+    count=std::min(count,fn->remSize);
+    memcpy(dest,fn->buf,count);
+    fn->buf    +=count;
+    fn->remSize-=count;
+    return count;
+    }
+
   if( fn->h ){
     return fread(dest, 1, count, fn->h);
-    } else {
-    int rd = AAsset_read(fn->asset,dest,count);
-    if( rd<0 )
-      return 0;
-    return size_t(rd);
     }
+
+  int rd = AAsset_read(fn->asset,dest,count);
+  if( rd<0 )
+    return 0;
+  return size_t(rd);
   }
 
 size_t AndroidAPI::peekImpl(SystemAPI::File *f, size_t skip, char *dest, size_t count) {
   DroidFile *fn = reinterpret_cast<DroidFile*>(f);
+
+  if( fn->buf ) {
+    if( skip+count>fn->size )
+      return 0;
+    memcpy(dest,fn->buf+skip,count);
+    return count;
+    }
+
   if( fn->h ){
     off_t pos = ftell( fn->h );
     fseek( fn->h, skip, SEEK_CUR );
@@ -447,7 +473,8 @@ size_t AndroidAPI::peekImpl(SystemAPI::File *f, size_t skip, char *dest, size_t 
     fseek( fn->h , pos, SEEK_SET );
     return c;
     }
-  else if(fn->asset) {
+
+  if(fn->asset) {
     if( skip+count>fn->size )
       return 0;
     size_t pos = size_t(fn->size - AAsset_getRemainingLength64(fn->asset));
@@ -475,25 +502,36 @@ void AndroidAPI::flushImpl(SystemAPI::File *f) {
 size_t AndroidAPI::skipImpl(SystemAPI::File *f, size_t count) {
   DroidFile *fn = reinterpret_cast<DroidFile*>(f);
 
+  if( fn->buf ) {
+    if( count>fn->remSize )
+      return 0;
+    fn->remSize-=count;
+    fn->buf    +=count;
+    return count;
+    }
+
   if( fn->h ){
     off_t pos = ftell( fn->h );
     fseek( fn->h, off_t(count), SEEK_CUR );
 
     return ftell(fn->h) - pos;
-    } else {
-    size_t pos    = size_t(fn->size - AAsset_getRemainingLength64( fn->asset ));
-    if(pos==count)
-      return 0;
-    off_t  newPos = AAsset_seek(fn->asset,count,SEEK_CUR);
-    if(newPos<0)
-      return 0;
-
-    return newPos-pos;
     }
+
+  size_t pos = size_t(fn->size - AAsset_getRemainingLength64( fn->asset ));
+  if(pos==count)
+    return 0;
+  off_t  newPos = AAsset_seek(fn->asset,count,SEEK_CUR);
+  if(newPos<0)
+    return 0;
+  return newPos-pos;
   }
 
 bool AndroidAPI::eofImpl(SystemAPI::File *f) {
   DroidFile *fn = reinterpret_cast<DroidFile*>(f);
+
+  if( fn->buf ) {
+    return fn->remSize==0;
+    }
   if( fn->h ){
     return feof( fn->h );
     } else {

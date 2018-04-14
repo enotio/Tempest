@@ -86,12 +86,13 @@ class Device {
     void drawPrimitive( AbstractAPI::PrimitiveType        t,
                         const Tempest::ShaderProgram     &sh,
                         const Tempest::VertexDeclaration &decl,
-                        const Tempest::VertexBuffer<T>   & vbo,
+                        const Tempest::VertexBuffer<T>   &vbo,
                         int firstVertex, int pCount ){
       assertPaint();
 
       if( pCount==0 ||
-          decl.decl==0 ||
+          decl.decl==nullptr ||
+          vbo.size()==0 ||
           !sh.isValid() )
         return;
 
@@ -112,7 +113,9 @@ class Device {
       assertPaint();
 
       if( pCount==0 ||
-          decl.decl==0  ||
+          decl.decl==nullptr  ||
+          vbo.size()==0 ||
+          ibo.size()==0 ||
           !sh.isValid() )
         return;
 

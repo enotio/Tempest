@@ -35,12 +35,13 @@ class AbstractAPI: public GraphicsSubsystem {
       DisplaySettings displaySettings;
       };
 
-    struct Caps{
-      int maxTextureSize;
-      int maxRTCount;
+    struct Caps {
+      int  maxTextureSize;
+      int  maxRTCount;
 
-      int maxVaryingVectors;
-      int maxVaryingComponents;
+      int  maxVaryingVectors;
+      int  maxVaryingComponents;
+      int  maxUniformVectors;
 
       bool hasHalf2, hasHalf4;
       bool has3DTexture, hasNpotTexture;
