@@ -45,6 +45,9 @@ class PainterDevice {
                                  int tx, int ty, int tw, int th );
 
     virtual void drawLine(int x, int y, int x1, int y1);
+    virtual void drawTriangle( int x0, int y0, int u0, int v0,
+                               int x1, int y1, int u1, int v1,
+                               int x2, int y2, int u2, int v2 );
 
     virtual void translate( int dx, int dy );
 
@@ -92,6 +95,17 @@ class PainterDevice {
 
       Point orign;
       } rstate;
+
+    struct FPoint{
+      float x,y;
+      float u,v;
+      };
+
+    void drawTrigImpl( float x0, float y0, float u0, float v0,
+                       float x1, float y1, float u1, float v1,
+                       float x2, float y2, float u2, float v2,
+                       FPoint* out, int stage);
+
     void setState( const State & s );
     //PaintTextEngine tengine;
 
@@ -127,6 +141,10 @@ class Painter {
 
     void drawLine( int x, int y, int x1, int y1 );
     void drawLine( const Point &p, const Point &p1 );
+
+    void drawTriangle( int x0, int y0, int u0, int v0,
+                       int x1, int y1, int u1, int v1,
+                       int x2, int y2, int u2, int v2 );
 
     void translate( int dx, int dy );
     void translate( const Point &p  );
