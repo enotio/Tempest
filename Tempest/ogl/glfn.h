@@ -79,7 +79,6 @@
 #define GL_CLAMP_TO_EDGE                  0x812F
 
 #define GL_MAX_VARYING_COMPONENTS         0x8B4B
-#define GL_MAX_FRAGMENT_UNIFORM_VECTORS    0x8DFD
 
 #define GL_COMPILE_STATUS                 0x8B81
 #define GL_INFO_LOG_LENGTH                0x8B84
@@ -95,6 +94,10 @@
 typedef ptrdiff_t GLintptr;
 typedef ptrdiff_t GLsizeiptr;
 typedef char      GLchar;
+#endif
+
+#ifndef GL_MAX_FRAGMENT_UNIFORM_VECTORS
+#define GL_MAX_FRAGMENT_UNIFORM_VECTORS   0x8DFD
 #endif
 
 namespace Tempest{

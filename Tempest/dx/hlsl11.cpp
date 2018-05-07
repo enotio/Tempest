@@ -484,7 +484,7 @@ void HLSL11::enable() const {
       if(!curD[bufNum])
         curD[bufNum] = data->createUBO(u.data.size());
 
-      if(curD[bufNum]){
+      if(curD[bufNum] && u.data.size()>0 ){
         data->immediateContext->UpdateSubresource( curD[bufNum],  0, 0,
                                                    u.data.data(), 0, 0 );
         data->immediateContext->VSSetConstantBuffers( bufNum, 1, &curD[bufNum] );

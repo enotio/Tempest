@@ -72,8 +72,8 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
     if( type<=Decl::float4) {
       size_t block=size_t(type)*sizeof(float)*count;
       align<float>(bufsz);
-      if(bufsz/16!=(bufsz+block)/16){
-        bufsz=((bufsz+block)/16)*16;
+      if(bufsz/16!=(bufsz+block-1)/16){
+        bufsz=((bufsz+block-1)/16)*16;
         }
       bufsz += block;
       }
@@ -123,8 +123,8 @@ void AbstractShadingLang::assignUniformBuffer( UBO& ux,
       align<float>(insz);
       align<float>(bufsz);
 
-      if(bufsz/16!=(bufsz+vsz)/16){
-        bufsz=((bufsz+vsz)/16)*16;
+      if(bufsz/16!=(bufsz+vsz-1)/16){
+        bufsz=((bufsz+vsz-1)/16)*16;
         }
 
       char* data=pubo+bufsz;
