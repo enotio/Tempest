@@ -27,8 +27,9 @@ TEST(Uniforms, floats) {
 
   const float* dest=reinterpret_cast<const float*>(uout.data.data());
   EXPECT_EQ(dest[0],1.f);
-  EXPECT_EQ(dest[2],2.f);
-  EXPECT_EQ(dest[3],3.f);
+  EXPECT_EQ(dest[1],2.f);
+  EXPECT_EQ(dest[2],3.f);
+  // align
   EXPECT_EQ(dest[4],4.f);
   EXPECT_EQ(dest[5],5.f);
   EXPECT_EQ(dest[6],6.f);
