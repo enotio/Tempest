@@ -214,7 +214,8 @@ void Layout::swap(Layout *other){
     }
 
   size_t s[2] = { w.size(), other->w.size() };
-  std::swap( mmargin, other->mmargin );
+  std::swap( mmargin,  other->mmargin );
+  std::swap( mspacing, other->mspacing );
 
   w.resize( std::max(s[0], s[1]) );
   other->w.resize( w.size() );
@@ -231,7 +232,6 @@ void Layout::swap(Layout *other){
 
   for( size_t i=0; i<other->w.size(); ++i )
     other->w[i]->parentLay = other;
-
   }
 
 void Layout::setSpacing(int s){
