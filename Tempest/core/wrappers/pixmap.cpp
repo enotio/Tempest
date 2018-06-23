@@ -9,6 +9,7 @@
 #include <Tempest/File>
 #include <cstring>
 #include <algorithm>
+#include <mutex>
 
 using namespace Tempest;
 
@@ -30,6 +31,7 @@ struct Pixmap::MemPool{
     }
 
   Pixmap::Data* alloc( int w, int h, int bpp ){
+    std::lock_guard<std::mutex> guard(sync);
     ++count;
 
     size_t sz = w*h*bpp, sz64 = std::max<size_t>(64*64*4, sz);
@@ -74,6 +76,7 @@ struct Pixmap::MemPool{
     }
 
   void free( Pixmap::Data* p ){
+    std::lock_guard<std::mutex> guard(sync);
     --count;
     if( p->bytes.size() && p->bytes.capacity()<=64*64*4 && data.size()<128 ){
       data.push_back(p);
@@ -91,6 +94,7 @@ struct Pixmap::MemPool{
   std::vector<Pixmap::Data*> data, ldata;
   size_t count;
 
+  std::mutex                     sync;
   Tempest::MemPool<Pixmap::Data> pool;
   };
 
