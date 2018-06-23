@@ -146,10 +146,11 @@ const Tempest::FontElement::Letter&
   Leters & leters = *lt;
 
   if( Letter *l = leters.find(ch) ){
-    return *l;
+    if(l->surf.w()==l->size.w && l->surf.h()==l->size.h)
+      return *l;
     }
 
-  FT_Face   face = 0;
+  FT_Face   face = nullptr;
   FT_Vector pen  = {0,0};
   FT_Error  err  = 0;
 
@@ -197,8 +198,8 @@ const Tempest::FontElement::Letter&
   if( bmap.width!=0 && bmap.rows!=0 ){
     Tempest::Pixmap pixmap( bmap.width, bmap.rows, true );
 
-    for( int i=0; i<pixmap.width(); ++i )
-      for( int r=0; r<pixmap.height(); ++r ){
+    for( int r=0; r<pixmap.height(); ++r )
+      for( int i=0; i<pixmap.width(); ++i ) {
         uint8_t lum = bmap.buffer[r * bmap.width + i];
         Tempest::Pixmap::Pixel p = {255, 255, 255, lum};
         pixmap.set( i,r, p );
@@ -220,9 +221,9 @@ const Tempest::FontElement::Letter&
   }
 
 Tempest::FontElement::LetterGeometry Tempest::FontElement::letterGeometry( char16_t ch ) const {
-  Leters & leters = *lt;
+  Leters & letters = *lt;
 
-  if( Letter *l = leters.find(ch) ){
+  if( Letter *l = letters.find(ch) ){
     LetterGeometry r;
     r.advance = l->advance;
     r.dpos    = l->dpos;
@@ -242,7 +243,7 @@ Tempest::FontElement::LetterGeometry Tempest::FontElement::letterGeometry( char1
     if(file.readData(ch,sz)!=sz)
       fdata[key.name].reset();
     }
-  Tempest::MemReader reader(fdata[key.name].get(),-1);
+  Tempest::MemReader reader(fdata[key.name].get(),size_t(-1));
   FT_StreamRec stream;
   ft().mkStream(stream, reader);
 
@@ -273,6 +274,12 @@ Tempest::FontElement::LetterGeometry Tempest::FontElement::letterGeometry( char1
                                      slot->advance.y >> 6 );
 
   FT_Done_Face( face );
+
+  Letter &ref = letters[ch];
+  ref.size   =letter.size;
+  ref.dpos   =letter.dpos;
+  ref.advance=letter.advance;
+
   return letter;
   }
 

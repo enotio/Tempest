@@ -58,8 +58,8 @@ class FontElement{
 
       private:
         mutable Letter* let;
-        mutable bool * e;
-        mutable LMap*  n[256];
+        mutable bool*   e;
+        mutable LMap*   n[256];
       };
 
     struct Key{
