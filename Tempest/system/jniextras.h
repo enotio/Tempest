@@ -120,6 +120,13 @@ namespace Jni{
     private:
       ANativeWindow* ptr=nullptr;
     };
+
+  inline Object newUtf8(JNIEnv& env,const char* v){
+    jobject obj=env.NewStringUTF(v);
+    Object ret(env,obj);
+    env.DeleteLocalRef(obj);
+    return ret;
+    }
   }
 }
 
