@@ -10,8 +10,11 @@ Class::Class() {
 
 Class::Class(JNIEnv& env, const char *name) : env(&env) {
   cls = env.FindClass(name);
-  if( cls )
-    cls = reinterpret_cast<jclass>( env.NewGlobalRef(cls) );
+  if( cls ) {
+    jclass old=cls;
+    cls = reinterpret_cast<jclass>( env.NewGlobalRef(cls));
+    env.DeleteLocalRef(old);
+    }
   clearException(env);
   }
 
