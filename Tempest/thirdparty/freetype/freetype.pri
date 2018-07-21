@@ -1,4 +1,6 @@
 DEFINES += "FT2_BUILD_LIBRARY=1"
+DEFINES += DARWIN_NO_CARBON
+
 INCLUDEPATH += $$PWD/include
 
 mac: QMAKE_CFLAGS += -Wno-deprecated-declarations
@@ -26,5 +28,7 @@ SOURCES += \
   $$PWD/src/raster/raster.c \
   $$PWD/src/sfnt/sfnt.c \
   $$PWD/src/smooth/smooth.c \
-  $$PWD/src/truetype/truetype.c \
+  $$PWD/src/truetype/truetype.c
+
+mac:SOURCES +=\
   $$PWD/src/base/ftmac.c

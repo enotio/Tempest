@@ -27,7 +27,7 @@ class iOSAPI:public SystemAPI {
       InterfaceIdiomTV
       };
 
-    static int                densityDpi();
+    static float densityDpi();
     static const std::string& iso3Locale();
 
     static void showSoftInput();

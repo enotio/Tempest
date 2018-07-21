@@ -2,6 +2,7 @@
 
 #include <Tempest/Platform>
 #include <Tempest/Android>
+#include <Tempest/IOS>
 
 using namespace Tempest;
 
@@ -14,10 +15,14 @@ UiMetrics::UiMetrics() {
   }
 
 int UiMetrics::scaledSize(int x) {
-#ifdef __ANDROID__
+#ifdef __IOS__
+  float dpy=Tempest::iOSAPI::densityDpi();
+  return int(float(x)*dpy);
+#elif  defined(__ANDROID__)
   float dpy=Tempest::AndroidAPI::densityDpi();
   return int(float(x)*dpy);
 #else
   return x;
 #endif
   }
+ 

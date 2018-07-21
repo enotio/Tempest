@@ -85,6 +85,7 @@ Detail::GLContext Detail::createContext(void *hdc) {
   (void)hdc;
   //return eglCreateContext( hdc );
 #endif
+  (void)hdc;
   return 0;
   }
 

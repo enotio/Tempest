@@ -84,6 +84,7 @@ ios:{
   LIBS += -framework OpenGLES
   LIBS += -framework QuartzCore
   QMAKE_IOS_DEPLOYMENT_TARGET = 5.0
+  DEFINES += PNG_ARM_NEON_OPT=0
   }
 
 ogl:{
