@@ -75,6 +75,18 @@ namespace Jni{
         return nullptr;
         }
 
+      template<class ... Args>
+      jint callInt(JNIEnv &env, jobject self, const char* func,const char* sig,Args ... a) {
+        if(cls==nullptr || self==nullptr )
+          return 0;
+
+        jmethodID m = env.GetMethodID(cls,func,sig);
+        clearException(env);
+        if( m!=nullptr )
+          return env.CallIntMethod(self,m,a...);
+        return 0;
+        }
+
     private:
       JNIEnv* env=nullptr;
       jclass  cls=nullptr;
