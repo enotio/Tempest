@@ -41,7 +41,8 @@ class AbstractAPI: public GraphicsSubsystem {
 
       int  maxVaryingVectors;
       int  maxVaryingComponents;
-      int  maxUniformVectors;
+      int  maxFragmentUniformVectors;
+      int  maxVertexUniformVectors;
 
       bool hasHalf2, hasHalf4;
       bool has3DTexture, hasNpotTexture;

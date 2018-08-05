@@ -100,6 +100,10 @@ typedef char      GLchar;
 #define GL_MAX_FRAGMENT_UNIFORM_VECTORS   0x8DFD
 #endif
 
+#ifndef GL_MAX_VERTEX_UNIFORM_VECTORS
+#define GL_MAX_VERTEX_UNIFORM_VECTORS 0x8DFB
+#endif
+
 namespace Tempest{
 
 namespace Detail {

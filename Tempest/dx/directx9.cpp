@@ -84,9 +84,10 @@ AbstractAPI::Caps DirectX9::caps( AbstractAPI::Device *d ) const {
   c.maxRTCount     = dx->caps.NumSimultaneousRTs;
   c.maxTextureSize = std::min( dx->caps.MaxTextureWidth,
                                dx->caps.MaxTextureHeight );
-  c.maxVaryingVectors    = 8;
-  c.maxVaryingComponents = c.maxVaryingVectors*4;
-  c.maxUniformVectors    = 512; //FIXME
+  c.maxVaryingVectors         = 8;
+  c.maxVaryingComponents      = c.maxVaryingVectors*4;
+  c.maxFragmentUniformVectors = 512; //FIXME
+  c.maxVertexUniformVectors   = 512; //FIXME
   c.hasHalf2 = 1;
   c.hasHalf4 = 1;
 

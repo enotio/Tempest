@@ -42,28 +42,28 @@ Tempest::Detail::ImplDeviceBase::ImplDeviceBase():displaySettings(0,0) {
   clearDepth = 1;
   clearS     = 0;
 
-  memset( (char*)&caps, 0, sizeof(caps) );
+  caps=AbstractAPI::Caps{};
   }
 
 void Tempest::Detail::ImplDeviceBase::initExt() {
   const char * ext = (const char*)glGetString(GL_EXTENSIONS);
-  if( ext==0 )
+  if( ext==nullptr )
     ext = "";
   const char *renderer= (const char*)glGetString(GL_RENDERER);
 
   T_ASSERT_X(ext!=nullptr, "opengl context not created");
 
   hasS3tcTextures =
-      (strstr(ext, "GL_OES_texture_compression_S3TC")!=0) ||
-      (strstr(ext, "GL_EXT_texture_compression_s3tc")!=0);
-  hasETC1Textures = (strstr(ext, "GL_OES_compressed_ETC1_RGB8_texture")!=0);
-  hasWriteonlyRendering = (strstr(ext, "GL_QCOM_writeonly_rendering")!=0);
+      (strstr(ext, "GL_OES_texture_compression_S3TC")!=nullptr) ||
+      (strstr(ext, "GL_EXT_texture_compression_s3tc")!=nullptr);
+  hasETC1Textures       = (strstr(ext, "GL_OES_compressed_ETC1_RGB8_texture")!=nullptr);
+  hasWriteonlyRendering = (strstr(ext, "GL_QCOM_writeonly_rendering")!=nullptr);
 
-  hasNpotTexture = (strstr(ext, "GL_OES_texture_npot")!=0) ||
-                   (strstr(ext, "GL_ARB_texture_non_power_of_two")!=0);
+  hasNpotTexture = (strstr(ext, "GL_OES_texture_npot")!=nullptr) ||
+                   (strstr(ext, "GL_ARB_texture_non_power_of_two")!=nullptr);
 
-  hasHalfSupport            = (strstr(ext, "GL_OES_vertex_half_float")!=0) ||
-                              (strstr(ext, "GL_ARB_half_float_vertex")!=0);
+  hasHalfSupport            = (strstr(ext, "GL_OES_vertex_half_float")!=nullptr) ||
+                              (strstr(ext, "GL_ARB_half_float_vertex")!=nullptr);
 
 #ifdef __ANDROID__
   hasRenderToRGBTexture     =  strstr(ext, "GL_OES_rgb8_rgba8")!=0;
@@ -72,11 +72,11 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
   hasRenderToRGBTexture     = 1;
   hasRenderToRGBATexture    = 1;
 #endif
-  hasTextureFloat           = strstr(ext, "GL_ARB_texture_float")!=0;
-  hasPackedFloat            = strstr(ext, "GL_EXT_packed_float") !=0;
+  hasTextureFloat           = strstr(ext, "GL_ARB_texture_float")!=nullptr;
+  hasPackedFloat            = strstr(ext, "GL_EXT_packed_float") !=nullptr;
 
-  hasQCOMTiles      = strstr(ext, "GL_QCOM_tiled_rendering")!=0;
-  hasDiscardBuffers = strstr(ext, "GL_EXT_discard_framebuffer")!=0;
+  hasQCOMTiles      = strstr(ext, "GL_QCOM_tiled_rendering")   !=nullptr;
+  hasDiscardBuffers = strstr(ext, "GL_EXT_discard_framebuffer")!=nullptr;
 
 #ifdef __WINDOWS__
   if( strstr(ext, "WGL_EXT_swap_control") ){
@@ -110,8 +110,8 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
 
   caps.hasHalf2 = hasHalfSupport;
   caps.hasHalf4 = hasHalfSupport;
-  caps.hasRedableDepth = ((strstr(ext, "GL_OES_depth_texture")!=0) ||
-                          (strstr(ext, "GL_ARB_depth_texture")!=0)) &&
+  caps.hasRedableDepth = ((strstr(ext, "GL_OES_depth_texture")!=nullptr) ||
+                          (strstr(ext, "GL_ARB_depth_texture")!=nullptr)) &&
                          (strcmp(renderer,"PowerVR SGX 540")!=0);//PVR bug
   caps.hasNativeRGB =hasRenderToRGBTexture;
   caps.hasNativeRGBA=hasRenderToRGBATexture;
@@ -124,7 +124,8 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
   glGetIntegerv( GL_MAX_VARYING_COMPONENTS,   &caps.maxVaryingComponents );
   caps.maxVaryingVectors = caps.maxVaryingComponents/4;
 #endif
-  glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS,&caps.maxUniformVectors );
+  glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS,&caps.maxFragmentUniformVectors);
+  glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS,  &caps.maxVertexUniformVectors  );
   //T_ASSERT_X( errCk(), "OpenGL error" );
 
 #ifdef __MOBILE_PLATFORM__

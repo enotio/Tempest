@@ -548,8 +548,9 @@ AbstractAPI::Device *DirectX11::allocDevice( void *Hwnd,
   if( FAILED( hr ) )
     return 0;
 
-  dev->caps.maxTextureSize    = 8048;
-  dev->caps.maxUniformVectors = D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT;
+  dev->caps.maxTextureSize            = 8048;
+  dev->caps.maxFragmentUniformVectors = D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT;
+  dev->caps.maxVertexUniformVectors   = D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT;
   return (AbstractAPI::Device*)dev.release();
   }
 
