@@ -835,11 +835,12 @@ static bool isIpadMini() {
   return false;
   }
 
-int iOSAPI::densityDpi() {
+float iOSAPI::densityDpi() {
   float scale = 1;
 
   if( [[UIScreen mainScreen] respondsToSelector:@selector(scale)] )
     scale = [[UIScreen mainScreen] scale];
+  return scale;
 
   float dpi;
   if( UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPad )
