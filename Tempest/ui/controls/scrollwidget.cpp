@@ -70,8 +70,9 @@ struct ScrollWidget::BoxLayout: public Tempest::LinearLayout {
       }
 
     const Margin& m = margin();
-    sw += m.xMargin();
-    sh += m.yMargin();
+    if(orientation()==Horizontal)
+      sw += m.xMargin(); else
+      sh += m.yMargin();
     return Size(sw,sh);
     }
 
