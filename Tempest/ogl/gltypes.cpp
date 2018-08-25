@@ -127,6 +127,7 @@ void Tempest::Detail::ImplDeviceBase::initExt() {
   glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS,&caps.maxFragmentUniformVectors);
   glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS,  &caps.maxVertexUniformVectors  );
   //T_ASSERT_X( errCk(), "OpenGL error" );
+#endif
 
 #ifdef __MOBILE_PLATFORM__
   caps.maxRTCount = 1;
