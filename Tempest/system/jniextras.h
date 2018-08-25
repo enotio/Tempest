@@ -87,6 +87,18 @@ namespace Jni{
         return 0;
         }
 
+      template<class ... Args>
+      jlong callLong(JNIEnv &env, jobject self, const char* func,const char* sig,Args ... a) {
+        if(cls==nullptr || self==nullptr )
+          return 0;
+
+        jmethodID m = env.GetMethodID(cls,func,sig);
+        clearException(env);
+        if( m!=nullptr )
+          return env.CallLongMethod(self,m,a...);
+        return 0;
+      }
+
     private:
       JNIEnv* env=nullptr;
       jclass  cls=nullptr;

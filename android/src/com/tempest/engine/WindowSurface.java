@@ -20,6 +20,7 @@ public class WindowSurface extends SurfaceView
     super(context);
     getHolder().addCallback(this);
     setFocusable(true);
+    setFocusableInTouchMode(true);
     requestFocus();
     }
 
@@ -169,9 +170,16 @@ public class WindowSurface extends SurfaceView
       }
     super.onWindowVisibilityChanged(visibility);
     }
+  
+  void showSoftInput(){
+    final Context ctx=getContext();
+    InputMethodManager imm = (InputMethodManager)ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
+    if( imm==null )
+      return;
+    imm.showSoftInput(this, InputMethodManager.SHOW_FORCED);
+  }
 
-  @SuppressWarnings("unused")
-  private void hideSoftInput(){
+  void hideSoftInput(){
     final Context ctx=getContext();
     InputMethodManager imm = (InputMethodManager)ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
     if( imm==null )
@@ -180,13 +188,12 @@ public class WindowSurface extends SurfaceView
     imm.hideSoftInputFromWindow(getWindowToken(), 0);
     }
 
-  @SuppressWarnings("unused")
-  private void toggleSoftInput(){
+  void toggleSoftInput(){
+    
     final Context ctx=getContext();
     InputMethodManager imm = (InputMethodManager)ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
     if( imm==null )
       return;
-
     imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
     }
 

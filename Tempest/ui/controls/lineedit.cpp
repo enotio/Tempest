@@ -155,16 +155,20 @@ void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
   if(!isEnabled())
     return;
 
+#ifdef __ANDROID__
+  size_t oldPress=pressPos;
+#endif
+  
   pressPos = cursorForPosition(e.pos());
   txt.setSelectionBounds(pressPos,pressPos);
 
-  updateSel();
-  update();
-
 #ifdef __ANDROID__
-  if( isEditable() )
+  if( isEditable() && oldPress==pressPos )
     AndroidAPI::toggleSoftInput();
 #endif
+
+  updateSel();
+  update();
   }
 
 void LineEdit::mouseDragEvent(MouseEvent &e) {
@@ -331,6 +335,10 @@ void LineEdit::focusEvent(FocusEvent &e) {
   if( e.reason==Event::TabReason && e.in ){
     setSelectionBounds(0,text().size());
     }
+#ifdef __ANDROID__
+  if(e.in && isEditable())
+    AndroidAPI::showSoftInput();
+#endif
   }
 
 void LineEdit::updateSel() {
