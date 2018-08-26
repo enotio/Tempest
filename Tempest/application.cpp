@@ -3,6 +3,7 @@
 #include <Tempest/Platform>
 #include <Tempest/SystemAPI>
 #include <Tempest/Android>
+#include <Tempest/IOS>
 #include <Tempest/Event>
 
 #include <Tempest/Timer>
@@ -116,6 +117,8 @@ Application::Application() {
   app.quit = false;
 #ifdef __ANDROID__
   app.uiMetrics.uiScale = AndroidAPI::densityDpi();
+#elif defined(__IOS__)
+  app.uiMetrics.uiScale = iOSAPI::densityDpi();
 #endif
   SystemAPI::instance().startApplication(0);
   }

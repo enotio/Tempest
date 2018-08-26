@@ -91,7 +91,7 @@ static struct State {
   volatile bool        command=false;
   volatile id          rootWindow = nullptr;
 
-  std::string          locale;
+  std::string          locale,docsDir;
   std::vector<Touch>   touch;
 
   size_t addTouch(void* id,const CGPoint& pos){
@@ -473,6 +473,12 @@ iOSAPI::iOSAPI(){
     }
   if(state.locale.size()==0)
     state.locale="eng";
+
+  NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+  NSString *documentsPath = [paths objectAtIndex:0];
+
+  const char *utf8text = [documentsPath UTF8String];
+  state.docsDir = utf8text ? std::string(utf8text)+"/" : "./";
   }
 
 iOSAPI::~iOSAPI() {
@@ -841,7 +847,7 @@ float iOSAPI::densityDpi() {
   if( [[UIScreen mainScreen] respondsToSelector:@selector(scale)] )
     scale = [[UIScreen mainScreen] scale];
   return scale;
-
+/*
   float dpi;
   if( UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPad )
     dpi = isIpadMini() ? 163 : 132;
@@ -850,11 +856,15 @@ float iOSAPI::densityDpi() {
   else
     dpi = 160;
 
-  return int(dpi*scale*scale);
+  return int(dpi*scale*scale);*/
   }
 
 const std::string& iOSAPI::iso3Locale() {
   return state.locale;
+  }
+
+const std::string& iOSAPI::documentsPath() {
+  return state.docsDir;
   }
 
 void iOSAPI::showSoftInput() {

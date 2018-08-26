@@ -561,7 +561,6 @@ Tempest::Size OsxAPI::implScreenSize() {
   }
 
 static void appleMain(void*){
-  [NSAutoreleasePool new];
   [NSApplication sharedApplication];
   [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
   [NSApp activateIgnoringOtherApps:YES];
@@ -572,6 +571,9 @@ static void appleMain(void*){
   }
 
 void OsxAPI::startApplication(SystemAPI::ApplicationInitArgs *) {
+  [NSAutoreleasePool new];
+  [NSApplication initialize];
+
   createFiber(appleContext,appleMain,nullptr,appleStack,sizeof(appleStack));
   switch2Fiber(appleContext,mainContext);
   }

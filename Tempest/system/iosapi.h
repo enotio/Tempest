@@ -30,6 +30,8 @@ class iOSAPI:public SystemAPI {
     static float densityDpi();
     static const std::string& iso3Locale();
 
+    static const std::string& documentsPath();
+
     static void showSoftInput();
     static void hideSoftInput();
     static void toggleSoftInput();
