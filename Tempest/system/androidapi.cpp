@@ -326,17 +326,25 @@ void AndroidAPI::showSoftInput() {
     return;
 
   jobject w = android.wndWx.begin()->first;
-  a.surfaceClass.callVoid(*a.env,w,"showSoftInput", "()V");
+  a.activityClass.callVoid(*a.env,w,"showSoftInput", "()V");
   }
 
 void AndroidAPI::hideSoftInput() {
   Android &a = android;
-  a.activityClass.callStaticVoid(*a.env,"hideSoftInput", "()V");
+  if( android.wndWx.empty() )
+    return;
+
+  jobject w = android.wndWx.begin()->first;
+  a.activityClass.callVoid(*a.env,w,"hideSoftInput", "()V");
   }
 
 void AndroidAPI::toggleSoftInput(){
   Android &a = android;
-  a.activityClass.callStaticVoid(*a.env,"toggleSoftInput", "()V");
+  if( android.wndWx.empty() )
+    return;
+
+  jobject w = android.wndWx.begin()->first;
+  a.activityClass.callVoid(*a.env,w,"toggleSoftInput", "()V");
   }
 
 const std::string &AndroidAPI::iso3Locale() {

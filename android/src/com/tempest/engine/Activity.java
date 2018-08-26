@@ -1,8 +1,10 @@
 package com.tempest.engine;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.Surface;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 
 import java.util.ArrayList;
 
@@ -61,4 +63,18 @@ public class Activity extends android.app.Activity {
       //---
       }
     }
+  
+  @SuppressWarnings("unused")
+  private void toggleSoftInput(){
+    surface.toggleSoftInput();
+  }
+  @SuppressWarnings("unused")
+  private void hideSoftInput(){
+    surface.hideSoftInput();
+    
+  }
+  @SuppressWarnings("unused")
+  private void showSoftInput(){
+    surface.showSoftInput();
+  }
 }
