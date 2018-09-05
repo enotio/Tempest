@@ -90,6 +90,7 @@ static struct State {
   volatile bool        ctrl=false;
   volatile bool        command=false;
   volatile id          rootWindow = nullptr;
+  volatile int         interfaceOrientation=int(iOSAPI::InterfaceOrientation::All);
 
   std::string          locale,docsDir;
   std::vector<Touch>   touch;
@@ -367,7 +368,7 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
   }
 
 -(UIInterfaceOrientationMask)supportedInterfaceOrientations {
-  return  UIInterfaceOrientationMaskAll;
+  return  state.interfaceOrientation;
   }
 @end
 
@@ -400,7 +401,7 @@ inline static void switch2Fiber(iOSAPI::Fiber& fib, iOSAPI::Fiber& prv) {
   supportedInterfaceOrientationsForWindow:(UIWindow *)window {
   (void)application;
   (void)window;
-  return UIInterfaceOrientationMaskAll;
+  return state.interfaceOrientation;
   }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -829,6 +830,14 @@ void iOSAPI::finish() {
   swapContext();
   }
 
+void* iOSAPI::rootViewController() {
+  if(wndWx.empty())
+    return nullptr;
+  auto x=*wndWx.begin();
+  TempestWindow* w = reinterpret_cast<TempestWindow*>(x.first);
+  return w.rootViewController;
+  }
+
 static bool isIpadMini() {
   utsname systemInfo={};
   if( uname(&systemInfo)<0 )
@@ -874,6 +883,9 @@ void iOSAPI::showSoftInput() {
   id wi = wndWx.begin()->first;
 
   TempestWindow* window = (TempestWindow*)wi;
+  if(window.glView.canBecomeFirstResponderFlag==YES)
+    return;
+
   window.glView.canBecomeFirstResponderFlag = YES;
   [window.glView becomeFirstResponder];
   }
@@ -911,6 +923,15 @@ iOSAPI::InterfaceIdiom iOSAPI::interfaceIdiom() {
     return InterfaceIdiomTV;
 
   return InterfaceIdiomPad; // ???
+  }
+
+void iOSAPI::setInterfaceOrientation(iOSAPI::InterfaceOrientation ori) {
+  state.interfaceOrientation=int(ori);
+  for(auto& i:wndWx){
+    TempestWindow* wx = i.first;
+    [wx setNeedsLayout];
+    [wx layoutSubviews];
+    }
   }
 
 #endif

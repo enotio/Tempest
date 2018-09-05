@@ -2,6 +2,7 @@
 
 #include <Tempest/Application>
 #include <Tempest/Android>
+#include <Tempest/IOS>
 
 using namespace Tempest;
 
@@ -155,7 +156,7 @@ void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
   if(!isEnabled())
     return;
 
-#ifdef __ANDROID__
+#ifdef __MOBILE_PLATFORM__
   size_t oldPress=pressPos;
 #endif
   
@@ -165,6 +166,9 @@ void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
 #ifdef __ANDROID__
   if( isEditable() && oldPress==pressPos )
     AndroidAPI::toggleSoftInput();
+#elif defined(__IOS__)
+  if( isEditable() && oldPress==pressPos )
+    iOSAPI::toggleSoftInput();
 #endif
 
   updateSel();
@@ -338,6 +342,10 @@ void LineEdit::focusEvent(FocusEvent &e) {
 #ifdef __ANDROID__
   if(e.in && isEditable())
     AndroidAPI::showSoftInput();
+#endif
+#ifdef __IOS__
+  if(e.in && isEditable())
+    iOSAPI::showSoftInput();
 #endif
   }
 

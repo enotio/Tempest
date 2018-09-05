@@ -21,6 +21,17 @@ class iOSAPI:public SystemAPI {
     static void  swapContext();
     static void  finish();
 
+    static void* rootViewController();
+
+    enum class InterfaceOrientation:int {
+      Portrait           = (1 << 1),
+      PortraitUpsideDown = (1 << 2),
+      LandscapeLeft      = (1 << 3),
+      LandscapeRight     = (1 << 4),
+      Landscape          = (LandscapeLeft | LandscapeRight),
+      All                = (Portrait | PortraitUpsideDown | LandscapeLeft | LandscapeRight),
+      };
+
     enum InterfaceIdiom {
       InterfaceIdiomPhone,
       InterfaceIdiomPad,
@@ -36,6 +47,8 @@ class iOSAPI:public SystemAPI {
     static void hideSoftInput();
     static void toggleSoftInput();
     static InterfaceIdiom interfaceIdiom();
+
+    static void setInterfaceOrientation(InterfaceOrientation ori);
 
     struct Fiber;
     struct FiberCtx;

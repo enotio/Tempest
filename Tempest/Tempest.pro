@@ -29,7 +29,7 @@ android:{
   DESTDIR = ../lib/$$ANDROID_TARGET_ARCH
   } else {
   ios:{
-    if(contains(CONFIG,iphonesimulator)){
+    if(!contains(CONFIG,device)){
       DESTDIR = ../lib/simulator
       } else {
       DESTDIR = ../lib/ios
