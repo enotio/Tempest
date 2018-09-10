@@ -591,7 +591,7 @@ void Widget::attach(Layout *ow,size_t mouseReleaseId,size_t leaveId) {
 
   solveStyle();
 
-  if( chFocus ) {
+  if( chFocus || wstate.focus ) {
     Widget * root = owner();
     while( root && !root->chFocus ){
       root->chFocus = true;
