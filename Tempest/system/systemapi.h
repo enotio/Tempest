@@ -1,15 +1,16 @@
 #ifndef ABSTRACTSYSTEMAPI_H
 #define ABSTRACTSYSTEMAPI_H
 
-#include <cstdint>
-#include <string>
-#include <vector>
-#include <memory>
-
 #include <Tempest/Utility>
 #include <Tempest/Event>
 #include <Tempest/ImageCodec>
 #include <Tempest/Platform>
+#include <Tempest/SizePolicy>
+
+#include <cstdint>
+#include <string>
+#include <vector>
+#include <memory>
 #include <unordered_set>
 
 namespace Tempest{
@@ -40,7 +41,8 @@ class SystemAPI {
 
     virtual Widget* addOverlay( WindowOverlay* ov ) = 0;
 
-    static Size screenSize();
+    static Size   screenSize();
+    static Margin safeArea();
 
     static SystemAPI& instance();
 
@@ -141,7 +143,8 @@ class SystemAPI {
     virtual void   fcloseImpl( File* file );
     virtual size_t fsizeImpl( File* file );
 
-    virtual Size implScreenSize() = 0;
+    virtual Size   implScreenSize() = 0;
+    virtual Margin implSafeArea();
     virtual bool testDisplaySettings( Window* w, const DisplaySettings& ) = 0;
     virtual bool setDisplaySettings ( Window* w, const DisplaySettings& ) = 0;
 

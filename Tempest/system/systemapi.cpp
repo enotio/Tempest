@@ -55,6 +55,10 @@ Size SystemAPI::screenSize() {
   return instance().implScreenSize();
   }
 
+Margin SystemAPI::safeArea() {
+  return instance().implSafeArea();
+  }
+
 std::string SystemAPI::loadText(const std::string &file) {
   return instance().loadText( file.data() );
   }
@@ -203,6 +207,10 @@ size_t SystemAPI::fsizeImpl(SystemAPI::File *f) {
 
   fseek( file, pos, SEEK_SET );
   return e-s;
+  }
+
+Margin SystemAPI::implSafeArea() {
+  return Margin();
   }
 
 std::string SystemAPI::loadTextImpl(const char *file) {
