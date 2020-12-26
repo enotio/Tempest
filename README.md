@@ -5,6 +5,10 @@
 
 Crossplatform 3d engine.
 
+**Project has been moved to**: https://github.com/Try/Tempest !
+
+
+
 ## Supported platforms and API:
 
 * Windows: OpenGL4/GLSL, OpenGL2/GLSL, DirectX11/HLSL, DirectX9/HLSL, DirectX9/Cg
